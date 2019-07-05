@@ -14,7 +14,7 @@ $ CXXFLAGS="-DENVOY_SSL_VERSION=\\\"OpenSSL\\\"" bazel build //:envoy --define b
 ```
 
 If you need OpenSSL dynamically linked to Envoy then re-map `@boringssl` to
-`@openssl_shared` by editing the `WORKSPACE` file.
+`@openssl_shared` by editing the [WORKSPACE](WORKSPACE) file.
 
 ## License
 
