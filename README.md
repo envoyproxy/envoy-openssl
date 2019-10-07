@@ -5,12 +5,15 @@
 The Envoy OpenSSL Extensions project hosts extensions for building
 [Envoy](https://github.com/envoyproxy/envoy) purely with OpenSSL.
 
+[![Azure Pipeline](https://img.shields.io/azure-devops/build/cncf/d1341aaf-5711-4800-816d-4295da428269/12)](https://dev.azure.com/cncf/envoy-openssl/_build?definitionId=12)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 ## Building
 
-To build OpenSSL-enabled Envoy run
+To build OpenSSL-enabled Envoy run the following command.
 
 ```console
-$ CXXFLAGS="-DENVOY_SSL_VERSION=\\\"OpenSSL\\\"" bazel build //:envoy --define boringssl=disabled
+$ CXXFLAGS="-DENVOY_SSL_VERSION=\\\"OpenSSL\\\"" bazel build //:envoy --define boringssl=disabled --cxxopt="-Wno-error=old-style-cast"
 ```
 
 If you need OpenSSL dynamically linked to Envoy then re-map `@boringssl` to

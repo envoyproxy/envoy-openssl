@@ -1,20 +1,20 @@
-From a7c49b98f312ee52194868b9378d43af3ab11f23 Mon Sep 17 00:00:00 2001
-From: Dmitry Rozhkov <dmitry.rozhkov@linux.intel.com>
-Date: Wed, 27 Mar 2019 17:51:25 +0200
+From 0efb8fe39b574db2a3492ae9ebe6eb14155a1aed Mon Sep 17 00:00:00 2001
+From: Venil Noronha <veniln@vmware.com>
+Date: Thu, 10 Oct 2019 23:40:41 -0700
 Subject: [PATCH] make compatible with openssl
 
 ---
  BUILD                 |  2 ++
  jwt_verify_lib/jwks.h |  4 ++++
  src/jwks.cc           | 20 ++++++++++++++++----
- src/verify.cc         |  7 +++++--
- 4 files changed, 27 insertions(+), 6 deletions(-)
+ src/verify.cc         | 13 +++++++++++--
+ 4 files changed, 33 insertions(+), 6 deletions(-)
 
 diff --git a/BUILD b/BUILD
-index 288ad80..e136055 100644
+index 60331dc..6dc7ac5 100644
 --- a/BUILD
 +++ b/BUILD
-@@ -26,6 +26,8 @@ cc_library(
+@@ -27,6 +27,8 @@ cc_library(
          "//external:abseil_time",
          "//external:protobuf",
          "//external:ssl",
@@ -24,7 +24,7 @@ index 288ad80..e136055 100644
  )
  
 diff --git a/jwt_verify_lib/jwks.h b/jwt_verify_lib/jwks.h
-index f426687..e15512a 100644
+index 17b78f7..455656f 100644
 --- a/jwt_verify_lib/jwks.h
 +++ b/jwt_verify_lib/jwks.h
 @@ -22,6 +22,10 @@
@@ -39,7 +39,7 @@ index f426687..e15512a 100644
  namespace jwt_verify {
  
 diff --git a/src/jwks.cc b/src/jwks.cc
-index 0603294..6f5576b 100644
+index 4dfaa3d..37e237f 100644
 --- a/src/jwks.cc
 +++ b/src/jwks.cc
 @@ -27,6 +27,11 @@
@@ -85,10 +85,24 @@ index 0603294..6f5576b 100644
    }
  };
 diff --git a/src/verify.cc b/src/verify.cc
-index 535f31a..2fa2932 100644
+index 3685cb9..a82e61e 100644
 --- a/src/verify.cc
 +++ b/src/verify.cc
-@@ -77,8 +77,11 @@ bool verifySignatureEC(EC_KEY* key, const uint8_t* signature,
+@@ -22,7 +22,13 @@
+ #include "openssl/err.h"
+ #include "openssl/evp.h"
+ #include "openssl/hmac.h"
++
++#ifdef OPENSSL_IS_BORINGSSL
+ #include "openssl/mem.h"
++#else
++#include "openssl/crypto.h"
++#endif
++
+ #include "openssl/rsa.h"
+ #include "openssl/sha.h"
+ 
+@@ -82,8 +88,11 @@ bool verifySignatureEC(EC_KEY* key, const uint8_t* signature,
      return false;
    }
  
@@ -103,5 +117,5 @@ index 535f31a..2fa2932 100644
    }
    if (ECDSA_do_verify(digest, SHA256_DIGEST_LENGTH, ecdsa_sig.get(), key) ==
 -- 
-2.20.1
+2.14.3 (Apple Git-98)
 
