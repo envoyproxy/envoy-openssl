@@ -104,7 +104,7 @@ EXTENSIONS = {
     # SSL
     #
 
-    "envoy.extensions.common.crypto.utility_lib":              "@envoy_openssl//source/extensions/common/crypto:utility_lib",
+    "envoy.extensions.common.crypto.utility_lib":       "@envoy_openssl//source/extensions/common/crypto:utility_lib",
 
     #
     # Stat sinks

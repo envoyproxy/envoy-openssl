@@ -28,22 +28,3 @@ envoy_cc_binary(
         "@envoy//source/exe:envoy_main_entry_lib",
     ],
 )
-
-# envoy_cc_binary(
-#     name = "envoy_test",
-#     testonly = 1,
-#     repository = "@envoy",
-#     deps = [
-#         "//test/extensions/transport_sockets/tls:ssl_socket_test",
-#         "//test/extensions/transport_sockets/tls:context_impl_test",
-#         "//test/extensions/transport_sockets/tls:utility_test",
-#         "//test/extensions/transport_sockets/tls:ssl_test_utils",
-#         "//test/extensions/transport_sockets/tls/integration:ssl_integration_test",
-#         "//test/extensions/transport_sockets/tls/test_data:certs",
-#         "//test/extensions/filters/listener/tls_inspector:tls_inspector_test",
-#         "//test/extensions/filters/listener/tls_inspector:tls_inspector_benchmark",
-#         "//test/extensions/filters/listener/tls_inspector:tls_utility_lib",
-#         "//test/extensions/transport_sockets/tls/test_data:certs",
-#         "//test/extensions/transport_sockets/tls/test_data:cert_infos",
-#     ],
-# )
