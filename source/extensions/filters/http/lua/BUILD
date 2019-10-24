@@ -23,7 +23,7 @@ envoy_cc_library(
         "@envoy//include/envoy/upstream:cluster_manager_interface",
         "@envoy//source/common/buffer:buffer_lib",
         "@envoy//source/common/common:enum_to_int",
-        "//source/common/crypto:utility_lib",
+        "@envoy//source/common/crypto:utility_lib",
         "@envoy//source/common/http:message_lib",
         "@envoy//source/extensions/filters/common/lua:lua_lib",
         "@envoy//source/extensions/filters/common/lua:wrappers_lib",
@@ -39,7 +39,7 @@ envoy_cc_library(
     deps = [
         "@envoy//include/envoy/http:header_map_interface",
         "@envoy//include/envoy/stream_info:stream_info_interface",
-        "//source/common/crypto:utility_lib",
+        "@envoy//source/common/crypto:utility_lib",
         "@envoy//source/common/http:utility_lib",
         "//source/extensions/common/crypto:utility_lib",
         "@envoy//source/extensions/filters/common/lua:lua_lib",

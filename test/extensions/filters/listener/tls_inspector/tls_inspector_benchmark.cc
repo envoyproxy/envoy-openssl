@@ -15,14 +15,7 @@
 #include "gtest/gtest.h"
 #include "openssl/ssl.h"
 
-using testing::_;
-using testing::AtLeast;
-using testing::Invoke;
 using testing::NiceMock;
-using testing::Return;
-using testing::ReturnNew;
-using testing::ReturnRef;
-using testing::SaveArg;
 
 namespace Envoy {
 namespace Extensions {
@@ -81,7 +74,6 @@ static void BM_TlsInspector(benchmark::State& state) {
   Network::ConnectionSocketImpl socket(std::move(io_handle), nullptr, nullptr);
   NiceMock<FastMockDispatcher> dispatcher;
   FastMockListenerFilterCallbacks cb(socket, dispatcher);
-
 
   for (auto _ : state) {
     Filter filter(cfg);

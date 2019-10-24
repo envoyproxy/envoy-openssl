@@ -25,7 +25,7 @@ envoy_extension_cc_test(
     deps = [
         "@envoy//source/common/buffer:buffer_lib",
         "@envoy//source/common/common:hex_lib",
-        "//source/common/crypto:utility_lib",
+        "@envoy//source/common/crypto:utility_lib",
         "//source/extensions/common/crypto:utility_lib",
     ],
 )

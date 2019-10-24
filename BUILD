@@ -11,7 +11,6 @@ envoy_cc_binary(
     name = "envoy",
     repository = "@envoy",
     deps = [
-        "@envoy_openssl//source/common/crypto:utility_lib",
         "@envoy_openssl//source/extensions/transport_sockets/tls:config",
         "@envoy_openssl//source/extensions/transport_sockets/tls:ssl_socket_lib",
         "@envoy_openssl//source/extensions/transport_sockets/tls:context_config_lib",
