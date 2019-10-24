@@ -13,7 +13,7 @@ The Envoy OpenSSL Extensions project hosts extensions for building
 To build OpenSSL-enabled Envoy run the following command.
 
 ```console
-$ CXXFLAGS="-DENVOY_SSL_VERSION=\\\"OpenSSL\\\"" bazel build //:envoy --define boringssl=disabled --cxxopt="-Wno-error=old-style-cast"
+$ bazel build //:envoy
 ```
 
 If you need OpenSSL dynamically linked to Envoy then re-map `@boringssl` to
