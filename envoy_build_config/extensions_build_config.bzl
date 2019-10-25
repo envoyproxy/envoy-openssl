@@ -43,6 +43,7 @@ EXTENSIONS = {
     "envoy.filters.http.grpc_http1_bridge":             "@envoy//source/extensions/filters/http/grpc_http1_bridge:config",
     "envoy.filters.http.grpc_http1_reverse_bridge":     "@envoy//source/extensions/filters/http/grpc_http1_reverse_bridge:config",
     "envoy.filters.http.grpc_json_transcoder":          "@envoy//source/extensions/filters/http/grpc_json_transcoder:config",
+    "envoy.filters.http.grpc_stats":                    "@envoy//source/extensions/filters/http/grpc_stats:config",
     "envoy.filters.http.grpc_web":                      "@envoy//source/extensions/filters/http/grpc_web:config",
     "envoy.filters.http.gzip":                          "@envoy//source/extensions/filters/http/gzip:config",
     "envoy.filters.http.header_to_metadata":            "@envoy//source/extensions/filters/http/header_to_metadata:config",
@@ -131,6 +132,7 @@ EXTENSIONS = {
     "envoy.tracers.datadog":                            "@envoy//source/extensions/tracers/datadog:config",
     "envoy.tracers.zipkin":                             "@envoy//source/extensions/tracers/zipkin:config",
     "envoy.tracers.opencensus":                         "@envoy//source/extensions/tracers/opencensus:config",
+    "envoy.tracers.xray":                               "@envoy//source/extensions/tracers/xray:config",
 
     #
     # Transport sockets
