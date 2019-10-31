@@ -20,7 +20,7 @@ EXTENSIONS = {
     #
 
     "envoy.grpc_credentials.file_based_metadata":       "@envoy//source/extensions/grpc_credentials/file_based_metadata:config",
-    # "envoy.grpc_credentials.aws_iam":                   "@envoy//source/extensions/grpc_credentials/aws_iam:config",
+    "envoy.grpc_credentials.aws_iam":                   "@envoy_openssl//source/extensions/grpc_credentials/aws_iam:config",
 
     #
     # Health checkers

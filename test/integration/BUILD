@@ -891,7 +891,7 @@ envoy_cc_test_library(
         "@envoy//source/common/common:assert_lib",
         "@envoy//source/common/common:logger_lib",
         "@envoy//test/fuzz:fuzz_runner_lib",
-        "@envoy//test/integration:integration_lib",
+        "//test/integration:integration_lib",
         "@envoy//test/test_common:environment_lib",
     ],
 )
