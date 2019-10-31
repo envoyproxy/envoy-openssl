@@ -25,7 +25,7 @@ namespace Tls {
 namespace {
 
 constexpr absl::string_view NotReadyReason{"TLS error: Secret is not supplied by SDS"};
-	
+
 // This SslSocket will be used when SSL secret is not fetched from SDS server.
 class NotReadySslSocket : public Network::TransportSocket {
 public:
@@ -62,6 +62,12 @@ SslSocket::SslSocket(Envoy::Ssl::ContextSharedPtr ctx, InitialState state,
 void SslSocket::setTransportSocketCallbacks(Network::TransportSocketCallbacks& callbacks) {
   ASSERT(!callbacks_);
   callbacks_ = &callbacks;
+
+  // Associate this SSL connection with all the certificates (with their potentially different
+  // private key methods).
+  for (auto const& provider : ctx_->getPrivateKeyMethodProviders()) {
+    provider->registerPrivateKeyMethod(ssl_, *this, callbacks_->connection().dispatcher());
+  }
 
   BIO* bio = BIO_new_socket(callbacks_->ioHandle().fd(), 0);
   SSL_set_bio(ssl_, bio, bio);
@@ -139,16 +145,16 @@ Network::IoResult SslSocket::doRead(Buffer::Instance& read_buffer) {
     }
 
     if (slices_to_commit > 0) {
-	  read_buffer.commit(slices, slices_to_commit);
-	  if (callbacks_->shouldDrainReadBuffer()) {
-	    callbacks_->setReadBufferReady();
-	    keep_reading = false;
-	  }
+      read_buffer.commit(slices, slices_to_commit);
+      if (callbacks_->shouldDrainReadBuffer()) {
+        callbacks_->setReadBufferReady();
+        keep_reading = false;
+      }
     }
   }
 
   ENVOY_CONN_LOG(trace, "ssl read {} bytes into {} slices", callbacks_->connection(), bytes_read,
-			   read_buffer.getRawSlices(nullptr, 0));
+                 read_buffer.getRawSlices(nullptr, 0));
 
   return {action, bytes_read, end_stream};
 }
@@ -197,7 +203,6 @@ PostIoAction SslSocket::doHandshake() {
     }
   }
 }
-
 
 void SslSocket::drainErrorQueue() {
   bool saw_error = false;
@@ -271,6 +276,7 @@ Network::IoResult SslSocket::doWrite(Buffer::Instance& write_buffer, bool end_st
         drainErrorQueue();
         return {PostIoAction::Close, total_bytes_written, false};
       }
+
       break;
     }
   }
@@ -281,7 +287,6 @@ Network::IoResult SslSocket::doWrite(Buffer::Instance& write_buffer, bool end_st
 
   return {PostIoAction::KeepOpen, total_bytes_written, false};
 }
-
 
 void SslSocket::onConnected() { ASSERT(state_ == SocketState::PreHandshake); }
 
@@ -372,20 +377,6 @@ const std::string& SslSocketInfo::urlEncodedPemEncodedPeerCertificate() const {
   return cached_url_encoded_pem_encoded_peer_certificate_;
 }
 
-std::vector<std::string> SslSocketInfo::uriSanPeerCertificate() const {
-  if (!cached_uri_san_peer_certificate_.empty()) {
-    return cached_uri_san_peer_certificate_;
-  }
-
-  bssl::UniquePtr<X509> cert(SSL_get_peer_certificate(ssl_.get()));
-  if (!cert) {
-    ASSERT(cached_uri_san_peer_certificate_.empty());
-    return cached_uri_san_peer_certificate_;
-  }
-  cached_uri_san_peer_certificate_ = Utility::getSubjectAltNames(*cert, GEN_URI);
-  return cached_uri_san_peer_certificate_;
-}
-
 const std::string& SslSocketInfo::urlEncodedPemEncodedPeerCertificateChain() const {
   if (!cached_url_encoded_pem_encoded_peer_cert_chain_.empty()) {
     return cached_url_encoded_pem_encoded_peer_cert_chain_;
@@ -415,6 +406,20 @@ const std::string& SslSocketInfo::urlEncodedPemEncodedPeerCertificateChain() con
             pem, {{"\n", "%0A"}, {" ", "%20"}, {"+", "%2B"}, {"/", "%2F"}, {"=", "%3D"}}));
   }
   return cached_url_encoded_pem_encoded_peer_cert_chain_;
+}
+
+std::vector<std::string> SslSocketInfo::uriSanPeerCertificate() const {
+  if (!cached_uri_san_peer_certificate_.empty()) {
+    return cached_uri_san_peer_certificate_;
+  }
+
+  bssl::UniquePtr<X509> cert(SSL_get_peer_certificate(ssl_.get()));
+  if (!cert) {
+    ASSERT(cached_uri_san_peer_certificate_.empty());
+    return cached_uri_san_peer_certificate_;
+  }
+  cached_uri_san_peer_certificate_ = Utility::getSubjectAltNames(*cert, GEN_URI);
+  return cached_uri_san_peer_certificate_;
 }
 
 std::vector<std::string> SslSocketInfo::dnsSansPeerCertificate() const {
@@ -467,10 +472,10 @@ uint16_t SslSocketInfo::ciphersuiteId() const {
 std::string SslSocketInfo::ciphersuiteString() const {
   const SSL_CIPHER* cipher = SSL_get_current_cipher(ssl_.get());
   if (cipher == nullptr) {
-    return std::string();
+    return {};
   }
 
-  return std::string(SSL_CIPHER_get_name(cipher));
+  return SSL_CIPHER_get_name(cipher);
 }
 
 const std::string& SslSocketInfo::tlsVersion() const {

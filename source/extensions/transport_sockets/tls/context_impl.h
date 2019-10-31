@@ -5,10 +5,16 @@
 #include <string>
 #include <vector>
 
-#include "envoy/stats/scope.h"
-#include "envoy/stats/stats_macros.h"
+#include "envoy/network/transport_socket.h"
 #include "envoy/ssl/context.h"
 #include "envoy/ssl/context_config.h"
+/*
+#include "envoy/ssl/private_key/private_key.h"
+*/
+#include "envoy/stats/scope.h"
+#include "envoy/stats/stats_macros.h"
+
+#include "common/stats/symbol_table_impl.h"
 
 #include "extensions/transport_sockets/tls/context_manager_impl.h"
 #include "extensions/transport_sockets/tls/openssl_impl.h"
@@ -48,7 +54,7 @@ struct SslStats {
 
 class ContextImpl : public virtual Envoy::Ssl::Context {
 public:
-	virtual bssl::UniquePtr<SSL> newSsl(const Network::TransportSocketOptions* options);
+  virtual bssl::UniquePtr<SSL> newSsl(const Network::TransportSocketOptions* options);
 
   /**
    * Logs successful TLS handshake and updates stats.
@@ -67,15 +73,15 @@ public:
   /**
    * Determines whether the given name matches 'pattern' which may optionally begin with a wildcard.
    * NOTE:  public for testing
-   * @param san the subjectAltName to match
+   * @param dns_name the DNS name to match
    * @param pattern the pattern to match against (*.example.com)
    * @return true if the san matches pattern
    */
-  static bool dNSNameMatch(const std::string& dnsName, const char* pattern);
+  static bool dnsNameMatch(const std::string& dns_name, const char* pattern);
 
   SslStats& stats() { return stats_; }
 
-  // Envoy::Ssl::Context
+  // Ssl::Context
   size_t daysUntilFirstCertExpires() const override;
   Envoy::Ssl::CertificateDetailsPtr getCaCertInformation() const override;
   std::vector<Envoy::Ssl::CertificateDetailsPtr> getCertChainInformation() const override;
@@ -95,10 +101,10 @@ protected:
   // A X509_STORE_CTX_verify_cb callback for ignoring cert expiration in X509_verify_cert().
   static int ignoreCertificateExpirationCallback(int ok, X509_STORE_CTX* store_ctx);
 
-  // A SSL_CTX_set_cert_verify_callback for custom cert validation
+  // A SSL_CTX_set_cert_verify_callback for custom cert validation.
   static int verifyCallback(X509_STORE_CTX* store_ctx, void* arg);
 
-  int verifyCertificate(X509* cert);
+  int verifyCertificate(X509* cert, const std::vector<std::string>& verify_san_list);
 
   /**
    * Verifies certificate hash for pinning. The hash is a hex-encoded SHA-256 of the DER-encoded
@@ -126,6 +132,8 @@ protected:
   static SslStats generateStats(Stats::Scope& scope);
 
   std::string getCaFileName() const { return ca_file_path_; };
+  void incCounter(const Stats::StatName name, absl::string_view value,
+                  const Stats::StatName fallback) const;
 
   Envoy::Ssl::CertificateDetailsPtr certificateDetails(X509* cert, const std::string& path) const;
 
@@ -143,11 +151,14 @@ protected:
     std::string getCertChainFileName() const { return cert_chain_file_path_; };
     void addClientValidationContext(const Envoy::Ssl::CertificateValidationContextConfig& config,
                                     bool require_client_cert);
-    // bool isCipherEnabled(uint16_t cipher_id, uint16_t client_version);
+
+    /*
+    bool isCipherEnabled(uint16_t cipher_id, uint16_t client_version);
+    */
+
     Envoy::Ssl::PrivateKeyMethodProviderSharedPtr getPrivateKeyMethodProvider() {
       return private_key_method_provider_;
     }
-
   };
 
   // This is always non-empty, with the first context used for all new SSL
@@ -168,9 +179,18 @@ protected:
   std::string cert_chain_file_path_;
   TimeSource& time_source_;
   const unsigned tls_max_version_;
+  mutable Stats::StatNameSetPtr stat_name_set_;
+  const Stats::StatName unknown_ssl_cipher_;
+  const Stats::StatName unknown_ssl_curve_;
+  const Stats::StatName unknown_ssl_algorithm_;
+  const Stats::StatName unknown_ssl_version_;
+  const Stats::StatName ssl_ciphers_;
+  const Stats::StatName ssl_versions_;
+  const Stats::StatName ssl_curves_;
+  const Stats::StatName ssl_sigalgs_;
 };
 
-typedef std::shared_ptr<ContextImpl> ContextImplSharedPtr;
+using ContextImplSharedPtr = std::shared_ptr<ContextImpl>;
 
 class ClientContextImpl : public ContextImpl, public Envoy::Ssl::ClientContext {
 public:
@@ -181,12 +201,15 @@ public:
 
 private:
   int newSessionKey(SSL_SESSION* session);
+  /*
+  uint16_t parseSigningAlgorithmsForTest(const std::string& sigalgs);
+  */
 
   const std::string server_name_indication_;
   const bool allow_renegotiation_;
   const size_t max_session_keys_;
   absl::Mutex session_keys_mu_;
-  std::deque<bssl::UniquePtr<SSL_SESSION>> session_keys_ GUARDED_BY(session_keys_mu_);
+  std::deque<bssl::UniquePtr<SSL_SESSION>> session_keys_ ABSL_GUARDED_BY(session_keys_mu_);
   bool session_keys_single_use_{false};
 };
 
@@ -200,9 +223,10 @@ private:
                          unsigned int inlen);
   int sessionTicketProcess(SSL* ssl, uint8_t* key_name, uint8_t* iv, EVP_CIPHER_CTX* ctx,
                            HMAC_CTX* hmac_ctx, int encrypt);
-
-  // bool isClientEcdsaCapable(SSL *ssl);
-  // int cert_cb(SSL* ssl, void *param);
+  bool isClientEcdsaCapable(SSL* ssl);
+  // Select the TLS certificate context in SSL_CTX_set_select_certificate_cb() callback with
+  // ClientHello details.
+  void selectTlsContext(SSL* ssl);
 
   void generateHashForSessionContexId(const std::vector<std::string>& server_names,
                                       uint8_t* session_context_buf, unsigned& session_context_len);

@@ -16,6 +16,7 @@
 #include "extensions/transport_sockets/tls/utility.h"
 
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "boringssl_compat/bssl.h"
 #include "openssl/ssl.h"
 
