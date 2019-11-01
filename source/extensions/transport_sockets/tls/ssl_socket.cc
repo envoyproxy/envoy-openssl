@@ -308,7 +308,7 @@ bool SslSocketInfo::peerCertificatePresented() const {
   return cert != nullptr;
 }
 
-std::vector<std::string> SslSocketInfo::uriSanLocalCertificate() const {
+absl::Span<const std::string> SslSocketInfo::uriSanLocalCertificate() const {
   if (!cached_uri_san_local_certificate_.empty()) {
     return cached_uri_san_local_certificate_;
   }
@@ -323,7 +323,7 @@ std::vector<std::string> SslSocketInfo::uriSanLocalCertificate() const {
   return cached_uri_san_local_certificate_;
 }
 
-std::vector<std::string> SslSocketInfo::dnsSansLocalCertificate() const {
+absl::Span<const std::string> SslSocketInfo::dnsSansLocalCertificate() const {
   if (!cached_dns_san_local_certificate_.empty()) {
     return cached_dns_san_local_certificate_;
   }
@@ -408,7 +408,7 @@ const std::string& SslSocketInfo::urlEncodedPemEncodedPeerCertificateChain() con
   return cached_url_encoded_pem_encoded_peer_cert_chain_;
 }
 
-std::vector<std::string> SslSocketInfo::uriSanPeerCertificate() const {
+absl::Span<const std::string> SslSocketInfo::uriSanPeerCertificate() const {
   if (!cached_uri_san_peer_certificate_.empty()) {
     return cached_uri_san_peer_certificate_;
   }
@@ -422,7 +422,7 @@ std::vector<std::string> SslSocketInfo::uriSanPeerCertificate() const {
   return cached_uri_san_peer_certificate_;
 }
 
-std::vector<std::string> SslSocketInfo::dnsSansPeerCertificate() const {
+absl::Span<const std::string> SslSocketInfo::dnsSansPeerCertificate() const {
   if (!cached_dns_san_peer_certificate_.empty()) {
     return cached_dns_san_peer_certificate_;
   }
