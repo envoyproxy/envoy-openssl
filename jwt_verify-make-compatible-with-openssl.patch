@@ -1,17 +1,18 @@
-From 0efb8fe39b574db2a3492ae9ebe6eb14155a1aed Mon Sep 17 00:00:00 2001
+From b0e4badb4158934c8ec102dccc26adf3b478e6e5 Mon Sep 17 00:00:00 2001
 From: Venil Noronha <veniln@vmware.com>
-Date: Thu, 10 Oct 2019 23:40:41 -0700
+Date: Fri, 1 Nov 2019 10:10:10 -0700
 Subject: [PATCH] make compatible with openssl
 
+Signed-off-by: Venil Noronha <veniln@vmware.com>
 ---
- BUILD                 |  2 ++
+ BUILD                 |  4 +++-
  jwt_verify_lib/jwks.h |  4 ++++
  src/jwks.cc           | 20 ++++++++++++++++----
  src/verify.cc         | 13 +++++++++++--
- 4 files changed, 33 insertions(+), 6 deletions(-)
+ 4 files changed, 34 insertions(+), 7 deletions(-)
 
 diff --git a/BUILD b/BUILD
-index 60331dc..6dc7ac5 100644
+index 60331dc..bd55255 100644
 --- a/BUILD
 +++ b/BUILD
 @@ -27,6 +27,8 @@ cc_library(
@@ -24,7 +25,7 @@ index 60331dc..6dc7ac5 100644
  )
  
 diff --git a/jwt_verify_lib/jwks.h b/jwt_verify_lib/jwks.h
-index 17b78f7..455656f 100644
+index 24a18b7..80676da 100644
 --- a/jwt_verify_lib/jwks.h
 +++ b/jwt_verify_lib/jwks.h
 @@ -22,6 +22,10 @@
@@ -39,7 +40,7 @@ index 17b78f7..455656f 100644
  namespace jwt_verify {
  
 diff --git a/src/jwks.cc b/src/jwks.cc
-index 4dfaa3d..37e237f 100644
+index 97b1ae8..9723c82 100644
 --- a/src/jwks.cc
 +++ b/src/jwks.cc
 @@ -27,6 +27,11 @@
@@ -54,7 +55,7 @@ index 4dfaa3d..37e237f 100644
  namespace google {
  namespace jwt_verify {
  
-@@ -119,18 +124,25 @@ class EvpPkeyGetter : public WithStatus {
+@@ -118,18 +123,25 @@ class EvpPkeyGetter : public WithStatus {
    bssl::UniquePtr<RSA> createRsaFromJwk(const std::string& n,
                                          const std::string& e) {
      bssl::UniquePtr<RSA> rsa(RSA_new());
@@ -85,7 +86,7 @@ index 4dfaa3d..37e237f 100644
    }
  };
 diff --git a/src/verify.cc b/src/verify.cc
-index 3685cb9..a82e61e 100644
+index 4d26c25..10fb175 100644
 --- a/src/verify.cc
 +++ b/src/verify.cc
 @@ -22,7 +22,13 @@
@@ -102,20 +103,21 @@ index 3685cb9..a82e61e 100644
  #include "openssl/rsa.h"
  #include "openssl/sha.h"
  
-@@ -82,8 +88,11 @@ bool verifySignatureEC(EC_KEY* key, const uint8_t* signature,
+@@ -91,9 +97,12 @@ bool verifySignatureEC(EC_KEY* key, const EVP_MD* md, const uint8_t* signature,
      return false;
    }
  
--  if (BN_bin2bn(signature, 32, ecdsa_sig->r) == nullptr ||
--      BN_bin2bn(signature + 32, 32, ecdsa_sig->s) == nullptr) {
+-  if (BN_bin2bn(signature, signature_len / 2, ecdsa_sig->r) == nullptr ||
 +  const BIGNUM* r_bn;
 +  const BIGNUM* s_bn;
 +  ECDSA_SIG_get0(ecdsa_sig.get(), &r_bn, &s_bn);
-+  if (BN_bin2bn(signature, 32, const_cast<BIGNUM *>(r_bn)) == nullptr ||
-+      BN_bin2bn(signature + 32, 32, const_cast<BIGNUM *>(s_bn)) == nullptr) {
++  if (BN_bin2bn(signature, signature_len / 2, const_cast<BIGNUM *>(r_bn)) == nullptr ||
+       BN_bin2bn(signature + (signature_len / 2), signature_len / 2,
+-                ecdsa_sig->s) == nullptr) {
++                const_cast<BIGNUM *>(s_bn)) == nullptr) {
      return false;
    }
-   if (ECDSA_do_verify(digest, SHA256_DIGEST_LENGTH, ecdsa_sig.get(), key) ==
+ 
 -- 
 2.14.3 (Apple Git-98)
 
