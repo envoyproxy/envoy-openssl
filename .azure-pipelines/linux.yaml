@@ -1,19 +1,62 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+resources:
+  containers:
+  - container: envoy-build-image
+    image: envoyproxy/envoy-build:latest
 
 trigger:
-- master
+  branches:
+    include:
+    - 'master'
 
-pool:
-  vmImage: 'ubuntu-latest'
-
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+jobs:
+#  - job: build
+#    dependsOn: []
+#    pool:
+#      vmImage: 'Ubuntu 16.04'
+#    container: envoy-build-image
+#    steps:
+#      - checkout: self
+#        submodules: true
+#      - script: |
+#          bazel build //:envoy && \
+#          ./bazel-bin/envoy --version
+#        displayName: 'Build Envoy-OpenSSL'
+#  - job: test
+#    dependsOn: []
+#    pool:
+#      vmImage: 'Ubuntu 16.04'
+#    container: envoy-build-image
+#    steps:
+#      - checkout: self
+#        submodules: true
+#      - script: |
+#          bazel test //test/common/... && \
+#          bazel test //test/extensions/...
+#        displayName: 'Test Envoy-OpenSSL'
+#  - job: test-envoy
+#    dependsOn: []
+#    pool:
+#      vmImage: 'Ubuntu 16.04'
+#    container: envoy-build-image
+#    steps:
+#      - checkout: self
+#        submodules: true
+#      - script: bazel test @envoy//test/...
+#        displayName: 'Test Envoy'
+  - job: verify
+    dependsOn: []
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    container: envoy-build-image
+    steps:
+      - checkout: self
+        submodules: true
+      - script: |
+          bazel cquery "deps(//:envoy)" | grep @boringssl
+          if [[ $(bazel cquery "deps(//:envoy)" 2> /dev/null | grep @boringssl) ]]; then
+            echo "Envoy still depends on BoringSSL in boringssl=disabled mode!"
+            exit 1
+          else
+            echo "Envoy was built without BoringSSL dependencies!"
+          fi
+        displayName: 'Verify Envoy-OpenSSL'
