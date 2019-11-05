@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 
+#include "envoy/event/file_event.h"
 #include "envoy/network/connection.h"
 #include "envoy/network/transport_socket.h"
 #include "envoy/secret/secret_callbacks.h"
@@ -92,6 +93,7 @@ class SslSocket : public Network::TransportSocket,
 public:
   SslSocket(Envoy::Ssl::ContextSharedPtr ctx, InitialState state,
             const Network::TransportSocketOptionsSharedPtr& transport_socket_options);
+  ~SslSocket();
 
   // Network::TransportSocket
   void setTransportSocketCallbacks(Network::TransportSocketCallbacks& callbacks) override;
@@ -118,6 +120,7 @@ private:
   Network::PostIoAction doHandshake();
   void drainErrorQueue();
   void shutdownSsl();
+  void asyncCb();
   bool isThreadSafe() const {
     return callbacks_ != nullptr && callbacks_->connection().dispatcher().isThreadSafe();
   }
@@ -125,6 +128,7 @@ private:
   const Network::TransportSocketOptionsSharedPtr transport_socket_options_;
   Network::TransportSocketCallbacks* callbacks_{};
   ContextImplSharedPtr ctx_;
+  Event::FileEventPtr file_event_;
   uint64_t bytes_to_retry_{};
   std::string failure_reason_;
   SocketState state_;
