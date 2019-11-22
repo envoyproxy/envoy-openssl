@@ -39,6 +39,7 @@
 #include "absl/strings/str_replace.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "openssl/engine.h"
 #include "openssl/ssl.h"
 
 using testing::_;
@@ -56,6 +57,10 @@ namespace Extensions {
 namespace TransportSockets {
 namespace Tls {
 namespace {
+
+// Since OpenSSL engines don't have API for setting custom state
+// use global variables inside our fake RSA methods.
+Envoy::Network::ClientConnection* client_connection_ptr = nullptr;
 
 /**
  * A base class to hold the options for testUtil() and testUtilV2().
@@ -98,7 +103,7 @@ public:
                   bool expect_success, Network::Address::IpVersion version)
       : TestUtilOptionsBase(expect_success, version), client_ctx_yaml_(client_ctx_yaml),
         server_ctx_yaml_(server_ctx_yaml), expect_no_cert_(false), expect_no_cert_chain_(false),
-        expect_private_key_method_(false),
+        expect_private_key_method_(false), expect_premature_disconnect_(false),
         expected_server_close_event_(Network::ConnectionEvent::RemoteClose) {
     if (expect_success) {
       setExpectedServerStats("ssl.handshake");
@@ -126,6 +131,13 @@ public:
 
   TestUtilOptions& setExpectNoCertChain() {
     expect_no_cert_chain_ = true;
+    return *this;
+  }
+
+  bool expectPrematureDisconnect() const { return expect_premature_disconnect_; }
+
+  TestUtilOptions& setExpectPrematureDisconnect() {
+    expect_premature_disconnect_ = true;
     return *this;
   }
 
@@ -222,6 +234,7 @@ private:
   bool expect_no_cert_;
   bool expect_no_cert_chain_;
   bool expect_private_key_method_;
+  bool expect_premature_disconnect_;
   Network::ConnectionEvent expected_server_close_event_;
   std::string expected_digest_;
   std::vector<std::string> expected_local_uri_;
@@ -277,6 +290,7 @@ void testUtil(const TestUtilOptions& options) {
   Network::ClientConnectionPtr client_connection = dispatcher->createClientConnection(
       socket.localAddress(), Network::Address::InstanceConstSharedPtr(),
       client_ssl_socket_factory.createTransportSocket(nullptr), nullptr);
+  client_connection_ptr = client_connection.get();
   Network::ConnectionPtr server_connection;
   Network::MockConnectionCallbacks server_connection_callbacks;
   EXPECT_CALL(callbacks, onAccept_(_))
@@ -381,6 +395,12 @@ void testUtil(const TestUtilOptions& options) {
         .WillOnce(Invoke([&](Network::ConnectionEvent) -> void { connect_second_time(); }));
     EXPECT_CALL(client_connection_callbacks, onEvent(Network::ConnectionEvent::LocalClose));
     EXPECT_CALL(server_connection_callbacks, onEvent(Network::ConnectionEvent::LocalClose));
+  } else if (options.expectPrematureDisconnect()) {
+    EXPECT_CALL(client_connection_callbacks, onEvent(Network::ConnectionEvent::LocalClose))
+        .WillOnce(Invoke([&](Network::ConnectionEvent) -> void {
+          server_connection->close(Network::ConnectionCloseType::NoFlush);
+        }));
+    EXPECT_CALL(server_connection_callbacks, onEvent(Network::ConnectionEvent::LocalClose));
   } else {
     EXPECT_CALL(client_connection_callbacks, onEvent(Network::ConnectionEvent::RemoteClose))
         .WillOnce(Invoke([&](Network::ConnectionEvent) -> void { close_second_time(); }));
@@ -388,7 +408,8 @@ void testUtil(const TestUtilOptions& options) {
         .WillOnce(Invoke([&](Network::ConnectionEvent) -> void { close_second_time(); }));
   }
 
-  dispatcher->run(Event::Dispatcher::RunType::Block);
+  dispatcher->run(options.expectPrematureDisconnect() ? Event::Dispatcher::RunType::NonBlock
+                                                      : Event::Dispatcher::RunType::Block);
 
   if (!options.expectedServerStats().empty()) {
     EXPECT_EQ(1UL, server_stats_store.counter(options.expectedServerStats()).value());
@@ -560,8 +581,8 @@ const std::string testUtilV2(const TestUtilOptionsV2& options) {
     SSL* client_ssl_socket = ssl_socket->rawSslForTest();
     SSL_CTX* client_ssl_context = SSL_get_SSL_CTX(client_ssl_socket);
     SSL_SESSION* client_ssl_session =
-      Envoy::Extensions::TransportSockets::Tls::ssl_session_from_bytes(
-        client_ssl_socket, client_ssl_context, options.clientSession());
+        Envoy::Extensions::TransportSockets::Tls::ssl_session_from_bytes(
+            client_ssl_socket, client_ssl_context, options.clientSession());
     int rc = SSL_set_session(client_ssl_socket, client_ssl_session);
     ASSERT(rc == 1);
     SSL_SESSION_free(client_ssl_session);
@@ -637,7 +658,8 @@ const std::string testUtilV2(const TestUtilOptionsV2& options) {
       */
       uint8_t* session_data;
       size_t session_len;
-      int rc = Envoy::Extensions::TransportSockets::Tls::ssl_session_to_bytes(client_ssl_session, &session_data, &session_len);
+      int rc = Envoy::Extensions::TransportSockets::Tls::ssl_session_to_bytes(
+          client_ssl_session, &session_data, &session_len);
       ASSERT(rc == 1);
       new_session = std::string(reinterpret_cast<char*>(session_data), session_len);
       OPENSSL_free(session_data);
@@ -4146,20 +4168,141 @@ TEST_P(SslReadBufferLimitTest, SmallReadsIntoSameSlice) {
 }
 
 /*
-// Test asynchronous signing (ECDHE) using a private key provider.
-TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignSuccess) {
+ * Fake engine implementaion.
+ * This is a partial copy of OpenSSL's dasync engine.
+ */
+
+const char* fake_engine_id = "feng";
+const char* fake_engine_name = "Fake engine";
+
+void waitCleanup(ASYNC_WAIT_CTX* /* ctx */, const void* /* key */, OSSL_ASYNC_FD readfd,
+                 void* pvwritefd) {
+  OSSL_ASYNC_FD* pwritefd = static_cast<OSSL_ASYNC_FD*>(pvwritefd);
+  close(readfd);
+  close(*pwritefd);
+  OPENSSL_free(pwritefd);
+}
+
+void fakePauseJob() {
+  ASYNC_JOB* job;
+  ASYNC_WAIT_CTX* waitctx;
+  OSSL_ASYNC_FD pipefds[2] = {0, 0};
+  OSSL_ASYNC_FD* writefd;
+  char buf = 'X';
+
+  if ((job = ASYNC_get_current_job()) == NULL)
+    return;
+
+  waitctx = ASYNC_get_wait_ctx(job);
+
+  if (ASYNC_WAIT_CTX_get_fd(waitctx, fake_engine_id, &pipefds[0], (void**)&writefd)) {
+    pipefds[1] = *writefd;
+  } else {
+    writefd = static_cast<OSSL_ASYNC_FD*>(OPENSSL_malloc(sizeof(*writefd)));
+    if (writefd == NULL)
+      return;
+    if (pipe(pipefds) != 0) {
+      OPENSSL_free(writefd);
+      return;
+    }
+    *writefd = pipefds[1];
+
+    if (!ASYNC_WAIT_CTX_set_wait_fd(waitctx, fake_engine_id, pipefds[0], writefd, waitCleanup)) {
+      waitCleanup(waitctx, fake_engine_id, pipefds[0], writefd);
+      return;
+    }
+  }
+  /*
+   * In this fake async engine we are cheating. We signal that the job
+   * is complete by waking it before the call to ASYNC_pause_job(). A real
+   * async engine would only wake when the job was actually complete
+   */
+  if (write(pipefds[1], &buf, 1) < 0)
+    return;
+
+  /* Ignore errors - we carry on anyway */
+  ASYNC_pause_job();
+
+  /* Clear the wake signal */
+  if (read(pipefds[0], &buf, 1) < 0)
+    return;
+}
+
+/*
+ * Fake RSA implementation
+ */
+
+int fakePubEnc(int flen, const unsigned char* from, unsigned char* to, RSA* rsa, int padding) {
+  fakePauseJob();
+  return RSA_meth_get_pub_enc(RSA_PKCS1_OpenSSL())(flen, from, to, rsa, padding);
+}
+
+int fakePubDec(int flen, const unsigned char* from, unsigned char* to, RSA* rsa, int padding) {
+  fakePauseJob();
+  return RSA_meth_get_pub_dec(RSA_PKCS1_OpenSSL())(flen, from, to, rsa, padding);
+}
+
+bool isPrematureDisconnect = false;
+int fakeRsaPrivEnc(int flen, const unsigned char* from, unsigned char* to, RSA* rsa, int padding) {
+  fakePauseJob();
+  if (isPrematureDisconnect) {
+    client_connection_ptr->close(Network::ConnectionCloseType::NoFlush);
+    isPrematureDisconnect = false;
+  }
+  return RSA_meth_get_priv_enc(RSA_PKCS1_OpenSSL())(flen, from, to, rsa, padding);
+}
+
+int fakeRsaPrivDec(int flen, const unsigned char* from, unsigned char* to, RSA* rsa, int padding) {
+  fakePauseJob();
+  return RSA_meth_get_priv_dec(RSA_PKCS1_OpenSSL())(flen, from, to, rsa, padding);
+}
+
+bool failRsaModExp = false;
+int fakeRsaModExp(BIGNUM* r0, const BIGNUM* I, RSA* rsa, BN_CTX* ctx) {
+  fakePauseJob();
+
+  if (failRsaModExp) {
+    failRsaModExp = false;
+    return 0;
+  }
+
+  return RSA_meth_get_mod_exp(RSA_PKCS1_OpenSSL())(r0, I, rsa, ctx);
+}
+
+int fakeRsaInit(RSA* rsa) { return RSA_meth_get_init(RSA_PKCS1_OpenSSL())(rsa); }
+
+int fakeRsaFinish(RSA* rsa) { return RSA_meth_get_finish(RSA_PKCS1_OpenSSL())(rsa); }
+
+ENGINE* newFakeAsyncEngine(RSA_METHOD** rsaMethod) {
+  ENGINE* e = ENGINE_new();
+  if (e == nullptr) {
+    return nullptr;
+  }
+  if ((*rsaMethod = RSA_meth_new("Fake Async RSA method", 0)) == nullptr ||
+      RSA_meth_set_pub_enc(*rsaMethod, fakePubEnc) == 0 ||
+      RSA_meth_set_pub_dec(*rsaMethod, fakePubDec) == 0 ||
+      RSA_meth_set_priv_enc(*rsaMethod, fakeRsaPrivEnc) == 0 ||
+      RSA_meth_set_priv_dec(*rsaMethod, fakeRsaPrivDec) == 0 ||
+      RSA_meth_set_mod_exp(*rsaMethod, fakeRsaModExp) == 0 ||
+      RSA_meth_set_bn_mod_exp(*rsaMethod, BN_mod_exp_mont) == 0 ||
+      RSA_meth_set_init(*rsaMethod, fakeRsaInit) == 0 ||
+      RSA_meth_set_finish(*rsaMethod, fakeRsaFinish) == 0 || !ENGINE_set_id(e, fake_engine_id) ||
+      !ENGINE_set_name(e, fake_engine_name) || !ENGINE_set_RSA(e, *rsaMethod)) {
+    printf("failed to create fake RSA method\n");
+  }
+  return e;
+}
+
+// Test signing with an asynchronous engine.
+TEST_P(SslSocketTest, AsyncRSASuccess) {
+  RSA_METHOD* fakeRsaMethod = nullptr;
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
       certificate_chain:
         filename: "{{ test_tmpdir }}/unittestcert.pem"
-      private_key_provider:
-        provider_name: test
-        config:
-          private_key_file: "{{ test_tmpdir }}/unittestkey.pem"
-          expected_operation: sign
-          sync_mode: false
-          mode: rsa
+      private_key:
+        filename: "{{ test_tmpdir }}/unittestkey.pem"
     validation_context:
       trusted_ca:
         filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/ca_cert.pem"
@@ -4168,16 +4311,92 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignSuccess) {
 )EOF";
   const std::string successful_client_ctx_yaml = R"EOF(
   common_tls_context:
-    tls_params:
-      cipher_suites:
-      - ECDHE-RSA-AES128-GCM-SHA256
 )EOF";
-
+  ENGINE* engine = newFakeAsyncEngine(&fakeRsaMethod);
+  ASSERT_FALSE(engine == nullptr);
+  ASSERT_FALSE(fakeRsaMethod == nullptr);
+  ASSERT_TRUE(ENGINE_init(engine));
+  ASSERT_TRUE(ENGINE_set_default_RSA(engine));
   TestUtilOptions successful_test_options(successful_client_ctx_yaml, server_ctx_yaml, true,
                                           GetParam());
-  testUtil(successful_test_options.setPrivateKeyMethodExpected(true));
+  testUtil(successful_test_options);
+  ENGINE_unregister_RSA(engine);
+  ASSERT_TRUE(ENGINE_finish(engine));
+  ASSERT_TRUE(ENGINE_free(engine));
+  RSA_meth_free(fakeRsaMethod);
 }
 
+// Test we handle async handshake errors gracefully in SslSocket::asyncCb().
+TEST_P(SslSocketTest, AsyncIncompleteHandshake) {
+  RSA_METHOD* fakeRsaMethod = nullptr;
+  const std::string server_ctx_yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_tmpdir }}/unittestcert.pem"
+      private_key:
+        filename: "{{ test_tmpdir }}/unittestkey.pem"
+    validation_context:
+      trusted_ca:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/ca_cert.pem"
+      crl:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/ca_cert.crl"
+)EOF";
+  const std::string successful_client_ctx_yaml = R"EOF(
+  common_tls_context:
+)EOF";
+  ENGINE* engine = newFakeAsyncEngine(&fakeRsaMethod);
+  ASSERT_FALSE(engine == nullptr);
+  ASSERT_FALSE(fakeRsaMethod == nullptr);
+  ASSERT_TRUE(ENGINE_init(engine));
+  ASSERT_TRUE(ENGINE_set_default_RSA(engine));
+  TestUtilOptions successful_test_options(successful_client_ctx_yaml, server_ctx_yaml, false,
+                                          GetParam());
+  failRsaModExp = true;
+  testUtil(successful_test_options.setExpectedServerCloseEvent(Network::ConnectionEvent::LocalClose)
+               .setExpectedServerStats("ssl.fail_async_handshake_error"));
+  ENGINE_unregister_RSA(engine);
+  ASSERT_TRUE(ENGINE_finish(engine));
+  ASSERT_TRUE(ENGINE_free(engine));
+  RSA_meth_free(fakeRsaMethod);
+}
+
+// Test we don't free struct SSL while it's still held by the async engine.
+TEST_P(SslSocketTest, AsyncPrematureDisconnect) {
+  RSA_METHOD* fakeRsaMethod = nullptr;
+  const std::string server_ctx_yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_tmpdir }}/unittestcert.pem"
+      private_key:
+        filename: "{{ test_tmpdir }}/unittestkey.pem"
+    validation_context:
+      trusted_ca:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/ca_cert.pem"
+      crl:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/ca_cert.crl"
+)EOF";
+  const std::string successful_client_ctx_yaml = R"EOF(
+  common_tls_context:
+)EOF";
+  ENGINE* engine = newFakeAsyncEngine(&fakeRsaMethod);
+  ASSERT_FALSE(engine == nullptr);
+  ASSERT_FALSE(fakeRsaMethod == nullptr);
+  ASSERT_TRUE(ENGINE_init(engine));
+  ASSERT_TRUE(ENGINE_set_default_RSA(engine));
+  TestUtilOptions successful_test_options(successful_client_ctx_yaml, server_ctx_yaml, false,
+                                          GetParam());
+  isPrematureDisconnect = true;
+  testUtil(successful_test_options.setExpectPrematureDisconnect().setExpectedServerStats(
+      "ssl.fail_async_premature_disconnect"));
+  ENGINE_unregister_RSA(engine);
+  ASSERT_TRUE(ENGINE_finish(engine));
+  ASSERT_TRUE(ENGINE_free(engine));
+  RSA_meth_free(fakeRsaMethod);
+}
+
+/*
 // Test asynchronous decryption (RSA).
 TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncDecryptSuccess) {
   const std::string server_ctx_yaml = R"EOF(

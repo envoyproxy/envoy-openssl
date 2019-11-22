@@ -62,13 +62,6 @@ SslSocket::SslSocket(Envoy::Ssl::ContextSharedPtr ctx, InitialState state,
   SSL_set_mode(ssl_, SSL_MODE_ASYNC);
 }
 
-SslSocket::~SslSocket() {
-  // If we let the SSL socket be destroyed while there is a pending async SSL operation,
-  // it seems that the callback handler will use already freed memory.
-  while (SSL_waiting_for_async(ssl_))
-    ;
-}
-
 void SslSocket::setTransportSocketCallbacks(Network::TransportSocketCallbacks& callbacks) {
   ASSERT(!callbacks_);
   callbacks_ = &callbacks;
@@ -186,10 +179,6 @@ PostIoAction SslSocket::doHandshake() {
   int rc = SSL_do_handshake(ssl_);
   if (rc == 1) {
     ENVOY_CONN_LOG(debug, "handshake complete", callbacks_->connection());
-    if (state_ == SocketState::HandshakeInProgress) {
-      // No need to disable if no async engine in use.
-      file_event_->setEnabled(0);
-    }
     state_ = SocketState::HandshakeComplete;
     ctx_->logHandshake(ssl_);
     callbacks_->raiseEvent(Network::ConnectionEvent::Connected);
@@ -347,6 +336,13 @@ void SslSocket::onConnected() { ASSERT(state_ == SocketState::PreHandshake); }
 
 Ssl::ConnectionInfoConstSharedPtr SslSocket::ssl() const { return info_; }
 
+// SslHolder defers SSL_free() calls by keeping a reference to SslSocketInfo until there's no
+// pending async job and it's safe to delete it.
+struct SslHolder {
+  Ssl::ConnectionInfoConstSharedPtr info_;
+  Event::FileEventPtr file_event_;
+};
+
 void SslSocket::shutdownSsl() {
   ASSERT(state_ != SocketState::PreHandshake);
   if (state_ != SocketState::ShutdownSent &&
@@ -355,20 +351,61 @@ void SslSocket::shutdownSsl() {
     ENVOY_CONN_LOG(debug, "SSL shutdown: rc={}", callbacks_->connection(), rc);
     drainErrorQueue();
     state_ = SocketState::ShutdownSent;
+
+    // If we let the SSL socket be destroyed while there is a pending async SSL operation
+    // then the callback handler will use already freed memory. Hence defer its deleting.
+    if (SSL_waiting_for_async(ssl_)) {
+      OSSL_ASYNC_FD* fds;
+      size_t numfds;
+
+      int rc = SSL_get_all_async_fds(ssl_, NULL, &numfds);
+      if (rc == 0) {
+        return;
+      }
+
+      if (numfds != 1) {
+        ENVOY_LOG(error, "Only one async OpenSSL engine is supported currently");
+        return;
+      }
+
+      fds = static_cast<OSSL_ASYNC_FD*>(malloc(numfds * sizeof(OSSL_ASYNC_FD)));
+      if (fds == NULL) {
+        return;
+      }
+
+      rc = SSL_get_all_async_fds(ssl_, fds, &numfds);
+      if (rc == 0) {
+        free(fds);
+        return;
+      }
+
+      SslStats& stats = ctx_->stats();
+      SslHolder* holder = new SslHolder;
+      holder->info_ = info_;
+      holder->file_event_ = callbacks_->connection().dispatcher().createFileEvent(
+          fds[0],
+          [holder, &stats](uint32_t /* events */) -> void {
+            stats.fail_async_premature_disconnect_.inc();
+            delete holder;
+          },
+          Event::FileTriggerType::Edge, Event::FileReadyType::Read);
+      free(fds);
+      ENVOY_CONN_LOG(info, "Postponed deleting SSL", callbacks_->connection());
+    }
   }
 }
 
 void SslSocket::asyncCb() {
   ENVOY_CONN_LOG(debug, "SSL async done!", callbacks_->connection());
 
+  ASSERT(state_ != SocketState::HandshakeComplete);
   // We lose the return value here, so might consider propagating it with an event
   // in case we run into "Close" result from the handshake handler.
-  if (state_ != SocketState::HandshakeComplete) {
-    PostIoAction action = doHandshake();
-    if (action == PostIoAction::Close) {
-      ENVOY_CONN_LOG(debug, "async handshake completion error", callbacks_->connection());
-      callbacks_->connection().close(Network::ConnectionCloseType::FlushWrite);
-    }
+  PostIoAction action = doHandshake();
+  if (action == PostIoAction::Close) {
+    ENVOY_CONN_LOG(debug, "async handshake completion error", callbacks_->connection());
+    ctx_->stats().fail_async_handshake_error_.inc();
+    callbacks_->connection().close(Network::ConnectionCloseType::FlushWrite);
   }
 }
 
@@ -451,7 +488,6 @@ const std::string& SslSocketInfo::urlEncodedPemEncodedPeerCertificateChain() con
     return cached_url_encoded_pem_encoded_peer_cert_chain_;
   }
 
-  //STACK_OF(X509)* cert_chain = SSL_get_peer_full_cert_chain(ssl_.get());
   STACK_OF(X509)* cert_chain = SSL_get_peer_cert_chain(ssl_.get());
   if (cert_chain == nullptr) {
     ASSERT(cached_url_encoded_pem_encoded_peer_cert_chain_.empty());

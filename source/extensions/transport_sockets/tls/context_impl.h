@@ -39,6 +39,8 @@ namespace Tls {
   COUNTER(handshake)                                                                               \
   COUNTER(session_reused)                                                                          \
   COUNTER(no_certificate)                                                                          \
+  COUNTER(fail_async_handshake_error)                                                              \
+  COUNTER(fail_async_premature_disconnect)                                                         \
   COUNTER(fail_verify_no_cert)                                                                     \
   COUNTER(fail_verify_error)                                                                       \
   COUNTER(fail_verify_san)                                                                         \
