@@ -37,6 +37,7 @@ envoy_cc_library(
         ":context_config_lib",
         ":context_lib",
         ":utility_lib",
+        "@envoy//include/envoy/event:dispatcher_interface",
         "@envoy//include/envoy/network:connection_interface",
         "@envoy//include/envoy/network:transport_socket_interface",
         "@envoy//include/envoy/stats:stats_macros",
