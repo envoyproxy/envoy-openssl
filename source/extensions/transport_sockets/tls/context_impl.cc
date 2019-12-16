@@ -25,6 +25,7 @@
 #include "openssl/evp.h"
 #include "openssl/hmac.h"
 #include "openssl/rand.h"
+#include "openssl/tls1.h"
 #include "openssl/x509v3.h"
 
 #define SSL_TICKET_KEY_NAME_LEN 16
@@ -384,7 +385,11 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
   stat_name_set_->rememberBuiltins({"ecdsa_secp256r1_sha256", "rsa_pss_rsae_sha256"});
 
   // Versions
+#ifdef TLS1_3_VERSION
   stat_name_set_->rememberBuiltins({"TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"});
+#else // OpenSSL 1.1.0
+  stat_name_set_->rememberBuiltins({"TLSv1", "TLSv1.1", "TLSv1.2"});
+#endif
 }
 
 int ServerContextImpl::alpnSelectCallback(const unsigned char** out, unsigned char* outlen,
@@ -517,7 +522,11 @@ void ContextImpl::logHandshake(SSL* ssl) const {
   incCounter(ssl_ciphers_, SSL_get_cipher_name(ssl), unknown_ssl_cipher_);
   incCounter(ssl_versions_, SSL_get_version(ssl), unknown_ssl_version_);
 
+#ifdef TLSEXT_TYPE_supported_groups
   int group = SSL_get_shared_group(ssl, 0);
+#else // OpenSSL 1.1.0
+  int group = SSL_get_shared_curve(ssl, 0);
+#endif
   if (group > 0) {
     switch (group) {
     case NID_X25519: {
@@ -1085,7 +1094,7 @@ int ServerContextImpl::sessionTicketProcess(SSL*, uint8_t* key_name, uint8_t* iv
 
 bool ServerContextImpl::isClientEcdsaCapable(SSL* ssl) {
   int psignhash;
-  if (TLS1_get_version(ssl) >= TLS1_2_VERSION && tls_max_version_ == TLS1_3_VERSION) {
+  if (TLS1_get_version(ssl) >= TLS1_2_VERSION) {
     int num_sigalgs = SSL_get_sigalgs(ssl, 0, nullptr, nullptr, nullptr, nullptr, nullptr);
     for (int i = 0; i < num_sigalgs; i++) {
       SSL_get_sigalgs(ssl, i, nullptr, nullptr, &psignhash, nullptr, nullptr);

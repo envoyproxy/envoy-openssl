@@ -2442,7 +2442,9 @@ void testTicketSessionResumption(const std::string& server_ctx_yaml1,
         const SslSocketInfo* ssl_socket =
             dynamic_cast<const SslSocketInfo*>(client_connection->ssl().get());
         ssl_session = SSL_get1_session(ssl_socket->rawSslForTest());
+#ifdef TLS1_3_VERSION
         EXPECT_TRUE(SSL_SESSION_is_resumable(ssl_session));
+#endif
         client_connection->close(Network::ConnectionCloseType::NoFlush);
         server_connection->close(Network::ConnectionCloseType::NoFlush);
         dispatcher->exit();
@@ -2865,7 +2867,9 @@ TEST_P(SslSocketTest, ClientAuthCrossListenerSessionResumption) {
         const SslSocketInfo* ssl_socket =
             dynamic_cast<const SslSocketInfo*>(client_connection->ssl().get());
         ssl_session = SSL_get1_session(ssl_socket->rawSslForTest());
+#ifdef TLS1_3_VERSION
         EXPECT_TRUE(SSL_SESSION_is_resumable(ssl_session));
+#endif
         server_connection->close(Network::ConnectionCloseType::NoFlush);
         client_connection->close(Network::ConnectionCloseType::NoFlush);
         dispatcher_->exit();
@@ -3117,6 +3121,7 @@ TEST_P(SslSocketTest, ClientSessionResumptionEnabledTls12) {
   testClientSessionResumption(server_ctx_yaml, client_ctx_yaml, true, GetParam());
 }
 
+#ifdef TLS1_3_VERSION
 // Make sure client session resumption is not happening with TLS 1.3 when it's disabled.
 TEST_P(SslSocketTest, ClientSessionResumptionDisabledTls13) {
   const std::string server_ctx_yaml = R"EOF(
@@ -3166,6 +3171,7 @@ TEST_P(SslSocketTest, ClientSessionResumptionEnabledTls13) {
 
   testClientSessionResumption(server_ctx_yaml, client_ctx_yaml, true, GetParam());
 }
+#endif
 
 TEST_P(SslSocketTest, SslError) {
   const std::string server_ctx_yaml = R"EOF(
@@ -3284,6 +3290,7 @@ TEST_P(SslSocketTest, ProtocolVersions) {
   client_params->clear_tls_minimum_protocol_version();
   client_params->clear_tls_maximum_protocol_version();
 
+#ifdef TLS1_3_VERSION
   // Connection using TLSv1.3 (client) and defaults (server) succeeds (non-FIPS) or fails (FIPS).
   client_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_3);
   client_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_3);
@@ -3332,6 +3339,43 @@ TEST_P(SslSocketTest, ProtocolVersions) {
   client_params->clear_tls_maximum_protocol_version();
   server_params->clear_tls_minimum_protocol_version();
   server_params->clear_tls_maximum_protocol_version();
+#else // OpenSSL 1.1.0
+  // Connection using TLSv1.2 (client) and defaults (server) succeeds.
+  client_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  client_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  testUtilV2(tls_v1_2_test_options);
+  client_params->clear_tls_minimum_protocol_version();
+  client_params->clear_tls_maximum_protocol_version();
+
+  // Connection using TLSv1.0-1.2 (client) and defaults (server) succeeds.
+  client_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
+  client_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  testUtilV2(tls_v1_2_test_options);
+  client_params->clear_tls_minimum_protocol_version();
+  client_params->clear_tls_maximum_protocol_version();
+
+  // Connection using TLSv1.0 (client) and TLSv1.0-1.2 (server) succeeds.
+  client_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
+  client_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
+  server_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
+  server_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  testUtilV2(tls_v1_test_options);
+  client_params->clear_tls_minimum_protocol_version();
+  client_params->clear_tls_maximum_protocol_version();
+  server_params->clear_tls_minimum_protocol_version();
+  server_params->clear_tls_maximum_protocol_version();
+
+  // Connection using TLSv1.2 (client) and TLSv1.0-1.2 (server) succeeds.
+  client_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  client_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  server_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
+  server_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  testUtilV2(tls_v1_2_test_options);
+  client_params->clear_tls_minimum_protocol_version();
+  client_params->clear_tls_maximum_protocol_version();
+  server_params->clear_tls_minimum_protocol_version();
+  server_params->clear_tls_maximum_protocol_version();
+#endif
 
   // Connection using defaults (client) and TLSv1.0 (server) succeeds.
   server_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
@@ -3354,6 +3398,7 @@ TEST_P(SslSocketTest, ProtocolVersions) {
   server_params->clear_tls_minimum_protocol_version();
   server_params->clear_tls_maximum_protocol_version();
 
+#ifdef TLS1_3_VERSION
   // Connection using defaults (client) and TLSv1.3 (server) fails.
   server_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_3);
   server_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_3);
@@ -3389,6 +3434,43 @@ TEST_P(SslSocketTest, ProtocolVersions) {
   client_params->clear_tls_maximum_protocol_version();
   server_params->clear_tls_minimum_protocol_version();
   server_params->clear_tls_maximum_protocol_version();
+#else // OpenSSL 1.1.0
+  // Connection using defaults (client) and TLSv1.2 (server) succeeds.
+  server_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  server_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  testUtilV2(tls_v1_2_test_options);
+  server_params->clear_tls_minimum_protocol_version();
+  server_params->clear_tls_maximum_protocol_version();
+
+  // Connection using defaults (client) and TLSv1.0-1.2 (server) succeeds.
+  server_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
+  server_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  testUtilV2(tls_v1_2_test_options);
+  server_params->clear_tls_minimum_protocol_version();
+  server_params->clear_tls_maximum_protocol_version();
+
+  // Connection using TLSv1.0-TLSv1.2 (client) and TLSv1.0 (server) succeeds.
+  client_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
+  client_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  server_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
+  server_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
+  testUtilV2(tls_v1_test_options);
+  client_params->clear_tls_minimum_protocol_version();
+  client_params->clear_tls_maximum_protocol_version();
+  server_params->clear_tls_minimum_protocol_version();
+  server_params->clear_tls_maximum_protocol_version();
+
+  // Connection using TLSv1.0-TLSv1.2 (client) and TLSv1.3 (server) succeeds.
+  client_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_0);
+  client_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  server_params->set_tls_minimum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  server_params->set_tls_maximum_protocol_version(envoy::api::v2::auth::TlsParameters::TLSv1_2);
+  testUtilV2(tls_v1_2_test_options);
+  client_params->clear_tls_minimum_protocol_version();
+  client_params->clear_tls_maximum_protocol_version();
+  server_params->clear_tls_minimum_protocol_version();
+  server_params->clear_tls_maximum_protocol_version();
+#endif
 }
 
 TEST_P(SslSocketTest, ALPN) {

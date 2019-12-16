@@ -178,7 +178,9 @@ class SslCertficateIntegrationTest
       public SslIntegrationTestBase {
 public:
   SslCertficateIntegrationTest() : SslIntegrationTestBase(std::get<0>(GetParam())) {
+#ifdef TLS1_3_VERSION
     server_tlsv1_3_ = true;
+#endif
   }
 
   Network::ClientConnectionPtr
@@ -231,8 +233,12 @@ public:
 INSTANTIATE_TEST_SUITE_P(
     IpVersionsClientVersions, SslCertficateIntegrationTest,
     testing::Combine(testing::ValuesIn(TestEnvironment::getIpVersionsForTest()),
+#ifdef TLS1_3_VERSION
                      testing::Values(envoy::api::v2::auth::TlsParameters::TLSv1_2,
                                      envoy::api::v2::auth::TlsParameters::TLSv1_3)),
+#else // OpenSSL 1.1.0
+                     testing::Values(envoy::api::v2::auth::TlsParameters::TLSv1_2)),
+#endif
     SslCertficateIntegrationTest::ipClientVersionTestParamsToString);
 
 // Server with an RSA certificate and a client with RSA/ECDSA cipher suites works.

@@ -264,8 +264,10 @@ unsigned ContextConfigImpl::tlsVersionFromProto(
     return TLS1_1_VERSION;
   case envoy::api::v2::auth::TlsParameters::TLSv1_2:
     return TLS1_2_VERSION;
+#ifdef TLS1_3_VERSION
   case envoy::api::v2::auth::TlsParameters::TLSv1_3:
     return TLS1_3_VERSION;
+#endif
   default:
     NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
   }
@@ -315,7 +317,11 @@ ClientContextConfigImpl::ClientContextConfigImpl(
 }
 
 const unsigned ServerContextConfigImpl::DEFAULT_MIN_VERSION = TLS1_VERSION;
+#ifdef TLS1_3_VERSION
 const unsigned ServerContextConfigImpl::DEFAULT_MAX_VERSION = TLS1_3_VERSION;
+#else // OpenSSL 1.1.0
+const unsigned ServerContextConfigImpl::DEFAULT_MAX_VERSION = TLS1_2_VERSION;
+#endif
 
 const std::string ServerContextConfigImpl::DEFAULT_CIPHER_SUITES =
     "[ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305]:"

@@ -72,7 +72,16 @@ const VerificationOutput UtilityImpl::verifySignature(absl::string_view hash, Cr
   }
 
   // Step 4: verify signature
+#ifdef TLS1_3_VERSION
   ok = EVP_DigestVerify(ctx, signature.data(), signature.size(), text.data(), text.size());
+#else // OpenSSL 1.1.0
+  ok = EVP_DigestVerifyUpdate(ctx, text.data(), text.size());
+  if (!ok) {
+    EVP_MD_CTX_free(ctx);
+    return {false, absl::StrCat("Failed to verify digest. Error code: ", ok)};
+  }
+  ok = EVP_DigestVerifyFinal(ctx, signature.data(), signature.size());
+#endif
 
   // Step 5: check result
   if (ok == 1) {
