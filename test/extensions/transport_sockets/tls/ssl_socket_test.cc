@@ -103,7 +103,7 @@ public:
                   bool expect_success, Network::Address::IpVersion version)
       : TestUtilOptionsBase(expect_success, version), client_ctx_yaml_(client_ctx_yaml),
         server_ctx_yaml_(server_ctx_yaml), expect_no_cert_(false), expect_no_cert_chain_(false),
-        expect_private_key_method_(false), expect_premature_disconnect_(false),
+        expect_premature_disconnect_(false),
         expected_server_close_event_(Network::ConnectionEvent::RemoteClose) {
     if (expect_success) {
       setExpectedServerStats("ssl.handshake");
@@ -233,7 +233,6 @@ private:
 
   bool expect_no_cert_;
   bool expect_no_cert_chain_;
-  bool expect_private_key_method_;
   bool expect_premature_disconnect_;
   Network::ConnectionEvent expected_server_close_event_;
   std::string expected_digest_;
@@ -4188,7 +4187,7 @@ void fakePauseJob() {
   ASYNC_JOB* job;
   ASYNC_WAIT_CTX* waitctx;
   OSSL_ASYNC_FD pipefds[2] = {0, 0};
-  OSSL_ASYNC_FD* writefd;
+  void* void_writefd;
   char buf = 'X';
 
   if ((job = ASYNC_get_current_job()) == NULL)
@@ -4196,10 +4195,10 @@ void fakePauseJob() {
 
   waitctx = ASYNC_get_wait_ctx(job);
 
-  if (ASYNC_WAIT_CTX_get_fd(waitctx, fake_engine_id, &pipefds[0], (void**)&writefd)) {
-    pipefds[1] = *writefd;
+  if (ASYNC_WAIT_CTX_get_fd(waitctx, fake_engine_id, &pipefds[0], &void_writefd)) {
+    pipefds[1] = *static_cast<OSSL_ASYNC_FD*>(void_writefd);
   } else {
-    writefd = static_cast<OSSL_ASYNC_FD*>(OPENSSL_malloc(sizeof(*writefd)));
+    OSSL_ASYNC_FD* writefd = static_cast<OSSL_ASYNC_FD*>(OPENSSL_malloc(sizeof(*writefd)));
     if (writefd == NULL)
       return;
     if (pipe(pipefds) != 0) {
