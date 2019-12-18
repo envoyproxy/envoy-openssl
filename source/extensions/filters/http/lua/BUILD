@@ -5,6 +5,7 @@ licenses(["notice"])  # Apache 2
 
 load(
     "@envoy//bazel:envoy_build_system.bzl",
+    "envoy_cc_extension",
     "envoy_cc_library",
     "envoy_package",
 )
@@ -47,16 +48,17 @@ envoy_cc_library(
     ],
 )
 
-envoy_cc_library(
+envoy_cc_extension(
     name = "config",
     repository = "@envoy",
     srcs = ["config.cc"],
     hdrs = ["config.h"],
+    security_posture = "robust_to_untrusted_downstream",
     deps = [
         ":lua_filter_lib",
         "@envoy//include/envoy/registry",
-        "@envoy//source/common/config:filter_json_lib",
         "@envoy//source/extensions/filters/http:well_known_names",
         "@envoy//source/extensions/filters/http/common:factory_base_lib",
+        "@envoy_api//envoy/config/filter/http/lua/v2:pkg_cc_proto",
     ],
 )

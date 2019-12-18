@@ -98,7 +98,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
       }
       throw EnvoyException(fmt::format("Failed to initialize cipher suites {}. The following "
                                        "ciphers were rejected when tried individually: {}",
-                                       config.cipherSuites(), StringUtil::join(bad_ciphers, ", ")));
+                                       config.cipherSuites(), absl::StrJoin(bad_ciphers, ", ")));
     }
 
     if (!SSL_CTX_set1_curves_list(ctx.ssl_ctx_.get(), config.ecdhCurves().c_str())) {
@@ -1046,7 +1046,7 @@ int ServerContextImpl::sessionTicketProcess(SSL*, uint8_t* key_name, uint8_t* iv
 
     // This RELEASE_ASSERT is logically a static_assert, but we can't actually get
     // EVP_CIPHER_key_length(cipher) at compile-time
-    RELEASE_ASSERT(key.aes_key_.size() == (unsigned) EVP_CIPHER_key_length(cipher), "");
+    RELEASE_ASSERT(key.aes_key_.size() == static_cast<unsigned>(EVP_CIPHER_key_length(cipher)), "");
     if (!EVP_EncryptInit_ex(ctx, cipher, nullptr, key.aes_key_.data(), iv)) {
       return -1;
     }
@@ -1067,7 +1067,7 @@ int ServerContextImpl::sessionTicketProcess(SSL*, uint8_t* key_name, uint8_t* iv
           return -1;
         }
 
-        RELEASE_ASSERT(key.aes_key_.size() == (unsigned) EVP_CIPHER_key_length(cipher), "");
+        RELEASE_ASSERT(key.aes_key_.size() == static_cast<unsigned>(EVP_CIPHER_key_length(cipher)), "");
         if (!EVP_DecryptInit_ex(ctx, cipher, nullptr, key.aes_key_.data(), iv)) {
           return -1;
         }
