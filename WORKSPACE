@@ -4,10 +4,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
       name = "openssl",
-      urls = ["https://github.com/openssl/openssl/archive/OpenSSL_1_1_1b.tar.gz"],
-      sha256 = "d6418b0e1e39ef058b630e248bbb3b04241d6fad57bdb86db0b338c2374bda80",
+      urls = ["https://github.com/openssl/openssl/archive/OpenSSL_1_1_1d.tar.gz"],
+      sha256 = "23011a5cc78e53d0dc98dfa608c51e72bcd350aa57df74c5d5574ba4ffb62e74",
       build_file = "@//:openssl.BUILD",
-      strip_prefix = "openssl-OpenSSL_1_1_1b",
+      strip_prefix = "openssl-OpenSSL_1_1_1d",
 )
 
 new_local_repository(

@@ -1,28 +1,6 @@
 licenses(["notice"])  # Apache 2
 
-cc_library(
-    name = "crypto",
-    srcs = [
-        "install/lib/libcrypto.a",
-    ],
-    hdrs = glob(["install/include/openssl/*.h"]),
-    includes = ["install/include"],
-    visibility = ["//visibility:public"],
-)
-
-cc_library(
-    name = "ssl",
-    srcs = [
-        "install/lib/libssl.a",
-    ],
-    visibility = ["//visibility:public"],
-    deps = [":crypto"],
-)
-
-genrule(
-    name = "build",
-    srcs = glob(["**"]),
-    outs = [
+openssl_headers = [
         "install/include/openssl/pkcs7.h",
         "install/include/openssl/cterr.h",
         "install/include/openssl/tls1.h",
@@ -127,6 +105,24 @@ genrule(
         "install/include/openssl/asn1t.h",
         "install/include/openssl/uierr.h",
         "install/include/openssl/rsaerr.h",
+]
+
+cc_library(
+    name = "ssl",
+    srcs = [
+        "install/lib/libssl.a",
+        "install/lib/libcrypto.a",
+    ] + openssl_headers,
+    hdrs = glob(["install/include/openssl/*.h"]),
+    includes = ["install/include"],
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "build",
+    srcs = glob(["**"]),
+    message = "Installing OpenSSL libraries and headers",
+    outs = [
         "install/lib/libssl.so.1.1",
         "install/lib/libcrypto.so",
         "install/lib/engines-1.1/afalg.so",
@@ -139,20 +135,18 @@ genrule(
         "install/lib/libcrypto.so.1.1",
         "install/lib/libssl.a",
         "install/lib/libcrypto.a",
-    ],
+    ] + openssl_headers,
     cmd = """
     ROOT=$$(dirname $(execpath NOTES.ANDROID))
     pushd $$ROOT
 
-    echo "Installing into $$(pwd)/install"
-    ./config --prefix=$$(pwd)/install 2>&1
+    ./config --prefix=$$(pwd)/install no-tests > /dev/null
     make -j$$(nproc) > /dev/null
     make install > /dev/null
 
     # Move compiled libraries to the expected destinations.
     popd
     INSTALL_ROOT=$$(dirname $$(dirname $$(dirname $(location install/lib/libssl.a))))
-    echo "Envoy install root $$INSTALL_ROOT and PWD is $$(pwd)"
     rm -rf $$INSTALL_ROOT/install
     mkdir -p $$INSTALL_ROOT/install
     mv $$ROOT/install $$INSTALL_ROOT/

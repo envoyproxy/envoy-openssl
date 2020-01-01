@@ -1,4 +1,4 @@
-import ./envoy/.bazelrc
+import %workspace%/envoy/.bazelrc
 
 build --copt="-DENVOY_SSL_VERSION=\"OpenSSL\""
 build --cxxopt=-Wno-error=old-style-cast
