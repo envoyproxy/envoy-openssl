@@ -1,18 +1,18 @@
-From b0e4badb4158934c8ec102dccc26adf3b478e6e5 Mon Sep 17 00:00:00 2001
+From e6c4e2327264ebe725ed4346a9f101087ae34fe2 Mon Sep 17 00:00:00 2001
 From: Venil Noronha <veniln@vmware.com>
 Date: Fri, 1 Nov 2019 10:10:10 -0700
 Subject: [PATCH] make compatible with openssl
 
 Signed-off-by: Venil Noronha <veniln@vmware.com>
 ---
- BUILD                 |  4 +++-
+ BUILD                 |  2 ++
  jwt_verify_lib/jwks.h |  4 ++++
  src/jwks.cc           | 20 ++++++++++++++++----
  src/verify.cc         | 13 +++++++++++--
- 4 files changed, 34 insertions(+), 7 deletions(-)
+ 4 files changed, 33 insertions(+), 6 deletions(-)
 
 diff --git a/BUILD b/BUILD
-index 60331dc..bd55255 100644
+index 96ba16c..43d1b4e 100644
 --- a/BUILD
 +++ b/BUILD
 @@ -27,6 +27,8 @@ cc_library(
@@ -25,12 +25,12 @@ index 60331dc..bd55255 100644
  )
  
 diff --git a/jwt_verify_lib/jwks.h b/jwt_verify_lib/jwks.h
-index 24a18b7..80676da 100644
+index 6094e2b..3a5c478 100644
 --- a/jwt_verify_lib/jwks.h
 +++ b/jwt_verify_lib/jwks.h
-@@ -22,6 +22,10 @@
- #include "openssl/ec.h"
+@@ -23,6 +23,10 @@
  #include "openssl/evp.h"
+ #include "openssl/pem.h"
  
 +#ifndef OPENSSL_IS_BORINGSSL
 +#include "boringssl_compat/bssl.h"
@@ -40,10 +40,10 @@ index 24a18b7..80676da 100644
  namespace jwt_verify {
  
 diff --git a/src/jwks.cc b/src/jwks.cc
-index 97b1ae8..9723c82 100644
+index e5d6c45..edf2caf 100644
 --- a/src/jwks.cc
 +++ b/src/jwks.cc
-@@ -27,6 +27,11 @@
+@@ -28,6 +28,11 @@
  #include "openssl/rsa.h"
  #include "openssl/sha.h"
  
@@ -55,7 +55,7 @@ index 97b1ae8..9723c82 100644
  namespace google {
  namespace jwt_verify {
  
-@@ -118,18 +123,25 @@ class EvpPkeyGetter : public WithStatus {
+@@ -124,18 +129,25 @@ class EvpPkeyGetter : public WithStatus {
    bssl::UniquePtr<RSA> createRsaFromJwk(const std::string& n,
                                          const std::string& e) {
      bssl::UniquePtr<RSA> rsa(RSA_new());
@@ -119,5 +119,5 @@ index 4d26c25..10fb175 100644
    }
  
 -- 
-2.14.3 (Apple Git-98)
+2.20.1
 
