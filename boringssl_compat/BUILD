@@ -17,7 +17,7 @@ envoy_cc_library(
     hdrs = [
         "cbs.h",
     ],
-    deps = ["@openssl//:ssl"],
+    deps = ["@boringssl//:ssl"],
 )
 
 envoy_cc_library(
@@ -29,5 +29,5 @@ envoy_cc_library(
     hdrs = [
         "bssl.h",
     ],
-    deps = ["@openssl//:ssl"],
+    deps = ["@boringssl//:ssl"],
 )
