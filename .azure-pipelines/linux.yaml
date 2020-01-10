@@ -9,18 +9,18 @@ trigger:
     - 'master'
 
 jobs:
-#  - job: build
-#    dependsOn: []
-#    pool:
-#      vmImage: 'Ubuntu 16.04'
-#    container: envoy-build-image
-#    steps:
-#      - checkout: self
-#        submodules: true
-#      - script: |
-#          bazel build //:envoy && \
-#          ./bazel-bin/envoy --version
-#        displayName: 'Build Envoy-OpenSSL'
+  - job: build
+    dependsOn: []
+    pool:
+      vmImage: 'Ubuntu 16.04'
+    container: envoy-build-image
+    steps:
+      - checkout: self
+        submodules: true
+      - script: |
+          bazel build --copt="-Wno-error" //:envoy && \
+          ./bazel-bin/envoy --version
+        displayName: 'Build Envoy-OpenSSL'
 #  - job: test
 #    dependsOn: []
 #    pool:
@@ -43,20 +43,3 @@ jobs:
 #        submodules: true
 #      - script: bazel test @envoy//test/...
 #        displayName: 'Test Envoy'
-  - job: verify
-    dependsOn: []
-    pool:
-      vmImage: 'Ubuntu 16.04'
-    container: envoy-build-image
-    steps:
-      - checkout: self
-        submodules: true
-      - script: |
-          bazel cquery "deps(//:envoy)" | grep @boringssl
-          if [[ $(bazel cquery "deps(//:envoy)" 2> /dev/null | grep @boringssl) ]]; then
-            echo "Envoy still depends on BoringSSL in boringssl=disabled mode!"
-            exit 1
-          else
-            echo "Envoy was built without BoringSSL dependencies!"
-          fi
-        displayName: 'Verify Envoy-OpenSSL'
