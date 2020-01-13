@@ -17,8 +17,9 @@ To build OpenSSL-enabled Envoy run the following command.
 $ bazel build //:envoy
 ```
 
-If you need OpenSSL dynamically linked to Envoy then re-map `@boringssl` to
-`@openssl_shared` by editing the [WORKSPACE](WORKSPACE) file.
+If you need OpenSSL dynamically linked to Envoy then edit the the
+[WORKSPACE](WORKSPACE) file, comment the line with `openssl_repository` function
+call and uncomment the one with `openssl_shared_repository`.
 
 ## Testing
 
