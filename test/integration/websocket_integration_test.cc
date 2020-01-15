@@ -2,7 +2,8 @@
 
 #include <string>
 
-#include "envoy/config/accesslog/v2/file.pb.h"
+#include "envoy/config/bootstrap/v3alpha/bootstrap.pb.h"
+#include "envoy/extensions/filters/network/http_connection_manager/v3alpha/http_connection_manager.pb.h"
 
 #include "common/http/header_map_impl.h"
 #include "common/protobuf/utility.h"
@@ -55,7 +56,7 @@ void WebsocketIntegrationTest::validateUpgradeRequestHeaders(
   if (proxied_request_headers.Scheme()) {
     ASSERT_EQ(proxied_request_headers.Scheme()->value().getStringView(), "http");
   } else {
-    proxied_request_headers.insertScheme().value().append("http", 4);
+    proxied_request_headers.setScheme("http");
   }
 
   commonValidate(proxied_request_headers, original_request_headers);
@@ -86,7 +87,7 @@ void WebsocketIntegrationTest::commonValidate(Http::HeaderMap& proxied_headers,
   // 0 byte content lengths may be stripped on the H2 path - ignore that as a difference by adding
   // it back to the proxied headers.
   if (original_headers.ContentLength() && proxied_headers.ContentLength() == nullptr) {
-    proxied_headers.insertContentLength().value(size_t(0));
+    proxied_headers.setContentLength(size_t(0));
   }
   // If no content length is specified, the HTTP1 codec will add a chunked encoding header.
   if (original_headers.ContentLength() == nullptr &&
@@ -100,7 +101,7 @@ void WebsocketIntegrationTest::commonValidate(Http::HeaderMap& proxied_headers,
       original_headers.Connection()->value() == "keep-alive, upgrade") {
     // The keep-alive is implicit for HTTP/1.1, so Envoy only sets the upgrade
     // header when converting from HTTP/1.1 to H2
-    proxied_headers.Connection()->value().setCopy("keep-alive, upgrade", 19);
+    proxied_headers.setConnection("keep-alive, upgrade");
   }
 }
 
@@ -109,24 +110,26 @@ INSTANTIATE_TEST_SUITE_P(Protocols, WebsocketIntegrationTest,
                          HttpProtocolIntegrationTest::protocolTestParamsToString);
 
 ConfigHelper::HttpModifierFunction setRouteUsingWebsocket() {
-  return
-      [](envoy::config::filter::network::http_connection_manager::v2::HttpConnectionManager& hcm) {
-        hcm.add_upgrade_configs()->set_upgrade_type("websocket");
-      };
+  return [](envoy::extensions::filters::network::http_connection_manager::v3alpha::
+                HttpConnectionManager& hcm) {
+    hcm.add_upgrade_configs()->set_upgrade_type("websocket");
+  };
 }
 
 void WebsocketIntegrationTest::initialize() {
   if (upstreamProtocol() != FakeHttpConnection::Type::HTTP1) {
     config_helper_.addConfigModifier(
-        [&](envoy::config::bootstrap::v2::Bootstrap& bootstrap) -> void {
+        [&](envoy::config::bootstrap::v3alpha::Bootstrap& bootstrap) -> void {
           auto* cluster = bootstrap.mutable_static_resources()->mutable_clusters(0);
           cluster->mutable_http2_protocol_options()->set_allow_connect(true);
         });
   }
   if (downstreamProtocol() != Http::CodecClient::Type::HTTP1) {
     config_helper_.addConfigModifier(
-        [&](envoy::config::filter::network::http_connection_manager::v2::HttpConnectionManager& hcm)
-            -> void { hcm.mutable_http2_protocol_options()->set_allow_connect(true); });
+        [&](envoy::extensions::filters::network::http_connection_manager::v3alpha::
+                HttpConnectionManager& hcm) -> void {
+          hcm.mutable_http2_protocol_options()->set_allow_connect(true);
+        });
   }
   HttpProtocolIntegrationTest::initialize();
 }
@@ -260,8 +263,8 @@ TEST_P(WebsocketIntegrationTest, EarlyData) {
 TEST_P(WebsocketIntegrationTest, WebSocketConnectionIdleTimeout) {
   config_helper_.addConfigModifier(setRouteUsingWebsocket());
   config_helper_.addConfigModifier(
-      [&](envoy::config::filter::network::http_connection_manager::v2::HttpConnectionManager& hcm)
-          -> void {
+      [&](envoy::extensions::filters::network::http_connection_manager::v3alpha::
+              HttpConnectionManager& hcm) -> void {
         auto* route_config = hcm.mutable_route_config();
         auto* virtual_host = route_config->mutable_virtual_hosts(0);
         auto* route = virtual_host->mutable_routes(0)->mutable_route();
@@ -283,8 +286,8 @@ TEST_P(WebsocketIntegrationTest, WebSocketConnectionIdleTimeout) {
 // with websocket upgrades
 TEST_P(WebsocketIntegrationTest, NonWebsocketUpgrade) {
   config_helper_.addConfigModifier(
-      [&](envoy::config::filter::network::http_connection_manager::v2::HttpConnectionManager& hcm)
-          -> void {
+      [&](envoy::extensions::filters::network::http_connection_manager::v3alpha::
+              HttpConnectionManager& hcm) -> void {
         auto* foo_upgrade = hcm.add_upgrade_configs();
         foo_upgrade->set_upgrade_type("foo");
       });
@@ -311,8 +314,8 @@ TEST_P(WebsocketIntegrationTest, NonWebsocketUpgrade) {
 
 TEST_P(WebsocketIntegrationTest, RouteSpecificUpgrade) {
   config_helper_.addConfigModifier(
-      [&](envoy::config::filter::network::http_connection_manager::v2::HttpConnectionManager& hcm)
-          -> void {
+      [&](envoy::extensions::filters::network::http_connection_manager::v3alpha::
+              HttpConnectionManager& hcm) -> void {
         auto* foo_upgrade = hcm.add_upgrade_configs();
         foo_upgrade->set_upgrade_type("foo");
         foo_upgrade->mutable_enabled()->set_value(false);
@@ -348,14 +351,12 @@ TEST_P(WebsocketIntegrationTest, WebsocketCustomFilterChain) {
 
   // Add a second upgrade type which goes directly to the router filter.
   config_helper_.addConfigModifier(
-      [&](envoy::config::filter::network::http_connection_manager::v2::HttpConnectionManager& hcm)
-          -> void {
+      [&](envoy::extensions::filters::network::http_connection_manager::v3alpha::
+              HttpConnectionManager& hcm) -> void {
         auto* foo_upgrade = hcm.add_upgrade_configs();
         foo_upgrade->set_upgrade_type("foo");
         auto* filter_list_back = foo_upgrade->add_filters();
-        const std::string json =
-            Json::Factory::loadFromYamlString("name: envoy.router")->asJsonString();
-        TestUtility::loadFromJson(json, *filter_list_back);
+        TestUtility::loadFromYaml("name: envoy.router", *filter_list_back);
       });
   initialize();
 

@@ -18,8 +18,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -34,8 +34,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -51,8 +51,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
         "@envoy//source/common/stats:symbol_table_lib",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -66,8 +66,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -82,8 +82,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -98,8 +98,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -113,8 +113,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//source/common/network:connection_lib",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -131,8 +131,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:process_context_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -146,8 +146,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//source/common/network:connection_lib",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -160,7 +160,7 @@ envoy_cc_test_library(
     deps = [
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//test/test_common:utility_lib",
     ],
 )
@@ -175,8 +175,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -190,8 +190,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//source/common/network:connection_lib",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//test/test_common:utility_lib",
     ],
 )
@@ -206,8 +206,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -223,8 +223,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -240,8 +240,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -257,25 +257,8 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
-    ],
-)
-
-envoy_cc_test_library(
-    name = "udp_listener_echo_filter_lib",
-    repository = "@envoy",
-    srcs = [
-        "udp_listener_echo_filter.cc",
-    ],
-    deps = [
-        "@envoy//include/envoy/buffer:buffer_interface",
-        "@envoy//include/envoy/network:filter_interface",
-        "@envoy//include/envoy/network:listener_interface",
-        "@envoy//include/envoy/registry",
-        "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/common/common:minimal_logger_lib",
-        "@envoy//source/common/network:connection_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )
 
@@ -291,7 +274,7 @@ envoy_cc_test_library(
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",
-        "@envoy//source/extensions/filters/http/common:empty_http_filter_config_lib",
         "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
     ],
 )

@@ -1,5 +1,7 @@
 #include "uds_integration_test.h"
 
+#include "envoy/config/bootstrap/v3alpha/bootstrap.pb.h"
+
 #include "common/event/dispatcher_impl.h"
 #include "common/network/utility.h"
 
@@ -9,15 +11,17 @@
 
 namespace Envoy {
 
+#if defined(__linux__)
 INSTANTIATE_TEST_SUITE_P(
     TestParameters, UdsUpstreamIntegrationTest,
     testing::Combine(testing::ValuesIn(TestEnvironment::getIpVersionsForTest()),
-#if defined(__linux__)
-                     testing::Values(false, true)
+                     testing::Values(false, true)));
 #else
-                     testing::Values(false)
+INSTANTIATE_TEST_SUITE_P(
+    TestParameters, UdsUpstreamIntegrationTest,
+    testing::Combine(testing::ValuesIn(TestEnvironment::getIpVersionsForTest()),
+                     testing::Values(false)));
 #endif
-                         ));
 
 TEST_P(UdsUpstreamIntegrationTest, RouterRequestAndResponseWithBodyNoBuffer) {
   testRouterRequestAndResponseWithBody(1024, 512, false);
@@ -39,31 +43,34 @@ TEST_P(UdsUpstreamIntegrationTest, RouterDownstreamDisconnectBeforeResponseCompl
   testRouterDownstreamDisconnectBeforeResponseComplete();
 }
 
+#if defined(__linux__)
 INSTANTIATE_TEST_SUITE_P(
     TestParameters, UdsListenerIntegrationTest,
     testing::Combine(testing::ValuesIn(TestEnvironment::getIpVersionsForTest()),
-#if defined(__linux__)
-                     testing::Values(false, true)
+                     testing::Values(false, true)));
 #else
-                     testing::Values(false)
+INSTANTIATE_TEST_SUITE_P(
+    TestParameters, UdsListenerIntegrationTest,
+    testing::Combine(testing::ValuesIn(TestEnvironment::getIpVersionsForTest()),
+                     testing::Values(false)));
 #endif
-                         ));
 
 void UdsListenerIntegrationTest::initialize() {
-  config_helper_.addConfigModifier([&](envoy::config::bootstrap::v2::Bootstrap& bootstrap) -> void {
-    auto* admin_addr = bootstrap.mutable_admin()->mutable_address();
-    admin_addr->clear_socket_address();
-    admin_addr->mutable_pipe()->set_path(getAdminSocketName());
+  config_helper_.addConfigModifier(
+      [&](envoy::config::bootstrap::v3alpha::Bootstrap& bootstrap) -> void {
+        auto* admin_addr = bootstrap.mutable_admin()->mutable_address();
+        admin_addr->clear_socket_address();
+        admin_addr->mutable_pipe()->set_path(getAdminSocketName());
 
-    auto* listeners = bootstrap.mutable_static_resources()->mutable_listeners();
-    RELEASE_ASSERT(!listeners->empty(), "");
-    auto filter_chains = listeners->Get(0).filter_chains();
-    listeners->Clear();
-    auto* listener = listeners->Add();
-    listener->set_name("listener_0");
-    listener->mutable_address()->mutable_pipe()->set_path(getListenerSocketName());
-    *(listener->mutable_filter_chains()) = filter_chains;
-  });
+        auto* listeners = bootstrap.mutable_static_resources()->mutable_listeners();
+        RELEASE_ASSERT(!listeners->empty(), "");
+        auto filter_chains = listeners->Get(0).filter_chains();
+        listeners->Clear();
+        auto* listener = listeners->Add();
+        listener->set_name("listener_0");
+        listener->mutable_address()->mutable_pipe()->set_path(getListenerSocketName());
+        *(listener->mutable_filter_chains()) = filter_chains;
+      });
   HttpIntegrationTest::initialize();
 }
 
