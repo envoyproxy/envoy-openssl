@@ -9,18 +9,18 @@ trigger:
     - 'master'
 
 jobs:
-  - job: build
-    dependsOn: []
-    pool:
-      vmImage: 'Ubuntu 16.04'
-    container: envoy-build-image
-    steps:
-      - checkout: self
-        submodules: true
-      - script: |
-          bazel build //:envoy && \
-          ./bazel-bin/envoy --version
-        displayName: 'Build Envoy-OpenSSL'
+# - job: build
+#   dependsOn: []
+#   pool:
+#     vmImage: 'Ubuntu 16.04'
+#   container: envoy-build-image
+#   steps:
+#     - checkout: self
+#       submodules: true
+#     - script: |
+#         bazel build //:envoy && \
+#         ./bazel-bin/envoy --version
+#       displayName: 'Build Envoy-OpenSSL'
 # - job: test
 #   dependsOn: []
 #   pool:
