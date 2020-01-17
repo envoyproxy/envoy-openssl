@@ -2,6 +2,8 @@
 
 #include <regex>
 
+#include "envoy/config/bootstrap/v3alpha/bootstrap.pb.h"
+
 #include "test/integration/http_integration.h"
 #include "test/integration/integration.h"
 #include "test/integration/utility.h"
@@ -73,10 +75,11 @@ protected:
                                                 auxiliary_filter_name_) +
                                         filterConfig(auxiliary_filter_name_));
     // double-check the filter was actually added
-    config_helper.addConfigModifier([this](envoy::config::bootstrap::v2::Bootstrap& bootstrap) {
-      ASSERT_EQ(auxiliary_filter_name_,
-                bootstrap.static_resources().listeners(0).filter_chains(0).filters(0).name());
-    });
+    config_helper.addConfigModifier(
+        [this](envoy::config::bootstrap::v3alpha::Bootstrap& bootstrap) {
+          ASSERT_EQ(auxiliary_filter_name_,
+                    bootstrap.static_resources().listeners(0).filter_chains(0).filters(0).name());
+        });
   }
 
   /**
@@ -86,15 +89,14 @@ protected:
    */
   void addNetworkFilter(ConfigHelper& config_helper, const std::string& filter_yaml) {
     config_helper.addConfigModifier(
-        [filter_yaml](envoy::config::bootstrap::v2::Bootstrap& bootstrap) {
+        [filter_yaml](envoy::config::bootstrap::v3alpha::Bootstrap& bootstrap) {
           ASSERT_GT(bootstrap.mutable_static_resources()->listeners_size(), 0);
           auto l = bootstrap.mutable_static_resources()->mutable_listeners(0);
           ASSERT_GT(l->filter_chains_size(), 0);
 
           auto* filter_chain = l->mutable_filter_chains(0);
           auto* filter_list_back = filter_chain->add_filters();
-          const std::string json = Json::Factory::loadFromYamlString(filter_yaml)->asJsonString();
-          TestUtility::loadFromJson(json, *filter_list_back);
+          TestUtility::loadFromYaml(filter_yaml, *filter_list_back);
 
           // Now move it to the front.
           for (int i = filter_chain->filters_size() - 1; i > 0; --i) {

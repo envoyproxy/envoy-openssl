@@ -55,10 +55,10 @@ envoy_cc_extension(
     hdrs = ["config.h"],
     security_posture = "robust_to_untrusted_downstream",
     deps = [
-        ":lua_filter_lib",
         "@envoy//include/envoy/registry",
         "@envoy//source/extensions/filters/http:well_known_names",
         "@envoy//source/extensions/filters/http/common:factory_base_lib",
-        "@envoy_api//envoy/config/filter/http/lua/v2:pkg_cc_proto",
+        ":lua_filter_lib",
+        "@envoy_api//envoy/extensions/filters/http/lua/v3alpha:pkg_cc_proto",
     ],
 )

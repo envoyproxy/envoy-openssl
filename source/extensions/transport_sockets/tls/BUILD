@@ -4,23 +4,26 @@ licenses(["notice"])  # Apache 2
 
 load(
     "@envoy//bazel:envoy_build_system.bzl",
+    "envoy_cc_extension",
     "envoy_cc_library",
     "envoy_package",
 )
 
 envoy_package()
 
-envoy_cc_library(
+envoy_cc_extension(
     name = "config",
     repository = "@envoy",
     srcs = ["config.cc"],
     hdrs = ["config.h"],
+    security_posture = "robust_to_untrusted_downstream_and_upstream",
     deps = [
         ":ssl_socket_lib",
         "@envoy//include/envoy/network:transport_socket_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:transport_socket_config_interface",
         "@envoy//source/extensions/transport_sockets:well_known_names",
+        "@envoy_api//envoy/extensions/transport_sockets/tls/v3alpha:pkg_cc_proto",
     ],
 )
 
@@ -71,7 +74,7 @@ envoy_cc_library(
         "@envoy//source/common/secret:sds_api_lib",
         "@envoy//source/common/ssl:certificate_validation_context_config_impl_lib",
         "@envoy//source/common/ssl:tls_certificate_config_impl_lib",
-        "@envoy_api//envoy/api/v2/auth:pkg_cc_proto",
+        "@envoy_api//envoy/extensions/transport_sockets/tls/v3alpha:pkg_cc_proto",
     ],
 )
 
@@ -105,7 +108,7 @@ envoy_cc_library(
         "@envoy//source/common/protobuf:utility_lib",
         "@envoy//source/common/stats:symbol_table_lib",
         "//source/extensions/transport_sockets/tls/private_key:private_key_manager_lib",
-        "@envoy_api//envoy/admin/v2alpha:pkg_cc_proto",
+        "@envoy_api//envoy/admin/v3alpha:pkg_cc_proto",
         "//boringssl_compat:bssl_compat_lib",
     ],
 )

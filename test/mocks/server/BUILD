@@ -47,6 +47,9 @@ envoy_cc_mock(
         "@envoy//test/mocks/tracing:tracing_mocks",
         "@envoy//test/mocks/upstream:upstream_mocks",
         "@envoy//test/test_common:test_time_lib",
-        "@envoy_api//envoy/config/bootstrap/v2:pkg_cc_proto",
+        "@envoy_api//envoy/admin/v3alpha:pkg_cc_proto",
+        "@envoy_api//envoy/config/bootstrap/v3alpha:pkg_cc_proto",
+        "@envoy_api//envoy/config/core/v3alpha:pkg_cc_proto",
+        "@envoy_api//envoy/config/listener/v3alpha:pkg_cc_proto",
     ],
 )
