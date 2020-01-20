@@ -1,5 +1,5 @@
-#include "envoy/config/bootstrap/v3alpha/bootstrap.pb.h"
-#include "envoy/extensions/filters/network/http_connection_manager/v3alpha/http_connection_manager.pb.h"
+#include "envoy/config/bootstrap/v3/bootstrap.pb.h"
+#include "envoy/extensions/filters/network/http_connection_manager/v3/http_connection_manager.pb.h"
 
 #include "extensions/filters/http/well_known_names.h"
 
@@ -27,7 +27,7 @@ public:
   void initializeFilter(const std::string& filter_config, const std::string& domain = "*") {
     config_helper_.addFilter(filter_config);
 
-    config_helper_.addConfigModifier([](envoy::config::bootstrap::v3alpha::Bootstrap& bootstrap) {
+    config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
       auto* lua_cluster = bootstrap.mutable_static_resources()->add_clusters();
       lua_cluster->MergeFrom(bootstrap.static_resources().clusters()[0]);
       lua_cluster->set_name("lua_cluster");
@@ -38,7 +38,7 @@ public:
     });
 
     config_helper_.addConfigModifier(
-        [domain](envoy::extensions::filters::network::http_connection_manager::v3alpha::
+        [domain](envoy::extensions::filters::network::http_connection_manager::v3::
                      HttpConnectionManager& hcm) {
           hcm.mutable_route_config()
               ->mutable_virtual_hosts(0)
@@ -472,7 +472,7 @@ typed_config:
       local sig = request_handle:headers():get("signature")
       local rawsig = sig:fromhex()
       local data = request_handle:headers():get("message")
-      local ok, error = request_handle:verifySignature(hash, pubkey, rawsig, string.len(rawsig), data, string.len(data)) 
+      local ok, error = request_handle:verifySignature(hash, pubkey, rawsig, string.len(rawsig), data, string.len(data))
 
       if ok then
         request_handle:headers():add("signature_verification", "approved")

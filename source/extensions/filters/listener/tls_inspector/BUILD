@@ -45,7 +45,7 @@ envoy_cc_extension(
         "@envoy//include/envoy/server:filter_config_interface",
         "@envoy//source/extensions/filters/listener:well_known_names",
         "//source/extensions/filters/listener/tls_inspector:tls_inspector_lib",
-        "@envoy_api//envoy/extensions/filters/listener/tls_inspector/v3alpha:pkg_cc_proto",
+        "@envoy_api//envoy/extensions/filters/listener/tls_inspector/v3:pkg_cc_proto",
     ],
 )
 
