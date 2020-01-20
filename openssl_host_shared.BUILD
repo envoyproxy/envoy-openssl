@@ -3,11 +3,11 @@ licenses(["notice"])  # Apache 2
 cc_library(
     name = "host-ssl-1-1",
     srcs = [
-        "libssl.so.1.1",
         "libcrypto.so.1.1",
+        "libssl.so.1.1",
     ],
+    linkstatic = False,
     visibility = ["//visibility:public"],
-    linkstatic=False,
 )
 
 alias(
