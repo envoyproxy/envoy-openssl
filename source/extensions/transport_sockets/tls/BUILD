@@ -23,7 +23,7 @@ envoy_cc_extension(
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:transport_socket_config_interface",
         "@envoy//source/extensions/transport_sockets:well_known_names",
-        "@envoy_api//envoy/extensions/transport_sockets/tls/v3alpha:pkg_cc_proto",
+        "@envoy_api//envoy/extensions/transport_sockets/tls/v3:pkg_cc_proto",
     ],
 )
 
@@ -74,7 +74,7 @@ envoy_cc_library(
         "@envoy//source/common/secret:sds_api_lib",
         "@envoy//source/common/ssl:certificate_validation_context_config_impl_lib",
         "@envoy//source/common/ssl:tls_certificate_config_impl_lib",
-        "@envoy_api//envoy/extensions/transport_sockets/tls/v3alpha:pkg_cc_proto",
+        "@envoy_api//envoy/extensions/transport_sockets/tls/v3:pkg_cc_proto",
     ],
 )
 
@@ -108,7 +108,7 @@ envoy_cc_library(
         "@envoy//source/common/protobuf:utility_lib",
         "@envoy//source/common/stats:symbol_table_lib",
         "//source/extensions/transport_sockets/tls/private_key:private_key_manager_lib",
-        "@envoy_api//envoy/admin/v3alpha:pkg_cc_proto",
+        "@envoy_api//envoy/admin/v3:pkg_cc_proto",
         "//boringssl_compat:bssl_compat_lib",
     ],
 )

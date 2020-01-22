@@ -59,6 +59,6 @@ envoy_cc_extension(
         "@envoy//source/extensions/filters/http:well_known_names",
         "@envoy//source/extensions/filters/http/common:factory_base_lib",
         ":lua_filter_lib",
-        "@envoy_api//envoy/extensions/filters/http/lua/v3alpha:pkg_cc_proto",
+        "@envoy_api//envoy/extensions/filters/http/lua/v3:pkg_cc_proto",
     ],
 )
