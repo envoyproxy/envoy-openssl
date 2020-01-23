@@ -21,8 +21,8 @@ Network::TransportSocketFactoryPtr UpstreamSslSocketFactory::createTransportSock
           const envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext&>(
           message, context.messageValidationVisitor()),
       context);
-  return std::make_unique<ClientSslSocketFactory>(
-      std::move(client_config), context.sslContextManager(), context.statsScope());
+  return std::make_unique<ClientSslSocketFactory>(std::move(client_config),
+                                                  context.sslContextManager(), context.scope());
 }
 
 ProtobufTypes::MessagePtr UpstreamSslSocketFactory::createEmptyConfigProto() {
@@ -41,12 +41,11 @@ Network::TransportSocketFactoryPtr DownstreamSslSocketFactory::createTransportSo
           message, context.messageValidationVisitor()),
       context);
   return std::make_unique<ServerSslSocketFactory>(
-      std::move(server_config), context.sslContextManager(), context.statsScope(), server_names);
+      std::move(server_config), context.sslContextManager(), context.scope(), server_names);
 }
 
 ProtobufTypes::MessagePtr DownstreamSslSocketFactory::createEmptyConfigProto() {
-  return std::make_unique<
-      envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext>();
+  return std::make_unique<envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext>();
 }
 
 REGISTER_FACTORY(DownstreamSslSocketFactory,
