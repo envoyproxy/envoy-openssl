@@ -18,6 +18,8 @@ jobs:
   pool:
     vmImage: 'Ubuntu 16.04'
   steps:
+  - checkout: self
+    submodules: true
   - bash: |
       sudo mkdir -p /etc/docker
       echo '{
@@ -28,6 +30,7 @@ jobs:
     displayName: "Enable IPv6"
 
   - script: envoy/ci/run_envoy_docker.sh 'envoy/ci/do_ci.sh $(CI_TARGET) //test/common/... //test/extensions/...'
+    workingDirectory: $(Build.SourcesDirectory)
     env:
       ENVOY_BUILD_TARGET: "//:envoy"
       ENVOY_SRCDIR: "/source/envoy"
