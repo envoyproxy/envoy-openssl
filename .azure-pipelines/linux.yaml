@@ -4,7 +4,7 @@ trigger:
     - 'master'
 
 jobs:
-- job: borinssl
+- job: boringssl
   dependsOn: []
   timeoutInMinutes: 60
   pool:
