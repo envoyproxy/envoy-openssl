@@ -4,12 +4,28 @@ trigger:
     - 'master'
 
 jobs:
+- job: borinssl
+  dependsOn: []
+  timeoutInMinutes: 60
+  pool:
+    vmImage: 'Ubuntu 16.04'
+  steps:
+  - checkout: self
+    submodules: true
+
+  - script: envoy/ci/run_envoy_docker.sh 'test 0 -eq $(cd /source && bazel cquery "deps($ENVOY_BUILD_TARGET)" | grep -c @boringssl)'
+    workingDirectory: $(Build.SourcesDirectory)
+    env:
+      ENVOY_BUILD_TARGET: "//:envoy"
+      ENVOY_SRCDIR: "/source/envoy"
+      BAZEL_BUILD_EXTRA_OPTIONS: "--curses=no"
+    displayName: "Test BoringSSL is disabled"
+
 - job: bazel
+  dependsOn: ["boringssl"]
   strategy:
-    maxParallel: 3
+    maxParallel: 2
     matrix:
-      gcc:
-        CI_TARGET: 'bazel.gcc'
       dev:
         CI_TARGET: 'bazel.dev'
       release:
