@@ -1,4 +1,4 @@
-name: CI
+name: Nightly Envoy HEAD
 
 on:
    schedule:
