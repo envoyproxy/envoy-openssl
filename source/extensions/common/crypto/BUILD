@@ -25,7 +25,6 @@ envoy_cc_library(
     deps = [
         "@envoy//include/envoy/buffer:buffer_interface",
         "@envoy//source/common/common:assert_lib",
-        "@envoy//source/common/common:stack_array",
         "@envoy//source/common/crypto:utility_lib",
         "//boringssl_compat:bssl_compat_lib",
         "//boringssl_compat:bssl_compat_cbs_lib",
