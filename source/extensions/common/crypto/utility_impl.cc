@@ -55,18 +55,18 @@ const VerificationOutput UtilityImpl::verifySignature(absl::string_view hash, Cr
     return {false, absl::StrCat(hash, " is not supported.")};
   }
   // Step 3: initialize EVP_DigestVerify
-  auto pkeyWrapper = Common::Crypto::Access::getTyped<Common::Crypto::PublicKeyObject>(key);
-  EVP_PKEY* pkey = pkeyWrapper->getEVP_PKEY();
+  auto pkey_wrapper = Common::Crypto::Access::getTyped<Common::Crypto::PublicKeyObject>(key);
+  EVP_PKEY* pkey = pkey_wrapper->getEVP_PKEY();
 
   if (pkey == nullptr) {
-    free(pkeyWrapper);
+    free(pkey_wrapper);
     EVP_MD_CTX_free(ctx);
     return {false, "Failed to initialize digest verify."};
   }
 
   int ok = EVP_DigestVerifyInit(ctx, nullptr, md, nullptr, pkey);
   if (!ok) {
-    free(pkeyWrapper);
+    free(pkey_wrapper);
     EVP_MD_CTX_free(ctx);
     return {false, "Failed to initialize digest verify."};
   }

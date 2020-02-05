@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <deque>
 #include <functional>
 #include <string>
@@ -20,7 +21,6 @@
 #include "extensions/transport_sockets/tls/openssl_impl.h"
 
 #include "absl/synchronization/mutex.h"
-#include "absl/types/optional.h"
 #include "boringssl_compat/bssl.h"
 #include "openssl/ssl.h"
 
@@ -221,6 +221,8 @@ public:
                     const std::vector<std::string>& server_names, TimeSource& time_source);
 
 private:
+  using SessionContextID = std::array<uint8_t, SSL_MAX_SSL_SESSION_ID_LENGTH>;
+
   int alpnSelectCallback(const unsigned char** out, unsigned char* outlen, const unsigned char* in,
                          unsigned int inlen);
   int sessionTicketProcess(SSL* ssl, uint8_t* key_name, uint8_t* iv, EVP_CIPHER_CTX* ctx,
@@ -230,8 +232,7 @@ private:
   // ClientHello details.
   void selectTlsContext(SSL* ssl);
 
-  void generateHashForSessionContexId(const std::vector<std::string>& server_names,
-                                      uint8_t* session_context_buf, unsigned& session_context_len);
+  SessionContextID generateHashForSessionContextId(const std::vector<std::string>& server_names);
 
   const std::vector<Envoy::Ssl::ServerContextConfig::SessionTicketKey> session_ticket_keys_;
 };
