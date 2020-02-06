@@ -422,10 +422,10 @@ void testUtil(const TestUtilOptions& options) {
  */
 class TestUtilOptionsV2 : public TestUtilOptionsBase {
 public:
-  TestUtilOptionsV2(const envoy::config::listener::v3::Listener& listener,
-                    const envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext&
-                        client_ctx_proto,
-                    bool expect_success, Network::Address::IpVersion version)
+  TestUtilOptionsV2(
+      const envoy::config::listener::v3::Listener& listener,
+      const envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext& client_ctx_proto,
+      bool expect_success, Network::Address::IpVersion version)
       : TestUtilOptionsBase(expect_success, version), listener_(listener),
         client_ctx_proto_(client_ctx_proto), transport_socket_options_(nullptr) {
     if (expect_success) {
@@ -437,8 +437,7 @@ public:
   }
 
   const envoy::config::listener::v3::Listener& listener() const { return listener_; }
-  const envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext&
-  clientCtxProto() const {
+  const envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext& clientCtxProto() const {
     return client_ctx_proto_;
   }
   const std::string& expectedClientStats() const { return expected_client_stats_; }
@@ -1144,6 +1143,92 @@ TEST_P(SslSocketTest, GetPeerCert) {
                .setExpectedLocalSubject(
                    "CN=Test Server,OU=Lyft Engineering,O=Lyft,L=San Francisco,ST=California,C=US")
                .setExpectedPeerCert(expected_peer_cert));
+}
+
+TEST_P(SslSocketTest, GetPeerCertAcceptUntrusted) {
+  const std::string client_ctx_yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/no_san_cert.pem"
+      private_key:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/no_san_key.pem"
+)EOF";
+
+  const std::string server_ctx_yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_uri_cert.pem"
+      private_key:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_uri_key.pem"
+    validation_context:
+      trusted_ca:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/fake_ca_cert.pem"
+      trust_chain_verification: ACCEPT_UNTRUSTED
+  require_client_certificate: true
+)EOF";
+
+  TestUtilOptions test_options(client_ctx_yaml, server_ctx_yaml, true, GetParam());
+  std::string expected_peer_cert =
+      TestEnvironment::readFileToStringForTest(TestEnvironment::substitute(
+          "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/no_san_cert.pem"));
+  testUtil(test_options.setExpectedSerialNumber(TEST_NO_SAN_CERT_SERIAL)
+               .setExpectedPeerIssuer(
+                   "CN=Test CA,OU=Lyft Engineering,O=Lyft,L=San Francisco,ST=California,C=US")
+               .setExpectedPeerSubject(
+                   "CN=Test Server,OU=Lyft Engineering,O=Lyft,L=San Francisco,ST=California,C=US")
+               .setExpectedLocalSubject(
+                   "CN=Test Server,OU=Lyft Engineering,O=Lyft,L=San Francisco,ST=California,C=US")
+               .setExpectedPeerCert(expected_peer_cert));
+}
+
+TEST_P(SslSocketTest, NoCertUntrustedNotPermitted) {
+  const std::string client_ctx_yaml = R"EOF(
+    common_tls_context:
+  )EOF";
+
+  const std::string server_ctx_yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_tmpdir }}/unittestcert.pem"
+      private_key:
+        filename: "{{ test_tmpdir }}/unittestkey.pem"
+    validation_context:
+      trusted_ca:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/fake_ca_cert.pem"
+      trust_chain_verification: VERIFY_TRUST_CHAIN
+      verify_certificate_hash: "0000000000000000000000000000000000000000000000000000000000000000"
+)EOF";
+
+  TestUtilOptions test_options(client_ctx_yaml, server_ctx_yaml, false, GetParam());
+  testUtil(test_options.setExpectedServerStats("ssl.fail_verify_no_cert"));
+}
+
+TEST_P(SslSocketTest, NoCertUntrustedPermitted) {
+  const std::string client_ctx_yaml = R"EOF(
+    common_tls_context:
+  )EOF";
+
+  const std::string server_ctx_yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_uri_cert.pem"
+      private_key:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_uri_key.pem"
+    validation_context:
+      trusted_ca:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/fake_ca_cert.pem"
+      trust_chain_verification: ACCEPT_UNTRUSTED
+      verify_certificate_hash: "0000000000000000000000000000000000000000000000000000000000000000"
+)EOF";
+
+  TestUtilOptions test_options(client_ctx_yaml, server_ctx_yaml, true, GetParam());
+  testUtil(test_options.setExpectedServerStats("ssl.no_certificate")
+               .setExpectNoCert()
+               .setExpectNoCertChain());
 }
 
 TEST_P(SslSocketTest, GetPeerCertChain) {
