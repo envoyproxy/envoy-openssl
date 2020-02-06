@@ -51,7 +51,8 @@ SslSocket::SslSocket(Envoy::Ssl::ContextSharedPtr ctx, InitialState state,
       ctx_(std::dynamic_pointer_cast<ContextImpl>(ctx)), state_(SocketState::PreHandshake) {
   bssl::UniquePtr<SSL> ssl = ctx_->newSsl(transport_socket_options_.get());
   ssl_ = ssl.get();
-  info_ = std::make_shared<SslSocketInfo>(std::move(ssl));
+  info_ = std::make_shared<SslSocketInfo>(std::move(ssl), ctx_);
+
   if (state == InitialState::Client) {
     SSL_set_connect_state(ssl_);
   } else {
@@ -407,11 +408,30 @@ void SslSocket::asyncCb() {
     ctx_->stats().fail_async_handshake_error_.inc();
     callbacks_->connection().close(Network::ConnectionCloseType::FlushWrite);
   }
+
+}
+void SslExtendedSocketInfoImpl::setCertificateValidationStatus(
+    Envoy::Ssl::ClientValidationStatus validated) {
+  certificate_validation_status_ = validated;
+}
+
+Envoy::Ssl::ClientValidationStatus SslExtendedSocketInfoImpl::certificateValidationStatus() const {
+  return certificate_validation_status_;
+}
+
+SslSocketInfo::SslSocketInfo(bssl::UniquePtr<SSL> ssl, ContextImplSharedPtr ctx)
+    : ssl_(std::move(ssl)) {
+  SSL_set_ex_data(ssl_.get(), ctx->sslExtendedSocketInfoIndex(), &(this->extended_socket_info_));
 }
 
 bool SslSocketInfo::peerCertificatePresented() const {
   bssl::UniquePtr<X509> cert(SSL_get_peer_certificate(ssl_.get()));
   return cert != nullptr;
+}
+
+bool SslSocketInfo::peerCertificateValidated() const {
+  return extended_socket_info_.certificateValidationStatus() ==
+         Envoy::Ssl::ClientValidationStatus::Validated;
 }
 
 absl::Span<const std::string> SslSocketInfo::uriSanLocalCertificate() const {

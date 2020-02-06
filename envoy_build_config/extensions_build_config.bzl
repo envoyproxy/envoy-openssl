@@ -33,6 +33,7 @@ EXTENSIONS = {
     #
 
     "envoy.filters.http.adaptive_concurrency":          "@envoy//source/extensions/filters/http/adaptive_concurrency:config",
+    "envoy.filters.http.aws_request_signing":           "@envoy_openssl//source/extensions/filters/http/aws_request_signing:config",
     "envoy.filters.http.buffer":                        "@envoy//source/extensions/filters/http/buffer:config",
     "envoy.filters.http.cors":                          "@envoy//source/extensions/filters/http/cors:config",
     "envoy.filters.http.csrf":                          "@envoy//source/extensions/filters/http/csrf:config",

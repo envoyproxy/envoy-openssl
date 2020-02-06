@@ -4,12 +4,11 @@
 #include "common/common/utility.h"
 #include "common/singleton/const_singleton.h"
 
-#include "extensions/filters/http/common/aws/credentials_provider.h"
-#include "extensions/filters/http/common/aws/signer.h"
+#include "extensions/common/aws/credentials_provider.h"
+#include "extensions/common/aws/signer.h"
 
 namespace Envoy {
 namespace Extensions {
-namespace HttpFilters {
 namespace Common {
 namespace Aws {
 
@@ -52,6 +51,7 @@ public:
         short_date_formatter_(SignatureConstants::get().ShortDateFormat) {}
 
   void sign(Http::Message& message, bool sign_body = false) override;
+  void sign(Http::HeaderMap& headers) override;
 
 private:
   std::string createContentHash(Http::Message& message, bool sign_body) const;
@@ -69,6 +69,8 @@ private:
                                         const std::map<std::string, std::string>& canonical_headers,
                                         absl::string_view signature) const;
 
+  void sign(Http::HeaderMap& headers, const std::string& content_hash);
+
   const std::string service_name_;
   const std::string region_;
   CredentialsProviderSharedPtr credentials_provider_;
@@ -79,6 +81,5 @@ private:
 
 } // namespace Aws
 } // namespace Common
-} // namespace HttpFilters
 } // namespace Extensions
 } // namespace Envoy

@@ -369,7 +369,7 @@ envoy_cc_test(
     ],
     # As this test has many H1/H2/v4/v6 tests it takes a while to run.
     # Shard it enough to bring the run time in line with other integration tests.
-    shard_count = 3,
+    shard_count = 5,
     deps = [
         ":http_protocol_integration_lib",
         "@envoy//source/common/http:header_map_lib",
@@ -867,6 +867,23 @@ envoy_cc_test(
 )
 
 envoy_cc_test(
+    name = "sds_generic_secret_integration_test",
+    repository = "@envoy",
+    srcs = [
+        "sds_generic_secret_integration_test.cc",
+    ],
+    deps = [
+        ":http_integration_lib",
+        "@envoy//include/envoy/registry",
+        "@envoy//source/common/grpc:common_lib",
+        "@envoy//test/test_common:utility_lib",
+        "@envoy_api//envoy/api/v2:pkg_cc_proto",
+        "@envoy_api//envoy/config/bootstrap/v3:pkg_cc_proto",
+        "@envoy_api//envoy/config/core/v3:pkg_cc_proto",
+    ],
+)
+
+envoy_cc_test(
     name = "tcp_proxy_integration_test",
     repository = "@envoy",
     srcs = [
@@ -962,6 +979,7 @@ envoy_cc_test(
     deps = [
         ":http_integration_lib",
         "@envoy//source/common/stats:stats_lib",
+        "@envoy//test/test_common:registry_lib",
         "@envoy_api//envoy/extensions/filters/network/tcp_proxy/v3:pkg_cc_proto",
     ],
 )
@@ -1059,25 +1077,5 @@ envoy_cc_test(
         "@envoy_api//envoy/config/core/v3:pkg_cc_proto",
         "@envoy_api//envoy/config/route/v3:pkg_cc_proto",
         "@envoy_api//envoy/extensions/filters/network/http_connection_manager/v3:pkg_cc_proto",
-    ],
-)
-
-envoy_cc_test(
-    name = "aws_metadata_fetcher_integration_test",
-    repository = "@envoy",
-    srcs = [
-        "aws_metadata_fetcher_integration_test.cc",
-    ],
-    deps = [
-        ":integration_lib",
-        "@envoy//source/common/common:fmt_lib",
-        "@envoy//source/extensions/filters/http/common/aws:utility_lib",
-        "@envoy//source/extensions/filters/http/fault:config",
-        "@envoy//source/extensions/filters/http/fault:fault_filter_lib",
-        "@envoy//source/extensions/filters/http/router:config",
-        "@envoy//source/extensions/filters/network/echo:config",
-        "@envoy//source/extensions/filters/network/http_connection_manager:config",
-        "@envoy//test/server:utility_lib",
-        "@envoy//test/test_common:utility_lib",
     ],
 )

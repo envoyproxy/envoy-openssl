@@ -8,11 +8,12 @@
 #include "common/common/logger.h"
 #include "common/common/thread.h"
 
-#include "extensions/filters/http/common/aws/credentials_provider.h"
+#include "extensions/common/aws/credentials_provider.h"
+
+#include "absl/strings/string_view.h"
 
 namespace Envoy {
 namespace Extensions {
-namespace HttpFilters {
 namespace Common {
 namespace Aws {
 
@@ -78,8 +79,8 @@ private:
 class TaskRoleCredentialsProvider : public MetadataCredentialsProviderBase {
 public:
   TaskRoleCredentialsProvider(Api::Api& api, const MetadataFetcher& metadata_fetcher,
-                              const std::string& credential_uri,
-                              const std::string& authorization_token = std::string())
+                              absl::string_view credential_uri,
+                              absl::string_view authorization_token = {})
       : MetadataCredentialsProviderBase(api, metadata_fetcher), credential_uri_(credential_uri),
         authorization_token_(authorization_token) {}
 
@@ -118,8 +119,7 @@ public:
 
   virtual CredentialsProviderSharedPtr createTaskRoleCredentialsProvider(
       Api::Api& api, const MetadataCredentialsProviderBase::MetadataFetcher& metadata_fetcher,
-      const std::string& credential_uri,
-      const std::string& authorization_token = std::string()) const PURE;
+      absl::string_view credential_uri, absl::string_view authorization_token = {}) const PURE;
 
   virtual CredentialsProviderSharedPtr createInstanceProfileCredentialsProvider(
       Api::Api& api,
@@ -150,8 +150,7 @@ private:
 
   CredentialsProviderSharedPtr createTaskRoleCredentialsProvider(
       Api::Api& api, const MetadataCredentialsProviderBase::MetadataFetcher& metadata_fetcher,
-      const std::string& credential_uri,
-      const std::string& authorization_token = std::string()) const override {
+      absl::string_view credential_uri, absl::string_view authorization_token = {}) const override {
     return std::make_shared<TaskRoleCredentialsProvider>(api, metadata_fetcher, credential_uri,
                                                          authorization_token);
   }
@@ -165,6 +164,5 @@ private:
 
 } // namespace Aws
 } // namespace Common
-} // namespace HttpFilters
 } // namespace Extensions
 } // namespace Envoy
