@@ -103,8 +103,8 @@ TEST_P(SslIntegrationTest, RouterRequestAndResponseWithBodyNoBuffer) {
 
 TEST_P(SslIntegrationTest, RouterRequestAndResponseWithBodyNoBufferHttp2) {
   setDownstreamProtocol(Http::CodecClient::Type::HTTP2);
-  config_helper_.setClientCodec(envoy::extensions::filters::network::http_connection_manager::
-                                    v3::HttpConnectionManager::AUTO);
+  config_helper_.setClientCodec(envoy::extensions::filters::network::http_connection_manager::v3::
+                                    HttpConnectionManager::AUTO);
   ConnectionCreationFunction creator = [&]() -> Network::ClientConnectionPtr {
     return makeSslClientConnection(ClientSslTransportOptions().setAlpn(true));
   };
@@ -179,9 +179,9 @@ TEST_P(SslIntegrationTest, AdminCertEndpoint) {
 
 // Validate certificate selection across different certificate types and client TLS versions.
 class SslCertficateIntegrationTest
-    : public testing::TestWithParam<std::tuple<
-          Network::Address::IpVersion,
-          envoy::extensions::transport_sockets::tls::v3::TlsParameters::TlsProtocol>>,
+    : public testing::TestWithParam<
+          std::tuple<Network::Address::IpVersion,
+                     envoy::extensions::transport_sockets::tls::v3::TlsParameters::TlsProtocol>>,
       public SslIntegrationTestBase {
 public:
   SslCertficateIntegrationTest() : SslIntegrationTestBase(std::get<0>(GetParam())) {
@@ -198,36 +198,26 @@ public:
   void TearDown() override { SslIntegrationTestBase::TearDown(); };
 
   ClientSslTransportOptions rsaOnlyClientOptions() {
-    /*
-    if (tls_version_ ==
-        envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_3) {
-    */
+    if (tls_version_ == envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_3) {
       return ClientSslTransportOptions().setSigningAlgorithmsForTest("rsa_pss_rsae_sha256");
-    /*
     } else {
       return ClientSslTransportOptions().setCipherSuites({"ECDHE-RSA-AES128-GCM-SHA256"});
     }
-    */
   }
 
   ClientSslTransportOptions ecdsaOnlyClientOptions() {
     auto options = ClientSslTransportOptions().setClientEcdsaCert(true);
-    /*
-    if (tls_version_ ==
-        envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_3) {
-    */
+    if (tls_version_ == envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_3) {
       return options.setSigningAlgorithmsForTest("ecdsa_secp256r1_sha256");
-    /*
     } else {
       return options.setCipherSuites({"ECDHE-ECDSA-AES128-GCM-SHA256"});
     }
-    */
   }
 
   static std::string ipClientVersionTestParamsToString(
-      const ::testing::TestParamInfo<std::tuple<
-          Network::Address::IpVersion,
-          envoy::extensions::transport_sockets::tls::v3::TlsParameters::TlsProtocol>>&
+      const ::testing::TestParamInfo<
+          std::tuple<Network::Address::IpVersion,
+                     envoy::extensions::transport_sockets::tls::v3::TlsParameters::TlsProtocol>>&
           params) {
     return fmt::format("{}_TLSv1_{}",
                        std::get<0>(params.param) == Network::Address::IpVersion::v4 ? "IPv4"
@@ -243,9 +233,8 @@ INSTANTIATE_TEST_SUITE_P(
     IpVersionsClientVersions, SslCertficateIntegrationTest,
     testing::Combine(
         testing::ValuesIn(TestEnvironment::getIpVersionsForTest()),
-        testing::Values(
-            envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_2,
-            envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_3)),
+        testing::Values(envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_2,
+                        envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_3)),
     SslCertficateIntegrationTest::ipClientVersionTestParamsToString);
 
 // Server with an RSA certificate and a client with RSA/ECDSA cipher suites works.
@@ -362,15 +351,14 @@ class SslTapIntegrationTest : public SslIntegrationTest {
 public:
   void initialize() override {
     // TODO(mattklein123): Merge/use the code in ConfigHelper::setTapTransportSocket().
-    config_helper_.addConfigModifier(
-        [this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
-          // The test supports tapping either the downstream or upstream connection, but not both.
-          if (upstream_tap_) {
-            setupUpstreamTap(bootstrap);
-          } else {
-            setupDownstreamTap(bootstrap);
-          }
-        });
+    config_helper_.addConfigModifier([this](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
+      // The test supports tapping either the downstream or upstream connection, but not both.
+      if (upstream_tap_) {
+        setupUpstreamTap(bootstrap);
+      } else {
+        setupDownstreamTap(bootstrap);
+      }
+    });
     SslIntegrationTest::initialize();
     // This confuses our socket counting.
     debug_with_s_client_ = false;
@@ -523,7 +511,7 @@ TEST_P(SslTapIntegrationTest, TruncationWithMultipleDataFrames) {
 
   const uint64_t id = Network::ConnectionImpl::nextGlobalIdForTest() + 1;
   codec_client_ = makeHttpConnection(creator());
-  const Http::TestHeaderMapImpl request_headers{
+  const Http::TestRequestHeaderMapImpl request_headers{
       {":method", "GET"}, {":path", "/test/long/url"}, {":scheme", "http"}, {":authority", "host"}};
   auto result = codec_client_->startRequest(request_headers);
   auto decoder = std::move(result.second);
@@ -532,7 +520,7 @@ TEST_P(SslTapIntegrationTest, TruncationWithMultipleDataFrames) {
   Buffer::OwnedImpl data2("two");
   result.first.encodeData(data2, true);
   waitForNextUpstreamRequest();
-  const Http::TestHeaderMapImpl response_headers{{":status", "200"}};
+  const Http::TestResponseHeaderMapImpl response_headers{{":status", "200"}};
   upstream_request_->encodeHeaders(response_headers, false);
   Buffer::OwnedImpl data3("three");
   upstream_request_->encodeData(data3, false);
