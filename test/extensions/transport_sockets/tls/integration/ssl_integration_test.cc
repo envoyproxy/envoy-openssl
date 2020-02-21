@@ -198,20 +198,28 @@ public:
   void TearDown() override { SslIntegrationTestBase::TearDown(); };
 
   ClientSslTransportOptions rsaOnlyClientOptions() {
+    /*
     if (tls_version_ == envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_3) {
+    */
       return ClientSslTransportOptions().setSigningAlgorithmsForTest("rsa_pss_rsae_sha256");
+    /*
     } else {
       return ClientSslTransportOptions().setCipherSuites({"ECDHE-RSA-AES128-GCM-SHA256"});
     }
+    */
   }
 
   ClientSslTransportOptions ecdsaOnlyClientOptions() {
     auto options = ClientSslTransportOptions().setClientEcdsaCert(true);
+    /*
     if (tls_version_ == envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_3) {
+    */
       return options.setSigningAlgorithmsForTest("ecdsa_secp256r1_sha256");
+    /*
     } else {
       return options.setCipherSuites({"ECDHE-ECDSA-AES128-GCM-SHA256"});
     }
+    */
   }
 
   static std::string ipClientVersionTestParamsToString(
