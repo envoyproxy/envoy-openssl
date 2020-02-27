@@ -18,7 +18,7 @@ jobs:
     - name: Check Envoy submodule status
       shell: bash
       run: |
-        git submodule status envoy
+        git submodule summary envoy
         git rev-parse HEAD
     - name: Configure docker IPv6
       shell: bash
