@@ -1,6 +1,5 @@
 # See bazel/README.md for details on how this system works.
 EXTENSIONS = {
-
     #
     # Access loggers
     #
@@ -12,6 +11,8 @@ EXTENSIONS = {
     #
     # Clusters
     #
+
+    "envoy.clusters.aggregate":                         "@envoy//source/extensions/clusters/aggregate:cluster",
     "envoy.clusters.dynamic_forward_proxy":             "@envoy//source/extensions/clusters/dynamic_forward_proxy:cluster",
     "envoy.clusters.redis":                             "@envoy//source/extensions/clusters/redis:redis_cluster",
 
@@ -35,6 +36,7 @@ EXTENSIONS = {
     "envoy.filters.http.adaptive_concurrency":          "@envoy//source/extensions/filters/http/adaptive_concurrency:config",
     "envoy.filters.http.aws_request_signing":           "@envoy_openssl//source/extensions/filters/http/aws_request_signing:config",
     "envoy.filters.http.buffer":                        "@envoy//source/extensions/filters/http/buffer:config",
+    "envoy.filters.http.cache":                         "@envoy//source/extensions/filters/http/cache:config",
     "envoy.filters.http.cors":                          "@envoy//source/extensions/filters/http/cors:config",
     "envoy.filters.http.csrf":                          "@envoy//source/extensions/filters/http/csrf:config",
     "envoy.filters.http.dynamic_forward_proxy":         "@envoy//source/extensions/filters/http/dynamic_forward_proxy:config",
@@ -52,6 +54,7 @@ EXTENSIONS = {
     "envoy.filters.http.ip_tagging":                    "@envoy//source/extensions/filters/http/ip_tagging:config",
     "envoy.filters.http.jwt_authn":                     "@envoy//source/extensions/filters/http/jwt_authn:config",
     "envoy.filters.http.lua":                           "@envoy_openssl//source/extensions/filters/http/lua:config",
+    "envoy.filters.http.on_demand":                     "@envoy//source/extensions/filters/http/on_demand:config",
     "envoy.filters.http.original_src":                  "@envoy//source/extensions/filters/http/original_src:config",
     "envoy.filters.http.ratelimit":                     "@envoy//source/extensions/filters/http/ratelimit:config",
     "envoy.filters.http.rbac":                          "@envoy//source/extensions/filters/http/rbac:config",
@@ -82,9 +85,9 @@ EXTENSIONS = {
     "envoy.filters.network.echo":                       "@envoy//source/extensions/filters/network/echo:config",
     "envoy.filters.network.ext_authz":                  "@envoy//source/extensions/filters/network/ext_authz:config",
     "envoy.filters.network.http_connection_manager":    "@envoy//source/extensions/filters/network/http_connection_manager:config",
-    # NOTE: Kafka filter does not have a proper filter implemented right now. We are referencing to
-    #       codec implementation that is going to be used by the filter.
-    "envoy.filters.network.kafka":                      "@envoy//source/extensions/filters/network/kafka:kafka_request_codec_lib",
+    # WiP
+    "envoy.filters.network.kafka_broker":               "@envoy//source/extensions/filters/network/kafka:kafka_broker_config_lib",
+    "envoy.filters.network.local_ratelimit":            "@envoy//source/extensions/filters/network/local_ratelimit:config",
     "envoy.filters.network.mongo_proxy":                "@envoy//source/extensions/filters/network/mongo_proxy:config",
     "envoy.filters.network.mysql_proxy":                "@envoy//source/extensions/filters/network/mysql_proxy:config",
     "envoy.filters.network.ratelimit":                  "@envoy//source/extensions/filters/network/ratelimit:config",
@@ -96,17 +99,22 @@ EXTENSIONS = {
     "envoy.filters.network.zookeeper_proxy":            "@envoy//source/extensions/filters/network/zookeeper_proxy:config",
 
     #
+    # UDP filters
+    #
+
+    "envoy.filters.udp_listener.udp_proxy":             "@envoy//source/extensions/filters/udp/udp_proxy:config",
+
+    #
+    # SSL
+    #
+    "envoy.common.crypto.utility_lib":                  "@envoy_openssl//source/extensions/common/crypto:utility_lib",
+
+    #
     # Resource monitors
     #
 
     "envoy.resource_monitors.fixed_heap":               "@envoy//source/extensions/resource_monitors/fixed_heap:config",
     "envoy.resource_monitors.injected_resource":        "@envoy//source/extensions/resource_monitors/injected_resource:config",
-
-    #
-    # SSL
-    #
-
-    "envoy.common.crypto.utility_lib":                  "@envoy_openssl//source/extensions/common/crypto:utility_lib",
 
     #
     # Stat sinks
@@ -133,6 +141,7 @@ EXTENSIONS = {
     "envoy.tracers.datadog":                            "@envoy//source/extensions/tracers/datadog:config",
     "envoy.tracers.zipkin":                             "@envoy//source/extensions/tracers/zipkin:config",
     "envoy.tracers.opencensus":                         "@envoy//source/extensions/tracers/opencensus:config",
+    # WiP
     "envoy.tracers.xray":                               "@envoy//source/extensions/tracers/xray:config",
 
     #
@@ -140,15 +149,29 @@ EXTENSIONS = {
     #
 
     "envoy.transport_sockets.alts":                     "@envoy//source/extensions/transport_sockets/alts:config",
+    "envoy.transport_sockets.raw_buffer":               "@envoy//source/extensions/transport_sockets/raw_buffer:config",
     "envoy.transport_sockets.tap":                      "@envoy//source/extensions/transport_sockets/tap:config",
     "envoy.transport_sockets.tls":                      "@envoy_openssl//source/extensions/transport_sockets/tls:config",
 
+    #
     # Retry host predicates
-    "envoy.retry_host_predicates.previous_hosts":          "@envoy//source/extensions/retry/host/previous_hosts:config",
-    "envoy.retry_host_predicates.omit_canary_hosts":            "@envoy//source/extensions/retry/host/omit_canary_hosts:config",
-    
+    #
+
+    "envoy.retry_host_predicates.previous_hosts":       "@envoy//source/extensions/retry/host/previous_hosts:config",
+    "envoy.retry_host_predicates.omit_canary_hosts":    "@envoy//source/extensions/retry/host/omit_canary_hosts:config",
+    "envoy.retry_host_predicates.omit_host_metadata":   "@envoy//source/extensions/retry/host/omit_host_metadata:config",
+
+    #
     # Retry priorities
+    #
+
     "envoy.retry_priorities.previous_priorities":       "@envoy//source/extensions/retry/priority/previous_priorities:config",
+
+    #
+    # CacheFilter plugins
+    #
+
+    "envoy.filters.http.cache.simple_http_cache":       "@envoy//source/extensions/filters/http/cache/simple_http_cache:simple_http_cache_lib",
 }
 
 WINDOWS_EXTENSIONS = {
