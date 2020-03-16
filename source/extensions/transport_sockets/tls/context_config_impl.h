@@ -61,11 +61,11 @@ public:
           dynamic_cvc);
 
 protected:
-  ContextConfigImpl(
-      const envoy::extensions::transport_sockets::tls::v3::CommonTlsContext& config,
-      const unsigned default_min_protocol_version, const unsigned default_max_protocol_version,
-      const std::string& default_cipher_suites, const std::string& default_curves,
-      Server::Configuration::TransportSocketFactoryContext& factory_context);
+  ContextConfigImpl(const envoy::extensions::transport_sockets::tls::v3::CommonTlsContext& config,
+                    const unsigned default_min_protocol_version,
+                    const unsigned default_max_protocol_version,
+                    const std::string& default_cipher_suites, const std::string& default_curves,
+                    Server::Configuration::TransportSocketFactoryContext& factory_context);
   Api::Api& api_;
 
 private:
@@ -86,12 +86,12 @@ private:
       default_cvc_;
   std::vector<Secret::TlsCertificateConfigProviderSharedPtr> tls_certificate_providers_;
   // Handle for TLS certificate dynamic secret callback.
-  Common::CallbackHandle* tc_update_callback_handle_{};
+  Envoy::Common::CallbackHandle* tc_update_callback_handle_{};
   Secret::CertificateValidationContextConfigProviderSharedPtr
       certificate_validation_context_provider_;
   // Handle for certificate validation context dynamic secret callback.
-  Common::CallbackHandle* cvc_update_callback_handle_{};
-  Common::CallbackHandle* cvc_validation_callback_handle_{};
+  Envoy::Common::CallbackHandle* cvc_update_callback_handle_{};
+  Envoy::Common::CallbackHandle* cvc_validation_callback_handle_{};
   const unsigned min_protocol_version_;
   const unsigned max_protocol_version_;
 };
@@ -157,8 +157,8 @@ private:
   const bool require_client_certificate_;
   std::vector<SessionTicketKey> session_ticket_keys_;
   const Secret::TlsSessionTicketKeysConfigProviderSharedPtr session_ticket_keys_provider_;
-  Common::CallbackHandle* stk_update_callback_handle_{};
-  Common::CallbackHandle* stk_validation_callback_handle_{};
+  Envoy::Common::CallbackHandle* stk_update_callback_handle_{};
+  Envoy::Common::CallbackHandle* stk_validation_callback_handle_{};
 
   std::vector<ServerContextConfig::SessionTicketKey> getSessionTicketKeys(
       const envoy::extensions::transport_sockets::tls::v3::TlsSessionTicketKeys& keys);
