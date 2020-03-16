@@ -5,6 +5,7 @@ load(
     "envoy_cc_binary",
     "envoy_cc_library",
     "envoy_cc_test",
+    "envoy_cc_test_binary",
     "envoy_package",
 )
 
@@ -16,6 +17,7 @@ envoy_cc_test(
     srcs = ["tls_inspector_test.cc"],
     deps = [
         ":tls_utility_lib",
+        "//source/extensions/filters/listener/tls_inspector:config",
         "//source/extensions/filters/listener/tls_inspector:tls_inspector_lib",
         "@envoy//test/mocks/api:api_mocks",
         "@envoy//test/mocks/network:network_mocks",
@@ -24,10 +26,9 @@ envoy_cc_test(
     ],
 )
 
-envoy_cc_binary(
+envoy_cc_test_binary(
     name = "tls_inspector_benchmark",
     repository = "@envoy",
-    testonly = 1,
     srcs = ["tls_inspector_benchmark.cc"],
     external_deps = [
         "benchmark",

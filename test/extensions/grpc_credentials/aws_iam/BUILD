@@ -13,6 +13,7 @@ envoy_cc_test(
     name = "aws_iam_grpc_credentials_test",
     repository = "@envoy",
     srcs = envoy_select_google_grpc(["aws_iam_grpc_credentials_test.cc"], "@envoy"),
+    data = ["@envoy//test/config/integration/certs"],
     deps = [
         "@envoy//source/extensions/grpc_credentials:well_known_names",
         "//source/extensions/grpc_credentials/aws_iam:config",
