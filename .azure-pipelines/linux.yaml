@@ -28,8 +28,6 @@ jobs:
     matrix:
       dev:
         CI_TARGET: 'bazel.dev'
-      sizeopt:
-        CI_TARGET: 'bazel.sizeopt'
   timeoutInMinutes: 360
   pool:
     vmImage: 'Ubuntu 16.04'
