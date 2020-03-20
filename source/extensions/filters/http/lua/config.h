@@ -14,8 +14,7 @@ namespace Lua {
 /**
  * Config registration for the Lua filter. @see NamedHttpFilterConfigFactory.
  */
-class LuaFilterConfig
-    : public Common::FactoryBase<envoy::extensions::filters::http::lua::v3::Lua> {
+class LuaFilterConfig : public Common::FactoryBase<envoy::extensions::filters::http::lua::v3::Lua> {
 public:
   LuaFilterConfig() : FactoryBase(HttpFilterNames::get().Lua) {}
 

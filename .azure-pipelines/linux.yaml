@@ -28,14 +28,18 @@ jobs:
     matrix:
       dev:
         CI_TARGET: 'bazel.dev'
-      release:
-        CI_TARGET: 'bazel.release'
   timeoutInMinutes: 360
   pool:
     vmImage: 'Ubuntu 16.04'
   steps:
   - checkout: self
     submodules: true
+
+  - bash: |
+      echo "disk space at beginning of build:"
+      df -h
+    displayName: "Check disk space at beginning"
+
   - bash: |
       sudo mkdir -p /etc/docker
       echo '{
@@ -52,3 +56,9 @@ jobs:
       ENVOY_SRCDIR: "/source/envoy"
       BAZEL_BUILD_EXTRA_OPTIONS: "--curses=no"
     displayName: "Run CI script"
+
+  - bash: |
+      echo "disk space at end of build:"
+      df -h
+    displayName: "Check disk space at end"
+    condition: always()

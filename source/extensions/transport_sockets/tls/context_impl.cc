@@ -587,41 +587,6 @@ void ContextImpl::incCounter(const Stats::StatName name, absl::string_view value
 #endif
 }
 
-std::string ContextImpl::generalNameAsString(const GENERAL_NAME* general_name) {
-  std::string san;
-  switch (general_name->type) {
-  case GEN_DNS: {
-    ASN1_STRING* str = general_name->d.dNSName;
-    san.assign(reinterpret_cast<const char*>(ASN1_STRING_get0_data(str)), ASN1_STRING_length(str));
-    break;
-  }
-  case GEN_URI: {
-    ASN1_STRING* str = general_name->d.uniformResourceIdentifier;
-    san.assign(reinterpret_cast<const char*>(ASN1_STRING_get0_data(str)), ASN1_STRING_length(str));
-    break;
-  }
-  case GEN_IPADD: {
-    if (general_name->d.ip->length == 4) {
-      sockaddr_in sin;
-      sin.sin_port = 0;
-      sin.sin_family = AF_INET;
-      memcpy(&sin.sin_addr, general_name->d.ip->data, sizeof(sin.sin_addr));
-      Network::Address::Ipv4Instance addr(&sin);
-      san = addr.ip()->addressAsString();
-    } else if (general_name->d.ip->length == 16) {
-      sockaddr_in6 sin6;
-      sin6.sin6_port = 0;
-      sin6.sin6_family = AF_INET6;
-      memcpy(&sin6.sin6_addr, general_name->d.ip->data, sizeof(sin6.sin6_addr));
-      Network::Address::Ipv6Instance addr(sin6);
-      san = addr.ip()->addressAsString();
-    }
-    break;
-  }
-  }
-  return san;
-}
-
 void ContextImpl::logHandshake(SSL* ssl) const {
   stats_.handshake_.inc();
 
@@ -683,9 +648,14 @@ bool ContextImpl::matchSubjectAltName(
     return false;
   }
   for (const GENERAL_NAME* general_name : san_names.get()) {
-    const std::string san = generalNameAsString(general_name);
+    const std::string san = Utility::generalNameAsString(general_name);
     for (auto& config_san_matcher : subject_alt_name_matchers) {
-      if (config_san_matcher.match(san)) {
+      // For DNS SAN, if the StringMatcher type is exact, we have to follow DNS matching semantics.
+      if (general_name->type == GEN_DNS &&
+                  config_san_matcher.matcher().match_pattern_case() ==
+                      envoy::type::matcher::v3::StringMatcher::MatchPatternCase::kExact
+              ? dnsNameMatch(config_san_matcher.matcher().exact(), san.c_str())
+              : config_san_matcher.match(san)) {
         return true;
       }
     }
@@ -701,7 +671,7 @@ bool ContextImpl::verifySubjectAltName(X509* cert,
     return false;
   }
   for (const GENERAL_NAME* general_name : san_names.get()) {
-    const std::string san = generalNameAsString(general_name);
+    const std::string san = Utility::generalNameAsString(general_name);
     for (auto& config_san : subject_alt_names) {
       if (general_name->type == GEN_DNS ? dnsNameMatch(config_san, san.c_str())
                                         : config_san == san) {
@@ -826,6 +796,11 @@ Envoy::Ssl::CertificateDetailsPtr ContextImpl::certificateDetails(X509* cert,
     envoy::admin::v3::SubjectAlternateName& subject_alt_name =
         *certificate_details->add_subject_alt_names();
     subject_alt_name.set_uri(uri_san);
+  }
+  for (auto& ip_san : Utility::getSubjectAltNames(*cert, GEN_IPADD)) {
+    envoy::admin::v3::SubjectAlternateName& subject_alt_name =
+        *certificate_details->add_subject_alt_names();
+    subject_alt_name.set_ip_address(ip_san);
   }
   return certificate_details;
 }

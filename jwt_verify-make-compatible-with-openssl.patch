@@ -1,4 +1,4 @@
-From e6c4e2327264ebe725ed4346a9f101087ae34fe2 Mon Sep 17 00:00:00 2001
+From 524cb52b23cd284f9f2c6c7db3b46bb2167cba4b Mon Sep 17 00:00:00 2001
 From: Venil Noronha <veniln@vmware.com>
 Date: Fri, 1 Nov 2019 10:10:10 -0700
 Subject: [PATCH] make compatible with openssl
@@ -7,12 +7,12 @@ Signed-off-by: Venil Noronha <veniln@vmware.com>
 ---
  BUILD                 |  2 ++
  jwt_verify_lib/jwks.h |  4 ++++
- src/jwks.cc           | 20 ++++++++++++++++----
+ src/jwks.cc           | 22 +++++++++++++++++-----
  src/verify.cc         | 13 +++++++++++--
- 4 files changed, 33 insertions(+), 6 deletions(-)
+ 4 files changed, 34 insertions(+), 7 deletions(-)
 
 diff --git a/BUILD b/BUILD
-index 96ba16c..43d1b4e 100644
+index 532dd5d..8d96da7 100644
 --- a/BUILD
 +++ b/BUILD
 @@ -27,6 +27,8 @@ cc_library(
@@ -25,7 +25,7 @@ index 96ba16c..43d1b4e 100644
  )
  
 diff --git a/jwt_verify_lib/jwks.h b/jwt_verify_lib/jwks.h
-index 6094e2b..3a5c478 100644
+index b77478b..f7293d4 100644
 --- a/jwt_verify_lib/jwks.h
 +++ b/jwt_verify_lib/jwks.h
 @@ -23,6 +23,10 @@
@@ -40,10 +40,10 @@ index 6094e2b..3a5c478 100644
  namespace jwt_verify {
  
 diff --git a/src/jwks.cc b/src/jwks.cc
-index e5d6c45..edf2caf 100644
+index 1aaecc4..4b5d4c2 100644
 --- a/src/jwks.cc
 +++ b/src/jwks.cc
-@@ -28,6 +28,11 @@
+@@ -30,6 +30,11 @@
  #include "openssl/rsa.h"
  #include "openssl/sha.h"
  
@@ -55,7 +55,7 @@ index e5d6c45..edf2caf 100644
  namespace google {
  namespace jwt_verify {
  
-@@ -124,18 +129,25 @@ class EvpPkeyGetter : public WithStatus {
+@@ -96,18 +101,25 @@ class KeyGetter : public WithStatus {
    bssl::UniquePtr<RSA> createRsaFromJwk(const std::string& n,
                                          const std::string& e) {
      bssl::UniquePtr<RSA> rsa(RSA_new());
@@ -84,9 +84,18 @@ index e5d6c45..edf2caf 100644
 +    }
      return rsa;
    }
- };
+ 
+@@ -404,7 +416,7 @@ void Jwks::createFromPemCore(const std::string& pkey_pem) {
+   }
+   assert(e.getStatus() == Status::Ok);
+ 
+-  switch (EVP_PKEY_type(evp_pkey->type)) {
++  switch (EVP_PKEY_base_id(evp_pkey.get())) {
+     case EVP_PKEY_RSA:
+       key_ptr->rsa_.reset(EVP_PKEY_get1_RSA(evp_pkey.get()));
+       key_ptr->kty_ = "RSA";
 diff --git a/src/verify.cc b/src/verify.cc
-index 4d26c25..10fb175 100644
+index e2fdd7a..70bf556 100644
 --- a/src/verify.cc
 +++ b/src/verify.cc
 @@ -22,7 +22,13 @@
@@ -103,7 +112,7 @@ index 4d26c25..10fb175 100644
  #include "openssl/rsa.h"
  #include "openssl/sha.h"
  
-@@ -91,9 +97,12 @@ bool verifySignatureEC(EC_KEY* key, const EVP_MD* md, const uint8_t* signature,
+@@ -95,9 +101,12 @@ bool verifySignatureEC(EC_KEY* key, const EVP_MD* md, const uint8_t* signature,
      return false;
    }
  

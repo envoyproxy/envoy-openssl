@@ -24,6 +24,7 @@ envoy_cc_mock(
         "@envoy//include/envoy/server:instance_interface",
         "@envoy//include/envoy/server:options_interface",
         "@envoy//include/envoy/server:overload_manager_interface",
+        "@envoy//include/envoy/server:tracer_config_interface",
         "@envoy//include/envoy/server:worker_interface",
         "@envoy//include/envoy/ssl:context_manager_interface",
         "@envoy//include/envoy/upstream:health_checker_interface",
