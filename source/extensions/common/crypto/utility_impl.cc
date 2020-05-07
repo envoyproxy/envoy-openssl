@@ -17,10 +17,7 @@ std::vector<uint8_t> UtilityImpl::getSha256Digest(const Buffer::Instance& buffer
   EVP_MD_CTX* ctx(EVP_MD_CTX_new());
   auto rc = EVP_DigestInit(ctx, EVP_sha256());
   RELEASE_ASSERT(rc == 1, "Failed to init digest context");
-  const auto num_slices = buffer.getRawSlices(nullptr, 0);
-  absl::FixedArray<Buffer::RawSlice> slices(num_slices);
-  buffer.getRawSlices(slices.begin(), num_slices);
-  for (const auto& slice : slices) {
+  for (const auto& slice : buffer.getRawSlices()) {
     rc = EVP_DigestUpdate(ctx, slice.mem_, slice.len_);
     RELEASE_ASSERT(rc == 1, "Failed to update digest");
   }

@@ -12,10 +12,10 @@ namespace Extensions {
 namespace Common {
 namespace Cbs {
 
-struct CBS {
+typedef struct CBS {
   const uint8_t* data;
   size_t len;
-};
+} CBS;
 
 void CBS_init(CBS* cbs, const uint8_t* data, size_t len);
 

@@ -20,23 +20,30 @@
 
 #include "openssl/ssl.h"
 
+#include "boringssl_compat/bssl.h"
+#include "boringssl_compat/cbs.h"
+
 namespace Envoy {
 namespace Extensions {
 namespace ListenerFilters {
 namespace TlsInspector {
 
+// Min/max TLS version recognized by the underlying TLS/SSL library.
+const unsigned Config::TLS_MIN_SUPPORTED_VERSION = TLS1_VERSION;
+const unsigned Config::TLS_MAX_SUPPORTED_VERSION = TLS1_3_VERSION;
+
 Config::Config(Stats::Scope& scope, uint32_t max_client_hello_size)
     : stats_{ALL_TLS_INSPECTOR_STATS(POOL_COUNTER_PREFIX(scope, "tls_inspector."))},
-      ssl_ctx_(
-          SSL_CTX_new(Envoy::Extensions::ListenerFilters::TlsInspector::TLS_with_buffers_method())),
+      ssl_ctx_(SSL_CTX_new(TLS_with_buffers_method())),
       max_client_hello_size_(max_client_hello_size) {
+
   if (max_client_hello_size_ > TLS_MAX_CLIENT_HELLO) {
     throw EnvoyException(fmt::format("max_client_hello_size of {} is greater than maximum of {}.",
                                      max_client_hello_size_, size_t(TLS_MAX_CLIENT_HELLO)));
   }
 
-  SSL_CTX_set_options(ssl_ctx_.get(), SSL_OP_NO_TICKET);
-  SSL_CTX_set_session_cache_mode(ssl_ctx_.get(), SSL_SESS_CACHE_OFF);
+  SSL_CTX_set_min_proto_version(ssl_ctx_.get(), TLS_MIN_SUPPORTED_VERSION);
+  SSL_CTX_set_max_proto_version(ssl_ctx_.get(), TLS_MAX_SUPPORTED_VERSION);
 
   Envoy::Extensions::ListenerFilters::TlsInspector::set_certificate_cb(ssl_ctx_.get());
 
@@ -44,9 +51,9 @@ Config::Config(Stats::Scope& scope, uint32_t max_client_hello_size)
     Filter* filter = static_cast<Filter*>(SSL_get_app_data(ssl));
     absl::string_view servername = SSL_get_servername(ssl, TLSEXT_NAMETYPE_host_name);
     filter->onServername(servername);
-    if (servername.rfind("outbound_") != std::string::npos) {
+    /* if (servername.rfind("outbound_") != std::string::npos) {
       filter->setIstioApplicationProtocol();
-    }
+      } */
 
     return Envoy::Extensions::ListenerFilters::TlsInspector::getServernameCallbackReturn(out_alert);
   };
@@ -61,13 +68,13 @@ Config::Config(Stats::Scope& scope, uint32_t max_client_hello_size)
   };
   SSL_CTX_set_alpn_select_cb(ssl_ctx_.get(), alpn_cb, nullptr);
 
-  auto cert_cb = [](SSL* ssl, void*) -> int {
+  /* auto cert_cb = [](SSL* ssl, void*) -> int {
     Filter* filter = static_cast<Filter*>(SSL_get_app_data(ssl));
     filter->onCert();    
 
     return SSL_TLSEXT_ERR_OK;
   };
-  SSL_CTX_set_cert_cb(ssl_ctx_.get(), cert_cb, nullptr);
+  SSL_CTX_set_cert_cb(ssl_ctx_.get(), cert_cb, nullptr); */
 
 }
 
@@ -130,18 +137,23 @@ Network::FilterStatus Filter::onAccept(Network::ListenerFilterCallbacks& cb) {
 }
 
 void Filter::onALPN(const unsigned char* data, unsigned int len) {
-  std::vector<absl::string_view> protocols =
-      Envoy::Extensions::ListenerFilters::TlsInspector::getAlpnProtocols(data, len);
-  cb_->socket().setRequestedApplicationProtocols(protocols);
-  alpn_found_ = true;
-}
-
-void Filter::onCert() {
+  CBS wire, list;
+  CBS_init(&wire, reinterpret_cast<const uint8_t*>(data), static_cast<size_t>(len));
+  if (!CBS_get_u16_length_prefixed(&wire, &list) || CBS_len(&wire) != 0 || CBS_len(&list) < 2) {
+    // Don't produce errors, let the real TLS stack do it.
+    return;
+  }
+  CBS name;
   std::vector<absl::string_view> protocols;
-  if (istio_protocol_required_) {
-    protocols.emplace_back("istio");
+  while (CBS_len(&list) > 0) {
+    if (!CBS_get_u8_length_prefixed(&list, &name) || CBS_len(&name) == 0) {
+      // Don't produce errors, let the real TLS stack do it.
+      return;
+    }
+    protocols.emplace_back(reinterpret_cast<const char*>(CBS_data(&name)), CBS_len(&name));
   }
   cb_->socket().setRequestedApplicationProtocols(protocols);
+  alpn_found_ = true;
 }
 
 void Filter::onServername(absl::string_view name) {
@@ -153,10 +165,6 @@ void Filter::onServername(absl::string_view name) {
     config_->stats().sni_not_found_.inc();
   }
   clienthello_success_ = true;
-}
-
-void Filter::setIstioApplicationProtocol() {
-  istio_protocol_required_ = true;
 }
 
 ParseState Filter::onRead() {
