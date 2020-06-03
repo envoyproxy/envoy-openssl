@@ -177,6 +177,11 @@ void SslSocket::onPrivateKeyMethodComplete() {
 
 PostIoAction SslSocket::doHandshake() {
   ASSERT(state_ != SocketState::HandshakeComplete && state_ != SocketState::ShutdownSent);
+
+  if (state_ == SocketState::HandshakeInProgress) {
+    return PostIoAction::KeepOpen;
+  }
+
   int rc = SSL_do_handshake(ssl_);
   if (rc == 1) {
     ENVOY_CONN_LOG(debug, "handshake complete", callbacks_->connection());
@@ -200,10 +205,6 @@ PostIoAction SslSocket::doHandshake() {
       return PostIoAction::KeepOpen;
     case SSL_ERROR_WANT_ASYNC:
       ENVOY_CONN_LOG(debug, "SSL handshake: request async handling", callbacks_->connection());
-
-      if (state_ == SocketState::HandshakeInProgress) {
-        return PostIoAction::KeepOpen;
-      }
 
       state_ = SocketState::HandshakeInProgress;
 
@@ -399,7 +400,8 @@ void SslSocket::shutdownSsl() {
 void SslSocket::asyncCb() {
   ENVOY_CONN_LOG(debug, "SSL async done!", callbacks_->connection());
 
-  ASSERT(state_ != SocketState::HandshakeComplete);
+  ASSERT(state_ != SocketState::HandshakeComplete && state_ != SocketState::HandshakeReady);
+  state_ = SocketState::HandshakeReady;
   // We lose the return value here, so might consider propagating it with an event
   // in case we run into "Close" result from the handshake handler.
   PostIoAction action = doHandshake();
@@ -408,7 +410,6 @@ void SslSocket::asyncCb() {
     ctx_->stats().fail_async_handshake_error_.inc();
     callbacks_->connection().close(Network::ConnectionCloseType::FlushWrite);
   }
-
 }
 void SslExtendedSocketInfoImpl::setCertificateValidationStatus(
     Envoy::Ssl::ClientValidationStatus validated) {
@@ -570,7 +571,8 @@ void SslSocket::closeSocket(Network::ConnectionEvent) {
   // Attempt to send a shutdown before closing the socket. It's possible this won't go out if
   // there is no room on the socket. We can extend the state machine to handle this at some point
   // if needed.
-  if (state_ == SocketState::HandshakeInProgress || state_ == SocketState::HandshakeComplete) {
+  if (state_ == SocketState::HandshakeInProgress || state_ == SocketState::HandshakeReady ||
+      state_ == SocketState::HandshakeComplete) {
     shutdownSsl();
   }
 }
