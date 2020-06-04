@@ -43,7 +43,13 @@ struct SslSocketFactoryStats {
 };
 
 enum class InitialState { Client, Server };
-enum class SocketState { PreHandshake, HandshakeInProgress, HandshakeComplete, ShutdownSent };
+enum class SocketState {
+  PreHandshake,
+  HandshakeInProgress,
+  HandshakeReady,
+  HandshakeComplete,
+  ShutdownSent
+};
 
 class SslExtendedSocketInfoImpl : public Envoy::Ssl::SslExtendedSocketInfo {
 public:
