@@ -1,5 +1,6 @@
 #include "extensions/transport_sockets/tls/ssl_socket.h"
 
+#include "envoy/event/dispatcher.h"
 #include "envoy/stats/scope.h"
 
 #include "common/common/assert.h"
@@ -14,6 +15,8 @@
 #include "openssl/x509v3.h"
 
 using Envoy::Network::PostIoAction;
+
+#define SSL_ERROR_WANT_PRIVATE_KEY_OPERATION 13
 
 namespace Envoy {
 namespace Extensions {
@@ -56,6 +59,8 @@ SslSocket::SslSocket(Envoy::Ssl::ContextSharedPtr ctx, InitialState state,
     ASSERT(state == InitialState::Server);
     SSL_set_accept_state(ssl_);
   }
+
+  SSL_set_mode(ssl_, SSL_MODE_ASYNC);
 }
 
 void SslSocket::setTransportSocketCallbacks(Network::TransportSocketCallbacks& callbacks) {
@@ -184,6 +189,8 @@ PostIoAction SslSocket::doHandshake() {
                ? PostIoAction::KeepOpen
                : PostIoAction::Close;
   } else {
+    OSSL_ASYNC_FD* fds;
+    size_t numfds;
     int err = SSL_get_error(ssl_, rc);
     switch (err) {
     case SSL_ERROR_WANT_READ:
@@ -191,9 +198,48 @@ PostIoAction SslSocket::doHandshake() {
       ENVOY_CONN_LOG(debug, "handshake expecting {}", callbacks_->connection(),
                      err == SSL_ERROR_WANT_READ ? "read" : "write");
       return PostIoAction::KeepOpen;
-    case SSL_ERROR_WANT_PRIVATE_KEY_OPERATION:
-      ENVOY_CONN_LOG(debug, "handshake continued asynchronously", callbacks_->connection());
+    case SSL_ERROR_WANT_ASYNC:
+      ENVOY_CONN_LOG(debug, "SSL handshake: request async handling", callbacks_->connection());
+
+      if (state_ == SocketState::HandshakeInProgress) {
+        return PostIoAction::KeepOpen;
+      }
+
       state_ = SocketState::HandshakeInProgress;
+
+      rc = SSL_get_all_async_fds(ssl_, NULL, &numfds);
+      if (rc == 0) {
+        drainErrorQueue();
+        return PostIoAction::Close;
+      }
+
+      /* We only wait for the first fd here! Will fail if multiple async engines. */
+      if (numfds != 1) {
+        ENVOY_LOG(error, "Only one async OpenSSL engine is supported currently");
+        drainErrorQueue();
+        return PostIoAction::Close;
+      }
+
+      fds = static_cast<OSSL_ASYNC_FD*>(malloc(numfds * sizeof(OSSL_ASYNC_FD)));
+      if (fds == NULL) {
+        drainErrorQueue();
+        return PostIoAction::Close;
+      }
+
+      rc = SSL_get_all_async_fds(ssl_, fds, &numfds);
+      if (rc == 0) {
+        free(fds);
+        drainErrorQueue();
+        return PostIoAction::Close;
+      }
+
+      file_event_ = callbacks_->connection().dispatcher().createFileEvent(
+          fds[0], [this](uint32_t /* events */) -> void { asyncCb(); },
+          Event::FileTriggerType::Edge, Event::FileReadyType::Read);
+      ENVOY_CONN_LOG(debug, "SSL async fd: {}, numfds: {}", callbacks_->connection(), fds[0],
+                     numfds);
+      free(fds);
+
       return PostIoAction::KeepOpen;
     default:
       ENVOY_CONN_LOG(debug, "handshake error: {}", callbacks_->connection(), err);
@@ -291,6 +337,13 @@ void SslSocket::onConnected() { ASSERT(state_ == SocketState::PreHandshake); }
 
 Ssl::ConnectionInfoConstSharedPtr SslSocket::ssl() const { return info_; }
 
+// SslHolder defers SSL_free() calls by keeping a reference to SslSocketInfo until there's no
+// pending async job and it's safe to delete it.
+struct SslHolder {
+  Ssl::ConnectionInfoConstSharedPtr info_;
+  Event::FileEventPtr file_event_;
+};
+
 void SslSocket::shutdownSsl() {
   ASSERT(state_ != SocketState::PreHandshake);
   if (state_ != SocketState::ShutdownSent &&
@@ -299,9 +352,64 @@ void SslSocket::shutdownSsl() {
     ENVOY_CONN_LOG(debug, "SSL shutdown: rc={}", callbacks_->connection(), rc);
     drainErrorQueue();
     state_ = SocketState::ShutdownSent;
+
+    // If we let the SSL socket be destroyed while there is a pending async SSL operation
+    // then the callback handler will use already freed memory. Hence defer its deleting.
+    if (SSL_waiting_for_async(ssl_)) {
+      OSSL_ASYNC_FD* fds;
+      size_t numfds;
+
+      int rc = SSL_get_all_async_fds(ssl_, NULL, &numfds);
+      if (rc == 0) {
+        return;
+      }
+
+      if (numfds != 1) {
+        ENVOY_LOG(error, "Only one async OpenSSL engine is supported currently");
+        return;
+      }
+
+      fds = static_cast<OSSL_ASYNC_FD*>(malloc(numfds * sizeof(OSSL_ASYNC_FD)));
+      if (fds == NULL) {
+        return;
+      }
+
+      rc = SSL_get_all_async_fds(ssl_, fds, &numfds);
+      if (rc == 0) {
+        free(fds);
+        return;
+      }
+
+      SslStats& stats = ctx_->stats();
+      SslHolder* holder = new SslHolder;
+      holder->info_ = info_;
+      holder->file_event_ = callbacks_->connection().dispatcher().createFileEvent(
+          fds[0],
+          [holder, &stats](uint32_t /* events */) -> void {
+            stats.fail_async_premature_disconnect_.inc();
+            delete holder;
+          },
+          Event::FileTriggerType::Edge, Event::FileReadyType::Read);
+      free(fds);
+      ENVOY_CONN_LOG(info, "Postponed deleting SSL", callbacks_->connection());
+    }
   }
 }
 
+void SslSocket::asyncCb() {
+  ENVOY_CONN_LOG(debug, "SSL async done!", callbacks_->connection());
+
+  ASSERT(state_ != SocketState::HandshakeComplete);
+  // We lose the return value here, so might consider propagating it with an event
+  // in case we run into "Close" result from the handshake handler.
+  PostIoAction action = doHandshake();
+  if (action == PostIoAction::Close) {
+    ENVOY_CONN_LOG(debug, "async handshake completion error", callbacks_->connection());
+    ctx_->stats().fail_async_handshake_error_.inc();
+    callbacks_->connection().close(Network::ConnectionCloseType::FlushWrite);
+  }
+
+}
 void SslExtendedSocketInfoImpl::setCertificateValidationStatus(
     Envoy::Ssl::ClientValidationStatus validated) {
   certificate_validation_status_ = validated;
@@ -400,13 +508,13 @@ const std::string& SslSocketInfo::urlEncodedPemEncodedPeerCertificateChain() con
     return cached_url_encoded_pem_encoded_peer_cert_chain_;
   }
 
-  STACK_OF(X509)* cert_chain = SSL_get_peer_full_cert_chain(ssl_.get());
+  STACK_OF(X509)* cert_chain = SSL_get_peer_cert_chain(ssl_.get());
   if (cert_chain == nullptr) {
     ASSERT(cached_url_encoded_pem_encoded_peer_cert_chain_.empty());
     return cached_url_encoded_pem_encoded_peer_cert_chain_;
   }
 
-  for (uint64_t i = 0; i < sk_X509_num(cert_chain); i++) {
+  for (int i = 0; i < sk_X509_num(cert_chain); i++) {
     X509* cert = sk_X509_value(cert_chain, i);
 
     bssl::UniquePtr<BIO> buf(BIO_new(BIO_s_mem()));

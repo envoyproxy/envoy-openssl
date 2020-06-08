@@ -198,20 +198,28 @@ public:
   void TearDown() override { SslIntegrationTestBase::TearDown(); };
 
   ClientSslTransportOptions rsaOnlyClientOptions() {
+    /*
     if (tls_version_ == envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_3) {
+    */
       return ClientSslTransportOptions().setSigningAlgorithmsForTest("rsa_pss_rsae_sha256");
+    /*
     } else {
       return ClientSslTransportOptions().setCipherSuites({"ECDHE-RSA-AES128-GCM-SHA256"});
     }
+    */
   }
 
   ClientSslTransportOptions ecdsaOnlyClientOptions() {
     auto options = ClientSslTransportOptions().setClientEcdsaCert(true);
+    /*
     if (tls_version_ == envoy::extensions::transport_sockets::tls::v3::TlsParameters::TLSv1_3) {
+    */
       return options.setSigningAlgorithmsForTest("ecdsa_secp256r1_sha256");
+    /*
     } else {
       return options.setCipherSuites({"ECDHE-ECDSA-AES128-GCM-SHA256"});
     }
+    */
   }
 
   static std::string ipClientVersionTestParamsToString(
@@ -369,7 +377,7 @@ public:
         bootstrap.mutable_static_resources()->mutable_clusters(0)->mutable_transport_socket();
     transport_socket->set_name("envoy.transport_sockets.tap");
     envoy::config::core::v3::TransportSocket raw_transport_socket;
-    raw_transport_socket.set_name("envoy.transport_sockets.raw_buffer");
+    raw_transport_socket.set_name("raw_buffer");
     envoy::extensions::transport_sockets::tap::v3::Tap tap_config =
         createTapConfig(raw_transport_socket);
     tap_config.mutable_transport_socket()->MergeFrom(raw_transport_socket);

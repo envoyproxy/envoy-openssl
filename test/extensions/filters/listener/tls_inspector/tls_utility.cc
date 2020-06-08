@@ -2,18 +2,23 @@
 
 #include "common/common/assert.h"
 
+#include "extensions/filters/listener/tls_inspector/openssl_impl.h"
+
+#include "boringssl_compat/bssl.h"
 #include "openssl/ssl.h"
 
 namespace Envoy {
-namespace Tls {
+namespace Extensions {
+namespace ListenerFilters {
+namespace TlsInspector {
 namespace Test {
 
-std::vector<uint8_t> generateClientHello(uint16_t tls_min_version, uint16_t tls_max_version,
-                                         const std::string& sni_name, const std::string& alpn) {
-  bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_with_buffers_method()));
+std::vector<uint8_t> generateClientHello(const std::string& sni_name, const std::string& alpn) {
+  bssl::UniquePtr<SSL_CTX> ctx(
+      SSL_CTX_new(Envoy::Extensions::ListenerFilters::TlsInspector::TLS_with_buffers_method()));
 
-  SSL_CTX_set_min_proto_version(ctx.get(), tls_min_version);
-  SSL_CTX_set_max_proto_version(ctx.get(), tls_max_version);
+  const long flags = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
+  SSL_CTX_set_options(ctx.get(), flags);
 
   bssl::UniquePtr<SSL> ssl(SSL_new(ctx.get()));
 
@@ -32,7 +37,7 @@ std::vector<uint8_t> generateClientHello(uint16_t tls_min_version, uint16_t tls_
     SSL_set_alpn_protos(ssl.get(), reinterpret_cast<const uint8_t*>(alpn.data()), alpn.size());
   }
   SSL_do_handshake(ssl.get());
-  const uint8_t* data = nullptr;
+  const uint8_t* data = NULL;
   size_t data_len = 0;
   BIO_mem_contents(out, &data, &data_len);
   ASSERT(data_len > 0);
@@ -41,5 +46,7 @@ std::vector<uint8_t> generateClientHello(uint16_t tls_min_version, uint16_t tls_
 }
 
 } // namespace Test
-} // namespace Tls
+} // namespace TlsInspector
+} // namespace ListenerFilters
+} // namespace Extensions
 } // namespace Envoy

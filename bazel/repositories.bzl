@@ -107,6 +107,8 @@ def envoy_dependencies(skip_targets = []):
     # - non-FIPS BoringSSL from @boringssl//:ssl.
     _boringssl()
     _boringssl_fips()
+    _openssl()
+    _openssl_local()
     native.bind(
         name = "ssl",
         actual = "@envoy//bazel:boringssl",
@@ -191,6 +193,19 @@ def _boringssl_fips():
         sha256 = location["sha256"],
         genrule_cmd_file = "@envoy//bazel/external:boringssl_fips.genrule_cmd",
         build_file = "@envoy//bazel/external:boringssl_fips.BUILD",
+    )
+
+def _openssl():
+    _repository_impl(
+        name = "openssl",
+	build_file = "@envoy//bazel/external:openssl.BUILD",
+    )
+
+def _openssl_local():
+    native.new_local_repository(
+        name = "openssl_host_shared",
+        build_file = "@envoy//bazel/external:openssl_host_shared.BUILD",
+        path = "/usr/lib64",
     )
 
 def _com_github_circonus_labs_libcircllhist():
@@ -704,7 +719,11 @@ def _upb():
     )
 
 def _com_github_google_jwt_verify():
-    _repository_impl("com_github_google_jwt_verify")
+    _repository_impl(
+        name = "com_github_google_jwt_verify",
+	patches = ["@envoy//bazel:jwt_verify-make-compatible-with-openssl.patch"],
+	patch_args = ["-p1"],
+    )
 
     native.bind(
         name = "jwt_verify_lib",

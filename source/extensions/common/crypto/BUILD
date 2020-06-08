@@ -3,6 +3,7 @@ licenses(["notice"])  # Apache 2
 load(
     "//bazel:envoy_build_system.bzl",
     "envoy_cc_extension",
+    "envoy_cc_library",
     "envoy_package",
 )
 
@@ -27,5 +28,7 @@ envoy_cc_extension(
         "//include/envoy/buffer:buffer_interface",
         "//source/common/common:assert_lib",
         "//source/common/crypto:utility_lib",
+        "//boringssl_compat:bssl_compat_lib",
+        "//boringssl_compat:bssl_compat_cbs_lib",
     ],
 )

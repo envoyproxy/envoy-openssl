@@ -16,7 +16,7 @@ envoy_cc_library(
     name = "tls_inspector_lib",
     srcs = ["tls_inspector.cc"],
     hdrs = ["tls_inspector.h"],
-    external_deps = ["ssl"],
+    external_deps = ["ssl",],
     deps = [
         "//include/envoy/event:dispatcher_interface",
         "//include/envoy/event:timer_interface",
@@ -26,6 +26,9 @@ envoy_cc_library(
         "//source/common/common:assert_lib",
         "//source/common/common:minimal_logger_lib",
         "//source/extensions/transport_sockets:well_known_names",
+        ":openssl_impl_lib",
+        "//boringssl_compat:bssl_compat_cbs_lib",
+        "//boringssl_compat:bssl_compat_lib",
     ],
 )
 
@@ -39,5 +42,21 @@ envoy_cc_extension(
         "//source/extensions/filters/listener:well_known_names",
         "//source/extensions/filters/listener/tls_inspector:tls_inspector_lib",
         "@envoy_api//envoy/extensions/filters/listener/tls_inspector/v3:pkg_cc_proto",
+    ],
+)
+
+envoy_cc_library(
+    name = "openssl_impl_lib",
+    srcs = [
+        "openssl_impl.cc",
+    ],
+    hdrs = [
+        "openssl_impl.h",
+    ],
+    external_deps = [
+        "ssl",
+    ],
+    deps = [
+        "//boringssl_compat:bssl_compat_lib",
     ],
 )

@@ -42,6 +42,11 @@ REPOSITORY_LOCATIONS = dict(
         # fips-20180730
         urls = ["https://commondatastorage.googleapis.com/chromium-boringssl-docs/fips/boringssl-66005f41fbc3529ffe8d007708756720529da20d.tar.xz"],
     ),
+    openssl = dict(
+	sha256 = "23011a5cc78e53d0dc98dfa608c51e72bcd350aa57df74c5d5574ba4ffb62e74",
+	strip_prefix = "openssl-OpenSSL_1_1_1d",
+	urls = ["https://github.com/openssl/openssl/archive/OpenSSL_1_1_1d.tar.gz"],
+    ),
     com_google_absl = dict(
         sha256 = "2693730730247afb0e7cb2d41664ac2af3ad75c79944efd266be40ba944179b9",
         strip_prefix = "abseil-cpp-06f0e767d13d4d68071c4fc51e25724e0fc8bc74",
@@ -95,7 +100,7 @@ REPOSITORY_LOCATIONS = dict(
         urls = ["https://github.com/gabime/spdlog/archive/v1.3.1.tar.gz"],
     ),
     com_github_google_libprotobuf_mutator = dict(
-        sha256 = "",
+        sha256 = "f6def6cdf63e29a367d46c0ad9e3e31eed89d031e22e0caac126f1e62d8b3fd0",
         strip_prefix = "libprotobuf-mutator-3521f47a2828da9ace403e4ecc4aece1a84feb36",
         # 2020-02-04
         urls = ["https://github.com/google/libprotobuf-mutator/archive/3521f47a2828da9ace403e4ecc4aece1a84feb36.tar.gz"],
@@ -136,10 +141,10 @@ REPOSITORY_LOCATIONS = dict(
         urls = ["https://github.com/opentracing/opentracing-cpp/archive/v1.5.1.tar.gz"],
     ),
     com_lightstep_tracer_cpp = dict(
-        sha256 = "1ed7faaad1deabddb83791b2b7f2ec79d25b47009994c1a8bb6da85244c60e4f",
-        strip_prefix = "lightstep-tracer-cpp-665d8388aafbbbb44994f4fa12b3b65b9dcea613",
-        # 2019-03-11
-        urls = ["https://github.com/lightstep/lightstep-tracer-cpp/archive/665d8388aafbbbb44994f4fa12b3b65b9dcea613.tar.gz"],
+       sha256 = "0e99716598c010e56bc427ea3482be5ad2c534be8b039d172564deec1264a213",
+        strip_prefix = "lightstep-tracer-cpp-3efe2372ee3d7c2138d6b26e542d757494a7938d",
+        # 2020-03-24
+        urls = ["https://github.com/lightstep/lightstep-tracer-cpp/archive/3efe2372ee3d7c2138d6b26e542d757494a7938d.tar.gz"],
     ),
     com_github_datadog_dd_opentracing_cpp = dict(
         sha256 = "6dc1088ab7f788b6c849fbaa6300517c8fdf88991a70b778be79c284c36857bf",

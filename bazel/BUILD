@@ -242,6 +242,16 @@ config_setting(
 )
 
 config_setting(
+    name = "openssl",
+    values = {"define": "openssl=true"},
+)
+
+config_setting(
+    name = "openssl_host_shared",
+    values = {"define": "openssl_host_shared=true"},
+)
+
+config_setting(
     name = "enable_quiche",
     values = {"define": "quiche=enabled"},
 )
@@ -254,6 +264,8 @@ alias(
     actual = select({
         "//bazel:boringssl_fips": "@boringssl_fips//:ssl",
         "//conditions:default": "@boringssl//:ssl",
+	"//bazel:openssl": "@openssl//:ssl",
+	"//bazel:openssl_host_shared": "@openssl_host_shared//:ssl",
     }),
 )
 

@@ -9,7 +9,9 @@
 #include "envoy/network/transport_socket.h"
 #include "envoy/ssl/context.h"
 #include "envoy/ssl/context_config.h"
+/*
 #include "envoy/ssl/private_key/private_key.h"
+*/
 #include "envoy/ssl/ssl_socket_extended_info.h"
 #include "envoy/stats/scope.h"
 #include "envoy/stats/stats_macros.h"
@@ -18,29 +20,35 @@
 #include "common/stats/symbol_table_impl.h"
 
 #include "extensions/transport_sockets/tls/context_manager_impl.h"
+#include "extensions/transport_sockets/tls/openssl_impl.h"
 
 #include "absl/synchronization/mutex.h"
+#include "boringssl_compat/bssl.h"
 #include "openssl/ssl.h"
 #include "openssl/x509v3.h"
 
 namespace Envoy {
-#ifndef OPENSSL_IS_BORINGSSL
-#error Envoy requires BoringSSL
+#ifdef OPENSSL_IS_BORINGSSL
+#error OpenSSL-based transport socket requires OpenSSL
 #endif
 
 namespace Extensions {
 namespace TransportSockets {
 namespace Tls {
 
+// clang-format off
 #define ALL_SSL_STATS(COUNTER, GAUGE, HISTOGRAM)                                                   \
   COUNTER(connection_error)                                                                        \
   COUNTER(handshake)                                                                               \
   COUNTER(session_reused)                                                                          \
   COUNTER(no_certificate)                                                                          \
+  COUNTER(fail_async_handshake_error)                                                              \
+  COUNTER(fail_async_premature_disconnect)                                                         \
   COUNTER(fail_verify_no_cert)                                                                     \
   COUNTER(fail_verify_error)                                                                       \
   COUNTER(fail_verify_san)                                                                         \
   COUNTER(fail_verify_cert_hash)
+// clang-format on
 
 /**
  * Wrapper struct for SSL stats. @see stats_macros.h
@@ -166,7 +174,11 @@ protected:
     std::string getCertChainFileName() const { return cert_chain_file_path_; };
     void addClientValidationContext(const Envoy::Ssl::CertificateValidationContextConfig& config,
                                     bool require_client_cert);
+
+    /*
     bool isCipherEnabled(uint16_t cipher_id, uint16_t client_version);
+    */
+
     Envoy::Ssl::PrivateKeyMethodProviderSharedPtr getPrivateKeyMethodProvider() {
       return private_key_method_provider_;
     }
@@ -214,7 +226,9 @@ public:
 
 private:
   int newSessionKey(SSL_SESSION* session);
+  /*
   uint16_t parseSigningAlgorithmsForTest(const std::string& sigalgs);
+  */
 
   const std::string server_name_indication_;
   const bool allow_renegotiation_;
@@ -236,10 +250,10 @@ private:
                          unsigned int inlen);
   int sessionTicketProcess(SSL* ssl, uint8_t* key_name, uint8_t* iv, EVP_CIPHER_CTX* ctx,
                            HMAC_CTX* hmac_ctx, int encrypt);
-  bool isClientEcdsaCapable(const SSL_CLIENT_HELLO* ssl_client_hello);
+  bool isClientEcdsaCapable(SSL* ssl);
   // Select the TLS certificate context in SSL_CTX_set_select_certificate_cb() callback with
   // ClientHello details.
-  enum ssl_select_cert_result_t selectTlsContext(const SSL_CLIENT_HELLO* ssl_client_hello);
+  void selectTlsContext(SSL* ssl);
 
   SessionContextID generateHashForSessionContextId(const std::vector<std::string>& server_names);
 

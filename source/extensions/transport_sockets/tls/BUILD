@@ -33,7 +33,7 @@ envoy_cc_library(
     external_deps = [
         "abseil_hash",
         "abseil_node_hash_map",
-        "abseil_optional",
+	"abseil_optional",
         "abseil_synchronization",
         "ssl",
     ],
@@ -52,6 +52,7 @@ envoy_cc_library(
         "//source/common/common:minimal_logger_lib",
         "//source/common/common:thread_annotations",
         "//source/common/http:headers_lib",
+        "//boringssl_compat:bssl_compat_lib",
     ],
 )
 
@@ -112,7 +113,8 @@ envoy_cc_library(
         "//source/common/stats:symbol_table_lib",
         "//source/extensions/transport_sockets/tls/private_key:private_key_manager_lib",
         "@envoy_api//envoy/admin/v3:pkg_cc_proto",
-        "@envoy_api//envoy/type/matcher/v3:pkg_cc_proto",
+	"@envoy_api//envoy/type/matcher/v3:pkg_cc_proto",
+        "//boringssl_compat:bssl_compat_lib",
     ],
 )
 
@@ -127,5 +129,23 @@ envoy_cc_library(
         "//source/common/common:assert_lib",
         "//source/common/common:utility_lib",
         "//source/common/network:address_lib",
+        ":openssl_impl_lib",
+        "//boringssl_compat:bssl_compat_lib",
     ],
+)
+
+envoy_cc_library(
+    name = "openssl_impl_lib",
+    srcs = [
+        "openssl_impl.cc",
+    ],
+    hdrs = [
+        "openssl_impl.h",
+    ],
+    external_deps = [
+        "ssl",
+    ],
+    deps = [
+        "//boringssl_compat:bssl_compat_lib",
+    ]
 )

@@ -198,5 +198,7 @@ build:plain-fuzzer --define=FUZZING_ENGINE=libfuzzer
 build:plain-fuzzer --copt=-DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 build:plain-fuzzer --copt=-fsanitize=fuzzer-no-link
 
+build --cxxopt -Wno-error=old-style-cast --cxxopt -Wno-error=unused-but-set-variable
+
 try-import %workspace%/clang.bazelrc
 try-import %workspace%/user.bazelrc

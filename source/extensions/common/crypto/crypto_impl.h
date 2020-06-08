@@ -1,8 +1,7 @@
 #pragma once
 
 #include "envoy/common/crypto/crypto.h"
-
-#include "openssl/base.h"
+#include "boringssl_compat/bssl.h"
 #include "openssl/evp.h"
 
 namespace Envoy {

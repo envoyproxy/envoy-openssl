@@ -54,7 +54,7 @@ const ASN1_TIME& epochASN1_Time() {
   static ASN1_TIME* e = []() -> ASN1_TIME* {
     ASN1_TIME* epoch = ASN1_TIME_new();
     const time_t epoch_time = 0;
-    RELEASE_ASSERT(ASN1_TIME_set(epoch, epoch_time) != nullptr, "");
+    RELEASE_ASSERT(ASN1_TIME_set(epoch, epoch_time) != NULL, "");
     return epoch;
   }();
   return *e;
@@ -63,23 +63,12 @@ const ASN1_TIME& epochASN1_Time() {
 inline bssl::UniquePtr<ASN1_TIME> currentASN1_Time(TimeSource& time_source) {
   bssl::UniquePtr<ASN1_TIME> current_asn_time(ASN1_TIME_new());
   const time_t current_time = std::chrono::system_clock::to_time_t(time_source.systemTime());
-  RELEASE_ASSERT(ASN1_TIME_set(current_asn_time.get(), current_time) != nullptr, "");
+  RELEASE_ASSERT(ASN1_TIME_set(current_asn_time.get(), current_time) != NULL, "");
   return current_asn_time;
 }
 
 std::string Utility::getSerialNumberFromCertificate(X509& cert) {
-  ASN1_INTEGER* serial_number = X509_get_serialNumber(&cert);
-  BIGNUM num_bn;
-  BN_init(&num_bn);
-  ASN1_INTEGER_to_BN(serial_number, &num_bn);
-  char* char_serial_number = BN_bn2hex(&num_bn);
-  BN_free(&num_bn);
-  if (char_serial_number != nullptr) {
-    std::string serial_number(char_serial_number);
-    OPENSSL_free(char_serial_number);
-    return serial_number;
-  }
-  return "";
+  return Envoy::Extensions::TransportSockets::Tls::getSerialNumberFromCertificate(&cert);
 }
 
 std::vector<std::string> Utility::getSubjectAltNames(X509& cert, int type) {
@@ -91,7 +80,9 @@ std::vector<std::string> Utility::getSubjectAltNames(X509& cert, int type) {
   }
   for (const GENERAL_NAME* san : san_names.get()) {
     if (san->type == type) {
-      subject_alt_names.push_back(generalNameAsString(san));
+      ASN1_STRING* str = san->d.dNSName;
+      const char* dns_name = reinterpret_cast<const char*>(ASN1_STRING_get0_data(str));
+      subject_alt_names.push_back(std::string(dns_name));
     }
   }
   return subject_alt_names;
@@ -102,12 +93,12 @@ std::string Utility::generalNameAsString(const GENERAL_NAME* general_name) {
   switch (general_name->type) {
   case GEN_DNS: {
     ASN1_STRING* str = general_name->d.dNSName;
-    san.assign(reinterpret_cast<const char*>(ASN1_STRING_data(str)), ASN1_STRING_length(str));
+    san.assign(reinterpret_cast<const char*>(ASN1_STRING_get0_data(str)), ASN1_STRING_length(str));
     break;
   }
   case GEN_URI: {
     ASN1_STRING* str = general_name->d.uniformResourceIdentifier;
-    san.assign(reinterpret_cast<const char*>(ASN1_STRING_data(str)), ASN1_STRING_length(str));
+    san.assign(reinterpret_cast<const char*>(ASN1_STRING_get0_data(str)), ASN1_STRING_length(str));
     break;
   }
   case GEN_IPADD: {
@@ -137,7 +128,21 @@ std::string Utility::getIssuerFromCertificate(X509& cert) {
 }
 
 std::string Utility::getSubjectFromCertificate(X509& cert) {
-  return getRFC2253NameFromCertificate(cert, CertName::Subject);
+  bssl::UniquePtr<BIO> buf(BIO_new(BIO_s_mem()));
+  RELEASE_ASSERT(buf != nullptr, "");
+
+  // flags=XN_FLAG_RFC2253 is the documented parameter for single-line output in RFC 2253 format.
+  // Example from the RFC:
+  //   * Single value per Relative Distinguished Name (RDN): CN=Steve Kille,O=Isode Limited,C=GB
+  //   * Multivalue output in first RDN: OU=Sales+CN=J. Smith,O=Widget Inc.,C=US
+  //   * Quoted comma in Organization: CN=L. Eagle,O=Sue\, Grabbit and Runn,C=GB
+  X509_NAME_print_ex(buf.get(), X509_get_subject_name(&cert), 0 /* indent */, XN_FLAG_RFC2253);
+
+  const uint8_t* data;
+  size_t data_len;
+  int rc = BIO_mem_contents(buf.get(), &data, &data_len);
+  ASSERT(rc == 1);
+  return std::string(reinterpret_cast<const char*>(data), data_len);
 }
 
 int32_t Utility::getDaysUntilExpiration(const X509* cert, TimeSource& time_source) {
@@ -154,7 +159,7 @@ int32_t Utility::getDaysUntilExpiration(const X509* cert, TimeSource& time_sourc
 
 absl::optional<std::string> Utility::getX509ExtensionValue(const X509& cert,
                                                            absl::string_view extension_name) {
-  X509_EXTENSIONS* extensions(X509_get0_extensions(&cert));
+  const X509_EXTENSIONS* extensions(X509_get0_extensions(&cert));
 
   if (extensions == nullptr) {
     return absl::nullopt;
@@ -202,19 +207,6 @@ SystemTime Utility::getExpirationTime(const X509& cert) {
   // Casting to <time_t (64bit)> to prevent multiplication overflow when certificate not-after date
   // beyond 2038-01-19T03:14:08Z.
   return std::chrono::system_clock::from_time_t(static_cast<time_t>(days) * 24 * 60 * 60 + seconds);
-}
-
-absl::optional<std::string> Utility::getLastCryptoError() {
-  auto err = ERR_get_error();
-
-  if (err != 0) {
-    char errbuf[256];
-
-    ERR_error_string_n(err, errbuf, sizeof(errbuf));
-    return std::string(errbuf);
-  }
-
-  return absl::nullopt;
 }
 
 } // namespace Tls

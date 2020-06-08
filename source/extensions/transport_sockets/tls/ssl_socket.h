@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 
+#include "envoy/event/file_event.h"
 #include "envoy/network/connection.h"
 #include "envoy/network/transport_socket.h"
 #include "envoy/secret/secret_callbacks.h"
@@ -19,6 +20,7 @@
 #include "absl/container/node_hash_map.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "boringssl_compat/bssl.h"
 #include "openssl/ssl.h"
 
 namespace Envoy {
@@ -26,10 +28,12 @@ namespace Extensions {
 namespace TransportSockets {
 namespace Tls {
 
-#define ALL_SSL_SOCKET_FACTORY_STATS(COUNTER)                                                      \
-  COUNTER(ssl_context_update_by_sds)                                                               \
-  COUNTER(upstream_context_secrets_not_ready)                                                      \
+// clang-format off
+#define ALL_SSL_SOCKET_FACTORY_STATS(COUNTER)                                 \
+  COUNTER(ssl_context_update_by_sds)                                          \
+  COUNTER(upstream_context_secrets_not_ready)                                 \
   COUNTER(downstream_context_secrets_not_ready)
+// clang-format on
 
 /**
  * Wrapper struct for SSL socket factory stats. @see stats_macros.h
@@ -130,6 +134,7 @@ private:
   Network::PostIoAction doHandshake();
   void drainErrorQueue();
   void shutdownSsl();
+  void asyncCb();
   bool isThreadSafe() const {
     return callbacks_ != nullptr && callbacks_->connection().dispatcher().isThreadSafe();
   }
@@ -137,6 +142,7 @@ private:
   const Network::TransportSocketOptionsSharedPtr transport_socket_options_;
   Network::TransportSocketCallbacks* callbacks_{};
   ContextImplSharedPtr ctx_;
+  Event::FileEventPtr file_event_;
   uint64_t bytes_to_retry_{};
   std::string failure_reason_;
   SocketState state_;

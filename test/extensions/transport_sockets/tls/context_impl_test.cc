@@ -18,7 +18,6 @@
 #include "test/extensions/transport_sockets/tls/ssl_test_utility.h"
 #include "test/extensions/transport_sockets/tls/test_data/no_san_cert_info.h"
 #include "test/extensions/transport_sockets/tls/test_data/san_dns3_cert_info.h"
-#include "test/extensions/transport_sockets/tls/test_data/san_ip_cert_info.h"
 #include "test/mocks/secret/mocks.h"
 #include "test/mocks/server/mocks.h"
 #include "test/mocks/ssl/mocks.h"
@@ -66,27 +65,6 @@ TEST_F(SslContextImplTest, TestVerifySubjectAltNameDNSMatched) {
   EXPECT_TRUE(ContextImpl::verifySubjectAltName(cert.get(), verify_subject_alt_name_list));
 }
 
-TEST_F(SslContextImplTest, TestMatchSubjectAltNameDNSMatched) {
-  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
-      "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_dns_cert.pem"));
-  envoy::type::matcher::v3::StringMatcher matcher;
-  matcher.set_hidden_envoy_deprecated_regex(".*.example.com");
-  std::vector<Matchers::StringMatcherImpl> subject_alt_name_matchers;
-  subject_alt_name_matchers.push_back(Matchers::StringMatcherImpl(matcher));
-  EXPECT_TRUE(ContextImpl::matchSubjectAltName(cert.get(), subject_alt_name_matchers));
-}
-
-TEST_F(SslContextImplTest, TestMatchSubjectAltNameWildcardDNSMatched) {
-  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
-      "{{ test_rundir "
-      "}}/test/extensions/transport_sockets/tls/test_data/san_multiple_dns_cert.pem"));
-  envoy::type::matcher::v3::StringMatcher matcher;
-  matcher.set_exact("api.example.com");
-  std::vector<Matchers::StringMatcherImpl> subject_alt_name_matchers;
-  subject_alt_name_matchers.push_back(Matchers::StringMatcherImpl(matcher));
-  EXPECT_TRUE(ContextImpl::matchSubjectAltName(cert.get(), subject_alt_name_matchers));
-}
-
 TEST_F(SslContextImplTest, TestVerifySubjectAltNameURIMatched) {
   bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
       "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_uri_cert.pem"));
@@ -95,31 +73,11 @@ TEST_F(SslContextImplTest, TestVerifySubjectAltNameURIMatched) {
   EXPECT_TRUE(ContextImpl::verifySubjectAltName(cert.get(), verify_subject_alt_name_list));
 }
 
-TEST_F(SslContextImplTest, TestMatchSubjectAltNameURIMatched) {
-  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
-      "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_uri_cert.pem"));
-  envoy::type::matcher::v3::StringMatcher matcher;
-  matcher.set_hidden_envoy_deprecated_regex("spiffe://lyft.com/.*-team");
-  std::vector<Matchers::StringMatcherImpl> subject_alt_name_matchers;
-  subject_alt_name_matchers.push_back(Matchers::StringMatcherImpl(matcher));
-  EXPECT_TRUE(ContextImpl::matchSubjectAltName(cert.get(), subject_alt_name_matchers));
-}
-
 TEST_F(SslContextImplTest, TestVerifySubjectAltNameNotMatched) {
   bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
       "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_dns_cert.pem"));
   std::vector<std::string> verify_subject_alt_name_list = {"foo", "bar"};
   EXPECT_FALSE(ContextImpl::verifySubjectAltName(cert.get(), verify_subject_alt_name_list));
-}
-
-TEST_F(SslContextImplTest, TestMatchSubjectAltNameNotMatched) {
-  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
-      "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_dns_cert.pem"));
-  envoy::type::matcher::v3::StringMatcher matcher;
-  matcher.set_hidden_envoy_deprecated_regex(".*.foo.com");
-  std::vector<Matchers::StringMatcherImpl> subject_alt_name_matchers;
-  subject_alt_name_matchers.push_back(Matchers::StringMatcherImpl(matcher));
-  EXPECT_FALSE(ContextImpl::matchSubjectAltName(cert.get(), subject_alt_name_matchers));
 }
 
 TEST_F(SslContextImplTest, TestCipherSuites) {
@@ -261,60 +219,6 @@ TEST_F(SslContextImplTest, TestGetCertInformationWithSAN) {
 
   std::string cert_chain_json = R"EOF({
  "path": "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_dns3_chain.pem",
- }
-)EOF";
-
-  // This is similar to the hack above, but right now we generate the ca_cert and it expires in 15
-  // days only in the first second that it's valid. We will partially match for up until Days until
-  // Expiration: 1.
-  // For the cert_chain, it is dynamically created when we run_envoy_test.sh which changes the
-  // serial number with
-  // every build. For cert_chain output, we check only for the certificate path.
-  std::string ca_cert_partial_output(TestEnvironment::substitute(ca_cert_json));
-  std::string cert_chain_partial_output(TestEnvironment::substitute(cert_chain_json));
-  envoy::admin::v3::CertificateDetails certificate_details, cert_chain_details;
-  TestUtility::loadFromJson(ca_cert_partial_output, certificate_details);
-  TestUtility::loadFromJson(cert_chain_partial_output, cert_chain_details);
-
-  MessageDifferencer message_differencer;
-  message_differencer.set_scope(MessageDifferencer::Scope::PARTIAL);
-  EXPECT_TRUE(message_differencer.Compare(certificate_details, *context->getCaCertInformation()));
-  EXPECT_TRUE(
-      message_differencer.Compare(cert_chain_details, *context->getCertChainInformation()[0]));
-}
-
-TEST_F(SslContextImplTest, TestGetCertInformationWithIPSAN) {
-  const std::string yaml = R"EOF(
-  common_tls_context:
-    tls_certificates:
-      certificate_chain:
-        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_ip_chain.pem"
-      private_key:
-        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_ip_key.pem"
-    validation_context:
-      trusted_ca:
-        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_ip_cert.pem"
-)EOF";
-
-  envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext tls_context;
-  TestUtility::loadFromYaml(TestEnvironment::substitute(yaml), tls_context);
-  ClientContextConfigImpl cfg(tls_context, factory_context_);
-
-  Envoy::Ssl::ClientContextSharedPtr context(manager_.createSslClientContext(store_, cfg));
-  std::string ca_cert_json = absl::StrCat(R"EOF({
- "path": "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_ip_cert.pem",
- "serial_number": ")EOF",
-                                          TEST_SAN_IP_CERT_SERIAL, R"EOF(",
- "subject_alt_names": [
-  {
-   "ip_address": "1.1.1.1"
-  }
- ]
- }
-)EOF");
-
-  std::string cert_chain_json = R"EOF({
- "path": "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_ip_chain.pem",
  }
 )EOF";
 
@@ -1256,8 +1160,8 @@ TEST_F(ServerContextConfigImplTest, MultiSdsConfig) {
   tls_context.mutable_common_tls_context()->add_tls_certificate_sds_secret_configs();
   tls_context.mutable_common_tls_context()->add_tls_certificate_sds_secret_configs();
   EXPECT_THROW_WITH_REGEX(
-      TestUtility::validate<envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext>(
-          tls_context),
+      TestUtility::validate<
+          envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext>(tls_context),
       EnvoyException, "Proto constraint validation failed");
 }
 
@@ -1426,7 +1330,7 @@ TEST_F(ServerContextConfigImplTest, PrivateKeyMethodLoadFailureNoMethod) {
   EXPECT_THROW_WITH_MESSAGE(
       Envoy::Ssl::ServerContextSharedPtr server_ctx(
           manager.createSslServerContext(store, server_context_config, std::vector<std::string>{})),
-      EnvoyException, "Failed to get BoringSSL private key method from provider");
+      EnvoyException, "BoringSSL private key method isn't supported in the OpenSSL mode");
 }
 
 TEST_F(ServerContextConfigImplTest, PrivateKeyMethodLoadSuccess) {
