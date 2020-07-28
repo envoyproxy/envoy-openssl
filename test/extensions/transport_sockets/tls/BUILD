@@ -21,7 +21,7 @@ envoy_cc_test(
         # TODO(mattklein123): We should consolidate all of our test certs in a single place as
         # right now we have a bunch of duplication which is confusing.
         "@envoy//test/config/integration/certs",
-	"@envoy//test/extensions/transport_sockets/tls/test_data:certs",
+        "@envoy//test/extensions/transport_sockets/tls/test_data:certs",
     ],
     external_deps = ["ssl"],
     shard_count = 4,
@@ -37,10 +37,10 @@ envoy_cc_test(
         "@envoy//source/common/network:utility_lib",
         "@envoy//source/common/stats:isolated_store_lib",
         "@envoy//source/common/stats:stats_lib",
-	"//source/extensions/transport_sockets/tls:context_config_lib",
-	"//source/extensions/transport_sockets/tls:context_lib",
-	"//source/extensions/transport_sockets/tls:ssl_socket_lib",
-	"//source/extensions/transport_sockets/tls:utility_lib",
+        "//source/extensions/transport_sockets/tls:context_config_lib",
+        "//source/extensions/transport_sockets/tls:context_lib",
+        "//source/extensions/transport_sockets/tls:ssl_socket_lib",
+        "//source/extensions/transport_sockets/tls:utility_lib",
         "@envoy//test/extensions/transport_sockets/tls/test_data:cert_infos",
         "@envoy//test/mocks/buffer:buffer_mocks",
         "@envoy//test/mocks/network:network_mocks",
