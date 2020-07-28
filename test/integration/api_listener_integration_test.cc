@@ -16,7 +16,7 @@ namespace {
 class ApiListenerIntegrationTest : public BaseIntegrationTest,
                                    public testing::TestWithParam<Network::Address::IpVersion> {
 public:
-  ApiListenerIntegrationTest() : BaseIntegrationTest(GetParam(), bootstrap_config()) {
+  ApiListenerIntegrationTest() : BaseIntegrationTest(GetParam(), bootstrapConfig()) {
     use_lds_ = false;
     autonomous_upstream_ = true;
   }
@@ -28,7 +28,7 @@ public:
       // Thus, the ApiListener has to be added in addition to the already existing listener in the
       // config.
       bootstrap.mutable_static_resources()->add_listeners()->MergeFrom(
-          Server::parseListenerFromV2Yaml(api_listener_config()));
+          Server::parseListenerFromV2Yaml(apiListenerConfig()));
     });
   }
 
@@ -37,15 +37,15 @@ public:
     fake_upstreams_.clear();
   }
 
-  static std::string bootstrap_config() {
+  static std::string bootstrapConfig() {
     // At least one empty filter chain needs to be specified.
-    return ConfigHelper::BASE_CONFIG + R"EOF(
+    return absl::StrCat(ConfigHelper::baseConfig(), R"EOF(
     filter_chains:
       filters:
-    )EOF";
+    )EOF");
   }
 
-  static std::string api_listener_config() {
+  static std::string apiListenerConfig() {
     return R"EOF(
 name: api_listener
 address:
@@ -97,7 +97,7 @@ TEST_P(ApiListenerIntegrationTest, Basic) {
 
     // The AutonomousUpstream responds with 200 OK and a body of 10 bytes.
     // In the http1 codec the end stream is encoded with encodeData and 0 bytes.
-    Http::TestHeaderMapImpl expected_response_headers{{":status", "200"}};
+    Http::TestResponseHeaderMapImpl expected_response_headers{{":status", "200"}};
     EXPECT_CALL(stream_encoder_, encodeHeaders(_, false));
     EXPECT_CALL(stream_encoder_, encodeData(_, false));
     EXPECT_CALL(stream_encoder_, encodeData(BufferStringEqual(""), true)).WillOnce(Notify(&done));

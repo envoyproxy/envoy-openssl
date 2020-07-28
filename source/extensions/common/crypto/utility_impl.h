@@ -2,11 +2,9 @@
 
 #include "common/crypto/utility.h"
 
-#include "openssl/evp.h"
+#include "boringssl_compat/cbs.h"
 #include "openssl/hmac.h"
 #include "openssl/sha.h"
-
-#include "boringssl_compat/cbs.h"
 
 namespace Envoy {
 namespace Common {
@@ -25,9 +23,6 @@ public:
 private:
   const EVP_MD* getHashFunction(absl::string_view name);
 };
-
-std::unique_ptr<Crypto::ScopedUtilitySingleton> utility_ =
-    std::make_unique<Crypto::ScopedUtilitySingleton>(std::make_unique<Crypto::UtilityImpl>());
 
 } // namespace Crypto
 } // namespace Common

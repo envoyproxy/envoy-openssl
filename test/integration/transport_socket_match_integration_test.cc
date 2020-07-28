@@ -20,7 +20,7 @@ public:
   TransportSockeMatchIntegrationTest()
       : HttpIntegrationTest(Http::CodecClient::Type::HTTP1,
                             TestEnvironment::getIpVersionsForTest().front(),
-                            ConfigHelper::HTTP_PROXY_CONFIG),
+                            ConfigHelper::httpProxyConfig()),
         num_hosts_{2} {
     autonomous_upstream_ = true;
     setUpstreamCount(num_hosts_);
@@ -188,10 +188,10 @@ TEST_F(TransportSockeMatchIntegrationTest, TlsAndPlaintextSucceed) {
     IntegrationStreamDecoderPtr response =
         codec_client_->makeHeaderOnlyRequest(type_a_request_headers_);
     response->waitForEndStream();
-    EXPECT_EQ("200", response->headers().Status()->value().getStringView());
+    EXPECT_EQ("200", response->headers().getStatusValue());
     response = codec_client_->makeHeaderOnlyRequest(type_b_request_headers_);
     response->waitForEndStream();
-    EXPECT_EQ("200", response->headers().Status()->value().getStringView());
+    EXPECT_EQ("200", response->headers().getStatusValue());
   }
 }
 
@@ -203,10 +203,10 @@ TEST_F(TransportSockeMatchIntegrationTest, TlsAndPlaintextFailsWithoutSocketMatc
     IntegrationStreamDecoderPtr response =
         codec_client_->makeHeaderOnlyRequest(type_a_request_headers_);
     response->waitForEndStream();
-    EXPECT_EQ("503", response->headers().Status()->value().getStringView());
+    EXPECT_EQ("503", response->headers().getStatusValue());
     response = codec_client_->makeHeaderOnlyRequest(type_b_request_headers_);
     response->waitForEndStream();
-    EXPECT_EQ("200", response->headers().Status()->value().getStringView());
+    EXPECT_EQ("200", response->headers().getStatusValue());
   }
 }
 } // namespace Envoy

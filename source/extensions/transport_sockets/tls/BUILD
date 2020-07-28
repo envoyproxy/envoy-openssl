@@ -111,6 +111,7 @@ envoy_cc_library(
         "@envoy//source/common/common:utility_lib",
         "@envoy//source/common/network:address_lib",
         "@envoy//source/common/protobuf:utility_lib",
+        "@envoy//source/common/runtime:runtime_features_lib",
         "@envoy//source/common/stats:symbol_table_lib",
         "//source/extensions/transport_sockets/tls/private_key:private_key_manager_lib",
         "@envoy_api//envoy/admin/v3:pkg_cc_proto",

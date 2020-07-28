@@ -1,6 +1,7 @@
 #pragma once
 
 #include "envoy/common/crypto/crypto.h"
+
 #include "boringssl_compat/bssl.h"
 #include "openssl/evp.h"
 

@@ -83,6 +83,7 @@ envoy_cc_test(
         "@envoy//test/mocks/ssl:ssl_mocks",
         "@envoy//test/test_common:environment_lib",
         "@envoy//test/test_common:simulated_time_system_lib",
+        "@envoy//test/test_common:test_runtime_lib",
         "@envoy_api//envoy/admin/v3:pkg_cc_proto",
         "@envoy_api//envoy/extensions/transport_sockets/tls/v3:pkg_cc_proto",
         "@envoy_api//envoy/type/matcher/v3:pkg_cc_proto",

@@ -1,7 +1,5 @@
 #include "extensions/filters/listener/tls_inspector/tls_inspector.h"
 
-#include <arpa/inet.h>
-
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -15,9 +13,9 @@
 #include "common/api/os_sys_calls_impl.h"
 #include "common/common/assert.h"
 
-#include "extensions/filters/listener/tls_inspector/openssl_impl.h"
 #include "extensions/transport_sockets/well_known_names.h"
 
+#include "boringssl_compat/cbs.h"
 #include "openssl/ssl.h"
 
 namespace Envoy {
@@ -25,50 +23,85 @@ namespace Extensions {
 namespace ListenerFilters {
 namespace TlsInspector {
 
+namespace {
+
+// This is copied from OpenSSL's tests.
+const char* parseServerName(const uint8_t* data, size_t length) {
+  size_t remaining = length;
+
+  if (remaining <= 2) {
+    return nullptr;
+  }
+
+  // Extract the length of the supplied list of names.
+  size_t len;
+  len = (*(data++) << 8);
+  len += *(data++);
+  if (len + 2 != remaining) {
+    return nullptr;
+  }
+  remaining = len;
+  // The list in practice only has a single element, so we only consider
+  // the first one.
+  if (remaining == 0 || *data++ != TLSEXT_NAMETYPE_host_name) {
+    return nullptr;
+  }
+  remaining--;
+  // Now we can finally pull out the byte array with the actual hostname.
+  if (remaining <= 2) {
+    return nullptr;
+  }
+  len = (*(data++) << 8);
+  len += *(data++);
+  if (len + 2 != remaining) {
+    return nullptr;
+  }
+  return reinterpret_cast<const char*>(data);
+}
+
+} // namespace
+
+using namespace Envoy::Extensions::Common::Cbs;
+
+// Min/max TLS version recognized by the underlying TLS/SSL library.
+const unsigned Config::TLS_MIN_SUPPORTED_VERSION = TLS1_VERSION;
+const unsigned Config::TLS_MAX_SUPPORTED_VERSION = TLS1_3_VERSION;
+
 Config::Config(Stats::Scope& scope, uint32_t max_client_hello_size)
     : stats_{ALL_TLS_INSPECTOR_STATS(POOL_COUNTER_PREFIX(scope, "tls_inspector."))},
-      ssl_ctx_(
-          SSL_CTX_new(Envoy::Extensions::ListenerFilters::TlsInspector::TLS_with_buffers_method())),
+      ssl_ctx_(SSL_CTX_new(TLS_with_buffers_method())),
       max_client_hello_size_(max_client_hello_size) {
+
   if (max_client_hello_size_ > TLS_MAX_CLIENT_HELLO) {
     throw EnvoyException(fmt::format("max_client_hello_size of {} is greater than maximum of {}.",
                                      max_client_hello_size_, size_t(TLS_MAX_CLIENT_HELLO)));
   }
 
+  SSL_CTX_set_min_proto_version(ssl_ctx_.get(), TLS_MIN_SUPPORTED_VERSION);
+  SSL_CTX_set_max_proto_version(ssl_ctx_.get(), TLS_MAX_SUPPORTED_VERSION);
   SSL_CTX_set_options(ssl_ctx_.get(), SSL_OP_NO_TICKET);
   SSL_CTX_set_session_cache_mode(ssl_ctx_.get(), SSL_SESS_CACHE_OFF);
+  SSL_CTX_set_client_hello_cb(
+      ssl_ctx_.get(),
+      [](SSL* ssl, int*, void*) -> int {
+        Filter* filter = static_cast<Filter*>(SSL_get_app_data(ssl));
+        const uint8_t* data;
+        size_t len;
 
-  Envoy::Extensions::ListenerFilters::TlsInspector::set_certificate_cb(ssl_ctx_.get());
+        if (SSL_client_hello_get0_ext(ssl, TLSEXT_TYPE_application_layer_protocol_negotiation,
+                                      &data, &len)) {
+          filter->onALPN(data, len);
+        }
 
-  auto tlsext_servername_cb = +[](SSL* ssl, int* out_alert, void*) -> int {
-    Filter* filter = static_cast<Filter*>(SSL_get_app_data(ssl));
-    absl::string_view servername = SSL_get_servername(ssl, TLSEXT_NAMETYPE_host_name);
-    filter->onServername(servername);
-    if (servername.rfind("outbound_") != std::string::npos) {
-      filter->setIstioApplicationProtocol();
-    }
+        const char* servername = nullptr;
+        if (SSL_client_hello_get0_ext(ssl, TLSEXT_TYPE_server_name, &data, &len)) {
+          servername = parseServerName(data, len);
+        }
+        filter->onServername(absl::NullSafeStringView(servername));
 
-    return Envoy::Extensions::ListenerFilters::TlsInspector::getServernameCallbackReturn(out_alert);
-  };
-  SSL_CTX_set_tlsext_servername_callback(ssl_ctx_.get(), tlsext_servername_cb);
-
-  auto alpn_cb = [](SSL* ssl, const unsigned char**, unsigned char*,
-                    const unsigned char* in, unsigned int inlen, void*) -> int {
-    Filter* filter = static_cast<Filter*>(SSL_get_app_data(ssl));
-    filter->onALPN(in, inlen);
-
-    return SSL_TLSEXT_ERR_OK;
-  };
-  SSL_CTX_set_alpn_select_cb(ssl_ctx_.get(), alpn_cb, nullptr);
-
-  auto cert_cb = [](SSL* ssl, void*) -> int {
-    Filter* filter = static_cast<Filter*>(SSL_get_app_data(ssl));
-    filter->onCert();    
-
-    return SSL_TLSEXT_ERR_OK;
-  };
-  SSL_CTX_set_cert_cb(ssl_ctx_.get(), cert_cb, nullptr);
-
+        return SSL_TLSEXT_ERR_OK;
+      },
+      NULL);
 }
 
 bssl::UniquePtr<SSL> Config::newSsl() { return bssl::UniquePtr<SSL>{SSL_new(ssl_ctx_.get())}; }
@@ -130,18 +163,23 @@ Network::FilterStatus Filter::onAccept(Network::ListenerFilterCallbacks& cb) {
 }
 
 void Filter::onALPN(const unsigned char* data, unsigned int len) {
-  std::vector<absl::string_view> protocols =
-      Envoy::Extensions::ListenerFilters::TlsInspector::getAlpnProtocols(data, len);
-  cb_->socket().setRequestedApplicationProtocols(protocols);
-  alpn_found_ = true;
-}
-
-void Filter::onCert() {
+  CBS wire, list;
+  CBS_init(&wire, reinterpret_cast<const uint8_t*>(data), static_cast<size_t>(len));
+  if (!CBS_get_u16_length_prefixed(&wire, &list) || CBS_len(&wire) != 0 || CBS_len(&list) < 2) {
+    // Don't produce errors, let the real TLS stack do it.
+    return;
+  }
+  CBS name;
   std::vector<absl::string_view> protocols;
-  if (istio_protocol_required_) {
-    protocols.emplace_back("istio");
+  while (CBS_len(&list) > 0) {
+    if (!CBS_get_u8_length_prefixed(&list, &name) || CBS_len(&name) == 0) {
+      // Don't produce errors, let the real TLS stack do it.
+      return;
+    }
+    protocols.emplace_back(reinterpret_cast<const char*>(CBS_data(&name)), CBS_len(&name));
   }
   cb_->socket().setRequestedApplicationProtocols(protocols);
+  alpn_found_ = true;
 }
 
 void Filter::onServername(absl::string_view name) {
@@ -153,10 +191,6 @@ void Filter::onServername(absl::string_view name) {
     config_->stats().sni_not_found_.inc();
   }
   clienthello_success_ = true;
-}
-
-void Filter::setIstioApplicationProtocol() {
-  istio_protocol_required_ = true;
 }
 
 ParseState Filter::onRead() {
@@ -177,7 +211,7 @@ ParseState Filter::onRead() {
                                                          config_->maxClientHelloSize(), MSG_PEEK);
   ENVOY_LOG(trace, "tls inspector: recv: {}", result.rc_);
 
-  if (result.rc_ == -1 && result.errno_ == EAGAIN) {
+  if (SOCKET_FAILURE(result.rc_) && result.errno_ == SOCKET_ERROR_AGAIN) {
     return ParseState::Continue;
   } else if (result.rc_ < 0) {
     config_->stats().read_error_.inc();

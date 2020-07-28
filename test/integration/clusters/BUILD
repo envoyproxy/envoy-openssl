@@ -1,11 +1,11 @@
-licenses(["notice"])  # Apache 2
-
 load(
     "@envoy//bazel:envoy_build_system.bzl",
     "envoy_cc_test_library",
     "envoy_package",
     "envoy_proto_library",
 )
+
+licenses(["notice"])  # Apache 2
 
 envoy_package()
 
@@ -14,6 +14,8 @@ envoy_cc_test_library(
     repository = "@envoy",
     srcs = [
         "custom_static_cluster.cc",
+    ],
+    hdrs = [
         "custom_static_cluster.h",
     ],
     deps = [

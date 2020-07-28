@@ -1,5 +1,7 @@
 #include "extensions/transport_sockets/tls/utility.h"
 
+#include <openssl/err.h>
+
 #include "common/common/assert.h"
 #include "common/network/address_impl.h"
 
@@ -54,7 +56,7 @@ const ASN1_TIME& epochASN1_Time() {
   static ASN1_TIME* e = []() -> ASN1_TIME* {
     ASN1_TIME* epoch = ASN1_TIME_new();
     const time_t epoch_time = 0;
-    RELEASE_ASSERT(ASN1_TIME_set(epoch, epoch_time) != NULL, "");
+    RELEASE_ASSERT(ASN1_TIME_set(epoch, epoch_time) != nullptr, "");
     return epoch;
   }();
   return *e;
@@ -63,7 +65,7 @@ const ASN1_TIME& epochASN1_Time() {
 inline bssl::UniquePtr<ASN1_TIME> currentASN1_Time(TimeSource& time_source) {
   bssl::UniquePtr<ASN1_TIME> current_asn_time(ASN1_TIME_new());
   const time_t current_time = std::chrono::system_clock::to_time_t(time_source.systemTime());
-  RELEASE_ASSERT(ASN1_TIME_set(current_asn_time.get(), current_time) != NULL, "");
+  RELEASE_ASSERT(ASN1_TIME_set(current_asn_time.get(), current_time) != nullptr, "");
   return current_asn_time;
 }
 
@@ -207,6 +209,19 @@ SystemTime Utility::getExpirationTime(const X509& cert) {
   // Casting to <time_t (64bit)> to prevent multiplication overflow when certificate not-after date
   // beyond 2038-01-19T03:14:08Z.
   return std::chrono::system_clock::from_time_t(static_cast<time_t>(days) * 24 * 60 * 60 + seconds);
+}
+
+absl::optional<std::string> Utility::getLastCryptoError() {
+  auto err = ERR_get_error();
+
+  if (err != 0) {
+    char errbuf[256];
+
+    ERR_error_string_n(err, errbuf, sizeof(errbuf));
+    return std::string(errbuf);
+  }
+
+  return absl::nullopt;
 }
 
 } // namespace Tls
