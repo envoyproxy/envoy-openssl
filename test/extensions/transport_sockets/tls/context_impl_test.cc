@@ -3,7 +3,7 @@
 
 #include "envoy/admin/v3/certs.pb.h"
 #include "envoy/extensions/transport_sockets/tls/v3/cert.pb.h"
-#include "envoy/extensions/transport_sockets/tls/v3/cert.pb.validate.h"
+#include "envoy/extensions/transport_sockets/tls/v3/tls.pb.validate.h"
 #include "envoy/type/matcher/v3/string.pb.h"
 
 #include "common/json/json_loader.h"
@@ -18,11 +18,15 @@
 #include "test/extensions/transport_sockets/tls/ssl_test_utility.h"
 #include "test/extensions/transport_sockets/tls/test_data/no_san_cert_info.h"
 #include "test/extensions/transport_sockets/tls/test_data/san_dns3_cert_info.h"
+#include "test/extensions/transport_sockets/tls/test_data/san_ip_cert_info.h"
+#include "test/mocks/init/mocks.h"
+#include "test/mocks/local_info/mocks.h"
 #include "test/mocks/secret/mocks.h"
-#include "test/mocks/server/mocks.h"
+#include "test/mocks/server/transport_socket_factory_context.h"
 #include "test/mocks/ssl/mocks.h"
 #include "test/test_common/environment.h"
 #include "test/test_common/simulated_time_system.h"
+#include "test/test_common/test_runtime.h"
 #include "test/test_common/utility.h"
 
 #include "gtest/gtest.h"
@@ -47,6 +51,23 @@ protected:
 TEST_F(SslContextImplTest, TestDnsNameMatching) {
   EXPECT_TRUE(ContextImpl::dnsNameMatch("lyft.com", "lyft.com"));
   EXPECT_TRUE(ContextImpl::dnsNameMatch("a.lyft.com", "*.lyft.com"));
+  EXPECT_FALSE(ContextImpl::dnsNameMatch("a.b.lyft.com", "*.lyft.com"));
+  EXPECT_FALSE(ContextImpl::dnsNameMatch("foo.test.com", "*.lyft.com"));
+  EXPECT_FALSE(ContextImpl::dnsNameMatch("lyft.com", "*.lyft.com"));
+  EXPECT_FALSE(ContextImpl::dnsNameMatch("alyft.com", "*.lyft.com"));
+  EXPECT_FALSE(ContextImpl::dnsNameMatch("alyft.com", "*lyft.com"));
+  EXPECT_FALSE(ContextImpl::dnsNameMatch("lyft.com", "*lyft.com"));
+  EXPECT_FALSE(ContextImpl::dnsNameMatch("", "*lyft.com"));
+  EXPECT_FALSE(ContextImpl::dnsNameMatch("lyft.com", ""));
+}
+
+TEST_F(SslContextImplTest, TestDnsNameMatchingLegacy) {
+  TestScopedRuntime scoped_runtime;
+  Runtime::LoaderSingleton::getExisting()->mergeValues(
+      {{"envoy.reloadable_features.fix_wildcard_matching", "false"}});
+  EXPECT_TRUE(ContextImpl::dnsNameMatch("lyft.com", "lyft.com"));
+  EXPECT_TRUE(ContextImpl::dnsNameMatch("a.lyft.com", "*.lyft.com"));
+  // Legacy behavior
   EXPECT_TRUE(ContextImpl::dnsNameMatch("a.b.lyft.com", "*.lyft.com"));
   EXPECT_FALSE(ContextImpl::dnsNameMatch("foo.test.com", "*.lyft.com"));
   EXPECT_FALSE(ContextImpl::dnsNameMatch("lyft.com", "*.lyft.com"));
@@ -65,12 +86,88 @@ TEST_F(SslContextImplTest, TestVerifySubjectAltNameDNSMatched) {
   EXPECT_TRUE(ContextImpl::verifySubjectAltName(cert.get(), verify_subject_alt_name_list));
 }
 
+TEST_F(SslContextImplTest, TestMatchSubjectAltNameDNSMatched) {
+  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
+      "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_dns_cert.pem"));
+  envoy::type::matcher::v3::StringMatcher matcher;
+  matcher.set_hidden_envoy_deprecated_regex(".*.example.com");
+  std::vector<Matchers::StringMatcherImpl> subject_alt_name_matchers;
+  subject_alt_name_matchers.push_back(Matchers::StringMatcherImpl(matcher));
+  EXPECT_TRUE(ContextImpl::matchSubjectAltName(cert.get(), subject_alt_name_matchers));
+}
+
+TEST_F(SslContextImplTest, TestMatchSubjectAltNameWildcardDNSMatched) {
+  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
+      "{{ test_rundir "
+      "}}/test/extensions/transport_sockets/tls/test_data/san_multiple_dns_cert.pem"));
+  envoy::type::matcher::v3::StringMatcher matcher;
+  matcher.set_exact("api.example.com");
+  std::vector<Matchers::StringMatcherImpl> subject_alt_name_matchers;
+  subject_alt_name_matchers.push_back(Matchers::StringMatcherImpl(matcher));
+  EXPECT_TRUE(ContextImpl::matchSubjectAltName(cert.get(), subject_alt_name_matchers));
+}
+
+TEST_F(SslContextImplTest, TestMultiLevelMatch) {
+  // san_multiple_dns_cert matches *.example.com
+  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
+      "{{ test_rundir "
+      "}}/test/extensions/transport_sockets/tls/test_data/san_multiple_dns_cert.pem"));
+  envoy::type::matcher::v3::StringMatcher matcher;
+  matcher.set_exact("foo.api.example.com");
+  std::vector<Matchers::StringMatcherImpl> subject_alt_name_matchers;
+  subject_alt_name_matchers.push_back(Matchers::StringMatcherImpl(matcher));
+  EXPECT_FALSE(ContextImpl::matchSubjectAltName(cert.get(), subject_alt_name_matchers));
+}
+
+TEST_F(SslContextImplTest, TestMultiLevelMatchLegacy) {
+  TestScopedRuntime scoped_runtime;
+  Runtime::LoaderSingleton::getExisting()->mergeValues(
+      {{"envoy.reloadable_features.fix_wildcard_matching", "false"}});
+  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
+      "{{ test_rundir "
+      "}}/test/extensions/transport_sockets/tls/test_data/san_multiple_dns_cert.pem"));
+  envoy::type::matcher::v3::StringMatcher matcher;
+  matcher.set_exact("foo.api.example.com");
+  std::vector<Matchers::StringMatcherImpl> subject_alt_name_matchers;
+  subject_alt_name_matchers.push_back(Matchers::StringMatcherImpl(matcher));
+  EXPECT_TRUE(ContextImpl::matchSubjectAltName(cert.get(), subject_alt_name_matchers));
+}
+
 TEST_F(SslContextImplTest, TestVerifySubjectAltNameURIMatched) {
   bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
       "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_uri_cert.pem"));
   std::vector<std::string> verify_subject_alt_name_list = {"spiffe://lyft.com/fake-team",
                                                            "spiffe://lyft.com/test-team"};
   EXPECT_TRUE(ContextImpl::verifySubjectAltName(cert.get(), verify_subject_alt_name_list));
+}
+
+TEST_F(SslContextImplTest, TestVerifySubjectAltMultiDomain) {
+  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
+      "{{ test_rundir "
+      "}}/test/extensions/transport_sockets/tls/test_data/san_multiple_dns_cert.pem"));
+  std::vector<std::string> verify_subject_alt_name_list = {"https://a.www.example.com"};
+  EXPECT_FALSE(ContextImpl::verifySubjectAltName(cert.get(), verify_subject_alt_name_list));
+}
+
+TEST_F(SslContextImplTest, TestVerifySubjectAltMultiDomainLegacy) {
+  TestScopedRuntime scoped_runtime;
+  Runtime::LoaderSingleton::getExisting()->mergeValues(
+      {{"envoy.reloadable_features.fix_wildcard_matching", "false"}});
+  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
+      "{{ test_rundir "
+      "}}/test/extensions/transport_sockets/tls/test_data/san_multiple_dns_cert.pem"));
+  std::vector<std::string> verify_subject_alt_name_list = {"https://a.www.example.com"};
+  EXPECT_TRUE(ContextImpl::verifySubjectAltName(cert.get(), verify_subject_alt_name_list));
+}
+
+TEST_F(SslContextImplTest, TestMatchSubjectAltNameURIMatched) {
+  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
+      "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_uri_cert.pem"));
+  envoy::type::matcher::v3::StringMatcher matcher;
+  matcher.set_hidden_envoy_deprecated_regex("spiffe://lyft.com/.*-team");
+  std::vector<Matchers::StringMatcherImpl> subject_alt_name_matchers;
+  subject_alt_name_matchers.push_back(Matchers::StringMatcherImpl(matcher));
+  EXPECT_TRUE(ContextImpl::matchSubjectAltName(cert.get(), subject_alt_name_matchers));
 }
 
 TEST_F(SslContextImplTest, TestVerifySubjectAltNameNotMatched) {
@@ -80,20 +177,31 @@ TEST_F(SslContextImplTest, TestVerifySubjectAltNameNotMatched) {
   EXPECT_FALSE(ContextImpl::verifySubjectAltName(cert.get(), verify_subject_alt_name_list));
 }
 
+TEST_F(SslContextImplTest, TestMatchSubjectAltNameNotMatched) {
+  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
+      "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_dns_cert.pem"));
+  envoy::type::matcher::v3::StringMatcher matcher;
+  matcher.set_hidden_envoy_deprecated_regex(".*.foo.com");
+  std::vector<Matchers::StringMatcherImpl> subject_alt_name_matchers;
+  subject_alt_name_matchers.push_back(Matchers::StringMatcherImpl(matcher));
+  EXPECT_FALSE(ContextImpl::matchSubjectAltName(cert.get(), subject_alt_name_matchers));
+}
+
 TEST_F(SslContextImplTest, TestCipherSuites) {
   const std::string yaml = R"EOF(
   common_tls_context:
     tls_params:
-      cipher_suites: "-ALL:+[AES128-SHA|BOGUS1]:BOGUS2:AES256-SHA"
+      cipher_suites: "-ALL:+[AES128-SHA|BOGUS1-SHA256]:BOGUS2-SHA:AES256-SHA"
   )EOF";
 
   envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext tls_context;
   TestUtility::loadFromYaml(TestEnvironment::substitute(yaml), tls_context);
   ClientContextConfigImpl cfg(tls_context, factory_context_);
-  EXPECT_THROW_WITH_MESSAGE(manager_.createSslClientContext(store_, cfg), EnvoyException,
-                            "Failed to initialize cipher suites "
-                            "-ALL:+[AES128-SHA|BOGUS1]:BOGUS2:AES256-SHA. The following "
-                            "ciphers were rejected when tried individually: BOGUS1, BOGUS2");
+  EXPECT_THROW_WITH_MESSAGE(
+      manager_.createSslClientContext(store_, cfg), EnvoyException,
+      "Failed to initialize cipher suites "
+      "-ALL:+[AES128-SHA|BOGUS1-SHA256]:BOGUS2-SHA:AES256-SHA. The following "
+      "ciphers were rejected when tried individually: BOGUS1-SHA256, BOGUS2-SHA");
 }
 
 TEST_F(SslContextImplTest, TestExpiringCert) {
@@ -240,6 +348,62 @@ TEST_F(SslContextImplTest, TestGetCertInformationWithSAN) {
   EXPECT_TRUE(
       message_differencer.Compare(cert_chain_details, *context->getCertChainInformation()[0]));
 }
+
+/*
+TEST_F(SslContextImplTest, TestGetCertInformationWithIPSAN) {
+  const std::string yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_ip_chain.pem"
+      private_key:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_ip_key.pem"
+    validation_context:
+      trusted_ca:
+        filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_ip_cert.pem"
+)EOF";
+
+  envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext tls_context;
+  TestUtility::loadFromYaml(TestEnvironment::substitute(yaml), tls_context);
+  ClientContextConfigImpl cfg(tls_context, factory_context_);
+
+  Envoy::Ssl::ClientContextSharedPtr context(manager_.createSslClientContext(store_, cfg));
+  std::string ca_cert_json = absl::StrCat(R"EOF({
+ "path": "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_ip_cert.pem",
+ "serial_number": ")EOF",
+                                          TEST_SAN_IP_CERT_SERIAL, R"EOF(",
+ "subject_alt_names": [
+  {
+   "ip_address": "1.1.1.1"
+  }
+ ]
+ }
+)EOF");
+
+  std::string cert_chain_json = R"EOF({
+ "path": "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/san_ip_chain.pem",
+ }
+)EOF";
+
+  // This is similar to the hack above, but right now we generate the ca_cert and it expires in 15
+  // days only in the first second that it's valid. We will partially match for up until Days until
+  // Expiration: 1.
+  // For the cert_chain, it is dynamically created when we run_envoy_test.sh which changes the
+  // serial number with
+  // every build. For cert_chain output, we check only for the certificate path.
+  std::string ca_cert_partial_output(TestEnvironment::substitute(ca_cert_json));
+  std::string cert_chain_partial_output(TestEnvironment::substitute(cert_chain_json));
+  envoy::admin::v3::CertificateDetails certificate_details, cert_chain_details;
+  TestUtility::loadFromJson(ca_cert_partial_output, certificate_details);
+  TestUtility::loadFromJson(cert_chain_partial_output, cert_chain_details);
+
+  MessageDifferencer message_differencer;
+  message_differencer.set_scope(MessageDifferencer::Scope::PARTIAL);
+  EXPECT_TRUE(message_differencer.Compare(certificate_details, *context->getCaCertInformation()));
+  EXPECT_TRUE(
+      message_differencer.Compare(cert_chain_details, *context->getCertChainInformation()[0]));
+}
+*/
 
 std::string convertTimeCertInfoToCertDetails(std::string cert_info_time) {
   return TestUtility::convertTime(cert_info_time, "%b %e %H:%M:%S %Y GMT", "%Y-%m-%dT%H:%M:%SZ");
@@ -487,16 +651,16 @@ TEST_F(SslServerContextImplTicketTest, TicketKeySdsNotReady) {
 
   NiceMock<LocalInfo::MockLocalInfo> local_info;
   NiceMock<Event::MockDispatcher> dispatcher;
-  NiceMock<Runtime::MockRandomGenerator> random;
+  NiceMock<Random::MockRandomGenerator> random;
   Stats::IsolatedStoreImpl stats;
   NiceMock<Upstream::MockClusterManager> cluster_manager;
   NiceMock<Init::MockManager> init_manager;
   EXPECT_CALL(factory_context_, localInfo()).WillOnce(ReturnRef(local_info));
-  EXPECT_CALL(factory_context_, dispatcher()).WillOnce(ReturnRef(dispatcher));
+  EXPECT_CALL(factory_context_, dispatcher()).WillRepeatedly(ReturnRef(dispatcher));
   // EXPECT_CALL(factory_context_, random()).WillOnce(ReturnRef(random));
   EXPECT_CALL(factory_context_, stats()).WillOnce(ReturnRef(stats));
   EXPECT_CALL(factory_context_, clusterManager()).WillOnce(ReturnRef(cluster_manager));
-  EXPECT_CALL(factory_context_, initManager()).WillRepeatedly(Return(&init_manager));
+  EXPECT_CALL(factory_context_, initManager()).WillRepeatedly(ReturnRef(init_manager));
   auto* sds_secret_configs = tls_context.mutable_session_ticket_keys_sds_secret_config();
   sds_secret_configs->set_name("abc.com");
   sds_secret_configs->mutable_sds_config();
@@ -607,6 +771,75 @@ TEST_F(SslServerContextImplTicketTest, VerifySanWithNoCA) {
   EXPECT_THROW_WITH_MESSAGE(loadConfigYaml(yaml), EnvoyException,
                             "SAN-based verification of peer certificates without trusted CA "
                             "is insecure and not allowed");
+}
+
+TEST_F(SslServerContextImplTicketTest, StatelessSessionResumptionEnabledByDefault) {
+  envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
+  const std::string tls_context_yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_tmpdir }}/unittestcert.pem"
+      private_key:
+        filename: "{{ test_tmpdir }}/unittestkey.pem"
+  )EOF";
+  TestUtility::loadFromYaml(TestEnvironment::substitute(tls_context_yaml), tls_context);
+
+  ServerContextConfigImpl server_context_config(tls_context, factory_context_);
+  EXPECT_FALSE(server_context_config.disableStatelessSessionResumption());
+}
+
+TEST_F(SslServerContextImplTicketTest, StatelessSessionResumptionExplicitlyEnabled) {
+  envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
+  const std::string tls_context_yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_tmpdir }}/unittestcert.pem"
+      private_key:
+        filename: "{{ test_tmpdir }}/unittestkey.pem"
+  disable_stateless_session_resumption: false
+  )EOF";
+  TestUtility::loadFromYaml(TestEnvironment::substitute(tls_context_yaml), tls_context);
+
+  ServerContextConfigImpl server_context_config(tls_context, factory_context_);
+  EXPECT_FALSE(server_context_config.disableStatelessSessionResumption());
+}
+
+TEST_F(SslServerContextImplTicketTest, StatelessSessionResumptionDisabled) {
+  envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
+  const std::string tls_context_yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_tmpdir }}/unittestcert.pem"
+      private_key:
+        filename: "{{ test_tmpdir }}/unittestkey.pem"
+  disable_stateless_session_resumption: true
+  )EOF";
+  TestUtility::loadFromYaml(TestEnvironment::substitute(tls_context_yaml), tls_context);
+
+  ServerContextConfigImpl server_context_config(tls_context, factory_context_);
+  EXPECT_TRUE(server_context_config.disableStatelessSessionResumption());
+}
+
+TEST_F(SslServerContextImplTicketTest, StatelessSessionResumptionEnabledWhenKeyIsConfigured) {
+  envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
+  const std::string tls_context_yaml = R"EOF(
+  common_tls_context:
+    tls_certificates:
+      certificate_chain:
+        filename: "{{ test_tmpdir }}/unittestcert.pem"
+      private_key:
+        filename: "{{ test_tmpdir }}/unittestkey.pem"
+  session_ticket_keys:
+    keys:
+      filename: "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/ticket_key_a"
+)EOF";
+  TestUtility::loadFromYaml(TestEnvironment::substitute(tls_context_yaml), tls_context);
+
+  ServerContextConfigImpl server_context_config(tls_context, factory_context_);
+  EXPECT_FALSE(server_context_config.disableStatelessSessionResumption());
 }
 
 class ClientContextConfigImplTest : public SslCertsTest {};
@@ -835,8 +1068,8 @@ TEST_F(ClientContextConfigImplTest, SecretNotReady) {
   NiceMock<Event::MockDispatcher> dispatcher;
   EXPECT_CALL(factory_context_, localInfo()).WillOnce(ReturnRef(local_info));
   EXPECT_CALL(factory_context_, stats()).WillOnce(ReturnRef(stats));
-  EXPECT_CALL(factory_context_, initManager()).WillRepeatedly(Return(&init_manager));
-  EXPECT_CALL(factory_context_, dispatcher()).WillOnce(ReturnRef(dispatcher));
+  EXPECT_CALL(factory_context_, initManager()).WillRepeatedly(ReturnRef(init_manager));
+  EXPECT_CALL(factory_context_, dispatcher()).WillRepeatedly(ReturnRef(dispatcher));
   auto sds_secret_configs =
       tls_context.mutable_common_tls_context()->mutable_tls_certificate_sds_secret_configs()->Add();
   sds_secret_configs->set_name("abc.com");
@@ -867,8 +1100,8 @@ TEST_F(ClientContextConfigImplTest, ValidationContextNotReady) {
   NiceMock<Event::MockDispatcher> dispatcher;
   EXPECT_CALL(factory_context_, localInfo()).WillOnce(ReturnRef(local_info));
   EXPECT_CALL(factory_context_, stats()).WillOnce(ReturnRef(stats));
-  EXPECT_CALL(factory_context_, initManager()).WillRepeatedly(Return(&init_manager));
-  EXPECT_CALL(factory_context_, dispatcher()).WillOnce(ReturnRef(dispatcher));
+  EXPECT_CALL(factory_context_, initManager()).WillRepeatedly(ReturnRef(init_manager));
+  EXPECT_CALL(factory_context_, dispatcher()).WillRepeatedly(ReturnRef(dispatcher));
   auto sds_secret_configs =
       tls_context.mutable_common_tls_context()->mutable_validation_context_sds_secret_config();
   sds_secret_configs->set_name("abc.com");
@@ -1160,8 +1393,8 @@ TEST_F(ServerContextConfigImplTest, MultiSdsConfig) {
   tls_context.mutable_common_tls_context()->add_tls_certificate_sds_secret_configs();
   tls_context.mutable_common_tls_context()->add_tls_certificate_sds_secret_configs();
   EXPECT_THROW_WITH_REGEX(
-      TestUtility::validate<
-          envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext>(tls_context),
+      TestUtility::validate<envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext>(
+          tls_context),
       EnvoyException, "Proto constraint validation failed");
 }
 
@@ -1173,8 +1406,8 @@ TEST_F(ServerContextConfigImplTest, SecretNotReady) {
   NiceMock<Event::MockDispatcher> dispatcher;
   EXPECT_CALL(factory_context_, localInfo()).WillOnce(ReturnRef(local_info));
   EXPECT_CALL(factory_context_, stats()).WillOnce(ReturnRef(stats));
-  EXPECT_CALL(factory_context_, initManager()).WillRepeatedly(Return(&init_manager));
-  EXPECT_CALL(factory_context_, dispatcher()).WillOnce(ReturnRef(dispatcher));
+  EXPECT_CALL(factory_context_, initManager()).WillRepeatedly(ReturnRef(init_manager));
+  EXPECT_CALL(factory_context_, dispatcher()).WillRepeatedly(ReturnRef(dispatcher));
   auto sds_secret_configs =
       tls_context.mutable_common_tls_context()->mutable_tls_certificate_sds_secret_configs()->Add();
   sds_secret_configs->set_name("abc.com");
@@ -1205,8 +1438,8 @@ TEST_F(ServerContextConfigImplTest, ValidationContextNotReady) {
   NiceMock<Event::MockDispatcher> dispatcher;
   EXPECT_CALL(factory_context_, localInfo()).WillOnce(ReturnRef(local_info));
   EXPECT_CALL(factory_context_, stats()).WillOnce(ReturnRef(stats));
-  EXPECT_CALL(factory_context_, initManager()).WillRepeatedly(Return(&init_manager));
-  EXPECT_CALL(factory_context_, dispatcher()).WillOnce(ReturnRef(dispatcher));
+  EXPECT_CALL(factory_context_, initManager()).WillRepeatedly(ReturnRef(init_manager));
+  EXPECT_CALL(factory_context_, dispatcher()).WillRepeatedly(ReturnRef(dispatcher));
   auto sds_secret_configs =
       tls_context.mutable_common_tls_context()->mutable_validation_context_sds_secret_config();
   sds_secret_configs->set_name("abc.com");

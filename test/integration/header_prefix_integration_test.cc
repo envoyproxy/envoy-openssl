@@ -12,13 +12,16 @@ namespace Envoy {
 // bootstrap proto it's too late to set it.
 //
 // Instead, set the value early and regression test the bootstrap proto's validation of prefix
-// injection.
+// injection. We also register a custom header to make sure that registered headers interact well
+// with the prefix override.
+Http::RegisterCustomInlineHeader<Http::CustomInlineHeaderRegistry::Type::RequestHeaders>
+    cache_control_handle(Http::CustomHeaders::get().CacheControl);
 
 static const char* custom_prefix_ = "x-custom";
 
 class HeaderPrefixIntegrationTest : public HttpProtocolIntegrationTest {
 public:
-  static void SetUpTestSuite() {
+  static void SetUpTestSuite() { // NOLINT(readability-identifier-naming)
     ThreadSafeSingleton<Http::PrefixValue>::get().setPrefix(custom_prefix_);
   }
 };
@@ -50,7 +53,8 @@ TEST_P(HeaderPrefixIntegrationTest, FailedCustomHeaderPrefix) {
   config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
     bootstrap.set_header_prefix("x-custom-but-not-set");
   });
-  EXPECT_DEATH(initialize(), "Attempting to change the header prefix after it has been used!");
+  EXPECT_DEATH_LOG_TO_STDERR(initialize(),
+                             "Attempting to change the header prefix after it has been used!");
 }
 
 INSTANTIATE_TEST_SUITE_P(Protocols, HeaderPrefixIntegrationTest,

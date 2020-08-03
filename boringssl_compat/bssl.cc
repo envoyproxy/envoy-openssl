@@ -8,6 +8,6 @@ int BIO_mem_contents(const BIO* bio, const uint8_t** out_contents, size_t* out_l
   return 1;
 }
 
-const SSL_METHOD* TLS_with_buffers_method(void) { return TLS_method(); }
+const SSL_METHOD* TLS_with_buffers_method() { return TLS_method(); }
 
 #endif

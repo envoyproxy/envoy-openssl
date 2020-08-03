@@ -9,6 +9,7 @@
 #include "envoy/network/transport_socket.h"
 #include "envoy/ssl/context.h"
 #include "envoy/ssl/context_config.h"
+
 /*
 #include "envoy/ssl/private_key/private_key.h"
 */
@@ -151,6 +152,7 @@ protected:
   static bool verifyCertificateSpkiList(X509* cert,
                                         const std::vector<std::vector<uint8_t>>& expected_hashes);
 
+  bool parseAndSetAlpn(const std::vector<std::string>& alpn, SSL& ssl);
   std::vector<uint8_t> parseAlpnProtocols(const std::string& alpn_protocols);
   static SslStats generateStats(Stats::Scope& scope);
 

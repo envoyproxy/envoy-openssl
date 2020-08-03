@@ -4,6 +4,7 @@
 #include "extensions/transport_sockets/tls/utility.h"
 
 #include "test/extensions/transport_sockets/tls/ssl_test_utility.h"
+#include "test/extensions/transport_sockets/tls/test_data/long_validity_cert_info.h"
 #include "test/extensions/transport_sockets/tls/test_data/san_dns_cert_info.h"
 #include "test/test_common/environment.h"
 #include "test/test_common/simulated_time_system.h"
@@ -11,6 +12,7 @@
 
 #include "absl/time/time.h"
 #include "gtest/gtest.h"
+#include "openssl/err.h"
 #include "openssl/x509v3.h"
 
 namespace Envoy {
@@ -103,6 +105,27 @@ TEST(UtilityTest, TestExpirationTime) {
   const std::string formatted =
       TestUtility::formatTime(Utility::getExpirationTime(*cert), "%b %e %H:%M:%S %Y GMT");
   EXPECT_EQ(TEST_SAN_DNS_CERT_NOT_AFTER, formatted);
+}
+
+TEST(UtilityTest, TestLongExpirationTime) {
+  bssl::UniquePtr<X509> cert = readCertFromFile(TestEnvironment::substitute(
+      "{{ test_rundir }}/test/extensions/transport_sockets/tls/test_data/long_validity_cert.pem"));
+  const std::string formatted =
+      TestUtility::formatTime(Utility::getExpirationTime(*cert), "%b %e %H:%M:%S %Y GMT");
+  EXPECT_EQ(TEST_LONG_VALIDITY_CERT_NOT_AFTER, formatted);
+}
+
+TEST(UtilityTest, GetLastCryptoError) {
+  // Clearing the error stack leaves us with no error to get.
+  ERR_clear_error();
+  EXPECT_FALSE(Utility::getLastCryptoError().has_value());
+
+  ERR_put_error(ERR_LIB_SSL, 0, ERR_R_MALLOC_FAILURE, __FILE__, __LINE__);
+  EXPECT_EQ(Utility::getLastCryptoError().value(),
+            "error:14000041:SSL routines:SSL routines:malloc failure");
+
+  // We consumed the last error, so back to not having an error to get.
+  EXPECT_FALSE(Utility::getLastCryptoError().has_value());
 }
 
 } // namespace

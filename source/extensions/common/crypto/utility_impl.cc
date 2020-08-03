@@ -17,10 +17,7 @@ std::vector<uint8_t> UtilityImpl::getSha256Digest(const Buffer::Instance& buffer
   EVP_MD_CTX* ctx(EVP_MD_CTX_new());
   auto rc = EVP_DigestInit(ctx, EVP_sha256());
   RELEASE_ASSERT(rc == 1, "Failed to init digest context");
-  const auto num_slices = buffer.getRawSlices(nullptr, 0);
-  absl::FixedArray<Buffer::RawSlice> slices(num_slices);
-  buffer.getRawSlices(slices.begin(), num_slices);
-  for (const auto& slice : slices) {
+  for (const auto& slice : buffer.getRawSlices()) {
     rc = EVP_DigestUpdate(ctx, slice.mem_, slice.len_);
     RELEASE_ASSERT(rc == 1, "Failed to update digest");
   }
@@ -44,8 +41,7 @@ const VerificationOutput UtilityImpl::verifySignature(absl::string_view hash, Cr
                                                       const std::vector<uint8_t>& signature,
                                                       const std::vector<uint8_t>& text) {
   // Step 1: initialize EVP_MD_CTX
-  EVP_MD_CTX *ctx;
-  ctx = EVP_MD_CTX_new();
+  EVP_MD_CTX* ctx(EVP_MD_CTX_new());
 
   // Step 2: initialize EVP_MD
   const EVP_MD* md = getHashFunction(hash);
@@ -59,14 +55,12 @@ const VerificationOutput UtilityImpl::verifySignature(absl::string_view hash, Cr
   EVP_PKEY* pkey = pkey_wrapper->getEVP_PKEY();
 
   if (pkey == nullptr) {
-    free(pkey_wrapper);
     EVP_MD_CTX_free(ctx);
     return {false, "Failed to initialize digest verify."};
   }
 
   int ok = EVP_DigestVerifyInit(ctx, nullptr, md, nullptr, pkey);
   if (!ok) {
-    free(pkey_wrapper);
     EVP_MD_CTX_free(ctx);
     return {false, "Failed to initialize digest verify."};
   }
@@ -116,6 +110,10 @@ const EVP_MD* UtilityImpl::getHashFunction(absl::string_view name) {
     return nullptr;
   }
 }
+
+// Register the crypto utility singleton.
+static Crypto::ScopedUtilitySingleton* utility_ =
+    new Crypto::ScopedUtilitySingleton(std::make_unique<Crypto::UtilityImpl>());
 
 } // namespace Crypto
 } // namespace Common

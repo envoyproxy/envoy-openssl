@@ -1,6 +1,7 @@
 #include <vector>
 
 #include "common/api/os_sys_calls_impl.h"
+#include "common/http/utility.h"
 #include "common/network/io_socket_handle_impl.h"
 #include "common/network/listen_socket_impl.h"
 
@@ -67,7 +68,9 @@ public:
 };
 
 static void BM_TlsInspector(benchmark::State& state) {
-  NiceMock<FastMockOsSysCalls> os_sys_calls(Envoy::Extensions::ListenerFilters::TlsInspector::Test::generateClientHello("example.com", "\x02h2\x08http/1.1"));
+  NiceMock<FastMockOsSysCalls> os_sys_calls(Tls::Test::generateClientHello(
+      Config::TLS_MIN_SUPPORTED_VERSION, Config::TLS_MAX_SUPPORTED_VERSION, "example.com",
+      "\x02h2\x08http/1.1"));
   TestThreadsafeSingletonInjector<Api::OsSysCallsImpl> os_calls{&os_sys_calls};
   NiceMock<Stats::MockStore> store;
   ConfigSharedPtr cfg(std::make_shared<Config>(store));
@@ -79,11 +82,12 @@ static void BM_TlsInspector(benchmark::State& state) {
   for (auto _ : state) {
     Filter filter(cfg);
     filter.onAccept(cb);
-    dispatcher.file_event_callback_(Event::FileReadyType::Read);
+    RELEASE_ASSERT(dispatcher.file_event_callback_ == nullptr, "");
     RELEASE_ASSERT(socket.detectedTransportProtocol() == "tls", "");
     RELEASE_ASSERT(socket.requestedServerName() == "example.com", "");
     RELEASE_ASSERT(socket.requestedApplicationProtocols().size() == 2 &&
-                       socket.requestedApplicationProtocols().front() == "h2",
+                       socket.requestedApplicationProtocols().front() ==
+                           Http::Utility::AlpnNames::get().Http2,
                    "");
     socket.setDetectedTransportProtocol("");
     socket.setRequestedServerName("");
@@ -97,16 +101,3 @@ BENCHMARK(BM_TlsInspector)->Unit(benchmark::kMicrosecond);
 } // namespace ListenerFilters
 } // namespace Extensions
 } // namespace Envoy
-
-// Boilerplate main(), which discovers benchmarks in the same file and runs them.
-int main(int argc, char** argv) {
-  Envoy::Thread::MutexBasicLockable lock;
-  Envoy::Logger::Context logging_context(spdlog::level::warn,
-                                         Envoy::Logger::Logger::DEFAULT_LOG_FORMAT, lock, false);
-
-  benchmark::Initialize(&argc, argv);
-  if (benchmark::ReportUnrecognizedArguments(argc, argv)) {
-    return 1;
-  }
-  benchmark::RunSpecifiedBenchmarks();
-}

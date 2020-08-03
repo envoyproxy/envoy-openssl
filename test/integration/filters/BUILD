@@ -1,18 +1,65 @@
-licenses(["notice"])  # Apache 2
-
 load(
     "@envoy//bazel:envoy_build_system.bzl",
     "envoy_cc_test_library",
     "envoy_package",
 )
 
+licenses(["notice"])  # Apache 2
+
 envoy_package()
+
+envoy_cc_test_library(
+    name = "add_body_filter_config_lib",
+    repository = "@envoy",
+    srcs = [
+        "add_body_filter.cc",
+    ],
+    deps = [
+        ":common_lib",
+        "@envoy//include/envoy/http:filter_interface",
+        "@envoy//include/envoy/registry",
+        "@envoy//include/envoy/server:filter_config_interface",
+        "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
+    ],
+)
+
+envoy_cc_test_library(
+    name = "wait_for_whole_request_and_response_config_lib",
+    repository = "@envoy",
+    srcs = [
+        "wait_for_whole_request_and_response.cc",
+    ],
+    deps = [
+        ":common_lib",
+        "@envoy//include/envoy/http:filter_interface",
+        "@envoy//include/envoy/registry",
+        "@envoy//include/envoy/server:filter_config_interface",
+        "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
+    ],
+)
 
 envoy_cc_test_library(
     name = "add_trailers_filter_config_lib",
     repository = "@envoy",
     srcs = [
         "add_trailers_filter.cc",
+    ],
+    deps = [
+        "@envoy//include/envoy/http:filter_interface",
+        "@envoy//include/envoy/registry",
+        "@envoy//include/envoy/server:filter_config_interface",
+        "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
+    ],
+)
+
+envoy_cc_test_library(
+    name = "backpressure_filter_config_lib",
+    repository = "@envoy",
+    srcs = [
+        "backpressure_filter.cc",
     ],
     deps = [
         "@envoy//include/envoy/http:filter_interface",
@@ -271,6 +318,21 @@ envoy_cc_test_library(
     deps = [
         ":common_lib",
         "@envoy//include/envoy/event:timer_interface",
+        "@envoy//include/envoy/http:filter_interface",
+        "@envoy//include/envoy/registry",
+        "@envoy//include/envoy/server:filter_config_interface",
+        "@envoy//source/extensions/filters/http/common:pass_through_filter_lib",
+        "@envoy//test/extensions/filters/http/common:empty_http_filter_config_lib",
+    ],
+)
+
+envoy_cc_test_library(
+    name = "encoder_decoder_buffer_filter_lib",
+    repository = "@envoy",
+    srcs = [
+        "encoder_decoder_buffer_filter.cc",
+    ],
+    deps = [
         "@envoy//include/envoy/http:filter_interface",
         "@envoy//include/envoy/registry",
         "@envoy//include/envoy/server:filter_config_interface",

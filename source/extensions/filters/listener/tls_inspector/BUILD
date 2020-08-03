@@ -21,7 +21,6 @@ envoy_cc_library(
         "ssl",
     ],
     deps = [
-        ":openssl_impl_lib",
         "@envoy//include/envoy/event:dispatcher_interface",
         "@envoy//include/envoy/event:timer_interface",
         "@envoy//include/envoy/network:filter_interface",
@@ -46,22 +45,5 @@ envoy_cc_extension(
         "@envoy//source/extensions/filters/listener:well_known_names",
         "//source/extensions/filters/listener/tls_inspector:tls_inspector_lib",
         "@envoy_api//envoy/extensions/filters/listener/tls_inspector/v3:pkg_cc_proto",
-    ],
-)
-
-envoy_cc_library(
-    name = "openssl_impl_lib",
-    repository = "@envoy",
-    srcs = [
-        "openssl_impl.cc",
-    ],
-    hdrs = [
-        "openssl_impl.h",
-    ],
-    external_deps = [
-        "ssl",
-    ],
-    deps = [
-        "//boringssl_compat:bssl_compat_lib",
     ],
 )

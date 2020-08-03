@@ -19,6 +19,7 @@ envoy_extension_cc_test(
     deps = [
         "@envoy//source/common/stream_info:stream_info_lib",
         "@envoy_openssl//source/extensions/filters/http/lua:lua_filter_lib",
+        "@envoy//test/mocks/api:api_mocks",
         "@envoy//test/mocks/http:http_mocks",
         "@envoy//test/mocks/network:network_mocks",
         "@envoy//test/mocks/ssl:ssl_mocks",

@@ -1,11 +1,11 @@
-licenses(["notice"])  # Apache 2
-
 load(
     "@envoy//bazel:envoy_build_system.bzl",
     "envoy_cc_mock",
     "envoy_cc_test",
     "envoy_package",
 )
+
+licenses(["notice"])  # Apache 2
 
 envoy_package()
 
@@ -83,6 +83,7 @@ envoy_cc_test(
     srcs = [
         "aws_metadata_fetcher_integration_test.cc",
     ],
+    tags = ["fails_on_windows"],
     deps = [
         "@envoy//source/common/common:fmt_lib",
         "//source/extensions/common/aws:utility_lib",
