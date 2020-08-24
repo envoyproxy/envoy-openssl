@@ -37,6 +37,9 @@ envoy_cc_library(
         "abseil_synchronization",
         "ssl",
     ],
+    copts = [
+        "-UOPENSSL_IS_BORINGSSL",
+    ],
     deps = [
         ":context_config_lib",
         ":context_lib",
