@@ -30,9 +30,20 @@ If you need OpenSSL dynamically linked to Envoy then re-map `@boringssl` to
 To test the OpenSSL features run the following commands.
 
 ```console
-$ bazel test //test/common/...
-$ bazel test //test/extensions/...
-$ bazel test //test/integration/...
+$ bazel test --define openssl=true //test/common/...
+$ bazel test --define openssl=true //test/extensions/...
+$ bazel test --define openssl=true //test/integration/...
+```
+
+### DNS
+
+With test cases that use DNS, ensure that `localhost` is resolvable for ip6.
+
+/etc/hosts
+
+```
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback localhost
 ```
 
 ## License
