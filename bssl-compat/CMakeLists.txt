@@ -29,10 +29,8 @@ FetchContent_Declare(
     openssl
     URL "https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1m.tar.gz"
     URL_HASH SHA256=36ae24ad7cf0a824d0b76ac08861262e47ec541e5d0f20e6d94bab90b2dab360
-)
+    )
 FetchContent_MakeAvailable(openssl)
-
-#message("XXXX ${openssl_SOURCE_DIR}")
 
 add_definitions(
     -DHTTP_MAX_HEADER_SIZE=0x2000000
@@ -43,24 +41,18 @@ add_definitions(
     -DENVOY_GOOGLE_GRPC
     -DHAVE_PTHREAD
     -DHAVE_LONG_LONG
-    -DNOIME)
+    -DNOIME
+    )
 
-# for simplicity, only defining one target, even though in test mode
-# several binaries are created.  CMake is not used for build only for IDE
 add_library(bssl-compat
-        SHARED
-        source/internal.h
-        source/digest.c
-        source/cbs.c
-        source/cbb.c
-        source/bn.c
-        source/asn1_a_int.c
-#        include/bssl_compat/bssl_compat.h
-#        include/bssl_compat/openssl/bn.h
-#        include/bssl_compat/openssl/digest.h
-#        include/openssl/bytestring.h
-#        include/openssl/span.h
-        )
+    SHARED
+    source/internal.h
+    source/digest.c
+    source/cbs.c
+    source/cbb.c
+    source/bn.c
+    source/asn1_a_int.c
+    )
 
 target_include_directories(bssl-compat PRIVATE
         # needed for ssl includes
