@@ -19,6 +19,8 @@ The solution to the problem will likely include
 
 Envoy Proxy is tightly coupled with BoringSSL[^1] , a Google library that is a subset of [OpenSSL](https://www.openssl.org/). An OpenSSL version is, for several organisations, critical due to corporate standards which include mandatory requirements for OpenSSL with FIPS[^f].  Maintaining a fork of Envoy that replaces BoringSSL with OpenSSL represents a significant non-trivial and increasing maintenance effort.  As Envoy progresses and with refactoring and use of BoringSSL and Quic [#reference] the feasibility of an alternative to refactoring would be ideal.
 
+![BoringSSL problem](https://github.com/envoyproxy/envoy-openssl/blob/main/docs/BoringSSL-problem.png)
+
 The ServiceMesh/Maistra version of Envoy is an OpenSSL implementation replacing the BoringSSL transport socket layer.  The OpenSSL library is dynamically linked, preserving cryptographic compliance with FIPS 140-2[^f2] and soon FIPS 140-3[^f3].
 
 The current synchronisation process is to periodically (manually) merge a release branch of [envoyproxy/envoy](https://github.com/envoyproxy/envoy) into a [maistra/envoy](https://github.com/maistra/envoy) release branch.  Resolving conflicts, adjusting BoringSSL calls to be OpenSSL compatible (or removing those that can't be supported), confirming changes and testing.  
