@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
+include(ExternalProject)
+
+set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1m.tar.gz)
+set(OPENSSL_URL_HASH 36ae24ad7cf0a824d0b76ac08861262e47ec541e5d0f20e6d94bab90b2dab360 )
+include(openssl.cmake)
+
 SET (CMAKE_C_COMPILER             "/usr/bin/clang")
 SET (CMAKE_C_FLAGS                "-Wall -std=c99")
 SET (CMAKE_C_FLAGS_DEBUG          "-g")
@@ -21,16 +27,6 @@ project(bssl-compat
         LANGUAGES C CXX)
 
 find_package(Threads)
-
-# NOTE: If use GIT_REPOSITORY, there is a hidden passwd prompt that causes
-# CMake init to block stopping messages from being displayed
-# full cmake trace can be obtained with --trace-expand option
-FetchContent_Declare(
-    openssl
-    URL "https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1m.tar.gz"
-    URL_HASH SHA256=36ae24ad7cf0a824d0b76ac08861262e47ec541e5d0f20e6d94bab90b2dab360
-    )
-FetchContent_MakeAvailable(openssl)
 
 add_definitions(
     -DHTTP_MAX_HEADER_SIZE=0x2000000
@@ -56,16 +52,18 @@ add_library(bssl-compat
     source/rand.c
     )
 
-target_link_libraries(bssl-compat PRIVATE crypto)
+add_dependencies(bssl-compat
+        OpenSSL)
+
+target_link_libraries(bssl-compat PRIVATE OpenSSL::Crypto)
 target_include_directories(bssl-compat PUBLIC
         # needed for ssl includes
-        ${openssl_SOURCE_DIR}/include
+        ${OPENSSL_INCLUDE_DIR}
         include
 #       needed only if ssl/ssl.h is used.
 #       ${openssl_SOURCE_DIR}
         )
 
-target_link_libraries(bssl-compat PRIVATE crypto)
 add_executable(test_rand)
 target_sources(test_rand PRIVATE source/test/test_rand.c)
 target_link_libraries(test_rand PRIVATE bssl-compat)
