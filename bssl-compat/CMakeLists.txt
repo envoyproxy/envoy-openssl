@@ -50,7 +50,6 @@ add_library(bssl-compat
     source/asn1_a_int.c
     )
 
-target_link_libraries(bssl-compat PRIVATE crypto)
 add_dependencies(bssl-compat
         OpenSSL)
 target_include_directories(bssl-compat PUBLIC
@@ -61,4 +60,4 @@ target_include_directories(bssl-compat PUBLIC
 #       ${openssl_SOURCE_DIR}
         )
 
-target_link_libraries(bssl-compat PRIVATE crypto)
+target_link_libraries(bssl-compat PRIVATE OpenSSL::Crypto)
