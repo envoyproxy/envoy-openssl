@@ -16,14 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef BSSL_OPENSSL_H
-#define BSSL_OPENSSL_H
+#include "bssl_compat/bssl_compat.h"
+#include "bssl_compat/bssl_openssl.h"
 
-// OpenSSL functions needed by the implementation
-struct openssl_func {
-	int (*RAND_bytes)(unsigned char *, int);
-};
+OPENSSL_EXPORT int RAND_bytes(uint8_t *buf, size_t len) {
 
-extern struct openssl_func openssl;
+	if (openssl.RAND_bytes((unsigned char *)buf, (int)len) <= 0)
+		return 0;
 
-#endif
+	return 1;
+}

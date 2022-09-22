@@ -39,6 +39,10 @@ static void bssl_openssl_init(void) {
 	if (libcrypto == NULL)
 		goto err;
 
+	if (!(openssl.RAND_bytes =
+	      (int(*)(unsigned char *, int))(dlsym(libcrypto, "RAND_bytes"))))
+		goto err;
+
 	return;
 
  err:
