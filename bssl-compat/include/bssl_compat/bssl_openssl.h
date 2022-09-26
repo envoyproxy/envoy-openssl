@@ -19,9 +19,16 @@
 #ifndef BSSL_OPENSSL_H
 #define BSSL_OPENSSL_H
 
+#include "openssl/ossl_typ.h"
+#define OSSL_ASYNC_FD int
+
 // OpenSSL functions needed by the implementation
 struct openssl_func {
 	int (*RAND_bytes)(unsigned char *, int);
+	int (*SSL_do_handshake)(SSL *s);
+	int (*SSL_get_error)(const SSL *s, int ret_code);
+	long (*SSL_ctrl)(SSL *s, int cmd, long larg, void *parg);
+	int (*SSL_get_all_async_fds)(SSL *s, OSSL_ASYNC_FD *fds, size_t *numfds);
 };
 
 extern struct openssl_func openssl;

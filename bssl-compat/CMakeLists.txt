@@ -50,6 +50,7 @@ add_library(bssl-compat
     source/asn1_a_int.c
     source/bssl_openssl.c
     source/rand.c
+    source/ssl.c
     )
 
 add_dependencies(bssl-compat
