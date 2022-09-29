@@ -10,6 +10,7 @@ envoy_cc_binary(
     name = "envoy",
     repository = "@envoy",
     deps = [
+        "//openssl_handshaker/custom_handshakers/source:config",
         "@envoy//source/exe:envoy_main_entry_lib",
     ],
 )
