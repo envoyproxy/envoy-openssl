@@ -1,6 +1,0 @@
-import %workspace%/envoy/.bazelrc
-
-build --copt="-DENVOY_SSL_VERSION=\"OpenSSL\""
-build --cxxopt=-Wno-error=old-style-cast
-build --define=boringssl=disabled
-build --workspace_status_command=envoy/bazel/get_workspace_status
