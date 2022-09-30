@@ -3,7 +3,6 @@ load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 filegroup(
     name = "srcs",
     srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
 )
 
 cmake(
@@ -11,4 +10,11 @@ cmake(
     lib_source = ":srcs",
     out_shared_libs = ["libbssl-compat.so"],
     out_static_libs = [],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "ssl",
+    actual = ":bssl-compat",
+    visibility = ["//visibility:public"],
 )
