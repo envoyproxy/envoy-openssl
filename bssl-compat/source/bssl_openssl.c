@@ -24,12 +24,14 @@
 #include "bssl_compat/bssl_openssl.h"
 
 #define OPENSSL_LIBCRYPTO "libcrypto.so"
+#define OPENSSL_LIBSSL    "libssl.so"
 
 /* Constructor/destructor functions to run when library is loaded/unloaded */
 static void bssl_openssl_init(void)  __attribute__ ((constructor));
 static void bssl_openssl_close(void) __attribute__ ((destructor));
 
 static void *libcrypto;
+static void *libssl;
 struct openssl_func openssl;
 
 /* Load needed OpenSSL symbols, fail hard if the attempt is unsuccessful  */
@@ -39,8 +41,28 @@ static void bssl_openssl_init(void) {
 	if (libcrypto == NULL)
 		goto err;
 
+	libssl = dlopen(OPENSSL_LIBSSL, RTLD_NOW | RTLD_LOCAL);
+	if (libcrypto == NULL)
+		goto err;
+
 	if (!(openssl.RAND_bytes =
 	      (int(*)(unsigned char *, int))(dlsym(libcrypto, "RAND_bytes"))))
+		goto err;
+
+	if(!(openssl.SSL_ctrl =
+	     (long(*)(SSL *ssl, int cmd, long larg, void *parg))dlsym(libssl, "SSL_ctrl")))
+		goto err;
+
+	if(!(openssl.SSL_do_handshake =
+	     (int(*)(SSL *))dlsym(libssl, "SSL_do_handshake")))
+		goto err;
+
+	if(!(openssl.SSL_get_error =
+	     (int(*)(const SSL*, int))dlsym(libssl, "SSL_get_error")))
+		goto err;
+
+	if(!(openssl.SSL_get_all_async_fds =
+	     (int(*)(SSL *, OSSL_ASYNC_FD *, size_t *))dlsym(libssl, "SSL_get_all_async_fds")))
 		goto err;
 
 	return;
@@ -52,4 +74,5 @@ static void bssl_openssl_init(void) {
 
 static void bssl_openssl_close(void) {
 	dlclose(libcrypto);
+	dlclose(libssl);
 }

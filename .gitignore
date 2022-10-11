@@ -28,3 +28,7 @@ TAGS
 .vs
 .vscode
 .obsidian
+*.db
+cmake-build-debug
+.ccls-cache
+cscope.*
