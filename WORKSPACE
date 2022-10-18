@@ -13,6 +13,22 @@ load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_depende
 
 rules_foreign_cc_dependencies()
 
+openssl_files = """\
+filegroup(
+    name = "srcs",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+"""
+
+http_archive(
+    name = "openssl",
+    build_file_content = openssl_files,
+    sha256 = "fc513913724790510f53af07caa24eaf0eae3fc8cf476c17c113221b5868edac",
+    strip_prefix = "openssl-OpenSSL_1_1_1r",
+    urls = ["https://github.com/openssl/openssl/archive/OpenSSL_1_1_1r.tar.gz"],
+)
+
 local_repository(
     name = "bssl-compat",
     path = "bssl-compat",
