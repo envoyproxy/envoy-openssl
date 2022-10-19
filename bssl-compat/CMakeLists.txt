@@ -58,7 +58,7 @@ add_dependencies(bssl-compat
         OpenSSL::SSL
         OpenSSL::Crypto)
 
-target_link_libraries(bssl-compat PRIVATE OpenSSL::Crypto)
+target_link_libraries(bssl-compat INTERFACE OpenSSL::Crypto)
 target_include_directories(bssl-compat PUBLIC
         # needed for ssl includes
         ${OPENSSL_INCLUDE_DIR}
