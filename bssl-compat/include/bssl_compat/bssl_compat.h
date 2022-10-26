@@ -318,7 +318,7 @@ BORINGSSL_DEFINE_STACK_TRAITS(X509_NAME, X509_NAME, false)
 BORINGSSL_DEFINE_STACK_TRAITS(GENERAL_NAME, GENERAL_NAME, false)
 BORINGSSL_DEFINE_STACK_TRAITS(SSL_CIPHER, SSL_CIPHER, false)
 
-#define sk_X509_NAME_find(a,b,c) sk_X509_NAME_find((a), (c))
+//#define sk_X509_NAME_find(a,b,c) sk_X509_NAME_find((a), (c))
 
 // SSL_TICKET_KEY_NAME_LEN is the length of the key name prefix of a session
 // ticket.

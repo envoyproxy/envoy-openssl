@@ -29,6 +29,19 @@ OpenSSL is supported by providing a compatiblity library and a set of TLS relate
 
 ## Building
 
+For a standalone build of the library, see
+[bssl-compat README](bssl-compat/README.md).
+
+In order to start building the Envoy handshaker extension, first install
+Bazel. [Bazelisk](https://github.com/bazelbuild/bazelisk/blob/master/README.md)
+is a user-friendly launcher for Bazel, install a suitable
+[release](https://github.com/bazelbuild/bazelisk/releases) for the desired
+platform. Clang is strongly recommended for a successful build.
+
+After installing clang and Bazelisk/Bazel, build Envoy handshaker with:
+```
+CC=clang CXX=clang++ bazel build --config=clang :envoy
+```
 
 ## Testing
 

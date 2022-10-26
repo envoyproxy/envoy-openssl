@@ -3,7 +3,6 @@ include(ExternalProject)
 
 set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1m.tar.gz)
 set(OPENSSL_URL_HASH 36ae24ad7cf0a824d0b76ac08861262e47ec541e5d0f20e6d94bab90b2dab360 )
-include(openssl.cmake)
 
 SET (CMAKE_C_COMPILER             "/usr/bin/clang")
 SET (CMAKE_C_FLAGS                "-Wall -std=c99")
@@ -27,6 +26,8 @@ project(bssl-compat
         LANGUAGES C CXX)
 
 find_package(Threads)
+
+include(openssl.cmake)
 
 add_definitions(
     -DHTTP_MAX_HEADER_SIZE=0x2000000
@@ -54,9 +55,10 @@ add_library(bssl-compat
     )
 
 add_dependencies(bssl-compat
-        OpenSSL)
+        OpenSSL::SSL
+        OpenSSL::Crypto)
 
-target_link_libraries(bssl-compat PRIVATE OpenSSL::Crypto)
+target_link_libraries(bssl-compat INTERFACE OpenSSL::Crypto)
 target_include_directories(bssl-compat PUBLIC
         # needed for ssl includes
         ${OPENSSL_INCLUDE_DIR}
