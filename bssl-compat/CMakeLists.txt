@@ -54,7 +54,14 @@ add_library(bssl-compat
     source/ssl.c
     )
 
+add_subdirectory(prefixer)
+add_custom_target(run-prefixer
+                  COMMAND prefixer --src-path "${SRC_OPENSSL_HEADERS}" 
+                                   --output "${CMAKE_CURRENT_SOURCE_DIR}/source/include"
+                                   --prefix xxx --force)
+
 add_dependencies(bssl-compat
+        run-prefixer
         OpenSSL::SSL
         OpenSSL::Crypto)
 

@@ -32,3 +32,6 @@ TAGS
 cmake-build-debug
 .ccls-cache
 cscope.*
+*~
+bssl-compat/source/include/xxx.ld
+bssl-compat/source/include/xxx/
