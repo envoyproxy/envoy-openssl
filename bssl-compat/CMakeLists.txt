@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 include(ExternalProject)
 
 set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1m.tar.gz)
@@ -15,7 +15,6 @@ SET (CMAKE_CXX_FLAGS_DEBUG        "-g")
 include(CMakePrintHelpers)
 include(FetchContent)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++")
 set(CMAKE_CXX_STANDARD 17)
 set(USING_OPENSSL true)
@@ -42,30 +41,33 @@ add_definitions(
     )
 
 add_library(bssl-compat
-    SHARED
+    STATIC
     source/internal.h
     source/digest.c
     source/cbs.c
     source/cbb.c
     source/bn.c
     source/asn1_a_int.c
-    source/bssl_openssl.c
     source/rand.c
     source/ssl.c
+    ossl.c
     )
+target_include_directories(bssl-compat PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_subdirectory(prefixer)
-add_custom_target(run-prefixer
-                  COMMAND prefixer --src-path "${SRC_OPENSSL_HEADERS}" 
-                                   --output "${CMAKE_CURRENT_SOURCE_DIR}/source/include"
-                                   --prefix xxx --force)
+add_custom_command(OUTPUT ossl.c include/ossl.h include/ossl/**
+                   COMMAND prefixer --src-path "${SRC_OPENSSL_HEADERS}"
+                                    --src-incl "openssl/*.h"
+                                    --src-skip "openssl/asn1_mac.h"
+                                    --src-skip "openssl/opensslconf-*.h"
+                                    --output "${CMAKE_CURRENT_BINARY_DIR}"
+                                    --prefix ossl --force)
 
 add_dependencies(bssl-compat
-        run-prefixer
         OpenSSL::SSL
         OpenSSL::Crypto)
 
-target_link_libraries(bssl-compat INTERFACE OpenSSL::Crypto)
+target_link_libraries(bssl-compat INTERFACE OpenSSL::Crypto ${CMAKE_DL_LIBS})
 target_include_directories(bssl-compat PUBLIC
         # needed for ssl includes
         ${OPENSSL_INCLUDE_DIR}
