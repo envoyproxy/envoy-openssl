@@ -55,7 +55,8 @@ add_library(bssl-compat
 target_include_directories(bssl-compat PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_subdirectory(prefixer)
-add_custom_command(OUTPUT ossl.c include/ossl.h include/ossl/**
+add_custom_command(DEPENDS prefixer
+                   OUTPUT ossl.c include/ossl.h include/ossl/
                    COMMAND prefixer --src-path "${SRC_OPENSSL_HEADERS}"
                                     --src-incl "openssl/*.h"
                                     --src-skip "openssl/asn1_mac.h"
