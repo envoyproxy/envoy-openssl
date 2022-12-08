@@ -32,3 +32,4 @@ TAGS
 cmake-build-debug
 .ccls-cache
 cscope.*
+*~

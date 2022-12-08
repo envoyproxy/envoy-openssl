@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "private-*" ]
   pull_request:
     branches: [ "main" ]
 
@@ -11,10 +11,16 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Remove packages
+      run: sudo apt autoremove --purge -y clang-10 clang-12
+
+    - name: Install packages
+      run: sudo apt install -y libclang-cpp11-dev libclang-11-dev
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -S ${{github.workspace}}/bssl-compat -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
