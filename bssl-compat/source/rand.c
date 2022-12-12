@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "bssl_compat/openssl/rand.h"
+#include <openssl/rand.h>
 #include "ossl/openssl/rand.h"
 
 OPENSSL_EXPORT int RAND_bytes(uint8_t *buf, size_t len) {

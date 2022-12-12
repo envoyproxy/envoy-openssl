@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "bssl_compat/openssl/rand.h"
+#include <openssl/rand.h>
 
 #include <stdio.h>
 #include <stdint.h>

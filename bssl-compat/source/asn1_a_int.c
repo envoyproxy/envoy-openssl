@@ -1,5 +1,6 @@
 #include <openssl/bytestring.h>
 #include <openssl/asn1.h>
+#include <openssl/mem.h>
 
 #include <string.h>
 #include <limits.h>
@@ -9,7 +10,7 @@
 #include "internal.h"
 
 /* Convert just ASN1 INTEGER content octets to ASN1_INTEGER structure */
-
+/* FIXME(tpoole) Extract this from {BoringSSL}/crypto/asn1/a_int.c */
 ASN1_INTEGER *c2i_ASN1_INTEGER(ASN1_INTEGER **a, const unsigned char **pp,
                                long len)
 {

@@ -18,8 +18,8 @@ configure_make(
 cmake(
     name = "bssl-compat",
     lib_source = ":srcs",
-    out_shared_libs = ["libbssl-compat.so"],
-    out_static_libs = [],
+    out_shared_libs = [],
+    out_static_libs = ["libbssl-compat.a"],
     visibility = ["//visibility:public"],
     deps = [":openssl"],
 )
