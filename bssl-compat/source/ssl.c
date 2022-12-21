@@ -16,54 +16,48 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "bssl_compat/openssl/ssl.h"
+#include <openssl/ssl.h>
+#include <ext/openssl/ssl.h>
+#include <ossl/openssl/ssl.h>
+#include "log.h"
+
+/*
+ * Since the SSL type is opaque in both BoringSSL and OpenSSL,
+ * we can simply cast back and forth between the two.
+ */
+
+
 
 int SSL_do_handshake(SSL *ssl) {
-	return openssl.SSL_do_handshake(ssl);
+	return ossl_SSL_do_handshake((ossl_SSL*)ssl);
 }
-
-/* OpenSSL error codes identical to BoringSSL */
-#define openssl_SSL_ERROR_NONE                  0
-#define openssl_SSL_ERROR_SSL                   1
-#define openssl_SSL_ERROR_WANT_READ             2
-#define openssl_SSL_ERROR_WANT_WRITE            3
-#define openssl_SSL_ERROR_WANT_X509_LOOKUP      4
-#define openssl_SSL_ERROR_SYSCALL               5
-#define openssl_SSL_ERROR_ZERO_RETURN           6
-#define openssl_SSL_ERROR_WANT_CONNECT          7
-#define openssl_SSL_ERROR_WANT_ACCEPT           8
-/* OpenSSL error codes different from BoringSSL */
-#define openssl_SSL_ERROR_WANT_ASYNC            9
-#define openssl_SSL_ERROR_WANT_ASYNC_JOB       10
-#define openssl_SSL_ERROR_WANT_CLIENT_HELLO_CB 11
 
 int SSL_get_error(const SSL *ssl, int ret_code) {
 	int r;
 
-	r = openssl.SSL_get_error(ssl, ret_code);
+	r = ossl_SSL_get_error((const ossl_SSL*)ssl, ret_code);
 	switch (r) {
 
-	case openssl_SSL_ERROR_NONE:
-	case openssl_SSL_ERROR_SSL:
-	case openssl_SSL_ERROR_WANT_READ:
-	case openssl_SSL_ERROR_WANT_WRITE:
-	case openssl_SSL_ERROR_WANT_X509_LOOKUP:
-	case openssl_SSL_ERROR_SYSCALL:
-	case openssl_SSL_ERROR_ZERO_RETURN:
-	case openssl_SSL_ERROR_WANT_CONNECT:
-	case openssl_SSL_ERROR_WANT_ACCEPT:
+  case ossl_SSL_ERROR_NONE:
+	case ossl_SSL_ERROR_SSL:
+	case ossl_SSL_ERROR_WANT_READ:
+	case ossl_SSL_ERROR_WANT_WRITE:
+	case ossl_SSL_ERROR_WANT_X509_LOOKUP:
+	case ossl_SSL_ERROR_SYSCALL:
+	case ossl_SSL_ERROR_ZERO_RETURN:
+	case ossl_SSL_ERROR_WANT_CONNECT:
+	case ossl_SSL_ERROR_WANT_ACCEPT:
 		/* Identical error codes with BoringSSL */
 		return r;
 
-	case openssl_SSL_ERROR_WANT_ASYNC:
-		return SSL_ERROR_WANT_ASYNC;
+	case ossl_SSL_ERROR_WANT_ASYNC:
+	case ossl_SSL_ERROR_WANT_ASYNC_JOB:
+	case ossl_SSL_ERROR_WANT_CLIENT_HELLO_CB:
+	  bssl_compat_fatal("OpenSSL error code %d has no BoringSSL equivalent", r);
+	  break;
 
-	case openssl_SSL_ERROR_WANT_ASYNC_JOB:
-		return SSL_ERROR_WANT_ASYNC_JOB;
-
-	case openssl_SSL_ERROR_WANT_CLIENT_HELLO_CB:
 	default:
-		/* not implemented */
+	  bssl_compat_fatal("Unknown OpenSSL error code %d", r);
 		break;
 	}
 
@@ -85,39 +79,38 @@ int SSL_get_error(const SSL *ssl, int ret_code) {
   * SSL_MODE_NO_SESSION_CREATION
   * SSL_MODE_HANDSHAKE_CUTTHROUGH
  */
-#define openssl_SSL_MODE_ENABLE_PARTIAL_WRITE       0x00000001L
-#define openssl_SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER 0x00000002L
-#define openssl_SSL_MODE_AUTO_RETRY                 0x00000004L
-#define openssl_SSL_MODE_NO_AUTO_CHAIN              0x00000008L
-#define openssl_SSL_MODE_RELEASE_BUFFERS            0x00000010L
-#define openssl_SSL_MODE_SEND_CLIENTHELLO_TIME      0x00000020L
-#define openssl_SSL_MODE_SEND_SERVERHELLO_TIME      0x00000040L
-#define openssl_SSL_MODE_SEND_FALLBACK_SCSV         0x00000080L
-#define openssl_SSL_MODE_ASYNC                      0x00000100L
-#define openssl_SSL_MODE_DTLS_SCTP_LABEL_LENGTH_BUG 0x00000400L
-
-#define SSL_CTRL_MODE                           33
 
 uint32_t SSL_get_mode(const SSL *ssl) {
-	uint32_t boringssl_mode = 0;
-	long mode;
+  uint32_t boringssl_mode = 0;
+  long ossl_mode;
 
-	mode = openssl.SSL_ctrl((SSL *)ssl, SSL_CTRL_MODE, 0, NULL);
+  ossl_mode = ossl_SSL_ctrl((ossl_SSL*)ssl, ossl_SSL_CTRL_MODE, 0, NULL);
 
-	 if (mode & openssl_SSL_MODE_ENABLE_PARTIAL_WRITE)
-		 boringssl_mode |= SSL_MODE_ENABLE_PARTIAL_WRITE;
+  if (ossl_mode & ossl_SSL_MODE_ENABLE_PARTIAL_WRITE)
+    boringssl_mode |= SSL_MODE_ENABLE_PARTIAL_WRITE;
 
-	 if (mode & openssl_SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER)
-		 boringssl_mode |=SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
+  if (ossl_mode & ossl_SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER)
+    boringssl_mode |=SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 
-	 if (mode & openssl_SSL_MODE_NO_AUTO_CHAIN)
-		 boringssl_mode |=  SSL_MODE_NO_AUTO_CHAIN;
+  if (ossl_mode & ossl_SSL_MODE_NO_AUTO_CHAIN)
+    boringssl_mode |=  SSL_MODE_NO_AUTO_CHAIN;
 
-	 if (mode & openssl_SSL_MODE_SEND_FALLBACK_SCSV)
-		 boringssl_mode |= SSL_MODE_SEND_FALLBACK_SCSV;
+  if (ossl_mode & ossl_SSL_MODE_SEND_FALLBACK_SCSV)
+    boringssl_mode |= SSL_MODE_SEND_FALLBACK_SCSV;
 
-	 if (mode & openssl_SSL_MODE_ASYNC)
-		 boringssl_mode |= SSL_MODE_ASYNC;
+  /* The following flags are in OpenSSL but not in BoringSSL */
+  if (ossl_mode & ossl_SSL_MODE_ASYNC)
+    bssl_compat_fatal("SSL_MODE_ASYNC has no BoringSSL equivalent");
+  if (ossl_mode & ossl_SSL_MODE_DTLS_SCTP_LABEL_LENGTH_BUG)
+    bssl_compat_fatal("SSL_MODE_DTLS_SCTP_LABEL_LENGTH_BUG has no BoringSSL equivalent");
+  if (ossl_mode & ossl_SSL_MODE_AUTO_RETRY)
+    bssl_compat_fatal("SSL_MODE_AUTO_RETRY has no BoringSSL equivalent");
+  if (ossl_mode & ossl_SSL_MODE_RELEASE_BUFFERS)
+    bssl_compat_fatal("SSL_MODE_RELEASE_BUFFERS has no BoringSSL equivalent");
+  if (ossl_mode & ossl_SSL_MODE_SEND_CLIENTHELLO_TIME)
+    bssl_compat_fatal("SSL_MODE_SEND_CLIENTHELLO_TIME has no BoringSSL equivalent");
+  if (ossl_mode & ossl_SSL_MODE_SEND_SERVERHELLO_TIME)
+    bssl_compat_fatal("SSL_MODE_SEND_SERVERHELLO_TIME has no BoringSSL equivalent");
 
 	 return boringssl_mode;
 }
@@ -125,39 +118,40 @@ uint32_t SSL_get_mode(const SSL *ssl) {
 /* #define SSL_set_mode(ssl,op) SSL_ctrl((ssl),SSL_CTRL_MODE,(op),NULL) */
 uint32_t SSL_set_mode(SSL *ssl, uint32_t mode) {
 	uint32_t openssl_mode = 0;
-	uint32_t boringssl_mode = 0;
+	uint32_t boringssl_mode = SSL_get_mode(ssl);
 
 	if (mode & SSL_MODE_ENABLE_PARTIAL_WRITE) {
-		openssl_mode |= openssl_SSL_MODE_ENABLE_PARTIAL_WRITE;
+		openssl_mode |= ossl_SSL_MODE_ENABLE_PARTIAL_WRITE;
 		boringssl_mode |= SSL_MODE_ENABLE_PARTIAL_WRITE;
 	}
 
 	if (mode & SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER) {
-		openssl_mode |= openssl_SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
+		openssl_mode |= ossl_SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 		boringssl_mode |= SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER;
 	}
 
 	if (mode & SSL_MODE_NO_AUTO_CHAIN) {
-		openssl_mode |= openssl_SSL_MODE_NO_AUTO_CHAIN;
+		openssl_mode |= ossl_SSL_MODE_NO_AUTO_CHAIN;
 		boringssl_mode |= SSL_MODE_NO_AUTO_CHAIN;
 	}
 
 	if (mode & SSL_MODE_SEND_FALLBACK_SCSV) {
-		openssl_mode |= openssl_SSL_MODE_SEND_FALLBACK_SCSV;
+		openssl_mode |= ossl_SSL_MODE_SEND_FALLBACK_SCSV;
 		boringssl_mode |= SSL_MODE_SEND_FALLBACK_SCSV;
 	}
 
-	if (mode & SSL_MODE_ASYNC) {
-		openssl_mode |= openssl_SSL_MODE_ASYNC;
-		boringssl_mode |= SSL_MODE_ASYNC;
-	}
+  if(mode & SSL_MODE_ENABLE_FALSE_START)
+    bssl_compat_fatal("SSL_MODE_ENABLE_FALSE_START (or SSL_MODE_HANDSHAKE_CUTTHROUGH) is not supported by OpenSSL");
+  if(mode & SSL_MODE_CBC_RECORD_SPLITTING)
+    bssl_compat_fatal("SSL_MODE_CBC_RECORD_SPLITTING is not supported by OpenSSL");
+  if(mode & SSL_MODE_NO_SESSION_CREATION)
+    bssl_compat_fatal("SSL_MODE_NO_SESSION_CREATION is not supported by OpenSSL");
 
-	openssl.SSL_ctrl(ssl, SSL_CTRL_MODE, openssl_mode, NULL);
+	ossl_SSL_ctrl((ossl_SSL*)ssl, ossl_SSL_CTRL_MODE, openssl_mode, NULL);
 
 	return boringssl_mode;
 }
 
-/* SSL_get_all_async_fds exists only in OpenSSL */
-int SSL_get_all_async_fds(SSL *s, OSSL_ASYNC_FD *fds, size_t *numfds) {
-	return openssl.SSL_get_all_async_fds(s, fds, numfds);
+int ext_SSL_get_all_async_fds(SSL *s, OSSL_ASYNC_FD *fds, size_t *numfds) {
+  return ossl_SSL_get_all_async_fds((ossl_SSL*)s, fds, numfds);
 }

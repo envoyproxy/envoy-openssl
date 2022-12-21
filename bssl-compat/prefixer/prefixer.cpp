@@ -20,27 +20,29 @@
 
 
 namespace opt {
-  static std::filesystem::path    srcpath   ("/usr/include");
-  static std::set<std::string>    srcincl = { "openssl/*.h" };
-  static std::set<std::string>    srcskip = { "openssl/asn1_mac.h", "openssl/opensslconf-*.h" };
+  static std::set<std::string>    srcpaths;
+  static std::set<std::string>    srcincl;
+  static std::set<std::string>    srcskip;
   static std::filesystem::path    output  = std::filesystem::current_path();
   static std::string              prefix  = "ossl";
   static bool                     force   = false;
   static bool                     verbose = false;
 
   static std::vector<std::regex>  extras  = {
-      std::regex("^OPENSSL_.*"),
-      std::regex("^AES_.*"),
-      std::regex("^ASN1_.*"),
-      std::regex("^sk_$"),
-      std::regex("^d2i_$"),
-      std::regex("^i2d_$"),
-      std::regex("^DIRECTORYSTRING$"),
-      std::regex("^DISPLAYTEXT$"),
-      std::regex("^RSAPublicKey$"),
-      std::regex("^RSAPrivateKey$"),
-      std::regex("^DHparams$"),
-      std::regex("^PKCS7_ATTR_"),
+      std::regex("^OPENSSL_.*", std::regex::basic | std::regex::optimize),
+      std::regex("^AES_.*", std::regex::basic | std::regex::optimize),
+      std::regex("^ASN1_.*", std::regex::basic | std::regex::optimize),
+      std::regex("^sk_$", std::regex::basic | std::regex::optimize),
+      std::regex("^d2i_", std::regex::basic | std::regex::optimize),
+      std::regex("^i2d_", std::regex::basic | std::regex::optimize),
+      std::regex("^DIRECTORYSTRING$", std::regex::basic | std::regex::optimize),
+      std::regex("^DISPLAYTEXT$", std::regex::basic | std::regex::optimize),
+      std::regex("^RSAPublicKey$", std::regex::basic | std::regex::optimize),
+      std::regex("^RSAPrivateKey$", std::regex::basic | std::regex::optimize),
+      std::regex("^DHparams$", std::regex::basic | std::regex::optimize),
+      std::regex("^PKCS7_ATTR_", std::regex::basic | std::regex::optimize),
+      std::regex("^PEM_read_", std::regex::basic | std::regex::optimize),
+      std::regex("^PEM_write_", std::regex::basic | std::regex::optimize),
   };
 
   static std::map<std::string,bool> headers; // Relative to srcpath e.g. "openssl/x509.h"
@@ -160,17 +162,13 @@ class Function {
       return str.str();
     }
 
-    std::string getImplementation() const {
-      std::ostringstream str;
-
+    void writeImplementation(std::ostream &str) const {
       if (!m_node->isVariadic()) {
         str << getReturnType() << " " << getName(true) << getParameters(true, true) << " {" << std::endl;
         str << "  " << ((getReturnType() != "void") ? "return " : "");
         str << opt::prefix << "." << getName(true) << getParameters(false, true) << ";" << std::endl;
         str << "}" << std::endl;
       }
-
-      return str.str();
     }
 
   private:
@@ -374,8 +372,6 @@ bool MyFrontendAction::BeginSourceFileAction(clang::CompilerInstance &compiler) 
 }
 
 void MyFrontendAction::EndSourceFileAction() {
-  std::regex regex("[a-zA-Z_][a-zA-Z0-9_]*");
-
   // Write a typedef and extern variable for each function pointer
   {
     std::filesystem::create_directories(opt::hfile().parent_path());
@@ -417,6 +413,7 @@ void MyFrontendAction::EndSourceFileAction() {
     std::ofstream cstr (opt::cfile());
 
     cstr << "#include <dlfcn.h>" << std::endl
+         << "#include <errno.h>" << std::endl
          << "#include \"" << opt::prefix << ".h\"" << std::endl
          << std::endl
          << "static void *libcrypto;" << std::endl
@@ -461,13 +458,14 @@ void MyFrontendAction::EndSourceFileAction() {
          << std::endl;
 
     for(const auto &function : m_functions) {
-      cstr << function.getImplementation() << std::endl;
+      function.writeImplementation(cstr);
     }
   }
 
   auto files(opt::headers);
   files[opt::hfile()] = false;
   files[opt::cfile()] = false;
+  std::regex regex("[a-zA-Z_][a-zA-Z0-9_]*", std::regex::basic | std::regex::optimize);
   opt::vstr() << "Processing " << files.size() << " files...\n";
   for (auto [header, incl] : files) {
     auto path = opt::incdir() / opt::prefix / header;
@@ -492,7 +490,7 @@ void MyFrontendAction::EndSourceFileAction() {
 
       while (std::regex_search(searchStart, buffer.cend(), match, regex)) {
         bool matched = false;
-        std::string matchstr = match[0];
+        const std::string &matchstr = match[0];
 
         if ((matched = (m_identifiers.find(matchstr) != m_identifiers.end())) == false) {
           for (std::regex pattern : opt::extras) {
@@ -533,6 +531,7 @@ static bool usage(int exitcode) {
             << "  <output>/" << std::endl
             << "  ├── <prefix>.c" << std::endl
             << "  └── include/" << std::endl
+            << "      └── <prefix>.h" << std::endl
             << "      └── <prefix>/" << std::endl
             << "          └── openssl/" << std::endl
             << "              ├── aes.h" << std::endl
@@ -557,7 +556,7 @@ int main(int argc, const char **argv) {
   for (int i = 1; i < argc; i++) {
     std::string arg = argv[i];
     if ((arg == "--src-path") && ((++i < argc) || usage(-1))) {
-      opt::srcpath = std::filesystem::canonical(argv[i]);
+      opt::srcpaths.insert (std::filesystem::canonical(argv[i]));
     }
     else if ((arg == "--src-incl") && ((++i < argc) || usage(-1))) {
       opt::srcincl.insert(argv[i]);
@@ -601,44 +600,46 @@ int main(int argc, const char **argv) {
   }
 
   // Build the list of header files to be processed
-  if (!std::filesystem::is_directory(opt::srcpath)) {
-    llvm::errs() << "Source directory " << opt::srcpath << " does not exist\n";
-    return -1;
+  for (std::filesystem::path srcpath : opt::srcpaths) {
+    if (!std::filesystem::is_directory(srcpath)) {
+      llvm::errs() << "Source directory " << srcpath << " does not exist\n";
+      return -1;
+    }
+    else {
+      opt::vstr() << "Finding source headers in " << srcpath << "\n";
+      {
+        glob_t globbuf;
+        int globflags = GLOB_MARK;
+        for (auto i : opt::srcincl) {
+          auto pattern = srcpath / i;
+          glob(pattern.c_str(), globflags, 0, &globbuf);
+          globflags |= GLOB_APPEND;
+        }
+        for (auto i = 0; i < globbuf.gl_pathc; i++) {
+          auto p = std::filesystem::proximate(globbuf.gl_pathv[i], srcpath);
+          opt::headers[p] = true;
+        }
+        globfree (&globbuf);
+      }
+      {
+        glob_t globbuf = { .gl_pathc = 0 };
+        int globflags = GLOB_MARK;
+        for (auto i : opt::srcskip) {
+          auto pattern = srcpath / i;
+          glob(pattern.c_str(), globflags, 0, &globbuf);
+          globflags |= GLOB_APPEND;
+        }
+        for (auto i = 0; i < globbuf.gl_pathc; i++) {
+          auto p = std::filesystem::proximate(globbuf.gl_pathv[i], srcpath);
+          opt::headers[p] = false;
+        }
+        globfree (&globbuf);
+      }
+    }
   }
-  else {
-    opt::vstr() << "Finding source headers in " << opt::srcpath << "\n";
-    {
-      glob_t globbuf;
-      int globflags = GLOB_MARK;
-      for (auto i : opt::srcincl) {
-        auto pattern = opt::srcpath / i;
-        glob(pattern.c_str(), globflags, 0, &globbuf);
-        globflags |= GLOB_APPEND;
-      }
-      for (auto i = 0; i < globbuf.gl_pathc; i++) {
-        auto p = std::filesystem::proximate(globbuf.gl_pathv[i], opt::srcpath);
-        opt::headers[p] = true;
-      }
-      globfree (&globbuf);
-    }
-    {
-      glob_t globbuf;
-      int globflags = GLOB_MARK;
-      for (auto i : opt::srcskip) {
-        auto pattern = opt::srcpath / i;
-        glob(pattern.c_str(), globflags, 0, &globbuf);
-        globflags |= GLOB_APPEND;
-      }
-      for (auto i = 0; i < globbuf.gl_pathc; i++) {
-        auto p = std::filesystem::proximate(globbuf.gl_pathv[i], opt::srcpath);
-        opt::headers[p] = false;
-      }
-      globfree (&globbuf);
-    }
-    if (opt::verbose) {
-      for(auto [path, incl] : opt::headers) {
-        opt::vstr() << "  " << incl << " " << path << "\n";
-      }
+  if (opt::verbose) {
+    for(auto [path, incl] : opt::headers) {
+      opt::vstr() << "  " << incl << " " << path << "\n";
     }
   }
 
@@ -650,11 +651,15 @@ int main(int argc, const char **argv) {
     std::ostringstream files;
     std::ofstream str (tmpfile);
     for (auto [hdr, incl] : opt::headers) {
-      auto srchdr = opt::srcpath / hdr;
       auto dsthdr = opt::incdir() / opt::prefix / hdr;
 
       std::filesystem::create_directories(dsthdr.parent_path());
-      std::filesystem::copy_file(srchdr, dsthdr);
+      for (std::filesystem::path srcpath : opt::srcpaths) {
+        std::filesystem::path srchdr = srcpath / hdr;
+        if (std::filesystem::is_regular_file(srchdr)) {
+          std::filesystem::copy_file(srcpath / hdr, dsthdr);
+        }
+      }
 
       subts << " -e 's!<" << hdr << ">!\"" << opt::prefix << "/" << hdr << "\"!g'";
       files << " " << opt::incdir() / opt::prefix << "/" << hdr;
