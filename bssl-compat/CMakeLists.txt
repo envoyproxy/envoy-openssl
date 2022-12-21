@@ -52,6 +52,7 @@ add_library(bssl-compat
     source/bio.cpp
     source/log.h
     source/log.c
+    source/ssl.c
 )
 target_include_directories(bssl-compat PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(bssl-compat PUBLIC include)

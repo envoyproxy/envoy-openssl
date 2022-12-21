@@ -36,4 +36,5 @@ cscope.*
 bssl-compat/include/openssl/*.h
 bssl-compat/source/bytestring/cbb.c
 bssl-compat/source/bytestring/cbs.c
+user.bazelrc
 

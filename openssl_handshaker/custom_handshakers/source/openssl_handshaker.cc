@@ -1,4 +1,5 @@
 #include "openssl_handshaker.h"
+#include <ext/openssl/ssl.h>
 
 namespace Envoy {
 namespace Extensions {
@@ -69,7 +70,7 @@ Network::PostIoAction OpenSslHandshakerImpl::doHandshake(bool from_async) {
 
       setState(Ssl::SocketState::HandshakeInProgress);
 
-      rc = SSL_get_all_async_fds(ssl(), NULL, &numfds);
+      rc = ext_SSL_get_all_async_fds(ssl(), NULL, &numfds);
       if (rc == 0) {
         handshakeCallbacks()->onFailure();
         return Network::PostIoAction::Close;
@@ -87,7 +88,7 @@ Network::PostIoAction OpenSslHandshakerImpl::doHandshake(bool from_async) {
         return Network::PostIoAction::Close;
       }
 
-      rc = SSL_get_all_async_fds(ssl(), fds, &numfds);
+      rc = ext_SSL_get_all_async_fds(ssl(), fds, &numfds);
       if (rc == 0) {
         free(fds);
         handshakeCallbacks()->onFailure();

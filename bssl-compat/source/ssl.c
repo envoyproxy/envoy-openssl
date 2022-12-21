@@ -17,33 +17,25 @@
  */
 
 #include <openssl/ssl.h>
+#include <ext/openssl/ssl.h>
 #include <ossl/openssl/ssl.h>
 #include "log.h"
 
+/*
+ * Since the SSL type is opaque in both BoringSSL and OpenSSL,
+ * we can simply cast back and forth between the two.
+ */
 
-ossl_SSL *b2o(SSL *b) {
-  bssl_compat_fatal("NYI");
-  return NULL;
-}
 
-ossl_SSL *b2o_c(const SSL *b) {
-  bssl_compat_fatal("NYI");
-  return NULL;
-}
-
-SSL *o2b(ossl_SSL *o) {
-  bssl_compat_fatal("NYI");
-  return NULL;
-}
 
 int SSL_do_handshake(SSL *ssl) {
-	return ossl_SSL_do_handshake(b2o(ssl));
+	return ossl_SSL_do_handshake((ossl_SSL*)ssl);
 }
 
 int SSL_get_error(const SSL *ssl, int ret_code) {
 	int r;
 
-	r = ossl_SSL_get_error(b2o_c(ssl), ret_code);
+	r = ossl_SSL_get_error((const ossl_SSL*)ssl, ret_code);
 	switch (r) {
 
   case ossl_SSL_ERROR_NONE:
@@ -92,7 +84,7 @@ uint32_t SSL_get_mode(const SSL *ssl) {
   uint32_t boringssl_mode = 0;
   long ossl_mode;
 
-  ossl_mode = ossl_SSL_ctrl(b2o_c(ssl), ossl_SSL_CTRL_MODE, 0, NULL);
+  ossl_mode = ossl_SSL_ctrl((ossl_SSL*)ssl, ossl_SSL_CTRL_MODE, 0, NULL);
 
   if (ossl_mode & ossl_SSL_MODE_ENABLE_PARTIAL_WRITE)
     boringssl_mode |= SSL_MODE_ENABLE_PARTIAL_WRITE;
@@ -155,8 +147,11 @@ uint32_t SSL_set_mode(SSL *ssl, uint32_t mode) {
   if(mode & SSL_MODE_NO_SESSION_CREATION)
     bssl_compat_fatal("SSL_MODE_NO_SESSION_CREATION is not supported by OpenSSL");
 
-	ossl_SSL_ctrl(b2o(ssl), ossl_SSL_CTRL_MODE, openssl_mode, NULL);
+	ossl_SSL_ctrl((ossl_SSL*)ssl, ossl_SSL_CTRL_MODE, openssl_mode, NULL);
 
 	return boringssl_mode;
 }
 
+int ext_SSL_get_all_async_fds(SSL *s, OSSL_ASYNC_FD *fds, size_t *numfds) {
+  return ossl_SSL_get_all_async_fds((ossl_SSL*)s, fds, numfds);
+}
