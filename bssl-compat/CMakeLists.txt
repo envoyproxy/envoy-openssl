@@ -30,18 +30,21 @@ include(openssl.cmake)
 
 add_subdirectory(prefixer)
 add_custom_command(DEPENDS prefixer
-                   OUTPUT ossl.c include/ossl.h include/ossl/
+                   COMMENT "Prefixing OpenSSL files"
+                   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/source/ossl.c
+                          ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h
+                          ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl/
                    COMMAND prefixer --src-path "${SRC_OPENSSL_HEADERS1}"
                                     --src-path "${SRC_OPENSSL_HEADERS2}"
                                     --src-incl "openssl/*.h"
                                     --src-skip "openssl/asn1_mac.h"
                                     --src-skip "openssl/opensslconf-*.h"
-                                    --output "${CMAKE_CURRENT_BINARY_DIR}"
-                                    --prefix ossl --force)
+                                    --output "${CMAKE_CURRENT_SOURCE_DIR}"
+                                    --prefix ossl)
 
 add_library(bssl-compat
     STATIC
-    ossl.c
+    source/ossl.c
     source/internal.h
     source/bytestring/cbs.c
     source/bytestring/cbb.c
@@ -54,7 +57,6 @@ add_library(bssl-compat
     source/log.c
     source/ssl.c
 )
-target_include_directories(bssl-compat PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(bssl-compat PUBLIC include)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 

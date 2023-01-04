@@ -25,7 +25,6 @@ namespace opt {
   static std::set<std::string>    srcskip;
   static std::filesystem::path    output  = std::filesystem::current_path();
   static std::string              prefix  = "ossl";
-  static bool                     force   = false;
   static bool                     verbose = false;
 
   static std::vector<std::regex>  extras  = {
@@ -50,8 +49,9 @@ namespace opt {
   static llvm::raw_ostream &vstr() { return verbose ? llvm::outs() : llvm::nulls(); }
 
   static std::filesystem::path incdir() { return opt::output / "include"; }
+  static std::filesystem::path srcdir() { return opt::output / "source"; }
   static std::filesystem::path hfile() { return opt::incdir() / (opt::prefix + ".h"); }
-  static std::filesystem::path cfile() { return opt::output / (opt::prefix + ".c"); }
+  static std::filesystem::path cfile() { return opt::srcdir() / (opt::prefix + ".c"); }
 };
 
 
@@ -523,13 +523,13 @@ static bool usage(int exitcode) {
             << "  --src-skip <pattern>    Header files to be skipped e.g. openssl/asn1_mac.h" << std::endl
             << "  --prefix <string>       The prefix to be applied to functions, types & macros" << std::endl
             << "  --output <path>         Output directory for generated files" << std::endl
-            << "  --force                 Replace the output if it already exists" << std::endl
             << "  --verbose               Print more info about what's being done" << std::endl
             << std::endl
             << "All files will be generated under the output directory as follows:" << std::endl
             << std::endl
             << "  <output>/" << std::endl
-            << "  ├── <prefix>.c" << std::endl
+            << "  ├── source/" << std::endl
+            << "  |   └── <prefix>.c" << std::endl
             << "  └── include/" << std::endl
             << "      └── <prefix>.h" << std::endl
             << "      └── <prefix>/" << std::endl
@@ -570,9 +570,6 @@ int main(int argc, const char **argv) {
     else if ((arg == "--output") && ((++i < argc) || usage(-1))) {
       opt::output = argv[i];
     }
-    else if (arg == "--force") {
-      opt::force = true;
-    }
     else if (arg == "--verbose") {
       opt::verbose = true;
     }
@@ -583,19 +580,6 @@ int main(int argc, const char **argv) {
     else {
       llvm::errs() << "Unrecognised option : " << arg << "\n";
       exit(-1);
-    }
-  }
-
-  // Ensure the output files & directories don't already exist
-  for(std::filesystem::path p : { opt::cfile(), opt::incdir() }) {
-    if (std::filesystem::exists(p)) {
-      if (opt::force == true) {
-        opt::vstr() << "Removing " << p << "\n";
-        std::filesystem::remove_all(p);
-      } else {
-        llvm::errs() << "Output " << p << " already exists\n";
-        return -1;
-      }
     }
   }
 
@@ -657,6 +641,9 @@ int main(int argc, const char **argv) {
       for (std::filesystem::path srcpath : opt::srcpaths) {
         std::filesystem::path srchdr = srcpath / hdr;
         if (std::filesystem::is_regular_file(srchdr)) {
+          if (std::filesystem::exists(dsthdr)) {
+            std::filesystem::remove(dsthdr);
+          }
           std::filesystem::copy_file(srcpath / hdr, dsthdr);
         }
       }
