@@ -1,0 +1,21 @@
+diff -Naur a/base.h b/base.h
+--- a/base.h	2022-12-22 17:11:28.363393935 +0000
++++ b/base.h	2022-12-22 17:11:28.366393930 +0000
+@@ -79,6 +79,8 @@
+ #include <boringssl_prefix_symbols.h>
+ #endif
+ 
++#include <ossl/openssl/ossl_typ.h>
++
+ #if defined(__cplusplus)
+ extern "C" {
+ #endif
+@@ -379,7 +381,7 @@
+ typedef struct bignum_ctx BN_CTX;
+ typedef struct bignum_st BIGNUM;
+ typedef struct bio_method_st BIO_METHOD;
+-typedef struct bio_st BIO;
++typedef ossl_BIO BIO;
+ typedef struct blake2b_state_st BLAKE2B_CTX;
+ typedef struct bn_gencb_st BN_GENCB;
+ typedef struct bn_mont_ctx_st BN_MONT_CTX;
