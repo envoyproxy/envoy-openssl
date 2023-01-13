@@ -165,6 +165,7 @@ class Function {
     void writeImplementation(std::ostream &str) const {
       if (!m_node->isVariadic()) {
         str << getReturnType() << " " << getName(true) << getParameters(true, true) << " {" << std::endl;
+        str << "  assert(" << opt::prefix << "." << getName(true) << ");" << std::endl;
         str << "  " << ((getReturnType() != "void") ? "return " : "");
         str << opt::prefix << "." << getName(true) << getParameters(false, true) << ";" << std::endl;
         str << "}" << std::endl;
@@ -220,7 +221,12 @@ class MyFrontendAction: public clang::ASTFrontendAction {
 
     void MacroDefined(clang::Preprocessor &pp, const clang::Token &token, const clang::MacroDirective *directive) {
       if (prefixable(token.getLocation())) {
-        m_identifiers.insert(pp.getSpelling(token));
+        std::string name = pp.getSpelling(token);
+        m_identifiers.insert(name);
+        if (name == "SHLIB_VERSION_NUMBER") {
+          const auto &token = directive->getMacroInfo()->getReplacementToken(0);
+          m_shlibversion = std::string(token.getLiteralData(), token.getLength());
+        }
       }
     }
 
@@ -277,6 +283,7 @@ class MyFrontendAction: public clang::ASTFrontendAction {
 
     std::set<std::string> m_identifiers; // To be prefixed
     std::vector<Function> m_functions;
+    std::string m_shlibversion; // Parsed from SHLIB_VERSION_NUMBER macro
 };
 
 
@@ -414,7 +421,11 @@ void MyFrontendAction::EndSourceFileAction() {
 
     cstr << "#include <dlfcn.h>" << std::endl
          << "#include <errno.h>" << std::endl
+         << "#include <assert.h>" << std::endl
          << "#include \"" << opt::prefix << ".h\"" << std::endl
+         << std::endl
+         << "#define LIBCRYPTO_SO \"libcrypto.so.\" " << m_shlibversion << std::endl
+         << "#define LIBSSL_SO \"libssl.so.\" " << m_shlibversion << std::endl
          << std::endl
          << "static void *libcrypto;" << std::endl
          << "static void *libssl;" << std::endl
@@ -435,12 +446,12 @@ void MyFrontendAction::EndSourceFileAction() {
          << "}" << std::endl
          << std::endl
          << "static void " << opt::prefix << "_init(void) {" << std::endl
-         << "  if((libcrypto = dlopen(\"libcrypto.so\", RTLD_NOW | RTLD_LOCAL)) == NULL) {" << std::endl
-         << "    fprintf(stderr, \"dlopen(libcrypto.so) : %s\\n\", dlerror());" << std::endl
+         << "  if((libcrypto = dlopen(LIBCRYPTO_SO, RTLD_NOW | RTLD_LOCAL)) == NULL) {" << std::endl
+         << "    fprintf(stderr, \"dlopen(%s) : %s\\n\", LIBCRYPTO_SO, dlerror());" << std::endl
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
-         << "  if((libssl = dlopen(\"libssl.so\", RTLD_NOW | RTLD_LOCAL)) == NULL) {" << std::endl
-         << "    fprintf(stderr, \"dlopen(libssl.so) : %s\\n\", dlerror());" << std::endl
+         << "  if((libssl = dlopen(LIBSSL_SO, RTLD_NOW | RTLD_LOCAL)) == NULL) {" << std::endl
+         << "    fprintf(stderr, \"dlopen(%s) : %s\\n\", LIBSSL_SO, dlerror());" << std::endl
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
          << std::endl;
