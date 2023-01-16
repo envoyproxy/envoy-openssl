@@ -10,6 +10,15 @@ diff -Naur a/base.h b/base.h
  #if defined(__cplusplus)
  extern "C" {
  #endif
+@@ -118,6 +118,8 @@
+ #define OPENSSL_32_BIT
+ #elif defined(__myriad2__)
+ #define OPENSSL_32_BIT
++#elif defined(__s390x__)
++#define OPENSSL_64_BIT
+ #else
+ // Note BoringSSL only supports standard 32-bit and 64-bit two's-complement,
+ // little-endian architectures. Functions will not produce the correct answer
 @@ -379,7 +381,7 @@
  typedef struct bignum_ctx BN_CTX;
  typedef struct bignum_st BIGNUM;
