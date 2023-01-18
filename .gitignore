@@ -37,7 +37,5 @@ bssl-compat/include/ossl.h
 bssl-compat/include/ossl/
 bssl-compat/include/openssl/
 bssl-compat/source/ossl.c
-bssl-compat/source/bytestring/cbb.c
-bssl-compat/source/bytestring/cbs.c
 user.bazelrc
 .cproject

@@ -27,7 +27,7 @@ namespace opt {
   static std::string              prefix  = "ossl";
   static bool                     verbose = false;
 
-  static std::vector<std::regex>  extras  = {
+  static std::vector<std::regex>  extraIdentifiers  = {
       std::regex("^OPENSSL_.*", std::regex::basic | std::regex::optimize),
       std::regex("^AES_.*", std::regex::basic | std::regex::optimize),
       std::regex("^ASN1_.*", std::regex::basic | std::regex::optimize),
@@ -42,6 +42,23 @@ namespace opt {
       std::regex("^PKCS7_ATTR_", std::regex::basic | std::regex::optimize),
       std::regex("^PEM_read_", std::regex::basic | std::regex::optimize),
       std::regex("^PEM_write_", std::regex::basic | std::regex::optimize),
+      std::regex("^PEM_", std::regex::basic | std::regex::optimize),
+      std::regex("^ossl_check_$", std::regex::basic | std::regex::optimize),
+      std::regex("^ossl_check_const_$", std::regex::basic | std::regex::optimize),
+  };
+
+  static std::map<std::string,std::vector<std::pair<std::string,std::pair<std::string,std::string>>>> extraInsertions = {
+      {
+          "openssl/asn1.h", {
+              {
+                  "attr type *name##_dup(const type *a);",
+                  {
+                      "attr type *",
+                      "##_##name##_dup(const type *a);"
+                  }
+              },
+          }
+      }
   };
 
   static std::map<std::string,bool> headers; // Relative to srcpath e.g. "openssl/x509.h"
@@ -70,6 +87,10 @@ class Function {
   public:
 
     Function(clang::FunctionDecl *node) : m_node(node) {
+    }
+
+    bool hasBody() const {
+      return m_node->doesThisDeclarationHaveABody();
     }
 
     std::string getHeader(const clang::SourceManager &srcmgr) const {
@@ -116,7 +137,7 @@ class Function {
         str << s;
       }
 
-      str << "typedef " << (m_node->isNoReturn() ? "ossl_noreturn " : "") << getReturnType() << " (*" << getTypedefName() << ")" << getParameters(true, true);
+      str << "typedef " << getReturnType() << " (*" << getTypedefName() << ")" << getParameters(true, true);
 
       return str.str();
     }
@@ -168,6 +189,9 @@ class Function {
         str << "  assert(" << opt::prefix << "." << getName(true) << ");" << std::endl;
         str << "  " << ((getReturnType() != "void") ? "return " : "");
         str << opt::prefix << "." << getName(true) << getParameters(false, true) << ";" << std::endl;
+        if(m_node->isNoReturn()) {
+          str << "  exit(1);" << std::endl;
+        }
         str << "}" << std::endl;
       }
     }
@@ -399,14 +423,18 @@ void MyFrontendAction::EndSourceFileAction() {
     hstr << std::endl;
 
     for(const auto &f : m_functions) {
-      hstr << f.getTypedef(getCompilerInstance().getASTContext()) << ";" << std::endl;
+      if (!f.hasBody()) {
+        hstr << f.getTypedef(getCompilerInstance().getASTContext()) << ";" << std::endl;
+      }
       m_identifiers.insert(f.getTypedefName()); // Ensure it gets prefixed
     }
     hstr << std::endl;
 
     hstr << "struct " << opt::prefix + "_functions {" << std::endl;
     for (const auto &function : m_functions) {
-      hstr << "  " << function.getStructMember() << ";" << std::endl;
+      if (!function.hasBody()) {
+        hstr << "  " << function.getStructMember() << ";" << std::endl;
+      }
     }
     hstr << "};" << std::endl
          << std::endl
@@ -424,8 +452,8 @@ void MyFrontendAction::EndSourceFileAction() {
          << "#include <assert.h>" << std::endl
          << "#include \"" << opt::prefix << ".h\"" << std::endl
          << std::endl
-         << "#define LIBCRYPTO_SO \"libcrypto.so.\" " << m_shlibversion << std::endl
-         << "#define LIBSSL_SO \"libssl.so.\" " << m_shlibversion << std::endl
+         << "#define LIBCRYPTO_SO \"libcrypto.so" << (m_shlibversion.size() ? m_shlibversion : "") << "\"" << std::endl
+         << "#define LIBSSL_SO \"libssl.so" << (m_shlibversion.size() ? m_shlibversion : "") << "\"" << std::endl
          << std::endl
          << "static void *libcrypto;" << std::endl
          << "static void *libssl;" << std::endl
@@ -440,8 +468,8 @@ void MyFrontendAction::EndSourceFileAction() {
          << "  const char *s = symbol + " << opt::prefix.size() + 1 << ";" << std::endl
          << "  if ((result = dlsym(libcrypto, s)) != NULL) return result;" << std::endl
          << "  if((result = dlsym(libssl, s)) != NULL) return result;" << std::endl
-         << "  fprintf(stderr, \"dlsym(%s) : %s\\n\", s, dlerror());" << std::endl
-         << "  /*exit(ELIBACC);*/" << std::endl
+         << "//fprintf(stderr, \"dlsym(%s) : %s\\n\", s, dlerror());" << std::endl
+         << "//exit(ELIBACC);" << std::endl
          << "  return NULL;" << std::endl
          << "}" << std::endl
          << std::endl
@@ -457,7 +485,9 @@ void MyFrontendAction::EndSourceFileAction() {
          << std::endl;
 
     for(const auto &function : m_functions) {
-      cstr << "  " << opt::prefix << "." << function.getName(true) << " = (" << function.getTypedefName() << ")lookup(\"" << function.getName(false) << "\");" << std::endl;
+      if (!function.hasBody()) {
+        cstr << "  " << opt::prefix << "." << function.getName(true) << " = (" << function.getTypedefName() << ")lookup(\"" << function.getName(false) << "\");" << std::endl;
+      }
     }
 
     cstr << "}" << std::endl
@@ -469,7 +499,9 @@ void MyFrontendAction::EndSourceFileAction() {
          << std::endl;
 
     for(const auto &function : m_functions) {
-      function.writeImplementation(cstr);
+      if (!function.hasBody()) {
+        function.writeImplementation(cstr);
+      }
     }
   }
 
@@ -492,9 +524,9 @@ void MyFrontendAction::EndSourceFileAction() {
       buffer = isstr.str();
     }
 
-    // Write the destination header with prefixes inserted
+    // Add the prefix to all identifiers in m_identifiers
     {
-      std::ofstream ofstr(path);
+      std::ostringstream osstr;
       std::smatch match;
       std::string::const_iterator searchStart = buffer.cbegin();
       std::string suffix;
@@ -504,18 +536,38 @@ void MyFrontendAction::EndSourceFileAction() {
         const std::string &matchstr = match[0];
 
         if ((matched = (m_identifiers.find(matchstr) != m_identifiers.end())) == false) {
-          for (std::regex pattern : opt::extras) {
+          for (std::regex pattern : opt::extraIdentifiers) {
             if ((matched = (std::regex_search(matchstr, pattern)))) {
               break;
             }
           }
         }
-        ofstr << match.prefix() << (matched ? (opt::prefix + "_") : "") << matchstr;
+        osstr << match.prefix() << (matched ? (opt::prefix + "_") : "") << matchstr;
 
         searchStart = match.suffix().first;
         suffix = match.suffix();
       }
-      ofstr << suffix;
+      osstr << suffix;
+      buffer = osstr.str();
+    }
+
+    // Do extra prefix insertions, listed in opt::extraInsertions
+    if (opt::extraInsertions.find(header) != opt::extraInsertions.end()) {
+      for (auto entry : opt::extraInsertions[header]) {
+        std::string search = entry.first;
+        std::string replace = entry.second.first + opt::prefix + entry.second.second;
+
+        for(auto next = buffer.find(search); next != std::string::npos; next = buffer.find(search, next)) {
+          buffer.replace(next, search.length(), replace);
+          next += replace.length();
+        }
+      }
+    }
+
+    // Write the file back
+    {
+      std::ofstream ofstr(path);
+      ofstr << buffer;
     }
   }
 }

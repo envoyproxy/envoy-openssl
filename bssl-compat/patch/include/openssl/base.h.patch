@@ -1,6 +1,5 @@
-diff -Naur a/base.h b/base.h
---- a/base.h	2022-12-22 17:11:28.363393935 +0000
-+++ b/base.h	2022-12-22 17:11:28.366393930 +0000
+--- ./src/include/openssl/base.h	2022-12-22 16:19:45.515717132 +0000
++++ /home/tpoole/work/bssl_compat/tedjpoole-envoy-openssl/bssl-compat/build/boringssl/./src/include/openssl/base.h	2023-01-18 13:37:21.000350928 +0000
 @@ -79,6 +79,8 @@
  #include <boringssl_prefix_symbols.h>
  #endif
