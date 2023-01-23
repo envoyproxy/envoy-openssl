@@ -46,9 +46,23 @@ add_custom_command(DEPENDS prefixer
                                     --output "${CMAKE_CURRENT_SOURCE_DIR}"
                                     --prefix ossl)
 
+add_custom_command(DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_LIB.py
+                           ${CMAKE_CURRENT_SOURCE_DIR}/include/openssl/err.h
+                           ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl/openssl/err.h
+                   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/source/ERR_GET_LIB.c
+                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_LIB.py)
+
+add_custom_command(DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_REASON.py
+                           ${CMAKE_CURRENT_SOURCE_DIR}/include/openssl/err.h
+                           ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl/openssl/err.h
+                   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/source/ERR_GET_REASON.c
+                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_REASON.py)
+
+
 add_library(bssl-compat
     STATIC
     source/ossl.c
+    source/ossl_ERR_set_error.c
     source/crypto/bytestring/cbs.c
     source/crypto/bytestring/cbb.c
     source/crypto/fipsmodule/bn/cmp.c
@@ -58,7 +72,8 @@ add_library(bssl-compat
     source/log.h
     source/log.c
     source/ssl.c
-    source/ossl_ERR_set_error.c
+    source/ERR_GET_LIB.c
+    source/ERR_GET_REASON.c
 )
 target_include_directories(bssl-compat PUBLIC include)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
