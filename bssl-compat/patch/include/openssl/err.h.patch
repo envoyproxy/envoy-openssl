@@ -1,0 +1,17 @@
+--- boringssl/src/include/openssl/err.h	2022-12-20 11:40:07.219841455 +0000
++++ include/openssl/err.h	2023-01-20 14:34:56.761259686 +0000
+@@ -163,12 +163,12 @@
+ 
+ // ERR_GET_LIB returns the library code for the error. This is one of
+ // the |ERR_LIB_*| values.
+-#define ERR_GET_LIB(packed_error) ((int)(((packed_error) >> 24) & 0xff))
++OPENSSL_EXPORT int ERR_GET_LIB(uint32_t packed_error);
+ 
+ // ERR_GET_REASON returns the reason code for the error. This is one of
+ // library-specific |LIB_R_*| values where |LIB| is the library (see
+ // |ERR_GET_LIB|). Note that reason codes are specific to the library.
+-#define ERR_GET_REASON(packed_error) ((int)((packed_error) & 0xfff))
++OPENSSL_EXPORT int ERR_GET_REASON(uint32_t packed_error);
+ 
+ // ERR_get_error gets the packed error code for the least recent error and
+ // removes that error from the queue. If there are no errors in the queue then
