@@ -38,7 +38,6 @@ with open(ossl_err_h, 'r') as f:
             if os.path.exists(fn):
                 includes.add(os.path.relpath(fn, os.path.join(bssl_compat_dir, "include")))
                 with open(fn, 'r') as rf:
-                    print(fn)
                     for rline in rf.readlines():
                         rmatch = re.search('^#\s*define\s+ossl_(' + ossl_lib + '_R_[A-Z0-9_]*)\s+\d+\s*$', rline)
                         if rmatch is not None:
@@ -65,7 +64,7 @@ with open(ERR_GET_REASON_c, 'w') as f:
                 f.write('        case ossl_' + ossl_reason + ' : return ' + ossl_reason + ';\n')
             else:
                 f.write('        case ossl_' + ossl_reason + ' : return ERR_R_INTERNAL_ERROR;\n')
-        f.write('        default: bssl_compat_warn("Unknown ' + ossl_lib + ' reason %d", reason); return ERR_R_INTERNAL_ERROR;\n')
+        f.write('        default: bssl_compat_warn("Unknown ' + ossl_lib + ' reason %d", reason); return reason;\n')
         f.write('      }\n')
         f.write('      break;\n')
         f.write('    }\n')

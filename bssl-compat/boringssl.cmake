@@ -1,4 +1,7 @@
 
+function(add_gitignore ignorefile)
+  execute_process(COMMAND echo "${ignorefile}" COMMAND sort -u -o "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore" - "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore")
+endfunction()
 
 # Copy, and optionally patch, the openssl/*.h headers from the ${CMAKE_CURRENT_SOURCE_DIR}/boringssl
 # directory into the ${CMAKE_CURRENT_SOURCE_DIR}/include directory, to form our public interface.
@@ -11,6 +14,8 @@ foreach(bsslheader ${bsslheaders})
   else()
     message("Copied ${bsslheader}")
   endif()
+  set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${CMAKE_CURRENT_SOURCE_DIR}/include/${bsslheader}")
+  add_gitignore("include/${bsslheader} # Copied from boringssl/src/include/${bsslheader}")
 endforeach()
 
 
@@ -24,16 +29,18 @@ function(copy_bssl_src bsslfile)
   else()
     message("Copied ${bsslfile}")
   endif()
+  set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES "${CMAKE_CURRENT_SOURCE_DIR}/source/${bsslfile}")
+  add_gitignore("source/${bsslfile} # Copied from boringssl/src/${bsslfile}")
 endfunction()
 
 
 copy_bssl_src(crypto/bytestring/cbs.c)
 copy_bssl_src(crypto/bytestring/cbb.c)
 copy_bssl_src(crypto/bytestring/internal.h)
-copy_bssl_src(crypto/fipsmodule/bn/cmp.c)
 copy_bssl_src(crypto/asn1/a_int.c)
 copy_bssl_src(crypto/internal.h)
-
 copy_bssl_src(crypto/test/test_util.h)
 copy_bssl_src(crypto/test/test_util.cc)
 copy_bssl_src(crypto/bio/bio_test.cc)
+copy_bssl_src(crypto/rand_extra/rand_test.cc)
+copy_bssl_src(crypto/err/err_test.cc)

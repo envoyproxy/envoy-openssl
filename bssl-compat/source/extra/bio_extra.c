@@ -1,10 +1,43 @@
 #include <openssl/bio.h>
+#include <ossl/openssl/bio.h>
 #include <openssl/asn1.h>
 #include <openssl/mem.h>
-#include <ossl/openssl/bio.h>
 #include <assert.h>
 #include "../crypto/internal.h"
 
+
+// BIO_ctrl_get_read_request returns the number of bytes that the other side of
+// |bio| tried (unsuccessfully) to read.
+size_t BIO_ctrl_get_read_request(BIO *bio) {
+  return ossl_BIO_ctrl_get_read_request(bio);
+}
+
+// BIO_ctrl_get_write_guarantee returns the number of bytes that |bio| (which
+// must have been returned by |BIO_new_bio_pair|) will accept on the next
+// |BIO_write| call.
+size_t BIO_ctrl_get_write_guarantee(BIO *bio) {
+  return ossl_BIO_ctrl_get_write_guarantee(bio);
+}
+
+// BIO_new_connect returns a BIO that connects to the given hostname and port.
+// The |host_and_optional_port| argument should be of the form
+// "www.example.com" or "www.example.com:443". If the port is omitted, it must
+// be provided with |BIO_set_conn_port|.
+//
+// It returns the new BIO on success, or NULL on error.
+BIO *BIO_new_connect(const char *host_and_optional_port) {
+  return ossl_BIO_new_connect(host_and_optional_port);
+}
+
+// BIO_printf behaves like |printf| but outputs to |bio| rather than a |FILE|.
+// It returns the number of bytes written or a negative number on error.
+int BIO_printf(BIO *bio, const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  int ret = ossl_BIO_vprintf(bio, format, args);
+  va_end(args);
+  return ret;
+}
 
 // bio_read_full reads |len| bytes |bio| and writes them into |out|. It
 // tolerates partial reads from |bio| and returns one on success or zero if a
@@ -200,4 +233,52 @@ int BIO_read_asn1(BIO *bio, uint8_t **out, size_t *out_len, size_t max_len) {
   }
 
   return 1;
+}
+
+// BIO_read attempts to read |len| bytes into |data|. It returns the number of
+// bytes read, zero on EOF, or a negative number on error.
+int BIO_read(BIO *bio, void *data, int len) {
+  return ossl_BIO_read(bio, data, len);
+}
+
+// BIO_reset resets |bio| to its initial state, the precise meaning of which
+// depends on the concrete type of |bio|. It returns one on success and zero
+// otherwise.
+int BIO_reset(BIO *bio) {
+  return ossl_BIO_reset(bio);
+}
+
+// BIO_should_read returns non-zero if |bio| encountered a temporary error
+// while reading (i.e. EAGAIN), indicating that the caller should retry the
+// read.
+int BIO_should_read(const BIO *bio) {
+  return ossl_BIO_should_read(bio);
+}
+
+// BIO_should_write returns non-zero if |bio| encountered a temporary error
+// while writing (i.e. EAGAIN), indicating that the caller should retry the
+// write.
+int BIO_should_write(const BIO *bio) {
+  return ossl_BIO_should_write(bio);
+}
+
+// BIO_shutdown_wr marks |bio| as closed, from the point of view of the other
+// side of the pair. Future |BIO_write| calls on |bio| will fail. It returns
+// one on success and zero otherwise.
+int BIO_shutdown_wr(BIO *bio) {
+  return ossl_BIO_shutdown_wr(bio);
+}
+
+int BIO_snprintf(char *buf, size_t n, const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  int ret = ossl_BIO_vsnprintf(buf, n, format, args);
+  va_end(args);
+  return ret;
+}
+
+// BIO_write writes |len| bytes from |data| to |bio|. It returns the number of
+// bytes written or a negative number on error.
+int BIO_write(BIO *bio, const void *data, int len) {
+  return ossl_BIO_write(bio, data, len);
 }

@@ -1,5 +1,5 @@
---- ./src/include/openssl/base.h	2022-12-22 16:19:45.515717132 +0000
-+++ /home/tpoole/work/bssl_compat/tedjpoole-envoy-openssl/bssl-compat/build/boringssl/./src/include/openssl/base.h	2023-01-18 13:37:21.000350928 +0000
+--- boringssl/src/include/openssl/base.h	2022-12-22 16:19:45.515717132 +0000
++++ include/openssl/base.h	2023-01-24 10:05:25.458885700 +0000
 @@ -79,6 +79,8 @@
  #include <boringssl_prefix_symbols.h>
  #endif
@@ -9,7 +9,7 @@
  #if defined(__cplusplus)
  extern "C" {
  #endif
-@@ -118,6 +118,8 @@
+@@ -118,6 +120,8 @@
  #define OPENSSL_32_BIT
  #elif defined(__myriad2__)
  #define OPENSSL_32_BIT
@@ -18,9 +18,12 @@
  #else
  // Note BoringSSL only supports standard 32-bit and 64-bit two's-complement,
  // little-endian architectures. Functions will not produce the correct answer
-@@ -379,7 +381,7 @@
+@@ -377,9 +381,9 @@
+ typedef struct X509_req_st X509_REQ;
+ typedef struct X509_sig_st X509_SIG;
  typedef struct bignum_ctx BN_CTX;
- typedef struct bignum_st BIGNUM;
+-typedef struct bignum_st BIGNUM;
++typedef ossl_BIGNUM BIGNUM;
  typedef struct bio_method_st BIO_METHOD;
 -typedef struct bio_st BIO;
 +typedef ossl_BIO BIO;
