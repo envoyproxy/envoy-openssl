@@ -42,6 +42,7 @@ include/openssl/hmac.h # Copied from boringssl/src/include/openssl/hmac.h
 include/openssl/hpke.h # Copied from boringssl/src/include/openssl/hpke.h
 include/openssl/hrss.h # Copied from boringssl/src/include/openssl/hrss.h
 include/openssl/is_boringssl.h # Copied from boringssl/src/include/openssl/is_boringssl.h
+include/openssl/kdf.h # Copied from boringssl/src/include/openssl/kdf.h
 include/openssl/lhash.h # Copied from boringssl/src/include/openssl/lhash.h
 include/openssl/md4.h # Copied from boringssl/src/include/openssl/md4.h
 include/openssl/md5.h # Copied from boringssl/src/include/openssl/md5.h
@@ -64,6 +65,7 @@ include/openssl/rc4.h # Copied from boringssl/src/include/openssl/rc4.h
 include/openssl/ripemd.h # Copied from boringssl/src/include/openssl/ripemd.h
 include/openssl/rsa.h # Copied from boringssl/src/include/openssl/rsa.h
 include/openssl/safestack.h # Copied from boringssl/src/include/openssl/safestack.h
+include/openssl/service_indicator.h # Copied from boringssl/src/include/openssl/service_indicator.h
 include/openssl/sha.h # Copied from boringssl/src/include/openssl/sha.h
 include/openssl/siphash.h # Copied from boringssl/src/include/openssl/siphash.h
 include/openssl/span.h # Copied from boringssl/src/include/openssl/span.h
