@@ -75,6 +75,7 @@ add_library(bssl-compat
     source/ERR_GET_REASON.c
     source/bn.c
     source/err.c
+    source/mem.c
 )
 target_include_directories(bssl-compat PUBLIC include)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
