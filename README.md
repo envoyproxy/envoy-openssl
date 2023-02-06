@@ -29,6 +29,13 @@ OpenSSL is supported by providing a compatiblity library and a set of TLS relate
 
 ## Building
 
+After initial checkout, initialize and update submodules for Envoy and
+BoringSSL:
+```
+git submodule init
+git submodule update
+```
+
 For a standalone build of the library, see
 [bssl-compat README](bssl-compat/README.md).
 
