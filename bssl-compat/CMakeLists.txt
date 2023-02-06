@@ -65,7 +65,6 @@ add_library(bssl-compat
     source/ossl_ERR_set_error.c
     source/crypto/bytestring/cbs.c
     source/crypto/bytestring/cbb.c
-    source/crypto/fipsmodule/bn/cmp.c
     source/crypto/asn1/a_int.c
     source/rand.c
     source/bio.cpp
@@ -74,53 +73,37 @@ add_library(bssl-compat
     source/ssl.c
     source/ERR_GET_LIB.c
     source/ERR_GET_REASON.c
+    source/bn.c
+    source/err.c
+    source/mem.c
 )
 target_include_directories(bssl-compat PUBLIC include)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 
 
-add_executable(test_rand)
-target_sources(test_rand PRIVATE source/test/test_rand.c)
-target_link_libraries(test_rand PRIVATE bssl-compat)
-
 install(TARGETS bssl-compat LIBRARY DESTINATION lib)
 
 ################################################################################
-# The bssl-compat-extra library contains implementations of BorinsSSL functions
-# that are required just for building tests, but not for building Envoy.
+# Unit Tests
 ################################################################################
-add_library(bssl-compat-extra
-	source/extra/BIO_ctrl_get_read_request.c
-	source/extra/BIO_ctrl_get_write_guarantee.c
-	source/extra/BIO_new_connect.c
-	source/extra/BIO_printf.c
-	source/extra/BIO_read.c
-	source/extra/BIO_read_asn1.c
-	source/extra/BIO_reset.c
-	source/extra/BIO_snprintf.c
-	source/extra/BIO_should_read.c
-	source/extra/BIO_should_write.c
-	source/extra/BIO_shutdown_wr.c
-	source/extra/BIO_write.c
-	source/extra/ERR_get_error.c
-	source/extra/ERR_put_error.c
-	source/extra/OPENSSL_free.c
-	source/extra/OPENSSL_malloc.c
-	source/extra/OPENSSL_realloc.c
-)
-target_include_directories(bssl-compat-extra PUBLIC include)
-
 
 FetchContent_Declare(googletest URL https://github.com/google/googletest/archive/5376968f6948923e2411081fd9372e71a59d8e77.zip)
 FetchContent_MakeAvailable(googletest)
 enable_testing()
 
-################################################################################
-# bio_test
-################################################################################
-add_executable(bio_test
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/crypto/bio/bio_test.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/crypto/test/test_util.cc"
+add_executable(utests
+  # Tests copied from BoringSSL
+  source/crypto/err/err_test.cc
+  source/crypto/rand_extra/rand_test.cc
+  source/crypto/bio/bio_test.cc
+  source/crypto/test/test_util.cc
+  # "Our" bssl-compat tests
+  source/test/test_bn.cc
+  # Functions to support tests
+  source/extra/bio_extra.c
+  source/extra/mem_extra.c
+  source/extra/err_extra.c
 )
-target_link_libraries(bio_test PRIVATE GTest::gtest_main bssl-compat-extra bssl-compat)
-gtest_discover_tests(bio_test)
+set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+target_link_libraries(utests PRIVATE GTest::gtest_main bssl-compat)
+gtest_discover_tests(utests)

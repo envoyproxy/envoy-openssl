@@ -1,0 +1,12 @@
+--- boringssl/src/crypto/rand_extra/rand_test.cc	2022-12-20 11:40:06.887841589 +0000
++++ source/crypto/rand_extra/rand_test.cc	2023-01-25 15:53:59.610888390 +0000
+@@ -20,9 +20,6 @@
+ 
+ #include <openssl/span.h>
+ 
+-#include "../fipsmodule/rand/fork_detect.h"
+-#include "../fipsmodule/rand/internal.h"
+-#include "../test/abi_test.h"
+ #include "../test/test_util.h"
+ 
+ #if defined(OPENSSL_THREADS)
