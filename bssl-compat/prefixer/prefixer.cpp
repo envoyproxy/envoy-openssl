@@ -250,6 +250,9 @@ class MyFrontendAction: public clang::ASTFrontendAction {
         if (name == "SHLIB_VERSION_NUMBER") {
           const auto &token = directive->getMacroInfo()->getReplacementToken(0);
           m_shlibversion = std::string(token.getLiteralData(), token.getLength());
+          // Remove the quotation marks.
+          m_shlibversion = m_shlibversion.substr(1, m_shlibversion.size() - 1);
+          m_shlibversion.pop_back();
         }
       }
     }
@@ -452,8 +455,8 @@ void MyFrontendAction::EndSourceFileAction() {
          << "#include <assert.h>" << std::endl
          << "#include \"" << opt::prefix << ".h\"" << std::endl
          << std::endl
-         << "#define LIBCRYPTO_SO \"libcrypto.so" << (m_shlibversion.size() ? m_shlibversion : "") << "\"" << std::endl
-         << "#define LIBSSL_SO \"libssl.so" << (m_shlibversion.size() ? m_shlibversion : "") << "\"" << std::endl
+         << "#define LIBCRYPTO_SO \"libcrypto.so" << (m_shlibversion.size() ? "." + m_shlibversion : "") << "\"" << std::endl
+         << "#define LIBSSL_SO \"libssl.so" << (m_shlibversion.size() ? "." + m_shlibversion : "") << "\"" << std::endl
          << std::endl
          << "static void *libcrypto;" << std::endl
          << "static void *libssl;" << std::endl
