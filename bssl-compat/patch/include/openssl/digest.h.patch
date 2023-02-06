@@ -1,0 +1,37 @@
+--- boringssl/src/include/openssl/digest.h	2022-12-20 11:40:07.217841456 +0000
++++ include/openssl/digest.h	2023-02-01 15:22:59.588397250 +0000
+@@ -337,9 +337,31 @@
+ 
+ BORINGSSL_MAKE_DELETER(EVP_MD_CTX, EVP_MD_CTX_free)
+ 
+-using ScopedEVP_MD_CTX =
+-    internal::StackAllocatedMovable<EVP_MD_CTX, int, EVP_MD_CTX_init,
+-                                    EVP_MD_CTX_cleanup, EVP_MD_CTX_move>;
++class ScopedEVP_MD_CTX {
++  public:
++    ScopedEVP_MD_CTX() : ctx_(EVP_MD_CTX_new()) {}
++    ~ScopedEVP_MD_CTX() { EVP_MD_CTX_free(ctx_); }
++
++    ScopedEVP_MD_CTX(ScopedEVP_MD_CTX &&other) {
++      EVP_MD_CTX_move(ctx_, other.ctx_);
++    }
++    ScopedEVP_MD_CTX &operator=(ScopedEVP_MD_CTX &&other) {
++      EVP_MD_CTX_move(ctx_, other.ctx_);
++      return *this;
++    }
++
++    EVP_MD_CTX *get() { return ctx_; }
++    const EVP_MD_CTX *get() const { return ctx_; }
++
++    EVP_MD_CTX *operator->() { return ctx_; }
++    const EVP_MD_CTX *operator->() const { return ctx_; }
++
++    void Reset() {
++      EVP_MD_CTX_reset(ctx_);
++    }
++  private:
++    EVP_MD_CTX *ctx_;
++};
+ 
+ BSSL_NAMESPACE_END
+ 
