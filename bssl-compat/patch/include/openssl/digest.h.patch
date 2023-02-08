@@ -1,6 +1,28 @@
 --- boringssl/src/include/openssl/digest.h	2022-12-20 11:40:07.217841456 +0000
-+++ include/openssl/digest.h	2023-02-01 15:22:59.588397250 +0000
-@@ -337,9 +337,31 @@
++++ include/openssl/digest.h	2023-02-06 15:54:21.802343880 +0000
+@@ -58,6 +58,7 @@
+ #define OPENSSL_HEADER_DIGEST_H
+ 
+ #include <openssl/base.h>
++#include <ossl/openssl/evp.h>
+ 
+ #if defined(__cplusplus)
+ extern "C" {
+@@ -160,11 +161,11 @@
+ // EVP_MAX_MD_SIZE is the largest digest size supported, in bytes.
+ // Functions that output a digest generally require the buffer have
+ // at least this much space.
+-#define EVP_MAX_MD_SIZE 64  // SHA-512 is the longest so far.
++#define EVP_MAX_MD_SIZE ossl_EVP_MAX_MD_SIZE
+ 
+ // EVP_MAX_MD_BLOCK_SIZE is the largest digest block size supported, in
+ // bytes.
+-#define EVP_MAX_MD_BLOCK_SIZE 128  // SHA-512 is the longest so far.
++#define EVP_MAX_MD_BLOCK_SIZE ossl_EVP_MAX_MD_BLOCK_SIZE
+ 
+ // EVP_DigestFinal_ex finishes the digest in |ctx| and writes the output to
+ // |md_out|. |EVP_MD_CTX_size| bytes are written, which is at most
+@@ -337,9 +338,31 @@
  
  BORINGSSL_MAKE_DELETER(EVP_MD_CTX, EVP_MD_CTX_free)
  

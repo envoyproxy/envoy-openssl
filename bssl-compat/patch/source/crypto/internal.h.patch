@@ -1,6 +1,6 @@
 --- boringssl/src/crypto/internal.h	2023-01-27 15:29:47.127204255 +0000
-+++ source/crypto/internal.h	2023-01-27 15:58:30.288459687 +0000
-@@ -109,629 +109,9 @@
++++ source/crypto/internal.h	2023-02-06 16:39:36.479624760 +0000
+@@ -109,629 +109,11 @@
  #ifndef OPENSSL_HEADER_CRYPTO_INTERNAL_H
  #define OPENSSL_HEADER_CRYPTO_INTERNAL_H
  
@@ -87,8 +87,8 @@
 -#endif
 -#endif
 -
--#define OPENSSL_ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
--
+ #define OPENSSL_ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
+ 
 -// Have a generic fall-through for different versions of C/C++.
 -#if defined(__cplusplus) && __cplusplus >= 201703L
 -#define OPENSSL_FALLTHROUGH [[fallthrough]]
@@ -630,7 +630,7 @@
  // Endianness conversions.
  
  #if defined(__GNUC__) && __GNUC__ >= 2
-@@ -857,427 +237,4 @@
+@@ -857,427 +239,4 @@
    return memset(dst, c, n);
  }
  

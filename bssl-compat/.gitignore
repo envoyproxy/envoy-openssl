@@ -87,6 +87,7 @@ source/crypto/bio/bio_test.cc # Copied from boringssl/src/crypto/bio/bio_test.cc
 source/crypto/bytestring/cbb.c # Copied from boringssl/src/crypto/bytestring/cbb.c
 source/crypto/bytestring/cbs.c # Copied from boringssl/src/crypto/bytestring/cbs.c
 source/crypto/bytestring/internal.h # Copied from boringssl/src/crypto/bytestring/internal.h
+source/crypto/digest_extra/digest_test.cc # Copied from boringssl/src/crypto/digest_extra/digest_test.cc
 source/crypto/err/err_test.cc # Copied from boringssl/src/crypto/err/err_test.cc
 source/crypto/internal.h # Copied from boringssl/src/crypto/internal.h
 source/crypto/rand_extra/rand_test.cc # Copied from boringssl/src/crypto/rand_extra/rand_test.cc
