@@ -76,7 +76,9 @@ add_library(bssl-compat
     source/bn.c
     source/err.c
     source/mem.c
+    source/evp.c
 )
+set_source_files_properties(source/evp.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_include_directories(bssl-compat PUBLIC include)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 
@@ -99,6 +101,7 @@ add_executable(utests
   source/crypto/test/test_util.cc
   # "Our" bssl-compat tests
   source/test/test_bn.cc
+  source/test/test_evp.cc
   # Functions to support tests
   source/extra/bio_extra.c
   source/extra/mem_extra.c
