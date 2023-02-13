@@ -1,5 +1,5 @@
---- boringssl/src/include/openssl/base.h	2023-01-27 15:29:47.146204280 +0000
-+++ include/openssl/base.h	2023-02-01 11:10:27.794744153 +0000
+--- ./boringssl/src/include/openssl/base.h	2023-01-27 15:29:47.146204280 +0000
++++ ./include/openssl/base.h	2023-02-10 14:08:05.750738298 +0000
 @@ -79,6 +79,8 @@
  #include <boringssl_prefix_symbols.h>
  #endif
@@ -30,7 +30,7 @@
  typedef struct blake2b_state_st BLAKE2B_CTX;
  typedef struct bn_gencb_st BN_GENCB;
  typedef struct bn_mont_ctx_st BN_MONT_CTX;
-@@ -392,13 +396,13 @@
+@@ -392,17 +396,17 @@
  typedef struct dh_st DH;
  typedef struct dsa_st DSA;
  typedef struct ec_group_st EC_GROUP;
@@ -47,7 +47,13 @@
 +typedef ossl_EVP_MD EVP_MD;
  typedef struct evp_aead_st EVP_AEAD;
  typedef struct evp_aead_ctx_st EVP_AEAD_CTX;
- typedef struct evp_cipher_ctx_st EVP_CIPHER_CTX;
+-typedef struct evp_cipher_ctx_st EVP_CIPHER_CTX;
+-typedef struct evp_cipher_st EVP_CIPHER;
++typedef ossl_EVP_CIPHER_CTX EVP_CIPHER_CTX;
++typedef ossl_EVP_CIPHER EVP_CIPHER;
+ typedef struct evp_encode_ctx_st EVP_ENCODE_CTX;
+ typedef struct evp_hpke_aead_st EVP_HPKE_AEAD;
+ typedef struct evp_hpke_ctx_st EVP_HPKE_CTX;
 @@ -410,9 +414,9 @@
  typedef struct evp_hpke_kem_st EVP_HPKE_KEM;
  typedef struct evp_hpke_key_st EVP_HPKE_KEY;
