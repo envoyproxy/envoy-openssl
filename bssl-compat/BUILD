@@ -22,6 +22,8 @@ cmake(
     out_static_libs = ["libbssl-compat.a"],
     visibility = ["//visibility:public"],
     deps = [":openssl"],
+    generate_crosstool_file = False,
+    tags = ["requires-network"],
 )
 
 alias(
