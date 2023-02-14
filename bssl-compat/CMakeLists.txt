@@ -78,6 +78,8 @@ add_library(bssl-compat
     source/mem.c
     source/evp.c
     source/digest.c
+    source/cipher.c
+    source/crypto.c
 )
 set_source_files_properties(source/evp.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_include_directories(bssl-compat PUBLIC include)
@@ -103,6 +105,7 @@ add_executable(utests
   source/crypto/digest_extra/digest_test.cc
   # "Our" bssl-compat tests
   source/test/test_bn.cc
+  source/test/test_cipher.cc
   source/test/test_evp.cc
   # Functions to support tests
   source/extra/bio_extra.c
@@ -112,4 +115,5 @@ add_executable(utests
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_link_libraries(utests PRIVATE GTest::gtest_main bssl-compat)
 target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/digest_extra.ld)
+target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/cipher_extra.ld)
 gtest_discover_tests(utests)
