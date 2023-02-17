@@ -2,7 +2,7 @@
 import os
 import re
 
-bssl_compat_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+bssl_compat_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 bssl_err_h = os.path.join(bssl_compat_dir, "include", "openssl", "err.h")
 ossl_err_h = os.path.join(bssl_compat_dir, "include", "ossl", "openssl", "err.h")
 ERR_GET_LIB_c = os.path.join(bssl_compat_dir, "source", "ERR_GET_LIB.c")
