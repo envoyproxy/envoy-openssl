@@ -82,6 +82,23 @@ static bool isAnonymousFunctionPointerType(const clang::QualType &qt) {
   return false;
 }
 
+clang::SourceLocation getFileLoc(const clang::SourceManager &srcmgr, clang::SourceLocation sloc) {
+  if (sloc.isFileID()) {
+    return sloc;
+  }
+
+  do {
+    if (srcmgr.isMacroArgExpansion(sloc)) {
+      sloc = srcmgr.getImmediateSpellingLoc(sloc);
+    }
+    else {
+      sloc = srcmgr.getImmediateExpansionRange(sloc).getBegin();
+    }
+  } while (!sloc.isFileID());
+
+  return sloc;
+}
+
 
 class Function {
   public:
@@ -94,7 +111,7 @@ class Function {
     }
 
     std::string getHeader(const clang::SourceManager &srcmgr) const {
-      clang::SourceLocation sloc = srcmgr.getSpellingLoc(m_node->getLocation());
+      clang::SourceLocation sloc = getFileLoc(srcmgr, m_node->getLocation());
       const clang::FileEntry *declfile = srcmgr.getFileEntryForID(srcmgr.getFileID(sloc));
       return declfile->getName().str();
     }
@@ -236,10 +253,11 @@ class MyFrontendAction: public clang::ASTFrontendAction {
 
     bool prefixable(clang::SourceLocation sloc) {
       const clang::SourceManager &srcmgr = getCompilerInstance().getSourceManager();
-      clang::FileID fileid = srcmgr.getFileID(srcmgr.getSpellingLoc(sloc));
+      clang::FileID fileid = srcmgr.getFileID(getFileLoc(srcmgr, sloc));
       if(const clang::FileEntry *declfile = srcmgr.getFileEntryForID(fileid)) {
         return prefixable (declfile->getName().str());
       }
+
       return false;
     }
 
