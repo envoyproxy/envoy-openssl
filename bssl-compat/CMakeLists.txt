@@ -65,7 +65,6 @@ add_library(bssl-compat
     source/ossl_ERR_set_error.c
     source/crypto/bytestring/cbs.c
     source/crypto/bytestring/cbb.c
-    source/crypto/asn1/a_int.c
     source/rand.c
     source/bio.cpp
     source/log.h
@@ -80,6 +79,7 @@ add_library(bssl-compat
     source/digest.c
     source/cipher.c
     source/crypto.c
+    source/asn1.c
 )
 set_source_files_properties(source/evp.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_include_directories(bssl-compat PUBLIC include)
@@ -111,7 +111,9 @@ add_executable(utests
   source/test/test_bn.cc
   source/test/test_cipher.cc
   source/test/test_evp.cc
+  source/test/test_asn1.cc
   # Functions to support tests
+  source/extra/asn1_extra.c
   source/extra/bio_extra.c
   source/extra/mem_extra.c
   source/extra/err_extra.c

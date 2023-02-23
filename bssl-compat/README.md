@@ -4,8 +4,36 @@ Compatibility layer for BoringSSL to OpenSSL.
 
 This builds on the work of the original Maistra bssl_wrapper code.
 
+# Requirements
+The following packages has to be installed if not yet available in your environment (host or container).
+
+OpenSSL 3.0, development included:
+```
+sudo dnf install openssl-devel
+```
+
+Install clang and llvm:
+```
+sudo dnf install clang
+```
+
+Install  libclang-dev:
+```
+sudo dnf install clang-devel
+```
+
+Install llvm-devel:
+```
+sudo dnf install llvm-devel
+```
+
+Install perl:
+```
+sudo dnf install perl
+```
+
 # Building
-Initialize and update git submodules:
+Initialize and update git submodules by giving (from envoy-openssl/bssl-compat):
 
 ```
 git submodule init
@@ -18,6 +46,20 @@ mkdir build
 cd build
 cmake ..
 cmake --build .
+```
+
+Then, if the OpenSSL libraries are not found in the host, you will have to adjust your LD_LIBRARY_PATH so that libcrypto.so & libssl.so are loaded from the 3.0.7 version of OpenSSL that was built:
+```
+export LD_LIBRARY_PATH=/usr/lib64/
+```
+
+And finally, the test can be performed:
+```
+ctest
+```
+If you want to force the re-build:
+```
+make clean && make
 ```
 
 # Structure
