@@ -47,7 +47,8 @@ platform. Clang is strongly recommended for a successful build.
 
 After installing clang and Bazelisk/Bazel, build Envoy handshaker with:
 ```
-CC=clang CXX=clang++ bazel build --config=clang :envoy
+patch envoy/bazel/repositories.bzl -i bazel/envoy.patch
+CC=clang CXX=clang++ bazel build --config=clang --define crypto=system :envoy
 ```
 
 ## Testing
