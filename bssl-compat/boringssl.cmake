@@ -1,6 +1,8 @@
 
 function(add_gitignore ignorefile)
-  execute_process(COMMAND echo "${ignorefile}" COMMAND sort -u -o "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore" - "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore")
+  # Bazel build does not allow changing original source files, temporarily commented the call to execute_process()
+  # TODO: find another solution for updating .gitignore
+  # execute_process(COMMAND echo "${ignorefile}" COMMAND sort -u -o "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore" - "${CMAKE_CURRENT_SOURCE_DIR}/.gitignore")
 endfunction()
 
 # Copy, and optionally patch, the openssl/*.h headers from the ${CMAKE_CURRENT_SOURCE_DIR}/boringssl

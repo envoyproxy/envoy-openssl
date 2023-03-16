@@ -1,0 +1,18 @@
+--- envoy/bazel/repositories.bzl
++++ envoy/bazel/repositories.bzl
+@@ -151,14 +151,9 @@
+     # Setup external Bazel rules
+     _foreign_cc_dependencies()
+ 
+-    # Binding to an alias pointing to the selected version of BoringSSL:
+-    # - BoringSSL FIPS from @boringssl_fips//:ssl,
+-    # - non-FIPS BoringSSL from @boringssl//:ssl.
+-    _boringssl()
+-    _boringssl_fips()
+     native.bind(
+         name = "ssl",
+-        actual = "@envoy//bazel:boringssl",
++        actual = "@bssl-compat//:bssl-compat",
+     )
+ 
+     # The long repo names (`com_github_fmtlib_fmt` instead of `fmtlib`) are
