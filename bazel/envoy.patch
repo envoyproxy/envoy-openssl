@@ -1,6 +1,6 @@
 --- envoy/bazel/repositories.bzl
 +++ envoy/bazel/repositories.bzl
-@@ -151,14 +151,9 @@
+@@ -142,18 +142,13 @@ def envoy_dependencies(skip_targets = []):
      # Setup external Bazel rules
      _foreign_cc_dependencies()
  
@@ -12,6 +12,11 @@
      native.bind(
          name = "ssl",
 -        actual = "@envoy//bazel:boringssl",
++        actual = "@bssl-compat//:bssl-compat",
+     )
+     native.bind(
+         name = "crypto",
+-        actual = "@envoy//bazel:boringcrypto",
 +        actual = "@bssl-compat//:bssl-compat",
      )
  
