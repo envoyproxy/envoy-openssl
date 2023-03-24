@@ -166,6 +166,7 @@ static int SSL_CTX_client_hello_cb(SSL *ssl, int *alert, void *arg) {
   size_t extension_ids_len;
 
   if (!ossl_SSL_client_hello_get1_extensions_present(ssl, &extension_ids, &extension_ids_len)) {
+    *alert = SSL_AD_INTERNAL_ERROR;
     return ossl_SSL_CLIENT_HELLO_ERROR;
   }
 
@@ -182,21 +183,22 @@ static int SSL_CTX_client_hello_cb(SSL *ssl, int *alert, void *arg) {
         !CBB_add_bytes(&extensions, extension_data, extension_len)) {
       OPENSSL_free(extension_ids);
       CBB_cleanup(&extensions);
+      *alert = SSL_AD_INTERNAL_ERROR;
       return ossl_SSL_CLIENT_HELLO_ERROR;
     }
-    fprintf(stderr, "  %p[%zu] %d\n", extension_data, extension_len, extension_ids[i]);
   }
 
   OPENSSL_free(extension_ids);
 
   if (!CBB_finish(&extensions, (uint8_t**)&client_hello.extensions, &client_hello.extensions_len)) {
     CBB_cleanup(&extensions);
+    *alert = SSL_AD_INTERNAL_ERROR;
     return ossl_SSL_CLIENT_HELLO_ERROR;
   }
 
   enum ssl_select_cert_result_t result = callback(&client_hello);
 
-  OPENSSL_free(client_hello.extensions);
+  OPENSSL_free((void*)client_hello.extensions);
 
   switch (result) {
     case ssl_select_cert_success: return ossl_SSL_CLIENT_HELLO_SUCCESS;
