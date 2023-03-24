@@ -115,14 +115,17 @@ add_executable(utests
   source/test/test_evp.cc
   source/test/test_asn1.cc
   source/test/test_stack.cc
+  source/test/test_ssl.cc
   # Functions to support tests
   source/extra/asn1_extra.c
   source/extra/bio_extra.c
   source/extra/mem_extra.c
   source/extra/err_extra.c
+  source/extra/ssl_extra.c
 )
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_link_libraries(utests PRIVATE GTest::gtest_main bssl-compat)
 target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/digest_extra.ld)
 target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/cipher_extra.ld)
+target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/ssl_extra.ld)
 gtest_discover_tests(utests)
