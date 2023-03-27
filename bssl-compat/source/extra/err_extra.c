@@ -2,6 +2,10 @@
 #include <ossl/openssl/err.h>
 
 
+char *ERR_error_string(uint32_t packed_error, char *buf) {
+  return ossl_ERR_error_string(packed_error, buf);
+}
+
 uint32_t ERR_peek_error(void) {
   return ossl_ERR_peek_error();
 }
