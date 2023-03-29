@@ -1,15 +1,17 @@
---- ./boringssl/src/crypto/digest_extra/digest_test.cc	2023-02-07 09:11:57.545843097 +0000
-+++ ./source/crypto/digest_extra/digest_test.cc	2023-02-09 14:44:22.598279294 +0000
-@@ -35,6 +35,8 @@
+--- ./boringssl/crypto/digest_extra/digest_test.cc	2023-02-22 10:18:39.664379261 +0000
++++ ./source/crypto/digest_extra/digest_test.cc	2023-04-03 10:41:28.617865404 +0100
+@@ -35,6 +35,10 @@
  #include "../internal.h"
  #include "../test/test_util.h"
  
++#ifdef BSSL_COMPAT
 +#include <ossl/openssl/provider.h>
++#endif
 +
  
  struct MD {
    // name is the name of the digest.
-@@ -53,9 +55,9 @@
+@@ -53,9 +57,9 @@
  static const MD sha256 = { "SHA256", &EVP_sha256, &SHA256 };
  static const MD sha384 = { "SHA384", &EVP_sha384, &SHA384 };
  static const MD sha512 = { "SHA512", &EVP_sha512, &SHA512 };
@@ -21,7 +23,7 @@
  
  struct DigestTestVector {
    // md is the digest to test.
-@@ -136,20 +138,20 @@
+@@ -136,20 +140,20 @@
  
      // SHA-512-256 tests, from
      // https://csrc.nist.gov/csrc/media/projects/cryptographic-standards-and-guidelines/documents/examples/sha512_256.pdf
@@ -50,27 +52,31 @@
  };
  
  static void CompareDigest(const DigestTestVector *test,
-@@ -160,6 +162,9 @@
+@@ -160,6 +164,11 @@
  }
  
  static void TestDigest(const DigestTestVector *test) {
++#ifdef BSSL_COMPAT
 +  ossl_OSSL_PROVIDER *legprov = ossl_OSSL_PROVIDER_load(nullptr, "legacy");
 +  ossl_OSSL_PROVIDER *defprov = ossl_OSSL_PROVIDER_load(nullptr, "default");
++#endif
 +
    bssl::ScopedEVP_MD_CTX ctx;
  
    // Test the input provided.
-@@ -249,6 +254,9 @@
+@@ -249,6 +258,11 @@
      EXPECT_EQ(digest.get(), out);
      CompareDigest(test, digest.get(), EVP_MD_size(test->md.func()));
    }
 +
++#ifdef BSSL_COMPAT
 +  ossl_OSSL_PROVIDER_unload(legprov);
 +  ossl_OSSL_PROVIDER_unload(defprov);
++#endif
  }
  
  TEST(DigestTest, TestVectors) {
-@@ -258,78 +266,78 @@
+@@ -258,78 +272,78 @@
    }
  }
  

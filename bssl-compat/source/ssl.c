@@ -211,6 +211,28 @@ void SSL_CTX_set_select_certificate_cb(SSL_CTX *ctx, enum ssl_select_cert_result
   ossl_SSL_CTX_set_client_hello_cb(ctx, SSL_CTX_client_hello_cb, cb);
 }
 
+/*
+ * BoringSSL only returns: TLS1_3_VERSION, TLS1_2_VERSION, or SSL3_VERSION
+ */
+uint16_t SSL_CIPHER_get_min_version(const SSL_CIPHER *cipher) {
+  // This logic was copied from BoringSSL's ssl_cipher.cc
+
+  if ((ossl_SSL_CIPHER_get_kx_nid(cipher) == ossl_NID_kx_any) ||
+      (ossl_SSL_CIPHER_get_auth_nid(cipher) == ossl_NID_auth_any)) {
+    return TLS1_3_VERSION;
+  }
+
+  const EVP_MD *digest = ossl_SSL_CIPHER_get_handshake_digest(cipher);
+  if (ossl_EVP_MD_get_type(digest) != NID_md5_sha1) {
+    return TLS1_2_VERSION;
+  }
+
+  return SSL3_VERSION;
+}
+
+const char *SSL_CIPHER_get_name(const SSL_CIPHER *cipher) {
+  return ossl_SSL_CIPHER_get_name(cipher);
+}
 
 int ext_SSL_get_all_async_fds(SSL *s, OSSL_ASYNC_FD *fds, size_t *numfds) {
   return ossl_SSL_get_all_async_fds(s, fds, numfds);

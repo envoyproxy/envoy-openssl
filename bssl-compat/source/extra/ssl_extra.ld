@@ -1,5 +1,7 @@
 PROVIDE(SSL_accept = ossl_SSL_accept);
 PROVIDE(SSL_connect = ossl_SSL_connect);
+PROVIDE(SSL_CIPHER_description = ossl_SSL_CIPHER_description);
+PROVIDE(SSL_CIPHER_get_version = ossl_SSL_CIPHER_get_version);
 PROVIDE(SSL_CTX_free = ossl_SSL_CTX_free);
 PROVIDE(SSL_CTX_get_ex_data = ossl_SSL_CTX_get_ex_data);
 PROVIDE(SSL_CTX_new = ossl_SSL_CTX_new);
@@ -7,6 +9,7 @@ PROVIDE(SSL_CTX_set_ex_data = ossl_SSL_CTX_set_ex_data);
 PROVIDE(SSL_CTX_use_certificate_file = ossl_SSL_CTX_use_certificate_file);
 PROVIDE(SSL_CTX_use_PrivateKey_file = ossl_SSL_CTX_use_PrivateKey_file);
 PROVIDE(SSL_free = ossl_SSL_free);
+PROVIDE(SSL_get_ciphers = ossl_SSL_get_ciphers);
 PROVIDE(SSL_get_SSL_CTX = ossl_SSL_get_SSL_CTX);
 PROVIDE(SSL_new = ossl_SSL_new);
 PROVIDE(SSL_set_fd = ossl_SSL_set_fd);

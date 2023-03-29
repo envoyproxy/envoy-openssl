@@ -1,191 +1,98 @@
 include/openssl/
-include/openssl/aead.h # Copied from boringssl/include/openssl/aead.h
-include/openssl/aead.h # Copied from boringssl/src/include/openssl/aead.h
-include/openssl/aes.h # Copied from boringssl/include/openssl/aes.h
-include/openssl/aes.h # Copied from boringssl/src/include/openssl/aes.h
-include/openssl/arm_arch.h # Copied from boringssl/include/openssl/arm_arch.h
-include/openssl/arm_arch.h # Copied from boringssl/src/include/openssl/arm_arch.h
-include/openssl/asn1.h # Copied from boringssl/include/openssl/asn1.h
-include/openssl/asn1.h # Copied from boringssl/src/include/openssl/asn1.h
-include/openssl/asn1_mac.h # Copied from boringssl/include/openssl/asn1_mac.h
-include/openssl/asn1_mac.h # Copied from boringssl/src/include/openssl/asn1_mac.h
-include/openssl/asn1t.h # Copied from boringssl/include/openssl/asn1t.h
-include/openssl/asn1t.h # Copied from boringssl/src/include/openssl/asn1t.h
-include/openssl/base64.h # Copied from boringssl/include/openssl/base64.h
-include/openssl/base64.h # Copied from boringssl/src/include/openssl/base64.h
-include/openssl/base.h # Copied from boringssl/include/openssl/base.h
-include/openssl/base.h # Copied from boringssl/src/include/openssl/base.h
-include/openssl/bio.h # Copied from boringssl/include/openssl/bio.h
-include/openssl/bio.h # Copied from boringssl/src/include/openssl/bio.h
-include/openssl/blake2.h # Copied from boringssl/include/openssl/blake2.h
-include/openssl/blake2.h # Copied from boringssl/src/include/openssl/blake2.h
-include/openssl/blowfish.h # Copied from boringssl/include/openssl/blowfish.h
-include/openssl/blowfish.h # Copied from boringssl/src/include/openssl/blowfish.h
-include/openssl/bn.h # Copied from boringssl/include/openssl/bn.h
-include/openssl/bn.h # Copied from boringssl/src/include/openssl/bn.h
-include/openssl/buffer.h # Copied from boringssl/include/openssl/buffer.h
-include/openssl/buffer.h # Copied from boringssl/src/include/openssl/buffer.h
-include/openssl/buf.h # Copied from boringssl/include/openssl/buf.h
-include/openssl/buf.h # Copied from boringssl/src/include/openssl/buf.h
-include/openssl/bytestring.h # Copied from boringssl/include/openssl/bytestring.h
-include/openssl/bytestring.h # Copied from boringssl/src/include/openssl/bytestring.h
-include/openssl/cast.h # Copied from boringssl/include/openssl/cast.h
-include/openssl/cast.h # Copied from boringssl/src/include/openssl/cast.h
-include/openssl/chacha.h # Copied from boringssl/include/openssl/chacha.h
-include/openssl/chacha.h # Copied from boringssl/src/include/openssl/chacha.h
-include/openssl/cipher.h # Copied from boringssl/include/openssl/cipher.h
-include/openssl/cipher.h # Copied from boringssl/src/include/openssl/cipher.h
-include/openssl/cmac.h # Copied from boringssl/include/openssl/cmac.h
-include/openssl/cmac.h # Copied from boringssl/src/include/openssl/cmac.h
-include/openssl/conf.h # Copied from boringssl/include/openssl/conf.h
-include/openssl/conf.h # Copied from boringssl/src/include/openssl/conf.h
-include/openssl/cpu.h # Copied from boringssl/include/openssl/cpu.h
-include/openssl/cpu.h # Copied from boringssl/src/include/openssl/cpu.h
-include/openssl/crypto.h # Copied from boringssl/include/openssl/crypto.h
-include/openssl/crypto.h # Copied from boringssl/src/include/openssl/crypto.h
-include/openssl/curve25519.h # Copied from boringssl/include/openssl/curve25519.h
-include/openssl/curve25519.h # Copied from boringssl/src/include/openssl/curve25519.h
-include/openssl/des.h # Copied from boringssl/include/openssl/des.h
-include/openssl/des.h # Copied from boringssl/src/include/openssl/des.h
-include/openssl/dh.h # Copied from boringssl/include/openssl/dh.h
-include/openssl/dh.h # Copied from boringssl/src/include/openssl/dh.h
-include/openssl/digest.h # Copied from boringssl/include/openssl/digest.h
-include/openssl/digest.h # Copied from boringssl/src/include/openssl/digest.h
-include/openssl/dsa.h # Copied from boringssl/include/openssl/dsa.h
-include/openssl/dsa.h # Copied from boringssl/src/include/openssl/dsa.h
-include/openssl/dtls1.h # Copied from boringssl/include/openssl/dtls1.h
-include/openssl/dtls1.h # Copied from boringssl/src/include/openssl/dtls1.h
-include/openssl/ecdh.h # Copied from boringssl/include/openssl/ecdh.h
-include/openssl/ecdh.h # Copied from boringssl/src/include/openssl/ecdh.h
-include/openssl/ecdsa.h # Copied from boringssl/include/openssl/ecdsa.h
-include/openssl/ecdsa.h # Copied from boringssl/src/include/openssl/ecdsa.h
-include/openssl/ec.h # Copied from boringssl/include/openssl/ec.h
-include/openssl/ec.h # Copied from boringssl/src/include/openssl/ec.h
-include/openssl/ec_key.h # Copied from boringssl/include/openssl/ec_key.h
-include/openssl/ec_key.h # Copied from boringssl/src/include/openssl/ec_key.h
-include/openssl/engine.h # Copied from boringssl/include/openssl/engine.h
-include/openssl/engine.h # Copied from boringssl/src/include/openssl/engine.h
-include/openssl/e_os2.h # Copied from boringssl/include/openssl/e_os2.h
-include/openssl/e_os2.h # Copied from boringssl/src/include/openssl/e_os2.h
-include/openssl/err.h # Copied from boringssl/include/openssl/err.h
-include/openssl/err.h # Copied from boringssl/src/include/openssl/err.h
-include/openssl/evp_errors.h # Copied from boringssl/include/openssl/evp_errors.h
-include/openssl/evp_errors.h # Copied from boringssl/src/include/openssl/evp_errors.h
-include/openssl/evp.h # Copied from boringssl/include/openssl/evp.h
-include/openssl/evp.h # Copied from boringssl/src/include/openssl/evp.h
-include/openssl/ex_data.h # Copied from boringssl/include/openssl/ex_data.h
-include/openssl/ex_data.h # Copied from boringssl/src/include/openssl/ex_data.h
-include/openssl/hkdf.h # Copied from boringssl/include/openssl/hkdf.h
-include/openssl/hkdf.h # Copied from boringssl/src/include/openssl/hkdf.h
-include/openssl/hmac.h # Copied from boringssl/include/openssl/hmac.h
-include/openssl/hmac.h # Copied from boringssl/src/include/openssl/hmac.h
-include/openssl/hpke.h # Copied from boringssl/include/openssl/hpke.h
-include/openssl/hpke.h # Copied from boringssl/src/include/openssl/hpke.h
-include/openssl/hrss.h # Copied from boringssl/include/openssl/hrss.h
-include/openssl/hrss.h # Copied from boringssl/src/include/openssl/hrss.h
-include/openssl/is_boringssl.h # Copied from boringssl/include/openssl/is_boringssl.h
-include/openssl/is_boringssl.h # Copied from boringssl/src/include/openssl/is_boringssl.h
-include/openssl/kdf.h # Copied from boringssl/include/openssl/kdf.h
-include/openssl/kdf.h # Copied from boringssl/src/include/openssl/kdf.h
-include/openssl/lhash.h # Copied from boringssl/include/openssl/lhash.h
-include/openssl/lhash.h # Copied from boringssl/src/include/openssl/lhash.h
-include/openssl/md4.h # Copied from boringssl/include/openssl/md4.h
-include/openssl/md4.h # Copied from boringssl/src/include/openssl/md4.h
-include/openssl/md5.h # Copied from boringssl/include/openssl/md5.h
-include/openssl/md5.h # Copied from boringssl/src/include/openssl/md5.h
-include/openssl/mem.h # Copied from boringssl/include/openssl/mem.h
-include/openssl/mem.h # Copied from boringssl/src/include/openssl/mem.h
-include/openssl/nid.h # Copied from boringssl/include/openssl/nid.h
-include/openssl/nid.h # Copied from boringssl/src/include/openssl/nid.h
-include/openssl/objects.h # Copied from boringssl/include/openssl/objects.h
-include/openssl/objects.h # Copied from boringssl/src/include/openssl/objects.h
-include/openssl/obj.h # Copied from boringssl/include/openssl/obj.h
-include/openssl/obj.h # Copied from boringssl/src/include/openssl/obj.h
-include/openssl/obj_mac.h # Copied from boringssl/include/openssl/obj_mac.h
-include/openssl/obj_mac.h # Copied from boringssl/src/include/openssl/obj_mac.h
-include/openssl/opensslconf.h # Copied from boringssl/include/openssl/opensslconf.h
-include/openssl/opensslconf.h # Copied from boringssl/src/include/openssl/opensslconf.h
-include/openssl/opensslv.h # Copied from boringssl/include/openssl/opensslv.h
-include/openssl/opensslv.h # Copied from boringssl/src/include/openssl/opensslv.h
-include/openssl/ossl_typ.h # Copied from boringssl/include/openssl/ossl_typ.h
-include/openssl/ossl_typ.h # Copied from boringssl/src/include/openssl/ossl_typ.h
-include/openssl/pem.h # Copied from boringssl/include/openssl/pem.h
-include/openssl/pem.h # Copied from boringssl/src/include/openssl/pem.h
-include/openssl/pkcs12.h # Copied from boringssl/include/openssl/pkcs12.h
-include/openssl/pkcs12.h # Copied from boringssl/src/include/openssl/pkcs12.h
-include/openssl/pkcs7.h # Copied from boringssl/include/openssl/pkcs7.h
-include/openssl/pkcs7.h # Copied from boringssl/src/include/openssl/pkcs7.h
-include/openssl/pkcs8.h # Copied from boringssl/include/openssl/pkcs8.h
-include/openssl/pkcs8.h # Copied from boringssl/src/include/openssl/pkcs8.h
-include/openssl/poly1305.h # Copied from boringssl/include/openssl/poly1305.h
-include/openssl/poly1305.h # Copied from boringssl/src/include/openssl/poly1305.h
-include/openssl/pool.h # Copied from boringssl/include/openssl/pool.h
-include/openssl/pool.h # Copied from boringssl/src/include/openssl/pool.h
-include/openssl/rand.h # Copied from boringssl/include/openssl/rand.h
-include/openssl/rand.h # Copied from boringssl/src/include/openssl/rand.h
-include/openssl/rc4.h # Copied from boringssl/include/openssl/rc4.h
-include/openssl/rc4.h # Copied from boringssl/src/include/openssl/rc4.h
-include/openssl/ripemd.h # Copied from boringssl/include/openssl/ripemd.h
-include/openssl/ripemd.h # Copied from boringssl/src/include/openssl/ripemd.h
-include/openssl/rsa.h # Copied from boringssl/include/openssl/rsa.h
-include/openssl/rsa.h # Copied from boringssl/src/include/openssl/rsa.h
-include/openssl/safestack.h # Copied from boringssl/include/openssl/safestack.h
-include/openssl/safestack.h # Copied from boringssl/src/include/openssl/safestack.h
-include/openssl/service_indicator.h # Copied from boringssl/include/openssl/service_indicator.h
-include/openssl/service_indicator.h # Copied from boringssl/src/include/openssl/service_indicator.h
-include/openssl/sha.h # Copied from boringssl/include/openssl/sha.h
-include/openssl/sha.h # Copied from boringssl/src/include/openssl/sha.h
-include/openssl/siphash.h # Copied from boringssl/include/openssl/siphash.h
-include/openssl/siphash.h # Copied from boringssl/src/include/openssl/siphash.h
-include/openssl/span.h # Copied from boringssl/include/openssl/span.h
-include/openssl/span.h # Copied from boringssl/src/include/openssl/span.h
-include/openssl/srtp.h # Copied from boringssl/include/openssl/srtp.h
-include/openssl/srtp.h # Copied from boringssl/src/include/openssl/srtp.h
-include/openssl/ssl3.h # Copied from boringssl/include/openssl/ssl3.h
-include/openssl/ssl3.h # Copied from boringssl/src/include/openssl/ssl3.h
-include/openssl/ssl.h # Copied from boringssl/include/openssl/ssl.h
-include/openssl/ssl.h # Copied from boringssl/src/include/openssl/ssl.h
-include/openssl/stack.h # Copied from boringssl/include/openssl/stack.h
-include/openssl/stack.h # Copied from boringssl/src/include/openssl/stack.h
-include/openssl/thread.h # Copied from boringssl/include/openssl/thread.h
-include/openssl/thread.h # Copied from boringssl/src/include/openssl/thread.h
-include/openssl/tls1.h # Copied from boringssl/include/openssl/tls1.h
-include/openssl/tls1.h # Copied from boringssl/src/include/openssl/tls1.h
-include/openssl/trust_token.h # Copied from boringssl/include/openssl/trust_token.h
-include/openssl/trust_token.h # Copied from boringssl/src/include/openssl/trust_token.h
-include/openssl/type_check.h # Copied from boringssl/include/openssl/type_check.h
-include/openssl/type_check.h # Copied from boringssl/src/include/openssl/type_check.h
-include/openssl/x509.h # Copied from boringssl/include/openssl/x509.h
-include/openssl/x509.h # Copied from boringssl/src/include/openssl/x509.h
-include/openssl/x509v3.h # Copied from boringssl/include/openssl/x509v3.h
-include/openssl/x509v3.h # Copied from boringssl/src/include/openssl/x509v3.h
-include/openssl/x509_vfy.h # Copied from boringssl/include/openssl/x509_vfy.h
-include/openssl/x509_vfy.h # Copied from boringssl/src/include/openssl/x509_vfy.h
+include/openssl/aead.h # Copied
+include/openssl/aes.h # Copied
+include/openssl/arm_arch.h # Copied
+include/openssl/asn1.h # Copied
+include/openssl/asn1_mac.h # Copied
+include/openssl/asn1t.h # Copied
+include/openssl/base64.h # Copied
+include/openssl/base.h # Copied
+include/openssl/bio.h # Copied
+include/openssl/blake2.h # Copied
+include/openssl/blowfish.h # Copied
+include/openssl/bn.h # Copied
+include/openssl/buffer.h # Copied
+include/openssl/buf.h # Copied
+include/openssl/bytestring.h # Copied
+include/openssl/cast.h # Copied
+include/openssl/chacha.h # Copied
+include/openssl/cipher.h # Copied
+include/openssl/cmac.h # Copied
+include/openssl/conf.h # Copied
+include/openssl/cpu.h # Copied
+include/openssl/crypto.h # Copied
+include/openssl/curve25519.h # Copied
+include/openssl/des.h # Copied
+include/openssl/dh.h # Copied
+include/openssl/digest.h # Copied
+include/openssl/dsa.h # Copied
+include/openssl/dtls1.h # Copied
+include/openssl/ecdh.h # Copied
+include/openssl/ecdsa.h # Copied
+include/openssl/ec.h # Copied
+include/openssl/ec_key.h # Copied
+include/openssl/engine.h # Copied
+include/openssl/e_os2.h # Copied
+include/openssl/err.h # Copied
+include/openssl/evp_errors.h # Copied
+include/openssl/evp.h # Copied
+include/openssl/ex_data.h # Copied
+include/openssl/hkdf.h # Copied
+include/openssl/hmac.h # Copied
+include/openssl/hpke.h # Copied
+include/openssl/hrss.h # Copied
+include/openssl/is_boringssl.h # Copied
+include/openssl/kdf.h # Copied
+include/openssl/lhash.h # Copied
+include/openssl/md4.h # Copied
+include/openssl/md5.h # Copied
+include/openssl/mem.h # Copied
+include/openssl/nid.h # Copied
+include/openssl/objects.h # Copied
+include/openssl/obj.h # Copied
+include/openssl/obj_mac.h # Copied
+include/openssl/opensslconf.h # Copied
+include/openssl/opensslv.h # Copied
+include/openssl/ossl_typ.h # Copied
+include/openssl/pem.h # Copied
+include/openssl/pkcs12.h # Copied
+include/openssl/pkcs7.h # Copied
+include/openssl/pkcs8.h # Copied
+include/openssl/poly1305.h # Copied
+include/openssl/pool.h # Copied
+include/openssl/rand.h # Copied
+include/openssl/rc4.h # Copied
+include/openssl/ripemd.h # Copied
+include/openssl/rsa.h # Copied
+include/openssl/safestack.h # Copied
+include/openssl/service_indicator.h # Copied
+include/openssl/sha.h # Copied
+include/openssl/siphash.h # Copied
+include/openssl/span.h # Copied
+include/openssl/srtp.h # Copied
+include/openssl/ssl3.h # Copied
+include/openssl/ssl.h # Copied
+include/openssl/stack.h # Copied
+include/openssl/thread.h # Copied
+include/openssl/tls1.h # Copied
+include/openssl/trust_token.h # Copied
+include/openssl/type_check.h # Copied
+include/openssl/x509.h # Copied
+include/openssl/x509v3.h # Copied
+include/openssl/x509_vfy.h # Copied
 include/ossl/
 include/ossl.h
-source/crypto/asn1/a_int.c # Copied from boringssl/crypto/asn1/a_int.c
-source/crypto/asn1/a_int.c # Copied from boringssl/src/crypto/asn1/a_int.c
-source/crypto/bio/bio_test.cc # Copied from boringssl/crypto/bio/bio_test.cc
-source/crypto/bio/bio_test.cc # Copied from boringssl/src/crypto/bio/bio_test.cc
-source/crypto/bytestring/cbb.c # Copied from boringssl/crypto/bytestring/cbb.c
-source/crypto/bytestring/cbb.c # Copied from boringssl/src/crypto/bytestring/cbb.c
-source/crypto/bytestring/cbs.c # Copied from boringssl/crypto/bytestring/cbs.c
-source/crypto/bytestring/cbs.c # Copied from boringssl/src/crypto/bytestring/cbs.c
-source/crypto/bytestring/internal.h # Copied from boringssl/crypto/bytestring/internal.h
-source/crypto/bytestring/internal.h # Copied from boringssl/src/crypto/bytestring/internal.h
-source/crypto/digest_extra/digest_test.cc # Copied from boringssl/crypto/digest_extra/digest_test.cc
-source/crypto/digest_extra/digest_test.cc # Copied from boringssl/src/crypto/digest_extra/digest_test.cc
-source/crypto/err/err_test.cc # Copied from boringssl/crypto/err/err_test.cc
-source/crypto/err/err_test.cc # Copied from boringssl/src/crypto/err/err_test.cc
-source/crypto/internal.h # Copied from boringssl/crypto/internal.h
-source/crypto/internal.h # Copied from boringssl/src/crypto/internal.h
-source/crypto/rand_extra/rand_test.cc # Copied from boringssl/crypto/rand_extra/rand_test.cc
-source/crypto/rand_extra/rand_test.cc # Copied from boringssl/src/crypto/rand_extra/rand_test.cc
-source/crypto/stack/stack_test.cc # Copied from boringssl/crypto/stack/stack_test.cc
-source/crypto/test/test_util.cc # Copied from boringssl/crypto/test/test_util.cc
-source/crypto/test/test_util.cc # Copied from boringssl/src/crypto/test/test_util.cc
-source/crypto/test/test_util.h # Copied from boringssl/crypto/test/test_util.h
-source/crypto/test/test_util.h # Copied from boringssl/src/crypto/test/test_util.h
+source/crypto/bio/bio_test.cc # Copied
+source/crypto/bytestring/cbb.c # Copied
+source/crypto/bytestring/cbs.c # Copied
+source/crypto/bytestring/internal.h # Copied
+source/crypto/digest_extra/digest_test.cc # Copied
+source/crypto/err/err_test.cc # Copied
+source/crypto/internal.h # Copied
+source/crypto/rand_extra/rand_test.cc # Copied
+source/crypto/stack/stack_test.cc # Copied
+source/crypto/test/test_util.cc # Copied
+source/crypto/test/test_util.h # Copied
 source/ERR_GET_LIB.c
 source/ERR_GET_REASON.c
 source/ossl.c

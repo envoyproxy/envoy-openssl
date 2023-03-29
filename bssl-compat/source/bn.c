@@ -1,5 +1,6 @@
 #include <openssl/bn.h>
 #include <ossl/openssl/bn.h>
+#include <ctype.h>
 
 
 /*
@@ -19,7 +20,15 @@ int BN_add_word(BIGNUM *a, BN_ULONG w) {
  * should be freed with OPENSSL_free(), consistent with what OpenSSL says.
  */
 char *BN_bn2hex(const BIGNUM *bn) {
-  return ossl_BN_bn2hex(bn);
+  char *s = ossl_BN_bn2hex(bn);
+
+  if (s) {
+    for(int i = 0; s[i]; i++) {
+      s[i] = tolower(s[i]);
+    }
+  }
+
+  return s;
 }
 
 /*
