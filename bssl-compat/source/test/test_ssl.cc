@@ -12,16 +12,16 @@ TEST(SSLTest, test_SSL_CTX_set_select_certificate_cb) {
   signal(SIGPIPE, SIG_IGN);
 
   std::promise<in_port_t> server_port;
-  std::vector<uint16_t> extension_types;
+  std::set<uint16_t> received_ext_types;
 
   // Start a TLS server with a (SSL_CTX_set_select_certificate_cb()) callback installed.
   std::thread server([&]() {
     bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_server_method()));
-    SSL_CTX_set_ex_data(ctx.get(), 0, &extension_types); // So the callback can fill it in
+    SSL_CTX_set_ex_data(ctx.get(), 0, &received_ext_types); // So the callback can fill it in
 
     // Install the callback.
     SSL_CTX_set_select_certificate_cb(ctx.get(), [](const SSL_CLIENT_HELLO *client_hello) -> enum ssl_select_cert_result_t {
-      std::vector<uint16_t> *extension_types = static_cast<std::vector<uint16_t>*>(SSL_CTX_get_ex_data(SSL_get_SSL_CTX(client_hello->ssl), 0));
+      std::set<uint16_t> *received_ext_types = static_cast<std::set<uint16_t>*>(SSL_CTX_get_ex_data(SSL_get_SSL_CTX(client_hello->ssl), 0));
 
       CBS extensions;
       CBS_init(&extensions, client_hello->extensions, client_hello->extensions_len);
@@ -31,7 +31,7 @@ TEST(SSLTest, test_SSL_CTX_set_select_certificate_cb) {
         CBS_get_u16(&extensions, &type);
         CBS_get_u16(&extensions, &length);
         CBS_skip(&extensions, length);
-        extension_types->push_back(type);
+        received_ext_types->insert(type);
       }
 
       return ssl_select_cert_success;
@@ -74,19 +74,72 @@ TEST(SSLTest, test_SSL_CTX_set_select_certificate_cb) {
   SSL_set_fd(ssl.get(), sock);
   SSL_connect(ssl.get());
 
-  std::vector<uint16_t> expected_extension_types {
-    ossl_TLSEXT_TYPE_ec_point_formats,
-    ossl_TLSEXT_TYPE_supported_groups,
-    ossl_TLSEXT_TYPE_session_ticket,
-    ossl_TLSEXT_TYPE_encrypt_then_mac,
-    ossl_TLSEXT_TYPE_extended_master_secret,
-    ossl_TLSEXT_TYPE_signature_algorithms,
-    ossl_TLSEXT_TYPE_supported_versions,
-    ossl_TLSEXT_TYPE_psk_kex_modes,
-    ossl_TLSEXT_TYPE_key_share
+  // OpenSSL and BoringSSL clients send a slightly different set of client hello
+  // extensions by default, but this is the common set that we should expect.
+  std::set<uint16_t> expected_ext_types {
+    TLSEXT_TYPE_extended_master_secret,
+    TLSEXT_TYPE_supported_groups,
+    TLSEXT_TYPE_ec_point_formats,
+    TLSEXT_TYPE_session_ticket,
+    TLSEXT_TYPE_signature_algorithms,
+    TLSEXT_TYPE_key_share,
+    TLSEXT_TYPE_psk_key_exchange_modes,
+    TLSEXT_TYPE_supported_versions
   };
 
-  ASSERT_EQ(expected_extension_types, extension_types);
+  ASSERT_TRUE (std::includes(received_ext_types.begin(), received_ext_types.end(),
+                             expected_ext_types.begin(), expected_ext_types.end()));
 
   server.join();
+}
+
+
+static const char *version_str(uint16_t version) {
+    switch (version) {
+      case SSL3_VERSION :   { return "SSL3_VERSION  "; break; }
+      case TLS1_VERSION :   { return "TLS1_VERSION  "; break; }
+      case TLS1_1_VERSION : { return "TLS1_1_VERSION"; break; }
+      case TLS1_2_VERSION : { return "TLS1_2_VERSION"; break; }
+      case TLS1_3_VERSION : { return "TLS1_3_VERSION"; break; }
+      default:              { return "<UNKNOWN>     "; break; }
+    };
+}
+
+TEST(SSLTest,SSL_CIPHER_get_min_version) {
+  std::map<std::string,uint16_t> boring_cipher_versions {
+    {"ECDHE-ECDSA-AES128-GCM-SHA256", TLS1_2_VERSION},
+    {"ECDHE-RSA-AES128-GCM-SHA256", TLS1_2_VERSION},
+    {"ECDHE-ECDSA-AES256-GCM-SHA384", TLS1_2_VERSION},
+    {"ECDHE-RSA-AES256-GCM-SHA384", TLS1_2_VERSION},
+    {"ECDHE-ECDSA-CHACHA20-POLY1305", TLS1_2_VERSION},
+    {"ECDHE-RSA-CHACHA20-POLY1305", TLS1_2_VERSION},
+    {"ECDHE-PSK-CHACHA20-POLY1305", TLS1_2_VERSION},
+    {"ECDHE-ECDSA-AES128-SHA", SSL3_VERSION  },
+    {"ECDHE-RSA-AES128-SHA", SSL3_VERSION  },
+    {"ECDHE-PSK-AES128-CBC-SHA", SSL3_VERSION  },
+    {"ECDHE-ECDSA-AES256-SHA", SSL3_VERSION  },
+    {"ECDHE-RSA-AES256-SHA", SSL3_VERSION  },
+    {"ECDHE-PSK-AES256-CBC-SHA", SSL3_VERSION  },
+    {"AES128-GCM-SHA256", TLS1_2_VERSION},
+    {"AES256-GCM-SHA384", TLS1_2_VERSION},
+    {"AES128-SHA", SSL3_VERSION  },
+    {"PSK-AES128-CBC-SHA", SSL3_VERSION  },
+    {"AES256-SHA", SSL3_VERSION  },
+    {"PSK-AES256-CBC-SHA", SSL3_VERSION  },
+    {"DES-CBC3-SHA", SSL3_VERSION  },
+  };
+
+  bssl::UniquePtr<SSL_CTX> ctx {SSL_CTX_new(TLS_server_method())};
+  bssl::UniquePtr<SSL> ssl {SSL_new(ctx.get())};
+
+  STACK_OF(SSL_CIPHER) *ciphers = SSL_get_ciphers(ssl.get());
+  for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); i++) {
+    const SSL_CIPHER *cipher {sk_SSL_CIPHER_value(ciphers, i)};
+    const char *name {SSL_CIPHER_get_name(cipher)};
+    uint16_t min_version {SSL_CIPHER_get_min_version(cipher)};
+
+    if (boring_cipher_versions.find(name) != boring_cipher_versions.end()) {
+      EXPECT_STREQ(version_str(boring_cipher_versions[name]), version_str(min_version)) << " for " << name;
+    }
+  }
 }

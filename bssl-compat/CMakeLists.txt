@@ -7,11 +7,8 @@ if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
-set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/OpenSSL_1_1_1m.tar.gz)
-set(OPENSSL_URL_HASH 36ae24ad7cf0a824d0b76ac08861262e47ec541e5d0f20e6d94bab90b2dab360 )
-
-#set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.7.tar.gz)
-#set(OPENSSL_URL_HASH e8f73590815846db286d215950fdef9b882bb6b886d50acb431c0285782fe35b )
+set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.8.tar.gz)
+set(OPENSSL_URL_HASH 6933e2f1da6f23a50ea226eec6e91b543d277d2098025763b5931cf6a7e099c7)
 
 SET (CMAKE_C_COMPILER             "/usr/bin/clang")
 SET (CMAKE_C_FLAGS                "-Wall")
@@ -37,7 +34,7 @@ add_custom_command(DEPENDS prefixer
                    COMMENT "Prefixing OpenSSL files"
                    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/source/ossl.c
                           ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h
-                          ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl/
+                          ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl/openssl/err.h
                    COMMAND prefixer --src-path "${SRC_OPENSSL_HEADERS1}"
                                     --src-path "${SRC_OPENSSL_HEADERS2}"
                                     --src-incl "openssl/*.h"
@@ -45,6 +42,9 @@ add_custom_command(DEPENDS prefixer
                                     --src-skip "openssl/opensslconf-*.h"
                                     --output "${CMAKE_CURRENT_SOURCE_DIR}"
                                     --prefix ossl)
+
+add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h)
+add_dependencies(bssl-gen ossl-gen)
 
 add_custom_command(DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_LIB.py
                            ${CMAKE_CURRENT_SOURCE_DIR}/include/openssl/err.h
@@ -57,7 +57,6 @@ add_custom_command(DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_RE
                            ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl/openssl/err.h
                    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/source/ERR_GET_REASON.c
                    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_REASON.py)
-
 
 add_library(bssl-compat
     STATIC
@@ -82,6 +81,7 @@ add_library(bssl-compat
     source/asn1.c
     source/stack.c
 )
+add_dependencies(bssl-compat bssl-gen ossl-gen)
 set_source_files_properties(source/evp.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_include_directories(bssl-compat PUBLIC include)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
@@ -129,3 +129,35 @@ target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/dige
 target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/cipher_extra.ld)
 target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/ssl_extra.ld)
 gtest_discover_tests(utests)
+
+
+
+
+
+
+################################################################################
+# Unit Tests built on BoringSSL
+################################################################################
+# add_executable(utests-boring
+#   # Tests copied from BoringSSL
+#   source/crypto/err/err_test.cc
+#   source/crypto/rand_extra/rand_test.cc
+#   source/crypto/bio/bio_test.cc
+#   source/crypto/test/test_util.cc
+#   source/crypto/digest_extra/digest_test.cc
+#   source/crypto/stack/stack_test.cc
+#   # "Our" bssl-compat tests
+#   source/test/test_bn.cc
+#   source/test/test_cipher.cc
+#   source/test/test_evp.cc
+#   source/test/test_asn1.cc
+#   source/test/test_stack.cc
+#   source/test/test_ssl.cc
+# )
+# set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+# target_include_directories(utests-boring PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/boringssl/include)
+# target_link_libraries(utests-boring PRIVATE GTest::gtest_main
+#   ${CMAKE_CURRENT_SOURCE_DIR}/boringssl/build/ssl/libssl.a
+#   ${CMAKE_CURRENT_SOURCE_DIR}/boringssl/build/crypto/libcrypto.a
+# )
+# gtest_discover_tests(utests-boring)
