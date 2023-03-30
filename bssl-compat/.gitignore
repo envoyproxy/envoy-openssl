@@ -181,6 +181,7 @@ source/crypto/internal.h # Copied from boringssl/crypto/internal.h
 source/crypto/internal.h # Copied from boringssl/src/crypto/internal.h
 source/crypto/rand_extra/rand_test.cc # Copied from boringssl/crypto/rand_extra/rand_test.cc
 source/crypto/rand_extra/rand_test.cc # Copied from boringssl/src/crypto/rand_extra/rand_test.cc
+source/crypto/stack/stack_test.cc # Copied from boringssl/crypto/stack/stack_test.cc
 source/crypto/test/test_util.cc # Copied from boringssl/crypto/test/test_util.cc
 source/crypto/test/test_util.cc # Copied from boringssl/src/crypto/test/test_util.cc
 source/crypto/test/test_util.h # Copied from boringssl/crypto/test/test_util.h
