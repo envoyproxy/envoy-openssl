@@ -1,0 +1,44 @@
+--- boringssl/include/openssl/stack.h	2023-02-22 10:18:39.991379106 +0000
++++ include/openssl/stack.h	2023-03-30 15:21:07.056579919 +0100
+@@ -115,22 +115,8 @@
+ typedef int (*stack_call_cmp_func)(stack_cmp_func, const void *const *,
+                                    const void *const *);
+ 
+-// stack_st contains an array of pointers. It is not designed to be used
+-// directly, rather the wrapper macros should be used.
+-typedef struct stack_st {
+-  // num contains the number of valid pointers in |data|.
+-  size_t num;
+-  void **data;
+-  // sorted is non-zero if the values pointed to by |data| are in ascending
+-  // order, based on |comp|.
+-  int sorted;
+-  // num_alloc contains the number of pointers allocated in the buffer pointed
+-  // to by |data|, which may be larger than |num|.
+-  size_t num_alloc;
+-  // comp is an optional comparison function.
+-  stack_cmp_func comp;
+-} _STACK;
+-
++// Redefine the BoringSSL _STACK type to be the underlying OpenSSL equivalent
++typedef ossl_OPENSSL_STACK _STACK;
+ 
+ #define STACK_OF(type) struct stack_st_##type
+ 
+@@ -467,14 +453,9 @@
+ template <typename Stack>
+ struct DeleterImpl<Stack, std::enable_if_t<!StackTraits<Stack>::kIsConst>> {
+   static void Free(Stack *sk) {
+-    // sk_FOO_pop_free is defined by macros and bound by name, so we cannot
+-    // access it from C++ here.
+     using Type = typename StackTraits<Stack>::Type;
+-    sk_pop_free_ex(reinterpret_cast<_STACK *>(sk),
+-                   [](stack_free_func /* unused */, void *ptr) {
+-                     DeleterImpl<Type>::Free(reinterpret_cast<Type *>(ptr));
+-                   },
+-                   nullptr);
++    ossl_OPENSSL_sk_pop_free(reinterpret_cast<_STACK *>(sk),
++                   reinterpret_cast<void (*)(void *)>(DeleterImpl<Type>::Free));
+   }
+ };
+ 
