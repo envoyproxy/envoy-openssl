@@ -15,3 +15,4 @@ PROVIDE(SSL_new = ossl_SSL_new);
 PROVIDE(SSL_set_fd = ossl_SSL_set_fd);
 PROVIDE(SSL_shutdown = ossl_SSL_shutdown);
 PROVIDE(SSL_write = ossl_SSL_write);
+PROVIDE(TLS_method = ossl_TLS_method);

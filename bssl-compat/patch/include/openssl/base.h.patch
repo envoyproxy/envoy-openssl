@@ -1,5 +1,5 @@
 --- boringssl/include/openssl/base.h	2023-04-03 10:20:44.420079267 +0100
-+++ include/openssl/base.h	2023-04-03 10:26:42.734565432 +0100
++++ include/openssl/base.h	2023-04-05 10:32:15.794779634 +0100
 @@ -79,6 +79,9 @@
  #include <boringssl_prefix_symbols.h>
  #endif
@@ -120,3 +120,12 @@
  typedef struct ssl_ticket_aead_method_st SSL_TICKET_AEAD_METHOD;
  typedef struct st_ERR_FNS ERR_FNS;
  typedef struct trust_token_st TRUST_TOKEN;
+@@ -451,7 +457,7 @@
+ typedef struct x509_lookup_method_st X509_LOOKUP_METHOD;
+ typedef struct x509_object_st X509_OBJECT;
+ typedef struct x509_revoked_st X509_REVOKED;
+-typedef struct x509_st X509;
++typedef ossl_X509 X509;
+ typedef struct x509_store_ctx_st X509_STORE_CTX;
+ typedef struct x509_store_st X509_STORE;
+ typedef struct x509_trust_st X509_TRUST;

@@ -66,6 +66,11 @@ function(bssl_copy_files)
   bssl_copy_src(crypto/digest_extra/digest_test.cc)
   bssl_copy_src(crypto/stack/stack_test.cc)
 
+  bssl_copy_src(ssl/ssl_test.cc)
+  bssl_copy_src(ssl/internal.h)
+  bssl_copy_src(crypto/err/internal.h)
+  bssl_copy_src(crypto/lhash/internal.h)
+
   set (bssl-gen-targets  ${bssl-gen-targets} PARENT_SCOPE)
 endfunction()
 

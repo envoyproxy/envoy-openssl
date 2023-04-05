@@ -26,6 +26,10 @@ int SSL_do_handshake(SSL *ssl) {
 	return ossl_SSL_do_handshake(ssl);
 }
 
+X509 *SSL_get_certificate(const SSL *ssl) {
+  return ossl_SSL_get_certificate(ssl);
+}
+
 int SSL_get_error(const SSL *ssl, int ret_code) {
 	int r;
 
@@ -144,96 +148,4 @@ uint32_t SSL_set_mode(SSL *ssl, uint32_t mode) {
 	ossl_SSL_ctrl(ssl, ossl_SSL_CTRL_MODE, openssl_mode, NULL);
 
 	return boringssl_mode;
-}
-
-/*
- *
- */
-static int SSL_CTX_client_hello_cb(SSL *ssl, int *alert, void *arg) {
-  enum ssl_select_cert_result_t (*callback)(const SSL_CLIENT_HELLO *) = arg;
-
-  SSL_CLIENT_HELLO client_hello;
-  memset(&client_hello, 0, sizeof(client_hello));
-
-  client_hello.ssl = ssl;
-  client_hello.version = ossl_SSL_client_hello_get0_legacy_version(ssl);
-  client_hello.random_len = ossl_SSL_client_hello_get0_random(ssl, &client_hello.random);
-  client_hello.session_id_len = ossl_SSL_client_hello_get0_session_id(ssl, &client_hello.session_id);
-  client_hello.cipher_suites_len = ossl_SSL_client_hello_get0_ciphers(ssl, &client_hello.cipher_suites);
-  client_hello.compression_methods_len = ossl_SSL_client_hello_get0_compression_methods(ssl, &client_hello.compression_methods);
-
-  int *extension_ids;
-  size_t extension_ids_len;
-
-  if (!ossl_SSL_client_hello_get1_extensions_present(ssl, &extension_ids, &extension_ids_len)) {
-    *alert = SSL_AD_INTERNAL_ERROR;
-    return ossl_SSL_CLIENT_HELLO_ERROR;
-  }
-
-  CBB extensions;
-  CBB_init(&extensions, 1024);
-
-  for (size_t i = 0; i < extension_ids_len; i++) {
-    const unsigned char *extension_data;
-    size_t extension_len;
-
-    if (!ossl_SSL_client_hello_get0_ext(ssl, extension_ids[i], &extension_data, &extension_len) ||
-        !CBB_add_u16(&extensions, extension_ids[i]) ||
-        !CBB_add_u16(&extensions, extension_len) ||
-        !CBB_add_bytes(&extensions, extension_data, extension_len)) {
-      OPENSSL_free(extension_ids);
-      CBB_cleanup(&extensions);
-      *alert = SSL_AD_INTERNAL_ERROR;
-      return ossl_SSL_CLIENT_HELLO_ERROR;
-    }
-  }
-
-  OPENSSL_free(extension_ids);
-
-  if (!CBB_finish(&extensions, (uint8_t**)&client_hello.extensions, &client_hello.extensions_len)) {
-    CBB_cleanup(&extensions);
-    *alert = SSL_AD_INTERNAL_ERROR;
-    return ossl_SSL_CLIENT_HELLO_ERROR;
-  }
-
-  enum ssl_select_cert_result_t result = callback(&client_hello);
-
-  OPENSSL_free((void*)client_hello.extensions);
-
-  switch (result) {
-    case ssl_select_cert_success: return ossl_SSL_CLIENT_HELLO_SUCCESS;
-    case ssl_select_cert_retry:   return ossl_SSL_CLIENT_HELLO_RETRY;
-    case ssl_select_cert_error:   return ossl_SSL_CLIENT_HELLO_ERROR;
-  };
-}
-
-void SSL_CTX_set_select_certificate_cb(SSL_CTX *ctx, enum ssl_select_cert_result_t (*cb)(const SSL_CLIENT_HELLO *)) {
-  ossl_SSL_CTX_set_client_hello_cb(ctx, SSL_CTX_client_hello_cb, cb);
-}
-
-/*
- * BoringSSL only returns: TLS1_3_VERSION, TLS1_2_VERSION, or SSL3_VERSION
- */
-uint16_t SSL_CIPHER_get_min_version(const SSL_CIPHER *cipher) {
-  // This logic was copied from BoringSSL's ssl_cipher.cc
-
-  if ((ossl_SSL_CIPHER_get_kx_nid(cipher) == ossl_NID_kx_any) ||
-      (ossl_SSL_CIPHER_get_auth_nid(cipher) == ossl_NID_auth_any)) {
-    return TLS1_3_VERSION;
-  }
-
-  const EVP_MD *digest = ossl_SSL_CIPHER_get_handshake_digest(cipher);
-  if (ossl_EVP_MD_get_type(digest) != NID_md5_sha1) {
-    return TLS1_2_VERSION;
-  }
-
-  return SSL3_VERSION;
-}
-
-const char *SSL_CIPHER_get_name(const SSL_CIPHER *cipher) {
-  return ossl_SSL_CIPHER_get_name(cipher);
-}
-
-int ext_SSL_get_all_async_fds(SSL *s, OSSL_ASYNC_FD *fds, size_t *numfds) {
-  return ossl_SSL_get_all_async_fds(s, fds, numfds);
 }
