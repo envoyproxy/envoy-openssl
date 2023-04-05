@@ -88,7 +88,9 @@ source/crypto/bytestring/cbs.c # Copied
 source/crypto/bytestring/internal.h # Copied
 source/crypto/digest_extra/digest_test.cc # Copied
 source/crypto/err/err_test.cc # Copied
+source/crypto/err/internal.h # Copied
 source/crypto/internal.h # Copied
+source/crypto/lhash/internal.h # Copied
 source/crypto/rand_extra/rand_test.cc # Copied
 source/crypto/stack/stack_test.cc # Copied
 source/crypto/test/test_util.cc # Copied
@@ -96,3 +98,5 @@ source/crypto/test/test_util.h # Copied
 source/ERR_GET_LIB.c
 source/ERR_GET_REASON.c
 source/ossl.c
+source/ssl/internal.h # Copied
+source/ssl/ssl_test.cc # Copied

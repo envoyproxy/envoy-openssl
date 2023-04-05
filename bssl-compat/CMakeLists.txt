@@ -69,6 +69,9 @@ add_library(bssl-compat
     source/log.h
     source/log.c
     source/ssl.c
+    source/ssl_ctx.c
+    source/ssl_cipher.c
+    source/ssl_ext.c
     source/ERR_GET_LIB.c
     source/ERR_GET_REASON.c
     source/bn.c
@@ -109,6 +112,7 @@ add_executable(utests
   source/crypto/test/test_util.cc
   source/crypto/digest_extra/digest_test.cc
   source/crypto/stack/stack_test.cc
+  source/ssl/ssl_test.cc
   # "Our" bssl-compat tests
   source/test/test_bn.cc
   source/test/test_cipher.cc
@@ -122,12 +126,14 @@ add_executable(utests
   source/extra/mem_extra.c
   source/extra/err_extra.c
   source/extra/ssl_extra.c
+  source/extra/pem_extra.c
 )
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_link_libraries(utests PRIVATE GTest::gtest_main bssl-compat)
 target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/digest_extra.ld)
 target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/cipher_extra.ld)
 target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/ssl_extra.ld)
+target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/x509_extra.ld)
 gtest_discover_tests(utests)
 
 
@@ -146,6 +152,7 @@ gtest_discover_tests(utests)
 #   source/crypto/test/test_util.cc
 #   source/crypto/digest_extra/digest_test.cc
 #   source/crypto/stack/stack_test.cc
+#   source/ssl/ssl_test.cc
 #   # "Our" bssl-compat tests
 #   source/test/test_bn.cc
 #   source/test/test_cipher.cc
@@ -156,6 +163,7 @@ gtest_discover_tests(utests)
 # )
 # set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 # target_include_directories(utests-boring PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/boringssl/include)
+# target_include_directories(utests-boring PRIVATE include)
 # target_link_libraries(utests-boring PRIVATE GTest::gtest_main
 #   ${CMAKE_CURRENT_SOURCE_DIR}/boringssl/build/ssl/libssl.a
 #   ${CMAKE_CURRENT_SOURCE_DIR}/boringssl/build/crypto/libcrypto.a
