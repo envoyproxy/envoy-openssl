@@ -26,6 +26,10 @@ int SSL_do_handshake(SSL *ssl) {
 	return ossl_SSL_do_handshake(ssl);
 }
 
+void SSL_enable_ocsp_stapling(SSL *ssl) {
+  ossl_SSL_set_tlsext_status_type(ssl, ossl_TLSEXT_STATUSTYPE_ocsp);
+}
+
 const char *SSL_error_description(int err) {
   switch (err) {
 #ifdef SSL_ERROR_NONE
