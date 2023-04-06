@@ -1,5 +1,5 @@
 --- boringssl/include/openssl/base.h	2023-04-03 10:20:44.420079267 +0100
-+++ include/openssl/base.h	2023-04-05 10:32:15.794779634 +0100
++++ include/openssl/base.h	2023-04-06 12:55:08.433620362 +0100
 @@ -79,6 +79,9 @@
  #include <boringssl_prefix_symbols.h>
  #endif
@@ -114,8 +114,9 @@
 +typedef ossl_SSL_METHOD SSL_METHOD;
  typedef struct ssl_private_key_method_st SSL_PRIVATE_KEY_METHOD;
  typedef struct ssl_quic_method_st SSL_QUIC_METHOD;
- typedef struct ssl_session_st SSL_SESSION;
+-typedef struct ssl_session_st SSL_SESSION;
 -typedef struct ssl_st SSL;
++typedef ossl_SSL_SESSION SSL_SESSION;
 +typedef ossl_SSL SSL;
  typedef struct ssl_ticket_aead_method_st SSL_TICKET_AEAD_METHOD;
  typedef struct st_ERR_FNS ERR_FNS;

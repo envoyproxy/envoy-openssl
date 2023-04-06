@@ -47,3 +47,7 @@ int i2d_X509(X509 *x509, uint8_t **outp) {
 
   return length;
 }
+
+SSL_SESSION *SSL_SESSION_new(const SSL_CTX *ctx) {
+  return ossl_SSL_SESSION_new();
+}
