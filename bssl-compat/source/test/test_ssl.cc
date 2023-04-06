@@ -166,3 +166,11 @@ TEST(SSLTest, SSL_set_SSL_CTX) {
   EXPECT_EQ(ctx2.get(), SSL_set_SSL_CTX(ssl.get(), ctx2.get()));
   EXPECT_EQ(ctx2.get(), SSL_get_SSL_CTX(ssl.get()));
 }
+
+TEST(SSLTest, SSL_set_renegotiate_mode) {
+  bssl::UniquePtr<SSL_CTX> ctx {SSL_CTX_new(TLS_server_method())};
+  bssl::UniquePtr<SSL> ssl {SSL_new(ctx.get())};
+
+  SSL_set_renegotiate_mode(ssl.get(), ssl_renegotiate_never);
+  SSL_set_renegotiate_mode(ssl.get(), ssl_renegotiate_freely);
+}
