@@ -19,6 +19,7 @@
 #include <openssl/ssl.h>
 #include <ext/openssl/ssl.h>
 #include <ossl/openssl/ssl.h>
+#include <ossl/openssl/tls1.h>
 #include "log.h"
 
 
@@ -217,4 +218,13 @@ void SSL_set_renegotiate_mode(SSL *ssl, enum ssl_renegotiate_mode_t mode) {
       break;
     }
   }
+}
+
+int SSL_set_ocsp_response(SSL *ssl, const uint8_t *response, size_t response_len) {
+  // OpenSSL takes ownership of the response buffer so we have to take a copy
+  void *copy = ossl_OPENSSL_memdup(response, response_len);
+  if ((copy == NULL) && response) {
+    return 0;
+  }
+  return ossl_SSL_set_tlsext_status_ocsp_resp(ssl, copy, response_len);
 }
