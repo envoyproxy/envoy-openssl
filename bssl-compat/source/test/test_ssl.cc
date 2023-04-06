@@ -187,3 +187,13 @@ TEST(SSLTest, SSL_set_ocsp_response) {
   EXPECT_TRUE(SSL_set_ocsp_response(ssl.get(), response2, sizeof(response2)));
   EXPECT_TRUE(SSL_set_ocsp_response(ssl.get(), nullptr, 0));
 }
+
+TEST(SSLTest, SSL_SESSION_should_be_single_use) {
+  bssl::UniquePtr<SSL_CTX> ctx {SSL_CTX_new(TLS_server_method())};
+  bssl::UniquePtr<SSL_SESSION> session {SSL_SESSION_new(ctx.get())};
+
+  ASSERT_TRUE(SSL_SESSION_set_protocol_version(session.get(), TLS1_3_VERSION));
+  ASSERT_EQ(1, SSL_SESSION_should_be_single_use(session.get()));
+  ASSERT_TRUE(SSL_SESSION_set_protocol_version(session.get(), TLS1_2_VERSION));
+  ASSERT_EQ(0, SSL_SESSION_should_be_single_use(session.get()));
+}

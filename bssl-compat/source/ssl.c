@@ -228,3 +228,7 @@ int SSL_set_ocsp_response(SSL *ssl, const uint8_t *response, size_t response_len
   }
   return ossl_SSL_set_tlsext_status_ocsp_resp(ssl, copy, response_len);
 }
+
+int SSL_SESSION_should_be_single_use(const SSL_SESSION *session) {
+  return (ossl_SSL_SESSION_get_protocol_version(session) >= ossl_TLS1_3_VERSION);
+}
