@@ -26,40 +26,76 @@ int SSL_do_handshake(SSL *ssl) {
 	return ossl_SSL_do_handshake(ssl);
 }
 
+const char *SSL_error_description(int err) {
+  switch (err) {
+#ifdef SSL_ERROR_NONE
+    case SSL_ERROR_NONE: return "NONE";
+#endif
+#ifdef SSL_ERROR_SSL
+    case SSL_ERROR_SSL: return "SSL";
+#endif
+#ifdef SSL_ERROR_WANT_READ
+    case SSL_ERROR_WANT_READ: return "WANT_READ";
+#endif
+#ifdef SSL_ERROR_WANT_WRITE
+    case SSL_ERROR_WANT_WRITE: return "WANT_WRITE";
+#endif
+#ifdef SSL_ERROR_WANT_X509_LOOKUP
+    case SSL_ERROR_WANT_X509_LOOKUP: return "WANT_X509_LOOKUP";
+#endif
+#ifdef SSL_ERROR_SYSCALL
+    case SSL_ERROR_SYSCALL: return "SYSCALL";
+#endif
+#ifdef SSL_ERROR_ZERO_RETURN
+    case SSL_ERROR_ZERO_RETURN: return "ZERO_RETURN";
+#endif
+#ifdef SSL_ERROR_WANT_CONNECT
+    case SSL_ERROR_WANT_CONNECT: return "WANT_CONNECT";
+#endif
+#ifdef SSL_ERROR_WANT_ACCEPT
+    case SSL_ERROR_WANT_ACCEPT: return "WANT_ACCEPT";
+#endif
+#ifdef SSL_ERROR_PENDING_SESSION
+    case SSL_ERROR_PENDING_SESSION: return "PENDING_SESSION";
+#endif
+#ifdef SSL_ERROR_PENDING_CERTIFICATE
+    case SSL_ERROR_PENDING_CERTIFICATE: return "PENDING_CERTIFICATE";
+#endif
+#ifdef SSL_ERROR_WANT_PRIVATE_KEY_OPERATION
+    case SSL_ERROR_WANT_PRIVATE_KEY_OPERATION: return "WANT_PRIVATE_KEY_OPERATION";
+#endif
+#ifdef SSL_ERROR_PENDING_TICKET
+    case SSL_ERROR_PENDING_TICKET: return "PENDING_TICKET";
+#endif
+#ifdef SSL_ERROR_EARLY_DATA_REJECTED
+    case SSL_ERROR_EARLY_DATA_REJECTED: return "EARLY_DATA_REJECTED";
+#endif
+#ifdef SSL_ERROR_WANT_CERTIFICATE_VERIFY
+    case SSL_ERROR_WANT_CERTIFICATE_VERIFY: return "WANT_CERTIFICATE_VERIFY";
+#endif
+#ifdef SSL_ERROR_HANDOFF
+    case SSL_ERROR_HANDOFF: return "HANDOFF";
+#endif
+#ifdef SSL_ERROR_HANDBACK
+    case SSL_ERROR_HANDBACK: return "HANDBACK";
+#endif
+#ifdef SSL_ERROR_WANT_RENEGOTIATE
+    case SSL_ERROR_WANT_RENEGOTIATE: return "WANT_RENEGOTIATE";
+#endif
+#ifdef SSL_ERROR_HANDSHAKE_HINTS_READY
+    case SSL_ERROR_HANDSHAKE_HINTS_READY: return "HANDSHAKE_HINTS_READY";
+#endif
+    default:
+      return NULL;
+  }
+}
+
 X509 *SSL_get_certificate(const SSL *ssl) {
   return ossl_SSL_get_certificate(ssl);
 }
 
 int SSL_get_error(const SSL *ssl, int ret_code) {
-	int r;
-
-	r = ossl_SSL_get_error(ssl, ret_code);
-	switch (r) {
-
-  case ossl_SSL_ERROR_NONE:
-	case ossl_SSL_ERROR_SSL:
-	case ossl_SSL_ERROR_WANT_READ:
-	case ossl_SSL_ERROR_WANT_WRITE:
-	case ossl_SSL_ERROR_WANT_X509_LOOKUP:
-	case ossl_SSL_ERROR_SYSCALL:
-	case ossl_SSL_ERROR_ZERO_RETURN:
-	case ossl_SSL_ERROR_WANT_CONNECT:
-	case ossl_SSL_ERROR_WANT_ACCEPT:
-		/* Identical error codes with BoringSSL */
-		return r;
-
-	case ossl_SSL_ERROR_WANT_ASYNC:
-	case ossl_SSL_ERROR_WANT_ASYNC_JOB:
-	case ossl_SSL_ERROR_WANT_CLIENT_HELLO_CB:
-	  bssl_compat_fatal("OpenSSL error code %d has no BoringSSL equivalent", r);
-	  break;
-
-	default:
-	  bssl_compat_fatal("Unknown OpenSSL error code %d", r);
-		break;
-	}
-
-	return SSL_ERROR_SSL;
+	return ossl_SSL_get_error(ssl, ret_code);
 }
 
  /*
