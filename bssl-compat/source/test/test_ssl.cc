@@ -174,3 +174,16 @@ TEST(SSLTest, SSL_set_renegotiate_mode) {
   SSL_set_renegotiate_mode(ssl.get(), ssl_renegotiate_never);
   SSL_set_renegotiate_mode(ssl.get(), ssl_renegotiate_freely);
 }
+
+TEST(SSLTest, SSL_set_ocsp_response) {
+  bssl::UniquePtr<SSL_CTX> ctx {SSL_CTX_new(TLS_server_method())};
+  bssl::UniquePtr<SSL> ssl {SSL_new(ctx.get())};
+
+  const uint8_t response1[] { 1, 2, 3, 4 };
+  const uint8_t response2[] { 1, 2, 3, 4 };
+
+  EXPECT_TRUE(SSL_set_ocsp_response(ssl.get(), nullptr, 0));
+  EXPECT_TRUE(SSL_set_ocsp_response(ssl.get(), response1, sizeof(response1)));
+  EXPECT_TRUE(SSL_set_ocsp_response(ssl.get(), response2, sizeof(response2)));
+  EXPECT_TRUE(SSL_set_ocsp_response(ssl.get(), nullptr, 0));
+}
