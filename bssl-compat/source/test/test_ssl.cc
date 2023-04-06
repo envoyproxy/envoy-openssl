@@ -148,3 +148,9 @@ TEST(SSLTest, SSL_error_description) {
   EXPECT_STREQ("WANT_ACCEPT", SSL_error_description(SSL_ERROR_WANT_ACCEPT));
   EXPECT_EQ(nullptr, SSL_error_description(123456));
 }
+
+TEST(SSLTest, SSL_enable_ocsp_stapling) {
+  bssl::UniquePtr<SSL_CTX> ctx {SSL_CTX_new(TLS_server_method())};
+  bssl::UniquePtr<SSL> ssl {SSL_new(ctx.get())};
+  SSL_enable_ocsp_stapling(ssl.get());
+}
