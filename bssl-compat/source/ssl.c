@@ -189,3 +189,7 @@ uint32_t SSL_set_mode(SSL *ssl, uint32_t mode) {
 
 	return boringssl_mode;
 }
+
+SSL_CTX *SSL_set_SSL_CTX(SSL *ssl, SSL_CTX *ctx) {
+  return ossl_SSL_set_SSL_CTX(ssl, ctx);
+}

@@ -154,3 +154,15 @@ TEST(SSLTest, SSL_enable_ocsp_stapling) {
   bssl::UniquePtr<SSL> ssl {SSL_new(ctx.get())};
   SSL_enable_ocsp_stapling(ssl.get());
 }
+
+TEST(SSLTest, SSL_set_SSL_CTX) {
+  bssl::UniquePtr<SSL_CTX> ctx1 {SSL_CTX_new(TLS_server_method())};
+  bssl::UniquePtr<SSL_CTX> ctx2 {SSL_CTX_new(TLS_server_method())};
+  bssl::UniquePtr<SSL> ssl {SSL_new(ctx1.get())};
+
+  EXPECT_EQ(ctx1.get(), SSL_get_SSL_CTX(ssl.get()));
+  EXPECT_EQ(ctx2.get(), SSL_set_SSL_CTX(ssl.get(), ctx2.get()));
+  EXPECT_EQ(ctx2.get(), SSL_get_SSL_CTX(ssl.get()));
+  EXPECT_EQ(ctx2.get(), SSL_set_SSL_CTX(ssl.get(), ctx2.get()));
+  EXPECT_EQ(ctx2.get(), SSL_get_SSL_CTX(ssl.get()));
+}
