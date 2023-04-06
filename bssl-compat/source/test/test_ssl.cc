@@ -143,3 +143,8 @@ TEST(SSLTest,SSL_CIPHER_get_min_version) {
     }
   }
 }
+
+TEST(SSLTest, SSL_error_description) {
+  EXPECT_STREQ("WANT_ACCEPT", SSL_error_description(SSL_ERROR_WANT_ACCEPT));
+  EXPECT_EQ(nullptr, SSL_error_description(123456));
+}
