@@ -2,6 +2,11 @@
 #include <openssl/stack.h>
 #include <openssl/mem.h>
 
+#ifdef BSSL_COMPAT
+#include <ossl/openssl/x509.h>
+#endif
+
+
 using FOO = int;
 
 static void FOO_free(FOO *x) { OPENSSL_free(x); }
@@ -47,3 +52,44 @@ TEST(StackTests, test2) {
     sk_FOO_push(s.get(), seven.release());
   }
 }
+
+#ifdef BSSL_COMPAT
+
+using ossl_FOO = int; // Equivalent to FOO defined above
+ossl_DEFINE_STACK_OF(ossl_FOO)
+
+ossl_FOO *ossl_FOO_new(int i) {
+  ossl_FOO *result {reinterpret_cast<ossl_FOO*>(ossl_OPENSSL_malloc(sizeof(ossl_FOO)))};
+  *result = i;
+  return result;
+}
+
+ossl_STACK_OF(ossl_FOO) *ossl_FOO_new_stack(std::vector<int> values) {
+  ossl_STACK_OF(ossl_FOO) *result {ossl_sk_ossl_FOO_new_null()};
+  for (int i = 0; i < values.size() ; i++) {
+    ossl_sk_ossl_FOO_push(result, ossl_FOO_new(i));
+  }
+  return result;
+}
+
+/*
+ * Show that a pointer to an OpenSSL ossl_STACK_OF(ossl_FOO) can be cast to a
+ * pointer to the equivalent BorisngSSL STACK_OF(FOO) (provided that the
+ * pointer to ossl_FOO and pointer to FOO types are also castable).
+ */
+TEST(StackTests, FOO) {
+  std::vector<int> values { 0, 1, 2, 3, 4 };
+  ossl_STACK_OF(ossl_FOO) *ostack {ossl_FOO_new_stack(values)};
+
+  STACK_OF(FOO) *bstack {reinterpret_cast<STACK_OF(FOO)*>(ostack)};
+
+  EXPECT_EQ(values.size(), sk_FOO_num(bstack));
+
+  for (int i = 0; i < values.size() ; i++) {
+    EXPECT_EQ(values[i], *sk_FOO_value(bstack, i));
+  }
+
+  sk_FOO_pop_free(bstack, FOO_free);
+}
+
+#endif // BSSL_COMPAT

@@ -7,6 +7,53 @@
 #include <thread>
 #include <future>
 
+#include "certs/client_2_cert_chain.pem.h"
+#include "certs/client_2_key.pem.h"
+#include "certs/server_2_cert_chain.pem.h"
+#include "certs/server_2_key.pem.h"
+#include "certs/root_ca_cert.pem.h"
+
+
+class TempFile {
+  public:
+
+    TempFile(const char *content) : m_path { "/tmp/XXXXXX" }
+    {
+      int fd { mkstemp(m_path.data()) };
+      if (fd == -1) {
+        perror("mkstemp()");
+      }
+      else {
+        for (int n, written = 0, len = strlen(content); written < len; written += n) {
+          if ((n = write(fd, content + written, len - written)) < 0) {
+            if (errno == EINTR || errno == EAGAIN) {
+              continue;
+            }
+            perror("write()");
+          }
+        }
+        if (close(fd) == -1) {
+          perror("close()");
+        }
+      }
+    }
+
+    ~TempFile() {
+      if (unlink(m_path.c_str()) == -1) {
+        perror("unlink()");
+      }
+    }
+
+    const char *path() const {
+      return m_path.c_str();
+    }
+
+  private:
+
+    std::string m_path { "/tmp/XXXXXX" };
+};
+
+
 
 TEST(SSLTest, test_SSL_CTX_set_select_certificate_cb) {
   signal(SIGPIPE, SIG_IGN);
@@ -196,4 +243,106 @@ TEST(SSLTest, SSL_SESSION_should_be_single_use) {
   ASSERT_EQ(1, SSL_SESSION_should_be_single_use(session.get()));
   ASSERT_TRUE(SSL_SESSION_set_protocol_version(session.get(), TLS1_2_VERSION));
   ASSERT_EQ(0, SSL_SESSION_should_be_single_use(session.get()));
+}
+
+TEST(SSLTest, test_SSL_get_peer_full_cert_chain) {
+  TempFile root_ca_cert_pem        { root_ca_cert_pem_str };
+  TempFile client_2_key_pem        { client_2_key_pem_str };
+  TempFile client_2_cert_chain_pem { client_2_cert_chain_pem_str };
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  const char MESSAGE[] { "HELLO" };
+  std::promise<in_port_t> server_port;
+
+  signal(SIGPIPE, SIG_IGN);
+
+  // Start a TLS server
+  std::thread server([&]() {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_server_method()));
+
+    SSL_CTX_set_verify(ctx.get(), SSL_VERIFY_PEER, nullptr);
+    ASSERT_EQ(1, SSL_CTX_load_verify_locations(ctx.get(), root_ca_cert_pem.path(), nullptr)) << (ERR_print_errors_fp(stderr), "");
+
+    STACK_OF(X509_NAME) *cert_names { sk_X509_NAME_new_null() };
+    ASSERT_EQ(1, SSL_add_file_cert_subjects_to_stack(cert_names, root_ca_cert_pem.path()));
+    SSL_CTX_set_client_CA_list(ctx.get(), cert_names);
+
+    ASSERT_EQ(1, SSL_CTX_use_certificate_chain_file(ctx.get(), server_2_cert_chain_pem.path()));
+    ASSERT_EQ(1, SSL_CTX_use_PrivateKey_file(ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+
+    bssl::UniquePtr<SSL> ssl { SSL_new(ctx.get()) };
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    socklen_t addrlen = sizeof(addr);
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_LT(0, sock);
+    ASSERT_EQ(0, bind(sock, (struct sockaddr*)&addr, sizeof(addr)));
+    ASSERT_EQ(0, listen(sock, 1));
+    ASSERT_EQ(0, getsockname(sock, (struct sockaddr*)&addr, &addrlen));
+    server_port.set_value(ntohs(addr.sin_port)); // Tell the client our port number
+    int client = accept(sock, nullptr, nullptr);
+    ASSERT_LT(0, client);
+
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), client));
+    ASSERT_EQ(1, SSL_accept(ssl.get())) << (ERR_print_errors_fp(stderr), "");
+    ASSERT_EQ(1, SSL_is_server(ssl.get()));
+
+    STACK_OF(X509) *client_certs { SSL_get_peer_full_cert_chain(ssl.get()) };
+    ASSERT_TRUE(client_certs);
+    ASSERT_EQ(4, sk_X509_num(client_certs));
+
+#ifdef BSSL_COMPAT
+    sk_X509_free(client_certs); // bssl-compat library gives us ownership, but BoringSSL doesn't
+#endif
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+
+    SSL_shutdown(ssl.get());
+    close(client);
+    close(sock);
+  });
+
+  {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_client_method()));
+
+    SSL_CTX_set_verify(ctx.get(), SSL_VERIFY_PEER, nullptr);
+    ASSERT_EQ(1, SSL_CTX_load_verify_locations(ctx.get(), root_ca_cert_pem.path(), nullptr));
+
+    ASSERT_EQ(1, SSL_CTX_use_certificate_chain_file(ctx.get(), client_2_cert_chain_pem.path())) << (ERR_print_errors_fp(stderr), "");
+    ASSERT_EQ(1, SSL_CTX_use_PrivateKey_file(ctx.get(), client_2_key_pem.path(), SSL_FILETYPE_PEM));
+
+    bssl::UniquePtr<SSL> ssl (SSL_new(ctx.get()));
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    addr.sin_port = htons(server_port.get_future().get());
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_EQ(0, connect(sock, (const struct sockaddr *)&addr, sizeof(addr)));
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), sock));
+    ASSERT_TRUE(SSL_connect(ssl.get()) > 0) << (ERR_print_errors_fp(stderr), "");
+
+    STACK_OF(X509) *server_certs = SSL_get_peer_full_cert_chain(ssl.get());
+    ASSERT_TRUE(server_certs);
+    ASSERT_EQ(4, sk_X509_num(server_certs));
+
+#ifdef BSSL_COMPAT
+    sk_X509_free(server_certs); // bssl-compat library gives us ownership, but BoringSSL doesn't
+#endif
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+  }
+
+  server.join();
 }

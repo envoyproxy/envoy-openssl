@@ -94,3 +94,29 @@ int SSL_CTX_use_certificate(SSL_CTX *ctx, X509 *x509) {
   return (ret == 1) ? 1 : 0;
 }
 
+/*
+ * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L867
+ * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_use_PrivateKey.html
+ */
+int SSL_CTX_use_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey) {
+  return (ossl_SSL_CTX_use_PrivateKey(ctx, pkey) == 1) ? 1 : 0;
+}
+
+/*
+ * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L2670
+ * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_set_client_CA_list.html
+ */
+void SSL_CTX_set_client_CA_list(SSL_CTX *ctx, STACK_OF(X509_NAME) *name_list) {
+  ossl_SSL_CTX_set_client_CA_list(ctx, (ossl_STACK_OF(ossl_X509_NAME)*)name_list);
+}
+
+/*
+ * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L2404
+ * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_set_verify.html
+ */
+void SSL_CTX_set_verify(SSL_CTX *ctx, int mode, int (*callback)(int ok, X509_STORE_CTX *store_ctx)) {
+  if (callback) {
+    bssl_compat_fatal("%s() with non-null callback not implemented", __func__);
+  }
+  ossl_SSL_CTX_set_verify(ctx, mode, NULL);
+}
