@@ -1,5 +1,5 @@
 --- boringssl/include/openssl/base.h	2023-04-03 10:20:44.420079267 +0100
-+++ include/openssl/base.h	2023-04-06 12:55:08.433620362 +0100
++++ include/openssl/base.h	2023-04-14 22:33:22.753840662 +0100
 @@ -79,6 +79,9 @@
  #include <boringssl_prefix_symbols.h>
  #endif
@@ -45,7 +45,21 @@
  typedef struct asn1_string_st ASN1_UNIVERSALSTRING;
  typedef struct asn1_string_st ASN1_UTCTIME;
  typedef struct asn1_string_st ASN1_UTF8STRING;
-@@ -375,9 +381,9 @@
+@@ -364,20 +370,20 @@
+ typedef struct Netscape_spkac_st NETSCAPE_SPKAC;
+ typedef struct Netscape_spki_st NETSCAPE_SPKI;
+ typedef struct RIPEMD160state_st RIPEMD160_CTX;
+-typedef struct X509_VERIFY_PARAM_st X509_VERIFY_PARAM;
++typedef ossl_X509_VERIFY_PARAM X509_VERIFY_PARAM;
+ typedef struct X509_algor_st X509_ALGOR;
+ typedef struct X509_crl_st X509_CRL;
+ typedef struct X509_extension_st X509_EXTENSION;
+ typedef struct X509_info_st X509_INFO;
+-typedef struct X509_name_entry_st X509_NAME_ENTRY;
+-typedef struct X509_name_st X509_NAME;
++typedef ossl_X509_NAME_ENTRY X509_NAME_ENTRY;
++typedef ossl_X509_NAME X509_NAME;
+ typedef struct X509_pubkey_st X509_PUBKEY;
  typedef struct X509_req_st X509_REQ;
  typedef struct X509_sig_st X509_SIG;
  typedef struct bignum_ctx BN_CTX;
