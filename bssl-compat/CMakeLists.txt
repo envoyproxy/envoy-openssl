@@ -26,8 +26,8 @@ project(bssl-compat
         VERSION 0.1
         LANGUAGES C CXX)
 
-include(boringssl.cmake)
-include(openssl.cmake)
+include(cmake/boringssl.cmake)
+include(cmake/openssl.cmake)
 
 add_subdirectory(prefixer)
 add_custom_command(DEPENDS prefixer
@@ -104,68 +104,56 @@ FetchContent_Declare(googletest URL https://github.com/google/googletest/archive
 FetchContent_MakeAvailable(googletest)
 enable_testing()
 
-add_executable(utests
-  # Tests copied from BoringSSL
+set(utests-source-list
+  # Tests copied/patched from BoringSSL
+  source/crypto/bio/bio_test.cc
+  source/crypto/digest_extra/digest_test.cc
+  source/crypto/err/internal.h
   source/crypto/err/err_test.cc
   source/crypto/rand_extra/rand_test.cc
-  source/crypto/bio/bio_test.cc
-  source/crypto/test/test_util.cc
-  source/crypto/digest_extra/digest_test.cc
   source/crypto/stack/stack_test.cc
+  source/crypto/test/test_util.h
+  source/crypto/test/test_util.cc
+  source/crypto/internal.h
+  source/crypto/lhash/internal.h
+  source/ssl/internal.h
   source/ssl/ssl_test.cc
-  # "Our" bssl-compat tests
+  # Our hand written bssl-compat tests
+  source/test/test_asn1.cc
   source/test/test_bn.cc
   source/test/test_cipher.cc
   source/test/test_evp.cc
-  source/test/test_asn1.cc
-  source/test/test_stack.cc
   source/test/test_ssl.cc
-  # Functions to support tests
+  source/test/test_stack.cc
+)
+
+################################################################################
+# Unit Tests built on bssl-compat
+################################################################################
+add_executable(utests-bssl-compat ${utests-source-list}
   source/extra/asn1_extra.c
   source/extra/bio_extra.c
-  source/extra/mem_extra.c
   source/extra/err_extra.c
-  source/extra/ssl_extra.c
+  source/extra/mem_extra.c
   source/extra/pem_extra.c
+  source/extra/ssl_extra.c
 )
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
-target_link_libraries(utests PRIVATE GTest::gtest_main bssl-compat)
-target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/digest_extra.ld)
-target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/cipher_extra.ld)
-target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/ssl_extra.ld)
-target_link_options(utests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/x509_extra.ld)
-gtest_discover_tests(utests)
-
-
-
-
-
+target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
+target_link_options(utests-bssl-compat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/digest_extra.ld)
+target_link_options(utests-bssl-compat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/cipher_extra.ld)
+target_link_options(utests-bssl-compat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/ssl_extra.ld)
+target_link_options(utests-bssl-compat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/x509_extra.ld)
+gtest_discover_tests(utests-bssl-compat)
 
 ################################################################################
 # Unit Tests built on BoringSSL
 ################################################################################
-# add_executable(utests-boring
-#   # Tests copied from BoringSSL
-#   source/crypto/err/err_test.cc
-#   source/crypto/rand_extra/rand_test.cc
-#   source/crypto/bio/bio_test.cc
-#   source/crypto/test/test_util.cc
-#   source/crypto/digest_extra/digest_test.cc
-#   source/crypto/stack/stack_test.cc
-#   source/ssl/ssl_test.cc
-#   # "Our" bssl-compat tests
-#   source/test/test_bn.cc
-#   source/test/test_cipher.cc
-#   source/test/test_evp.cc
-#   source/test/test_asn1.cc
-#   source/test/test_stack.cc
-#   source/test/test_ssl.cc
-# )
-# set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
-# target_include_directories(utests-boring PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/boringssl/include)
-# target_include_directories(utests-boring PRIVATE include)
-# target_link_libraries(utests-boring PRIVATE GTest::gtest_main
-#   ${CMAKE_CURRENT_SOURCE_DIR}/boringssl/build/ssl/libssl.a
-#   ${CMAKE_CURRENT_SOURCE_DIR}/boringssl/build/crypto/libcrypto.a
-# )
-# gtest_discover_tests(utests-boring)
+add_executable(utests-boring ${utests-source-list})
+add_dependencies(utests-boring BoringSSL)
+set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+target_include_directories(utests-boring PRIVATE ${BORINGSSL_INSTALL_DIR}/include)
+target_link_libraries(utests-boring PRIVATE ${BORINGSSL_INSTALL_DIR}/lib64/libssl.a)
+target_link_libraries(utests-boring PRIVATE ${BORINGSSL_INSTALL_DIR}/lib64/libcrypto.a)
+target_link_libraries(utests-boring PRIVATE GTest::gtest_main)
+gtest_discover_tests(utests-boring)
