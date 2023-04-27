@@ -1,6 +1,6 @@
 [submodule "envoy"]
 	path = envoy
 	url = https://github.com/envoyproxy/envoy.git
-[submodule "bssl-compat/boringssl"]
-	path = bssl-compat/boringssl
-	url = https://github.com/google/boringssl.git
+[submodule "bssl-compat/external/boringssl"]
+	path = bssl-compat/external/boringssl
+	url = git@github.com:google/boringssl.git

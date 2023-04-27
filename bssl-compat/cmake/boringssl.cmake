@@ -1,3 +1,16 @@
+include(ExternalProject)
+
+ExternalProject_Add(BoringSSL
+  PREFIX          "${CMAKE_CURRENT_BINARY_DIR}/external/boringssl"
+  SOURCE_DIR      "${CMAKE_CURRENT_SOURCE_DIR}/external/boringssl"
+  CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+)
+ExternalProject_Get_Property(BoringSSL SOURCE_DIR)
+set(BORINGSSL_SOURCE_DIR "${SOURCE_DIR}")
+ExternalProject_Get_Property(BoringSSL INSTALL_DIR)
+set(BORINGSSL_INSTALL_DIR "${INSTALL_DIR}")
+
+
 set(bssl-gen-targets "")
 
 function(bssl_add_gitignore dir ignorefile)
@@ -38,17 +51,17 @@ function(bssl_copy_and_patch src dst)
 endfunction()
 
 function(bssl_copy_src src)
-  bssl_copy_and_patch("${CMAKE_CURRENT_SOURCE_DIR}/boringssl/${src}" "source/${src}")
+  bssl_copy_and_patch("${BORINGSSL_SOURCE_DIR}/${src}" "source/${src}")
   set (bssl-gen-targets  ${bssl-gen-targets} PARENT_SCOPE)
 endfunction()
 
 function(bssl_copy_hdr hdr)
-  bssl_copy_and_patch("${CMAKE_CURRENT_SOURCE_DIR}/boringssl/include/${hdr}" "include/${hdr}")
+  bssl_copy_and_patch("${BORINGSSL_SOURCE_DIR}/include/${hdr}" "include/${hdr}")
   set (bssl-gen-targets  ${bssl-gen-targets} PARENT_SCOPE)
 endfunction()
 
 function(bssl_copy_files)
-  file(GLOB headers RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/boringssl/include/" "${CMAKE_CURRENT_SOURCE_DIR}/boringssl/include/openssl/*.h")
+  file(GLOB headers RELATIVE "${BORINGSSL_SOURCE_DIR}/include/" "${BORINGSSL_SOURCE_DIR}/include/openssl/*.h")
 
   foreach(hdr ${headers})
     bssl_copy_hdr(${hdr})
