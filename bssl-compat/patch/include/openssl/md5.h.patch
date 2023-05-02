@@ -1,0 +1,56 @@
+--- a/include/openssl/md5.h
++++ b/include/openssl/md5.h
+@@ -54,14 +54,14 @@
+  * copied and put under another distribution licence
+  * [including the GNU Public Licence.] */
+ 
+-// #ifndef OPENSSL_HEADER_MD5_H
+-// #define OPENSSL_HEADER_MD5_H
++#ifndef OPENSSL_HEADER_MD5_H
++#define OPENSSL_HEADER_MD5_H
+ 
+-// #include <openssl/base.h>
++#include <openssl/base.h>
+ 
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // MD5.
+@@ -71,7 +71,7 @@
+ // #define MD5_CBLOCK 64
+ 
+ // MD5_DIGEST_LENGTH is the length of an MD5 digest.
+-// #define MD5_DIGEST_LENGTH 16
++#define MD5_DIGEST_LENGTH 16
+ 
+ // MD5_Init initialises |md5| and returns one.
+ // OPENSSL_EXPORT int MD5_Init(MD5_CTX *md5);
+@@ -86,8 +86,8 @@
+ 
+ // MD5 writes the digest of |len| bytes from |data| to |out| and returns |out|.
+ // There must be at least |MD5_DIGEST_LENGTH| bytes of space in |out|.
+-// OPENSSL_EXPORT uint8_t *MD5(const uint8_t *data, size_t len,
+-//                             uint8_t out[MD5_DIGEST_LENGTH]);
++OPENSSL_EXPORT uint8_t *MD5(const uint8_t *data, size_t len,
++                            uint8_t out[MD5_DIGEST_LENGTH]);
+ 
+ // MD5_Transform is a low-level function that performs a single, MD5 block
+ // transformation using the state from |md5| and 64 bytes from |block|.
+@@ -102,8 +102,8 @@
+ // };
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
+-// #endif
++#if defined(__cplusplus)
++}  // extern C
++#endif
+ 
+-// #endif  // OPENSSL_HEADER_MD5_H
++#endif  // OPENSSL_HEADER_MD5_H

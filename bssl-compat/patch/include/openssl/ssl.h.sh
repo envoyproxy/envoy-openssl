@@ -1,23 +1,22 @@
 #!/bin/bash
 
-#
-# Redefine BoringSSL's SSL_ERROR_* values to have the corresponding
-# OpenSSL values. If OpenSSL doesn't have an equivalent value then
-# remove the BoringSSL definition by commenting it out.
-#
+SUBSTITUTIONS+=('SSL_ERROR_[a-zA-Z0-9_]*')
+SUBSTITUTIONS+=('SSL_MODE_[a-zA-Z0-9_]*')
+SUBSTITUTIONS+=('SSL_AD_[a-zA-Z0-9_]*')
+SUBSTITUTIONS+=('DTLS1_VERSION_MAJOR')
+SUBSTITUTIONS+=('SSL3_VERSION_MAJOR')
+SUBSTITUTIONS+=('SSL3_VERSION')
+SUBSTITUTIONS+=('TLS1_VERSION')
+SUBSTITUTIONS+=('TLS1_1_VERSION')
+SUBSTITUTIONS+=('TLS1_2_VERSION')
+SUBSTITUTIONS+=('TLS1_3_VERSION')
+SUBSTITUTIONS+=('DTLS1_VERSION')
+SUBSTITUTIONS+=('DTLS1_2_VERSION')
 
-set -e # stop on error
-#set -x # echo commands
+EXPRE='s|^//[ \t]#[ \t]*define[ \t]*[^a-zA-Z0-9_]\('
+EXPOST='\)[^a-zA-Z0-9_].*$|#ifdef ossl_\1\n#define \1 ossl_\1\n#endif|'
 
-BSSL_HDR="$(readlink -e "$1")"
-OSSL_HDR="$(readlink -e "$(dirname "$BSSL_HDR")/../ossl/openssl/$(basename "$BSSL_HDR")")"
-
-for SSL_ERROR in $(grep '^#define[ \t]*SSL_ERROR[A-Z_]*' "$BSSL_HDR" | sed -e 's/^#define[ \t]*//g' -e 's/ .*$//g')
+for SUBSTITUTION in "${SUBSTITUTIONS[@]}"
 do
-	if grep -q "ossl_$SSL_ERROR" $OSSL_HDR
-	then
-		sed -i "s/#define[ \t]*$SSL_ERROR[ \t].*$/#define $SSL_ERROR ossl_$SSL_ERROR/g" $BSSL_HDR
-	else
-		sed -i "s/#define[ \t]*$SSL_ERROR[ \t].*$/\/\/#define $SSL_ERROR/g" $BSSL_HDR
-	fi
+	sed -i -e "${EXPRE}${SUBSTITUTION}${EXPOST}" "$1"
 done

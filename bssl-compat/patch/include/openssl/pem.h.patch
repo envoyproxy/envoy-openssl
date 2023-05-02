@@ -1,0 +1,149 @@
+--- a/include/openssl/pem.h
++++ b/include/openssl/pem.h
+@@ -54,25 +54,25 @@
+  * copied and put under another distribution licence
+  * [including the GNU Public Licence.] */
+ 
+-// #ifndef OPENSSL_HEADER_PEM_H
+-// #define OPENSSL_HEADER_PEM_H
++#ifndef OPENSSL_HEADER_PEM_H
++#define OPENSSL_HEADER_PEM_H
+ 
+-// #include <openssl/base64.h>
+-// #include <openssl/bio.h>
+-// #include <openssl/cipher.h>
+-// #include <openssl/digest.h>
+-// #include <openssl/evp.h>
+-// #include <openssl/pkcs7.h>
+-// #include <openssl/stack.h>
+-// #include <openssl/x509.h>
++#include <openssl/base64.h>
++#include <openssl/bio.h>
++#include <openssl/cipher.h>
++#include <openssl/digest.h>
++#include <openssl/evp.h>
++#include <openssl/pkcs7.h>
++#include <openssl/stack.h>
++#include <openssl/x509.h>
+ 
+ // For compatibility with open-iscsi, which assumes that it can get
+ // |OPENSSL_malloc| from pem.h or err.h
+-// #include <openssl/crypto.h>
++#include <openssl/crypto.h>
+ 
+-// #ifdef __cplusplus
+-// extern "C" {
+-// #endif
++#ifdef __cplusplus
++extern "C" {
++#endif
+ 
+ 
+ // #define PEM_BUFSIZE 1024
+@@ -250,12 +250,12 @@
+ 
+ // These are the same except they are for the declarations
+ 
+-// #define DECLARE_PEM_read_fp(name, type)                    \
+-//   OPENSSL_EXPORT type *PEM_read_##name(FILE *fp, type **x, \
+-//                                        pem_password_cb *cb, void *u);
++#define DECLARE_PEM_read_fp(name, type)                    \
++  OPENSSL_EXPORT type *PEM_read_##name(FILE *fp, type **x, \
++                                       pem_password_cb *cb, void *u);
+ 
+-// #define DECLARE_PEM_write_fp(name, type) \
+-//   OPENSSL_EXPORT int PEM_write_##name(FILE *fp, type *x);
++#define DECLARE_PEM_write_fp(name, type) \
++  OPENSSL_EXPORT int PEM_write_##name(FILE *fp, type *x);
+ 
+ // #define DECLARE_PEM_write_fp_const(name, type) \
+ //   OPENSSL_EXPORT int PEM_write_##name(FILE *fp, const type *x);
+@@ -265,12 +265,12 @@
+ //       FILE *fp, type *x, const EVP_CIPHER *enc, unsigned char *kstr, int klen, \
+ //       pem_password_cb *cb, void *u);
+ 
+-// #define DECLARE_PEM_read_bio(name, type)                      \
+-//   OPENSSL_EXPORT type *PEM_read_bio_##name(BIO *bp, type **x, \
+-//                                            pem_password_cb *cb, void *u);
++#define DECLARE_PEM_read_bio(name, type)                      \
++  OPENSSL_EXPORT type *PEM_read_bio_##name(BIO *bp, type **x, \
++                                           pem_password_cb *cb, void *u);
+ 
+-// #define DECLARE_PEM_write_bio(name, type) \
+-//   OPENSSL_EXPORT int PEM_write_bio_##name(BIO *bp, type *x);
++#define DECLARE_PEM_write_bio(name, type) \
++  OPENSSL_EXPORT int PEM_write_bio_##name(BIO *bp, type *x);
+ 
+ // #define DECLARE_PEM_write_bio_const(name, type) \
+ //   OPENSSL_EXPORT int PEM_write_bio_##name(BIO *bp, const type *x);
+@@ -281,9 +281,9 @@
+ //       pem_password_cb *cb, void *u);
+ 
+ 
+-// #define DECLARE_PEM_write(name, type) \
+-//   DECLARE_PEM_write_bio(name, type)   \
+-//   DECLARE_PEM_write_fp(name, type)
++#define DECLARE_PEM_write(name, type) \
++  DECLARE_PEM_write_bio(name, type)   \
++  DECLARE_PEM_write_fp(name, type)
+ 
+ // #define DECLARE_PEM_write_const(name, type) \
+ //   DECLARE_PEM_write_bio_const(name, type)   \
+@@ -293,13 +293,13 @@
+ //   DECLARE_PEM_write_cb_bio(name, type)   \
+ //   DECLARE_PEM_write_cb_fp(name, type)
+ 
+-// #define DECLARE_PEM_read(name, type) \
+-//   DECLARE_PEM_read_bio(name, type)   \
+-//   DECLARE_PEM_read_fp(name, type)
+-
+-// #define DECLARE_PEM_rw(name, type) \
+-//   DECLARE_PEM_read(name, type)     \
+-//   DECLARE_PEM_write(name, type)
++#define DECLARE_PEM_read(name, type) \
++  DECLARE_PEM_read_bio(name, type)   \
++  DECLARE_PEM_read_fp(name, type)
++
++#define DECLARE_PEM_rw(name, type) \
++  DECLARE_PEM_read(name, type)     \
++  DECLARE_PEM_write(name, type)
+ 
+ // #define DECLARE_PEM_rw_const(name, type) \
+ //   DECLARE_PEM_read(name, type)           \
+@@ -310,7 +310,7 @@
+ //   DECLARE_PEM_write_cb(name, type)
+ 
+ // "userdata": new with OpenSSL 0.9.4
+-// typedef int pem_password_cb(char *buf, int size, int rwflag, void *userdata);
++typedef int pem_password_cb(char *buf, int size, int rwflag, void *userdata);
+ 
+ // OPENSSL_EXPORT int PEM_get_EVP_CIPHER_INFO(char *header,
+ //                                            EVP_CIPHER_INFO *cipher);
+@@ -381,7 +381,7 @@
+ //                                  char *str);
+ 
+ 
+-// DECLARE_PEM_rw(X509, X509)
++DECLARE_PEM_rw(X509, X509)
+ 
+ // DECLARE_PEM_rw(X509_AUX, X509)
+ 
+@@ -460,9 +460,9 @@
+ //                                              void *u);
+ 
+ 
+-// #ifdef __cplusplus
+-// }
+-// #endif
++#ifdef __cplusplus
++}
++#endif
+ 
+ #ifdef ossl_PEM_R_BAD_BASE64_DECODE
+ #define PEM_R_BAD_BASE64_DECODE ossl_PEM_R_BAD_BASE64_DECODE
+@@ -510,4 +510,4 @@
+ #define PEM_R_UNSUPPORTED_ENCRYPTION ossl_PEM_R_UNSUPPORTED_ENCRYPTION
+ #endif
+ 
+-// #endif  // OPENSSL_HEADER_PEM_H
++#endif  // OPENSSL_HEADER_PEM_H

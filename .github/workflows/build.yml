@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Checkout BoringSSL (submodule)
-      run: git submodule update --init --depth=1 bssl-compat/boringssl
+      run: git submodule update --init --depth=1 bssl-compat/external/boringssl
 
     - name: Remove packages
       run: sudo apt autoremove --purge -y clang-12 clang-13

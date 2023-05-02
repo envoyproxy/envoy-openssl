@@ -1,0 +1,159 @@
+--- a/include/openssl/x509.h
++++ b/include/openssl/x509.h
+@@ -60,31 +60,31 @@
+  * SUN MICROSYSTEMS, INC., and contributed to the OpenSSL project.
+  */
+ 
+-// #ifndef HEADER_X509_H
+-// #define HEADER_X509_H
++#ifndef HEADER_X509_H
++#define HEADER_X509_H
+ 
+-// #include <openssl/asn1.h>
+-// #include <openssl/base.h>
+-// #include <openssl/bio.h>
+-// #include <openssl/cipher.h>
+-// #include <openssl/dh.h>
+-// #include <openssl/dsa.h>
+-// #include <openssl/ec.h>
+-// #include <openssl/ecdh.h>
+-// #include <openssl/ecdsa.h>
+-// #include <openssl/evp.h>
+-// #include <openssl/obj.h>
+-// #include <openssl/pkcs7.h>
+-// #include <openssl/pool.h>
+-// #include <openssl/rsa.h>
+-// #include <openssl/sha.h>
+-// #include <openssl/stack.h>
+-// #include <openssl/thread.h>
+-// #include <time.h>
++#include <openssl/asn1.h>
++#include <openssl/base.h>
++#include <openssl/bio.h>
++#include <openssl/cipher.h>
++#include <openssl/dh.h>
++#include <openssl/dsa.h>
++#include <openssl/ec.h>
++#include <openssl/ecdh.h>
++#include <openssl/ecdsa.h>
++#include <openssl/evp.h>
++#include <openssl/obj.h>
++#include <openssl/pkcs7.h>
++#include <openssl/pool.h>
++#include <openssl/rsa.h>
++#include <openssl/sha.h>
++#include <openssl/stack.h>
++#include <openssl/thread.h>
++#include <time.h>
+ 
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // Legacy X.509 library.
+@@ -116,7 +116,7 @@
+ // Instead, mutation functions should only be used when issuing new
+ // certificates, as described in a later section.
+ 
+-// DEFINE_STACK_OF(X509)
++DEFINE_STACK_OF(X509)
+ 
+ // X509 is an |ASN1_ITEM| whose ASN.1 type is X.509 Certificate (RFC 5280) and C
+ // type is |X509*|.
+@@ -143,7 +143,7 @@
+ 
+ // X509_free decrements |x509|'s reference count and, if zero, releases memory
+ // associated with |x509|.
+-// OPENSSL_EXPORT void X509_free(X509 *x509);
++OPENSSL_EXPORT void X509_free(X509 *x509);
+ 
+ // d2i_X509 parses up to |len| bytes from |*inp| as a DER-encoded X.509
+ // Certificate (RFC 5280), as described in |d2i_SAMPLE_with_reuse|.
+@@ -161,7 +161,7 @@
+ // TODO(https://crbug.com/boringssl/407): This function should be const and
+ // thread-safe but is currently neither in some cases, notably if |x509| was
+ // mutated.
+-// OPENSSL_EXPORT int i2d_X509(X509 *x509, uint8_t **outp);
++OPENSSL_EXPORT int i2d_X509(X509 *x509, uint8_t **outp);
+ 
+ // X509_VERSION_* are X.509 version numbers. Note the numerical values of all
+ // defined X.509 versions are one less than the named version.
+@@ -835,8 +835,8 @@
+ // moved to the subject alternative name extension. In modern usage, X.509 names
+ // are primarily opaque identifiers to link a certificate with its issuer.
+ 
+-// DEFINE_STACK_OF(X509_NAME_ENTRY)
+-// DEFINE_STACK_OF(X509_NAME)
++DEFINE_STACK_OF(X509_NAME_ENTRY)
++DEFINE_STACK_OF(X509_NAME)
+ 
+ // X509_NAME is an |ASN1_ITEM| whose ASN.1 type is X.509 Name (RFC 5280) and C
+ // type is |X509_NAME*|.
+@@ -2054,7 +2054,7 @@
+ // OPENSSL_EXPORT unsigned long X509_issuer_name_hash_old(X509 *a);
+ // OPENSSL_EXPORT unsigned long X509_subject_name_hash_old(X509 *x);
+ 
+-// OPENSSL_EXPORT int X509_cmp(const X509 *a, const X509 *b);
++OPENSSL_EXPORT int X509_cmp(const X509 *a, const X509 *b);
+ // OPENSSL_EXPORT int X509_NAME_cmp(const X509_NAME *a, const X509_NAME *b);
+ // OPENSSL_EXPORT unsigned long X509_NAME_hash(X509_NAME *x);
+ // OPENSSL_EXPORT unsigned long X509_NAME_hash_old(X509_NAME *x);
+@@ -2404,7 +2404,7 @@
+ 
+ // DECLARE_ASN1_FUNCTIONS_const(RSA_PSS_PARAMS)
+ 
+-/*
++// /*
+ // SSL_CTX -> X509_STORE
+ //                 -> X509_LOOKUP
+ //                         ->X509_LOOKUP_METHOD
+@@ -2828,18 +2828,18 @@
+ // OPENSSL_EXPORT void X509_VERIFY_PARAM_table_cleanup(void);
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
+-// #endif
++#if defined(__cplusplus)
++}  // extern C
++#endif
+ 
+-// #if !defined(BORINGSSL_NO_CXX)
+-// extern "C++" {
++#if !defined(BORINGSSL_NO_CXX)
++extern "C++" {
+ 
+-// BSSL_NAMESPACE_BEGIN
++BSSL_NAMESPACE_BEGIN
+ 
+ // BORINGSSL_MAKE_DELETER(NETSCAPE_SPKI, NETSCAPE_SPKI_free)
+ // BORINGSSL_MAKE_DELETER(RSA_PSS_PARAMS, RSA_PSS_PARAMS_free)
+-// BORINGSSL_MAKE_DELETER(X509, X509_free)
++BORINGSSL_MAKE_DELETER(X509, X509_free)
+ // BORINGSSL_MAKE_UP_REF(X509, X509_up_ref)
+ // BORINGSSL_MAKE_DELETER(X509_ALGOR, X509_ALGOR_free)
+ // BORINGSSL_MAKE_DELETER(X509_ATTRIBUTE, X509_ATTRIBUTE_free)
+@@ -2860,10 +2860,10 @@
+ // BORINGSSL_MAKE_DELETER(X509_STORE_CTX, X509_STORE_CTX_free)
+ // BORINGSSL_MAKE_DELETER(X509_VERIFY_PARAM, X509_VERIFY_PARAM_free)
+ 
+-// BSSL_NAMESPACE_END
++BSSL_NAMESPACE_END
+ 
+-// }  // extern C++
+-// #endif  // !BORINGSSL_NO_CXX
++}  // extern C++
++#endif  // !BORINGSSL_NO_CXX
+ 
+ #ifdef ossl_X509_R_AKID_MISMATCH
+ #define X509_R_AKID_MISMATCH ossl_X509_R_AKID_MISMATCH
+@@ -2998,4 +2998,4 @@
+ #define X509_R_NO_CRL_FOUND ossl_X509_R_NO_CRL_FOUND
+ #endif
+ 
+-// #endif
++#endif
