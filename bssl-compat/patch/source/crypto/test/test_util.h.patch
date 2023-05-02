@@ -1,0 +1,96 @@
+--- a/source/crypto/test/test_util.h
++++ b/source/crypto/test/test_util.h
+@@ -12,21 +12,21 @@
+  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
+ 
+-// #ifndef OPENSSL_HEADER_CRYPTO_TEST_TEST_UTIL_H
+-// #define OPENSSL_HEADER_CRYPTO_TEST_TEST_UTIL_H
++#ifndef OPENSSL_HEADER_CRYPTO_TEST_TEST_UTIL_H
++#define OPENSSL_HEADER_CRYPTO_TEST_TEST_UTIL_H
+ 
+-// #include <stddef.h>
+-// #include <stdint.h>
+-// #include <stdio.h>
+-// #include <string.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <string.h>
+ 
+-// #include <iosfwd>
+-// #include <string>
+-// #include <vector>
++#include <iosfwd>
++#include <string>
++#include <vector>
+ 
+-// #include <openssl/span.h>
++#include <openssl/span.h>
+ 
+-// #include "../internal.h"
++#include "../internal.h"
+ 
+ 
+ // hexdump writes |msg| to |fp| followed by the hex encoding of |len| bytes
+@@ -35,29 +35,29 @@
+ 
+ // Bytes is a wrapper over a byte slice which may be compared for equality. This
+ // allows it to be used in EXPECT_EQ macros.
+-// struct Bytes {
+-//   Bytes(const uint8_t *data_arg, size_t len_arg)
+-//       : span_(data_arg, len_arg) {}
+-//   Bytes(const char *data_arg, size_t len_arg)
+-//       : span_(reinterpret_cast<const uint8_t *>(data_arg), len_arg) {}
+-
+-//   explicit Bytes(const char *str)
+-//       : span_(reinterpret_cast<const uint8_t *>(str), strlen(str)) {}
+-//   explicit Bytes(const std::string &str)
+-//       : span_(reinterpret_cast<const uint8_t *>(str.data()), str.size()) {}
+-//   explicit Bytes(bssl::Span<const uint8_t> span)
+-//       : span_(span) {}
+-
+-//   bssl::Span<const uint8_t> span_;
+-// };
+-
+-// inline bool operator==(const Bytes &a, const Bytes &b) {
+-//   return a.span_ == b.span_;
+-// }
++struct Bytes {
++  Bytes(const uint8_t *data_arg, size_t len_arg)
++      : span_(data_arg, len_arg) {}
++  Bytes(const char *data_arg, size_t len_arg)
++      : span_(reinterpret_cast<const uint8_t *>(data_arg), len_arg) {}
++
++  explicit Bytes(const char *str)
++      : span_(reinterpret_cast<const uint8_t *>(str), strlen(str)) {}
++  explicit Bytes(const std::string &str)
++      : span_(reinterpret_cast<const uint8_t *>(str.data()), str.size()) {}
++  explicit Bytes(bssl::Span<const uint8_t> span)
++      : span_(span) {}
++
++  bssl::Span<const uint8_t> span_;
++};
++
++inline bool operator==(const Bytes &a, const Bytes &b) {
++  return a.span_ == b.span_;
++}
+ 
+-// inline bool operator!=(const Bytes &a, const Bytes &b) { return !(a == b); }
++inline bool operator!=(const Bytes &a, const Bytes &b) { return !(a == b); }
+ 
+-// std::ostream &operator<<(std::ostream &os, const Bytes &in);
++std::ostream &operator<<(std::ostream &os, const Bytes &in);
+ 
+ // DecodeHex decodes |in| from hexadecimal and writes the output to |out|. It
+ // returns true on success and false if |in| is not a valid hexadecimal byte
+@@ -65,7 +65,7 @@
+ // bool DecodeHex(std::vector<uint8_t> *out, const std::string &in);
+ 
+ // EncodeHex returns |in| encoded in hexadecimal.
+-// std::string EncodeHex(bssl::Span<const uint8_t> in);
++std::string EncodeHex(bssl::Span<const uint8_t> in);
+ 
+ 
+-// #endif  // OPENSSL_HEADER_CRYPTO_TEST_TEST_UTIL_H
++#endif  // OPENSSL_HEADER_CRYPTO_TEST_TEST_UTIL_H

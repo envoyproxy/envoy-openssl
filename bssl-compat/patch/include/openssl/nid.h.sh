@@ -1,21 +1,16 @@
 #!/bin/bash
 
-#
-# Since NIDs are not standardised, and do actually differ between OpenSSL and
-# BoringSSL, we need to redefine BoringSSL's NIDs to have the OpenSSL values.
-#
+SUBSTITUTIONS+=('SN_[a-zA-Z0-9_]*')
+SUBSTITUTIONS+=('LN_[a-zA-Z0-9_]*')
+SUBSTITUTIONS+=('NID_[a-zA-Z0-9_]*')
+SUBSTITUTIONS+=('OBJ_[a-zA-Z0-9_]*')
 
-set -e
+EXPRE='s|^#[ \t]*define[ \t]*[^a-zA-Z0-9_]\('
+EXPOST='\)[^a-zA-Z0-9_].*$|#ifdef ossl_\1\n#define \1 ossl_\1\n#endif|'
 
-BSSL_HDR="$(readlink -e "$1")"
-OSSL_HDR="$(readlink -e "$(dirname "$BSSL_HDR")/../ossl/openssl/obj_mac.h")"
-
-for NID in $(grep '^#define[ \t]*NID_' "$BSSL_HDR" | sed 's/^#define[ \t]*//g' | awk '{print $1}')
+for SUBSTITUTION in "${SUBSTITUTIONS[@]}"
 do
-	if grep -q "#define[ \t]*ossl_$NID[ \t]" "$OSSL_HDR"
-	then
-		sed -i "s/^#define[ \t]*$NID[ \t].*$/#define $NID ossl_$NID/g"   "$BSSL_HDR"
-	else
-		sed -i "s/^#define[ \t]*$NID[ \t].*$/#define $NID ERROR/g"   "$BSSL_HDR"
-	fi
+	sed -i -e "${EXPRE}${SUBSTITUTION}${EXPOST}" "$1"
 done
+
+sed -i -e 's|^[ \t]*1L, .*$||g' -e 's|^[ \t]*"[^"]*"$||g' "$1"

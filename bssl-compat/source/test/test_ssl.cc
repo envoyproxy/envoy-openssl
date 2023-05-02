@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <openssl/base.h>
+#include <openssl/bytestring.h>
 #include <openssl/ssl.h>
+#include <openssl/tls1.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

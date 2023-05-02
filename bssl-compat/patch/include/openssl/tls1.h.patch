@@ -1,0 +1,13 @@
+--- a/include/openssl/tls1.h
++++ b/include/openssl/tls1.h
+@@ -267,8 +267,8 @@
+ #ifdef ossl_TLSEXT_TYPE_cookie
+ #define TLSEXT_TYPE_cookie ossl_TLSEXT_TYPE_cookie
+ #endif
+-#ifdef ossl_TLSEXT_TYPE_psk_key_exchange_modes
+-#define TLSEXT_TYPE_psk_key_exchange_modes ossl_TLSEXT_TYPE_psk_key_exchange_modes
++#ifdef ossl_TLSEXT_TYPE_psk_kex_modes
++#define TLSEXT_TYPE_psk_key_exchange_modes ossl_TLSEXT_TYPE_psk_kex_modes
+ #endif
+ #ifdef ossl_TLSEXT_TYPE_certificate_authorities
+ #define TLSEXT_TYPE_certificate_authorities ossl_TLSEXT_TYPE_certificate_authorities

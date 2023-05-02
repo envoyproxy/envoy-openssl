@@ -17,6 +17,8 @@
  */
 
 #include <openssl/ssl.h>
+#include <openssl/mem.h>
+#include <openssl/bytestring.h>
 #include <ext/openssl/ssl.h>
 #include <ossl/openssl/ssl.h>
 #include "log.h"

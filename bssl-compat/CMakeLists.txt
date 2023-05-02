@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
 
 include(FetchContent)
 include(GoogleTest)
@@ -22,9 +22,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE Debug)
 
-project(bssl-compat
-        VERSION 0.1
-        LANGUAGES C CXX)
+project(bssl-compat VERSION 0.1 LANGUAGES C CXX)
 
 include(cmake/boringssl.cmake)
 include(cmake/openssl.cmake)
@@ -44,54 +42,129 @@ add_custom_command(DEPENDS prefixer
                                     --prefix ossl)
 
 add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h)
-add_dependencies(bssl-gen ossl-gen)
 
-add_custom_command(DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_LIB.py
-                           ${CMAKE_CURRENT_SOURCE_DIR}/include/openssl/err.h
-                           ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl/openssl/err.h
-                   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/source/ERR_GET_LIB.c
-                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_LIB.py)
-
-add_custom_command(DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_REASON.py
-                           ${CMAKE_CURRENT_SOURCE_DIR}/include/openssl/err.h
-                           ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl/openssl/err.h
-                   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/source/ERR_GET_REASON.c
-                   COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ERR_GET_REASON.py)
-
-add_library(bssl-compat
-    STATIC
-    source/ossl.c
-    source/ossl_ERR_set_error.c
-    source/crypto/bytestring/cbs.c
-    source/crypto/bytestring/cbb.c
-    source/rand.c
-    source/bio.cpp
-    source/log.h
-    source/log.c
-    source/ssl.c
-    source/ssl_ctx.c
-    source/ssl_cipher.c
-    source/ssl_ext.c
-    source/ERR_GET_LIB.c
-    source/ERR_GET_REASON.c
-    source/bn.c
-    source/err.c
-    source/mem.c
-    source/evp.c
-    source/digest.c
-    source/cipher.c
-    source/crypto.c
-    source/asn1.c
-    source/stack.c
+add_library(bssl-compat STATIC
+  source/asn1.c
+  source/bio.cpp
+  source/bn.c
+  source/cipher.c
+  source/crypto.c
+  source/digest.c
+  source/err.c
+  source/evp.c
+  source/log.c
+  source/log.h
+  source/mem.c
+  source/ossl_ERR_set_error.c
+  source/ossl.c
+  source/rand.c
+  source/ssl_cipher.c
+  source/ssl_ctx.c
+  source/ssl_ext.c
+  source/ssl.c
+  source/stack.c
 )
-add_dependencies(bssl-compat bssl-gen ossl-gen)
+
+target_add_bssl_source(bssl-compat
+  source/crypto/internal.h
+  source/crypto/bytestring/cbs.c
+  source/crypto/bytestring/cbb.c
+)
+
+target_add_bssl_include(bssl-compat
+  include/openssl/aead.h
+  include/openssl/aes.h
+  include/openssl/arm_arch.h
+  include/openssl/asn1.h
+  include/openssl/asn1_mac.h
+  include/openssl/asn1t.h
+  include/openssl/base64.h
+  include/openssl/base.h
+  include/openssl/bio.h
+  include/openssl/blake2.h
+  include/openssl/blowfish.h
+  include/openssl/bn.h
+  include/openssl/buffer.h
+  include/openssl/buf.h
+  include/openssl/bytestring.h
+  include/openssl/cast.h
+  include/openssl/chacha.h
+  include/openssl/cipher.h
+  include/openssl/cmac.h
+  include/openssl/conf.h
+  include/openssl/cpu.h
+  include/openssl/crypto.h
+  include/openssl/curve25519.h
+  include/openssl/des.h
+  include/openssl/dh.h
+  include/openssl/digest.h
+  include/openssl/dsa.h
+  include/openssl/dtls1.h
+  include/openssl/ecdh.h
+  include/openssl/ecdsa.h
+  include/openssl/ec.h
+  include/openssl/ec_key.h
+  include/openssl/engine.h
+  include/openssl/e_os2.h
+  include/openssl/err.h
+  include/openssl/evp_errors.h
+  include/openssl/evp.h
+  include/openssl/ex_data.h
+  include/openssl/hkdf.h
+  include/openssl/hmac.h
+  include/openssl/hpke.h
+  include/openssl/hrss.h
+  include/openssl/is_boringssl.h
+  include/openssl/kdf.h
+  include/openssl/lhash.h
+  include/openssl/md4.h
+  include/openssl/md5.h
+  include/openssl/mem.h
+  include/openssl/nid.h
+  include/openssl/objects.h
+  include/openssl/obj.h
+  include/openssl/obj_mac.h
+  include/openssl/opensslconf.h
+  include/openssl/opensslv.h
+  include/openssl/ossl_typ.h
+  include/openssl/pem.h
+  include/openssl/pkcs12.h
+  include/openssl/pkcs7.h
+  include/openssl/pkcs8.h
+  include/openssl/poly1305.h
+  include/openssl/pool.h
+  include/openssl/rand.h
+  include/openssl/rc4.h
+  include/openssl/ripemd.h
+  include/openssl/rsa.h
+  include/openssl/safestack.h
+  include/openssl/service_indicator.h
+  include/openssl/sha.h
+  include/openssl/siphash.h
+  include/openssl/span.h
+  include/openssl/srtp.h
+  include/openssl/ssl3.h
+  include/openssl/ssl.h
+  include/openssl/stack.h
+  include/openssl/thread.h
+  include/openssl/tls1.h
+  include/openssl/trust_token.h
+  include/openssl/type_check.h
+  include/openssl/x509.h
+  include/openssl/x509v3.h
+  include/openssl/x509_vfy.h
+)
 set_source_files_properties(source/evp.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_include_directories(bssl-compat PUBLIC include)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 
 
+################################################################################
+# Intallation
+################################################################################
+
 install(TARGETS bssl-compat LIBRARY DESTINATION lib)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/openssl DESTINATION include)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ext DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl DESTINATION include)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h DESTINATION include)
@@ -104,20 +177,20 @@ FetchContent_Declare(googletest URL https://github.com/google/googletest/archive
 FetchContent_MakeAvailable(googletest)
 enable_testing()
 
-set(utests-source-list
+set(utests-bssl-source-list
   # Tests copied/patched from BoringSSL
   source/crypto/bio/bio_test.cc
   source/crypto/digest_extra/digest_test.cc
-  source/crypto/err/internal.h
   source/crypto/err/err_test.cc
   source/crypto/rand_extra/rand_test.cc
   source/crypto/stack/stack_test.cc
   source/crypto/test/test_util.h
   source/crypto/test/test_util.cc
-  source/crypto/internal.h
-  source/crypto/lhash/internal.h
   source/ssl/internal.h
   source/ssl/ssl_test.cc
+)
+
+set(utests-source-list
   # Our hand written bssl-compat tests
   source/test/test_asn1.cc
   source/test/test_bn.cc
@@ -130,7 +203,8 @@ set(utests-source-list
 ################################################################################
 # Unit Tests built on bssl-compat
 ################################################################################
-add_executable(utests-bssl-compat ${utests-source-list}
+add_executable(utests-bssl-compat
+  ${utests-source-list}
   source/extra/asn1_extra.c
   source/extra/bio_extra.c
   source/extra/err_extra.c
@@ -138,6 +212,7 @@ add_executable(utests-bssl-compat ${utests-source-list}
   source/extra/pem_extra.c
   source/extra/ssl_extra.c
 )
+target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
 target_link_options(utests-bssl-compat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/digest_extra.ld)
@@ -151,9 +226,6 @@ gtest_discover_tests(utests-bssl-compat)
 ################################################################################
 add_executable(utests-boring ${utests-source-list})
 add_dependencies(utests-boring BoringSSL)
-set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
-target_include_directories(utests-boring PRIVATE ${BORINGSSL_INSTALL_DIR}/include)
-target_link_libraries(utests-boring PRIVATE ${BORINGSSL_INSTALL_DIR}/lib64/libssl.a)
-target_link_libraries(utests-boring PRIVATE ${BORINGSSL_INSTALL_DIR}/lib64/libcrypto.a)
+target_link_libraries(utests-boring PRIVATE BoringSSL::SSL BoringSSL::Crypto)
 target_link_libraries(utests-boring PRIVATE GTest::gtest_main)
 gtest_discover_tests(utests-boring)

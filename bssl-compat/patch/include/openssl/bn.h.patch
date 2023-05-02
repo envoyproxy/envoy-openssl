@@ -1,49 +1,175 @@
---- boringssl/src/include/openssl/bn.h	2022-12-20 11:40:07.214841457 +0000
-+++ include/openssl/bn.h	2023-01-24 10:37:50.917294507 +0000
-@@ -962,42 +962,11 @@
+--- a/include/openssl/bn.h
++++ b/include/openssl/bn.h
+@@ -120,18 +120,20 @@
+  * Sheueling Chang Shantz and Douglas Stebila of Sun Microsystems
+  * Laboratories. */
  
- // Private functions
+-// #ifndef OPENSSL_HEADER_BN_H
+-// #define OPENSSL_HEADER_BN_H
++#ifndef OPENSSL_HEADER_BN_H
++#define OPENSSL_HEADER_BN_H
  
--struct bignum_st {
--  // d is a pointer to an array of |width| |BN_BITS2|-bit chunks in
--  // little-endian order. This stores the absolute value of the number.
--  BN_ULONG *d;
--  // width is the number of elements of |d| which are valid. This value is not
--  // necessarily minimal; the most-significant words of |d| may be zero.
--  // |width| determines a potentially loose upper-bound on the absolute value
--  // of the |BIGNUM|.
--  //
--  // Functions taking |BIGNUM| inputs must compute the same answer for all
--  // possible widths. |bn_minimal_width|, |bn_set_minimal_width|, and other
--  // helpers may be used to recover the minimal width, provided it is not
--  // secret. If it is secret, use a different algorithm. Functions may output
--  // minimal or non-minimal |BIGNUM|s depending on secrecy requirements, but
--  // those which cause widths to unboundedly grow beyond the minimal value
--  // should be documented such.
--  //
--  // Note this is different from historical |BIGNUM| semantics.
--  int width;
--  // dmax is number of elements of |d| which are allocated.
--  int dmax;
--  // neg is one if the number if negative and zero otherwise.
--  int neg;
--  // flags is a bitmask of |BN_FLG_*| values
--  int flags;
--};
-+// The struct bignum_st has been removed because in the bssl-compat layer,
-+// we redefine BIGNUM to the equivalent ossl_BIGNUM type from OpenSSL.
+-// #include <openssl/base.h>
+-// #include <openssl/thread.h>
++#include <openssl/base.h>
++#include <openssl/thread.h>
  
--struct bn_mont_ctx_st {
--  // RR is R^2, reduced modulo |N|. It is used to convert to Montgomery form. It
--  // is guaranteed to have the same width as |N|.
--  BIGNUM RR;
--  // N is the modulus. It is always stored in minimal form, so |N.width|
--  // determines R.
--  BIGNUM N;
--  BN_ULONG n0[2];  // least significant words of (R*Ri-1)/N
--};
-+// The struct bn_mont_ctx_st has been removed because in the bssl-compat layer,
-+// we redefine BN_MONT_CTX to the equivalent ossl_BN_MONT_CTX type from OpenSSL.
+-// #include <inttypes.h>  // for PRIu64 and friends
+-// #include <stdio.h>  // for FILE*
++#include <inttypes.h>  // for PRIu64 and friends
++#include <stdio.h>  // for FILE*
  
- OPENSSL_EXPORT unsigned BN_num_bits_word(BN_ULONG l);
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#include <ossl/openssl/bn.h>
++
++#if defined(__cplusplus)
++extern "C" {
++#endif
  
+ 
+ // BN provides support for working with arbitrary sized integers. For example,
+@@ -147,36 +149,36 @@
+ // this is a public header, bn.h does not define |__STDC_FORMAT_MACROS| itself.
+ // Projects which use |BN_*_FMT*| with outdated C headers may need to define it
+ // externally.
+-// #if defined(OPENSSL_64_BIT)
+-// typedef uint64_t BN_ULONG;
+-// #define BN_BITS2 64
+-// #define BN_DEC_FMT1 "%" PRIu64
+-// #define BN_DEC_FMT2 "%019" PRIu64
+-// #define BN_HEX_FMT1 "%" PRIx64
+-// #define BN_HEX_FMT2 "%016" PRIx64
+-// #elif defined(OPENSSL_32_BIT)
+-// typedef uint32_t BN_ULONG;
+-// #define BN_BITS2 32
+-// #define BN_DEC_FMT1 "%" PRIu32
+-// #define BN_DEC_FMT2 "%09" PRIu32
+-// #define BN_HEX_FMT1 "%" PRIx32
+-// #define BN_HEX_FMT2 "%08" PRIx32
+-// #else
+-// #error "Must define either OPENSSL_32_BIT or OPENSSL_64_BIT"
+-// #endif
++#if defined(OPENSSL_64_BIT)
++typedef uint64_t BN_ULONG;
++#define BN_BITS2 64
++#define BN_DEC_FMT1 "%" PRIu64
++#define BN_DEC_FMT2 "%019" PRIu64
++#define BN_HEX_FMT1 "%" PRIx64
++#define BN_HEX_FMT2 "%016" PRIx64
++#elif defined(OPENSSL_32_BIT)
++typedef uint32_t BN_ULONG;
++#define BN_BITS2 32
++#define BN_DEC_FMT1 "%" PRIu32
++#define BN_DEC_FMT2 "%09" PRIu32
++#define BN_HEX_FMT1 "%" PRIx32
++#define BN_HEX_FMT2 "%08" PRIx32
++#else
++#error "Must define either OPENSSL_32_BIT or OPENSSL_64_BIT"
++#endif
+ 
+ 
+ // Allocation and freeing.
+ 
+ // BN_new creates a new, allocated BIGNUM and initialises it.
+-// OPENSSL_EXPORT BIGNUM *BN_new(void);
++OPENSSL_EXPORT BIGNUM *BN_new(void);
+ 
+ // BN_init initialises a stack allocated |BIGNUM|.
+ // OPENSSL_EXPORT void BN_init(BIGNUM *bn);
+ 
+ // BN_free frees the data referenced by |bn| and, if |bn| was originally
+ // allocated on the heap, frees |bn| also.
+-// OPENSSL_EXPORT void BN_free(BIGNUM *bn);
++OPENSSL_EXPORT void BN_free(BIGNUM *bn);
+ 
+ // BN_clear_free erases and frees the data referenced by |bn| and, if |bn| was
+ // originally allocated on the heap, frees |bn| also.
+@@ -184,7 +186,7 @@
+ 
+ // BN_dup allocates a new BIGNUM and sets it equal to |src|. It returns the
+ // allocated BIGNUM on success or NULL otherwise.
+-// OPENSSL_EXPORT BIGNUM *BN_dup(const BIGNUM *src);
++OPENSSL_EXPORT BIGNUM *BN_dup(const BIGNUM *src);
+ 
+ // BN_copy sets |dest| equal to |src| and returns |dest| or NULL on allocation
+ // failure.
+@@ -201,7 +203,7 @@
+ 
+ // BN_num_bits returns the minimum number of bits needed to represent the
+ // absolute value of |bn|.
+-// OPENSSL_EXPORT unsigned BN_num_bits(const BIGNUM *bn);
++OPENSSL_EXPORT unsigned BN_num_bits(const BIGNUM *bn);
+ 
+ // BN_num_bytes returns the minimum number of bytes needed to represent the
+ // absolute value of |bn|.
+@@ -267,7 +269,7 @@
+ // BN_bn2hex returns an allocated string that contains a NUL-terminated, hex
+ // representation of |bn|. If |bn| is negative, the first char in the resulting
+ // string will be '-'. Returns NULL on allocation failure.
+-// OPENSSL_EXPORT char *BN_bn2hex(const BIGNUM *bn);
++OPENSSL_EXPORT char *BN_bn2hex(const BIGNUM *bn);
+ 
+ // BN_hex2bn parses the leading hex number from |in|, which may be proceeded by
+ // a '-' to indicate a negative number and may contain trailing, non-hex data.
+@@ -374,7 +376,7 @@
+ // OPENSSL_EXPORT int BN_uadd(BIGNUM *r, const BIGNUM *a, const BIGNUM *b);
+ 
+ // BN_add_word adds |w| to |a|. It returns one on success and zero otherwise.
+-// OPENSSL_EXPORT int BN_add_word(BIGNUM *a, BN_ULONG w);
++OPENSSL_EXPORT int BN_add_word(BIGNUM *a, BN_ULONG w);
+ 
+ // BN_sub sets |r| = |a| - |b|, where |r| may be the same pointer as either |a|
+ // or |b|. It returns one on success and zero on allocation failure.
+@@ -436,7 +438,7 @@
+ // BN_ucmp returns a value less than, equal to or greater than zero if the
+ // absolute value of |a| is less than, equal to or greater than the absolute
+ // value of |b|, respectively.
+-// OPENSSL_EXPORT int BN_ucmp(const BIGNUM *a, const BIGNUM *b);
++OPENSSL_EXPORT int BN_ucmp(const BIGNUM *a, const BIGNUM *b);
+ 
+ // BN_equal_consttime returns one if |a| is equal to |b|, and zero otherwise.
+ // It takes an amount of time dependent on the sizes of |a| and |b|, but
+@@ -1018,13 +1020,13 @@
+ // directly.
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
++#if defined(__cplusplus)
++}  // extern C
+ 
+-// #if !defined(BORINGSSL_NO_CXX)
+-// extern "C++" {
++#if !defined(BORINGSSL_NO_CXX)
++extern "C++" {
+ 
+-// BSSL_NAMESPACE_BEGIN
++BSSL_NAMESPACE_BEGIN
+ 
+ // BORINGSSL_MAKE_DELETER(BIGNUM, BN_free)
+ // BORINGSSL_MAKE_DELETER(BN_CTX, BN_CTX_free)
+@@ -1042,12 +1044,12 @@
+ //   BN_CTXScope &operator=(BN_CTXScope &) = delete;
+ // };
+ 
+-// BSSL_NAMESPACE_END
++BSSL_NAMESPACE_END
+ 
+-// }  // extern C++
+-// #endif
++}  // extern C++
++#endif
+ 
+-// #endif
++#endif
+ 
+ #ifdef ossl_BN_R_ARG2_LT_ARG3
+ #define BN_R_ARG2_LT_ARG3 ossl_BN_R_ARG2_LT_ARG3
+@@ -1110,4 +1112,4 @@
+ #define BN_R_INVALID_INPUT ossl_BN_R_INVALID_INPUT
+ #endif
+ 
+-// #endif  // OPENSSL_HEADER_BN_H
++#endif  // OPENSSL_HEADER_BN_H
