@@ -122,3 +122,11 @@ void SSL_CTX_set_verify(SSL_CTX *ctx, int mode, int (*callback)(int ok, X509_STO
   }
   ossl_SSL_CTX_set_verify(ctx, mode, NULL);
 }
+
+/*
+ * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L198
+ * https://www.openssl.org/docs/man3.0/man3/TLS_method.html
+ */
+const SSL_METHOD *TLS_with_buffers_method(void) {
+  return ossl_TLS_method();
+}
