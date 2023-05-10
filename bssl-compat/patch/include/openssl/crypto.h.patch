@@ -1,0 +1,49 @@
+--- a/include/openssl/crypto.h
++++ b/include/openssl/crypto.h
+@@ -12,24 +12,24 @@
+  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
+ 
+-// #ifndef OPENSSL_HEADER_CRYPTO_H
+-// #define OPENSSL_HEADER_CRYPTO_H
++#ifndef OPENSSL_HEADER_CRYPTO_H
++#define OPENSSL_HEADER_CRYPTO_H
+ 
+-// #include <openssl/base.h>
+-// #include <openssl/sha.h>
++#include <openssl/base.h>
++#include <openssl/sha.h>
+ 
+ // Upstream OpenSSL defines |OPENSSL_malloc|, etc., in crypto.h rather than
+ // mem.h.
+-// #include <openssl/mem.h>
++#include <openssl/mem.h>
+ 
+ // Upstream OpenSSL defines |CRYPTO_LOCK|, etc., in crypto.h rather than
+ // thread.h.
+-// #include <openssl/thread.h>
++#include <openssl/thread.h>
+ 
+ 
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // crypto.h contains functions for initializing the crypto library.
+@@ -194,8 +194,8 @@
+ // OPENSSL_EXPORT int FIPS_query_algorithm_status(const char *algorithm);
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
+-// #endif
++#if defined(__cplusplus)
++}  // extern C
++#endif
+ 
+-// #endif  // OPENSSL_HEADER_CRYPTO_H
++#endif  // OPENSSL_HEADER_CRYPTO_H

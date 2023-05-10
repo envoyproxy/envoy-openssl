@@ -348,3 +348,18 @@ TEST(SSLTest, test_SSL_get_peer_full_cert_chain) {
 
   server.join();
 }
+
+TEST(SSLTest, test_SSL_CTX_set_strict_cipher_list) {
+  bssl::UniquePtr<SSL_CTX> ctx {SSL_CTX_new(TLS_server_method())};
+  STACK_OF(SSL_CIPHER) *ciphers {SSL_CTX_get_ciphers(ctx.get())};
+
+  std::string cipherstr;
+
+  for(const SSL_CIPHER *cipher : ciphers) {
+    cipherstr += (cipherstr.size() ? ":" : "");
+    cipherstr += SSL_CIPHER_get_name(cipher);
+  }
+
+  ASSERT_EQ(1, SSL_CTX_set_strict_cipher_list(ctx.get(), cipherstr.c_str()));
+  ASSERT_EQ(0, SSL_CTX_set_strict_cipher_list(ctx.get(), "rubbish:garbage"));
+}

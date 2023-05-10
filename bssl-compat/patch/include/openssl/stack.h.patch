@@ -566,7 +566,7 @@
  
  // typedef char *OPENSSL_STRING;
  
-@@ -443,40 +428,35 @@
+@@ -443,112 +428,107 @@
  // DEFINE_NAMED_STACK_OF(OPENSSL_STRING, char)
  
  
@@ -616,6 +616,46 @@
 -//                    nullptr);
 -//   }
 -// };
+-
+-// template <typename Stack>
+-// class StackIteratorImpl {
+-//  public:
+-//   using Type = typename StackTraits<Stack>::Type;
+-//   // Iterators must be default-constructable.
+-//   StackIteratorImpl() : sk_(nullptr), idx_(0) {}
+-//   StackIteratorImpl(const Stack *sk, size_t idx) : sk_(sk), idx_(idx) {}
+-
+-//   bool operator==(StackIteratorImpl other) const {
+-//     return sk_ == other.sk_ && idx_ == other.idx_;
+-//   }
+-//   bool operator!=(StackIteratorImpl other) const {
+-//     return !(*this == other);
+-//   }
+-
+-//   Type *operator*() const {
+-//     return reinterpret_cast<Type *>(
+-//         sk_value(reinterpret_cast<const _STACK *>(sk_), idx_));
+-//   }
+-
+-//   StackIteratorImpl &operator++(/* prefix */) {
+-//     idx_++;
+-//     return *this;
+-//   }
+-
+-//   StackIteratorImpl operator++(int /* postfix */) {
+-//     StackIteratorImpl copy(*this);
+-//     ++(*this);
+-//     return copy;
+-//   }
+-
+-//  private:
+-//   const Stack *sk_;
+-//   size_t idx_;
+-// };
+-
+-// template <typename Stack>
+-// using StackIterator =
+-//     std::enable_if_t<StackTraits<Stack>::kIsStack, StackIteratorImpl<Stack>>;
 +template <typename Stack>
 +struct DeleterImpl<Stack, std::enable_if_t<!StackTraits<Stack>::kIsConst>> {
 +  static void Free(Stack *sk) {
@@ -624,12 +664,46 @@
 +                   reinterpret_cast<void (*)(void *)>(DeleterImpl<Type>::Free));
 +  }
 +};
- 
- // template <typename Stack>
- // class StackIteratorImpl {
-@@ -518,23 +498,23 @@
- // using StackIterator =
- //     std::enable_if_t<StackTraits<Stack>::kIsStack, StackIteratorImpl<Stack>>;
++
++template <typename Stack>
++class StackIteratorImpl {
++ public:
++  using Type = typename StackTraits<Stack>::Type;
++  // Iterators must be default-constructable.
++  StackIteratorImpl() : sk_(nullptr), idx_(0) {}
++  StackIteratorImpl(const Stack *sk, size_t idx) : sk_(sk), idx_(idx) {}
++
++  bool operator==(StackIteratorImpl other) const {
++    return sk_ == other.sk_ && idx_ == other.idx_;
++  }
++  bool operator!=(StackIteratorImpl other) const {
++    return !(*this == other);
++  }
++
++  Type *operator*() const {
++    return reinterpret_cast<Type *>(
++        sk_value(reinterpret_cast<const _STACK *>(sk_), idx_));
++  }
++
++  StackIteratorImpl &operator++(/* prefix */) {
++    idx_++;
++    return *this;
++  }
++
++  StackIteratorImpl operator++(int /* postfix */) {
++    StackIteratorImpl copy(*this);
++    ++(*this);
++    return copy;
++  }
++
++ private:
++  const Stack *sk_;
++  size_t idx_;
++};
++
++template <typename Stack>
++using StackIterator =
++    std::enable_if_t<StackTraits<Stack>::kIsStack, StackIteratorImpl<Stack>>;
  
 -// }  // namespace internal
 +}  // namespace internal
@@ -663,10 +737,26 @@
 +BSSL_NAMESPACE_END
  
  // Define begin() and end() for stack types so C++ range for loops work.
- // template <typename Stack>
-@@ -548,7 +528,7 @@
- //       sk, sk_num(reinterpret_cast<const _STACK *>(sk)));
- // }
+-// template <typename Stack>
+-// inline bssl::internal::StackIterator<Stack> begin(const Stack *sk) {
+-//   return bssl::internal::StackIterator<Stack>(sk, 0);
+-// }
+-
+-// template <typename Stack>
+-// inline bssl::internal::StackIterator<Stack> end(const Stack *sk) {
+-//   return bssl::internal::StackIterator<Stack>(
+-//       sk, sk_num(reinterpret_cast<const _STACK *>(sk)));
+-// }
++template <typename Stack>
++inline bssl::internal::StackIterator<Stack> begin(const Stack *sk) {
++  return bssl::internal::StackIterator<Stack>(sk, 0);
++}
++
++template <typename Stack>
++inline bssl::internal::StackIterator<Stack> end(const Stack *sk) {
++  return bssl::internal::StackIterator<Stack>(
++      sk, sk_num(reinterpret_cast<const _STACK *>(sk)));
++}
  
 -// }  // extern C++
 -// #endif
