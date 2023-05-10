@@ -24,6 +24,9 @@
 #include "log.h"
 
 
+STACK_OF(SSL_CIPHER) *SSL_CTX_get_ciphers(const SSL_CTX *ctx) {
+  return (STACK_OF(SSL_CIPHER)*)ossl_SSL_CTX_get_ciphers(ctx);
+}
 
 X509 *SSL_CTX_get0_certificate(const SSL_CTX *ctx) {
   return ossl_SSL_CTX_get0_certificate(ctx);
@@ -104,12 +107,32 @@ int SSL_CTX_use_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey) {
   return (ossl_SSL_CTX_use_PrivateKey(ctx, pkey) == 1) ? 1 : 0;
 }
 
+int SSL_CTX_set_cipher_list(SSL_CTX *ctx, const char *str) {
+  return ossl_SSL_CTX_set_cipher_list(ctx, str);
+}
+
 /*
  * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L2670
  * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_set_client_CA_list.html
  */
 void SSL_CTX_set_client_CA_list(SSL_CTX *ctx, STACK_OF(X509_NAME) *name_list) {
   ossl_SSL_CTX_set_client_CA_list(ctx, (ossl_STACK_OF(ossl_X509_NAME)*)name_list);
+}
+
+/*
+ * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L661
+ * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_get_max_proto_version.html
+ */
+int SSL_CTX_set_min_proto_version(SSL_CTX *ctx, uint16_t version) {
+  return ossl_SSL_CTX_set_min_proto_version(ctx, version);
+}
+
+/*
+ * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L667
+ * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_set_max_proto_version.html
+ */
+int SSL_CTX_set_max_proto_version(SSL_CTX *ctx, uint16_t version) {
+  return ossl_SSL_CTX_set_max_proto_version(ctx, version);
 }
 
 /*
@@ -130,3 +153,4 @@ void SSL_CTX_set_verify(SSL_CTX *ctx, int mode, int (*callback)(int ok, X509_STO
 const SSL_METHOD *TLS_with_buffers_method(void) {
   return ossl_TLS_method();
 }
+

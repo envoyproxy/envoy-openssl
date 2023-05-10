@@ -1,6 +1,6 @@
 --- a/source/ssl/ssl_test.cc
 +++ b/source/ssl/ssl_test.cc
-@@ -12,51 +12,56 @@
+@@ -12,56 +12,60 @@
   * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
   * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
  
@@ -32,10 +32,6 @@
 -// #include <openssl/rand.h>
 -// #include <openssl/x509.h>
 -// #include <openssl/x509v3.h>
--
--// #include "internal.h"
--// #include "../crypto/internal.h"
--// #include "../crypto/test/test_util.h"
 +#include <stdio.h>
 +#include <string.h>
 +#include <time.h>
@@ -58,23 +54,23 @@
 +#include <openssl/err.h>
 +#include <openssl/hmac.h>
 +#include <openssl/hpke.h>
-+#include <openssl/mem.h>
 +#include <openssl/pem.h>
 +#include <openssl/sha.h>
 +#include <openssl/ssl.h>
 +#include <openssl/rand.h>
 +#include <openssl/x509.h>
 +#include <openssl/x509v3.h>
-+
-+#include "internal.h"
-+#include "../crypto/internal.h"
+ 
+ // #include "internal.h"
+ // #include "../crypto/internal.h"
+-// #include "../crypto/test/test_util.h"
 +#include "../crypto/test/test_util.h"
-+
+ 
+-// #if defined(OPENSSL_WINDOWS)
 +#ifdef BSSL_COMPAT
 +#include <ossl/openssl/ssl.h>
 +#endif
- 
--// #if defined(OPENSSL_WINDOWS)
++
 +#if defined(OPENSSL_WINDOWS)
  // Windows defines struct timeval in winsock2.h.
 -// OPENSSL_MSVC_PRAGMA(warning(push, 3))
@@ -83,24 +79,30 @@
 -// #else
 -// #include <sys/time.h>
 -// #endif
--
--// #if defined(OPENSSL_THREADS)
--// #include <thread>
--// #endif
 +OPENSSL_MSVC_PRAGMA(warning(push, 3))
 +#include <winsock2.h>
 +OPENSSL_MSVC_PRAGMA(warning(pop))
 +#else
 +#include <sys/time.h>
 +#endif
-+
+ 
+-// #if defined(OPENSSL_THREADS)
+-// #include <thread>
+-// #endif
 +#if defined(OPENSSL_THREADS)
 +#include <thread>
 +#endif
  
  
- // BSSL_NAMESPACE_BEGIN
-@@ -1196,14 +1201,14 @@
+-// BSSL_NAMESPACE_BEGIN
++BSSL_NAMESPACE_BEGIN
+ 
+-// namespace {
++namespace {
+ 
+ // #define TRACED_CALL(code)                     \
+ //   do {                                        \
+@@ -1196,14 +1200,14 @@
  //   }
  // }
  
@@ -123,7 +125,7 @@
  
  // static bssl::UniquePtr<EVP_PKEY> KeyFromPEM(const char *pem) {
  //   bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(pem, strlen(pem)));
-@@ -1214,25 +1219,25 @@
+@@ -1214,25 +1218,25 @@
  //       PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, nullptr));
  // }
  
@@ -168,7 +170,7 @@
  
  // static bssl::UniquePtr<EVP_PKEY> GetTestKey() {
  //   static const char kKeyPEM[] =
-@@ -4214,43 +4219,46 @@
+@@ -4214,43 +4218,46 @@
  //   X509_cmp(cert, cert);
  // }
  
@@ -252,7 +254,72 @@
  
  // TEST(SSLTest, SetChainAndKeyMismatch) {
  //   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_with_buffers_method()));
-@@ -5721,25 +5729,28 @@
+@@ -4920,33 +4927,37 @@
+ // }
+ 
+ // The client should gracefully handle no suitable ciphers being enabled.
+-// TEST(SSLTest, NoCiphersAvailable) {
+-//   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
+-//   ASSERT_TRUE(ctx);
+-
+-//   // Configure |client_ctx| with a cipher list that does not intersect with its
+-//   // version configuration.
+-//   ASSERT_TRUE(SSL_CTX_set_strict_cipher_list(
+-//       ctx.get(), "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"));
+-//   ASSERT_TRUE(SSL_CTX_set_max_proto_version(ctx.get(), TLS1_1_VERSION));
+-
+-//   bssl::UniquePtr<SSL> ssl(SSL_new(ctx.get()));
+-//   ASSERT_TRUE(ssl);
+-//   SSL_set_connect_state(ssl.get());
+-
+-//   UniquePtr<BIO> rbio(BIO_new(BIO_s_mem())), wbio(BIO_new(BIO_s_mem()));
+-//   ASSERT_TRUE(rbio);
+-//   ASSERT_TRUE(wbio);
+-//   SSL_set0_rbio(ssl.get(), rbio.release());
+-//   SSL_set0_wbio(ssl.get(), wbio.release());
+-
+-//   int ret = SSL_do_handshake(ssl.get());
+-//   EXPECT_EQ(-1, ret);
+-//   EXPECT_EQ(SSL_ERROR_SSL, SSL_get_error(ssl.get(), ret));
+-//   uint32_t err = ERR_get_error();
+-//   EXPECT_EQ(ERR_LIB_SSL, ERR_GET_LIB(err));
+-//   EXPECT_EQ(SSL_R_NO_CIPHERS_AVAILABLE, ERR_GET_REASON(err));
+-// }
++TEST(SSLTest, NoCiphersAvailable) {
++  bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
++  ASSERT_TRUE(ctx);
++
++  // Configure |client_ctx| with a cipher list that does not intersect with its
++  // version configuration.
++  ASSERT_TRUE(SSL_CTX_set_strict_cipher_list(
++      ctx.get(), "ECDHE-RSA-AES128-GCM-SHA256"));
++  ASSERT_TRUE(SSL_CTX_set_max_proto_version(ctx.get(), TLS1_1_VERSION));
++
++  bssl::UniquePtr<SSL> ssl(SSL_new(ctx.get()));
++  ASSERT_TRUE(ssl);
++  SSL_set_connect_state(ssl.get());
++
++  UniquePtr<BIO> rbio(BIO_new(BIO_s_mem())), wbio(BIO_new(BIO_s_mem()));
++  ASSERT_TRUE(rbio);
++  ASSERT_TRUE(wbio);
++  SSL_set0_rbio(ssl.get(), rbio.release());
++  SSL_set0_wbio(ssl.get(), wbio.release());
++
++  int ret = SSL_do_handshake(ssl.get());
++  EXPECT_EQ(-1, ret);
++  EXPECT_EQ(SSL_ERROR_SSL, SSL_get_error(ssl.get(), ret));
++  uint32_t err = ERR_get_error();
++  EXPECT_EQ(ERR_LIB_SSL, ERR_GET_LIB(err));
++#ifdef BSSL_COMPAT
++  EXPECT_EQ(ossl_SSL_R_NO_PROTOCOLS_AVAILABLE, ERR_GET_REASON(err));
++#else
++  EXPECT_EQ(SSL_R_NO_CIPHERS_AVAILABLE, ERR_GET_REASON(err));
++#endif
++}
+ 
+ // TEST_P(SSLVersionTest, SessionVersion) {
+ //   SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
+@@ -5721,25 +5732,28 @@
  // }
  
  // SSL_CTX_get0_certificate needs to lock internally. Test this works.
@@ -300,3 +367,11 @@
  
  // Functions which access properties on the negotiated session are thread-safe
  // where needed. Prior to TLS 1.3, clients resuming sessions and servers
+@@ -8260,5 +8274,5 @@
+ //   }
+ // }
+ 
+-// }  // namespace
+-// BSSL_NAMESPACE_END
++}  // namespace
++BSSL_NAMESPACE_END

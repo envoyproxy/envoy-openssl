@@ -60,6 +60,7 @@ add_library(bssl-compat STATIC
   source/rand.c
   source/ssl_cipher.c
   source/ssl_ctx.c
+  source/ssl_ctx.cc
   source/ssl_ext.c
   source/ssl.c
   source/stack.c
@@ -186,7 +187,6 @@ set(utests-bssl-source-list
   source/crypto/stack/stack_test.cc
   source/crypto/test/test_util.h
   source/crypto/test/test_util.cc
-  source/ssl/internal.h
   source/ssl/ssl_test.cc
 )
 
