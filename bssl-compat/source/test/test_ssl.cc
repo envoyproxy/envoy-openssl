@@ -363,3 +363,14 @@ TEST(SSLTest, test_SSL_CTX_set_strict_cipher_list) {
   ASSERT_EQ(1, SSL_CTX_set_strict_cipher_list(ctx.get(), cipherstr.c_str()));
   ASSERT_EQ(0, SSL_CTX_set_strict_cipher_list(ctx.get(), "rubbish:garbage"));
 }
+
+TEST(SSLTest, test_SSL_CTX_set_verify_algorithm_prefs) {
+  bssl::UniquePtr<SSL_CTX> ctx {SSL_CTX_new(TLS_server_method())};
+
+  uint16_t prefs[] {
+    SSL_SIGN_RSA_PSS_RSAE_SHA256,
+    SSL_SIGN_ECDSA_SECP256R1_SHA256
+  };
+
+  ASSERT_EQ(1, SSL_CTX_set_verify_algorithm_prefs(ctx.get(), prefs, (sizeof(prefs) / sizeof(prefs[0]))));
+}

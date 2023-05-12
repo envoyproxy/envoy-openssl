@@ -256,7 +256,7 @@
  
  // SSL_CTX_get0_privatekey returns |ctx|'s private key.
  // OPENSSL_EXPORT EVP_PKEY *SSL_CTX_get0_privatekey(const SSL_CTX *ctx);
-@@ -1129,9 +1130,9 @@
+@@ -1129,23 +1130,23 @@
  // SSL_set_ocsp_response sets the OCSP response that is sent to clients which
  // request it. It returns one on success and zero on error. The caller retains
  // ownership of |response|.
@@ -268,7 +268,33 @@
 +                                         size_t response_len);
  
  // SSL_SIGN_* are signature algorithm values as defined in TLS 1.3.
- // #define SSL_SIGN_RSA_PKCS1_SHA1 0x0201
+-// #define SSL_SIGN_RSA_PKCS1_SHA1 0x0201
+-// #define SSL_SIGN_RSA_PKCS1_SHA256 0x0401
+-// #define SSL_SIGN_RSA_PKCS1_SHA384 0x0501
+-// #define SSL_SIGN_RSA_PKCS1_SHA512 0x0601
+-// #define SSL_SIGN_ECDSA_SHA1 0x0203
+-// #define SSL_SIGN_ECDSA_SECP256R1_SHA256 0x0403
+-// #define SSL_SIGN_ECDSA_SECP384R1_SHA384 0x0503
+-// #define SSL_SIGN_ECDSA_SECP521R1_SHA512 0x0603
+-// #define SSL_SIGN_RSA_PSS_RSAE_SHA256 0x0804
+-// #define SSL_SIGN_RSA_PSS_RSAE_SHA384 0x0805
+-// #define SSL_SIGN_RSA_PSS_RSAE_SHA512 0x0806
+-// #define SSL_SIGN_ED25519 0x0807
++#define SSL_SIGN_RSA_PKCS1_SHA1 0x0201
++#define SSL_SIGN_RSA_PKCS1_SHA256 0x0401
++#define SSL_SIGN_RSA_PKCS1_SHA384 0x0501
++#define SSL_SIGN_RSA_PKCS1_SHA512 0x0601
++#define SSL_SIGN_ECDSA_SHA1 0x0203
++#define SSL_SIGN_ECDSA_SECP256R1_SHA256 0x0403
++#define SSL_SIGN_ECDSA_SECP384R1_SHA384 0x0503
++#define SSL_SIGN_ECDSA_SECP521R1_SHA512 0x0603
++#define SSL_SIGN_RSA_PSS_RSAE_SHA256 0x0804
++#define SSL_SIGN_RSA_PSS_RSAE_SHA384 0x0805
++#define SSL_SIGN_RSA_PSS_RSAE_SHA512 0x0806
++#define SSL_SIGN_ED25519 0x0807
+ 
+ // SSL_SIGN_RSA_PKCS1_MD5_SHA1 is an internal signature algorithm used to
+ // specify raw RSASSA-PKCS1-v1_5 with an MD5/SHA-1 concatenation, as used in TLS
 @@ -1254,8 +1255,8 @@
  // |type| parameter is one of the |SSL_FILETYPE_*| values and determines whether
  // the file's contents are read as PEM or DER.
@@ -468,6 +494,19 @@
  
  // SSL_CTX_enable_ocsp_stapling enables OCSP stapling on all client SSL objects
  // created from |ctx|.
+@@ -2708,9 +2709,9 @@
+ // preference list when verifying signatures from the peer's long-term key. It
+ // returns one on zero on error. |prefs| should not include the internal-only
+ // value |SSL_SIGN_RSA_PKCS1_MD5_SHA1|.
+-// OPENSSL_EXPORT int SSL_CTX_set_verify_algorithm_prefs(SSL_CTX *ctx,
+-//                                                       const uint16_t *prefs,
+-//                                                       size_t num_prefs);
++OPENSSL_EXPORT int SSL_CTX_set_verify_algorithm_prefs(SSL_CTX *ctx,
++                                                      const uint16_t *prefs,
++                                                      size_t num_prefs);
+ 
+ // SSL_set_verify_algorithm_prefs configures |ssl| to use |prefs| as the
+ // preference list when verifying signatures from the peer's long-term key. It
 @@ -2739,8 +2740,8 @@
  
  // SSL_CTX_set_client_CA_list sets |ctx|'s client certificate CA list to
