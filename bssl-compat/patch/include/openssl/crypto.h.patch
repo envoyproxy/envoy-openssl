@@ -34,6 +34,15 @@
  
  
  // crypto.h contains functions for initializing the crypto library.
+@@ -89,7 +89,7 @@
+ 
+ // FIPS_mode returns zero unless BoringSSL is built with BORINGSSL_FIPS, in
+ // which case it returns one.
+-// OPENSSL_EXPORT int FIPS_mode(void);
++OPENSSL_EXPORT int FIPS_mode(void);
+ 
+ // fips_counter_t denotes specific APIs/algorithms. A counter is maintained for
+ // each in FIPS mode so that tests can be written to assert that the expected,
 @@ -194,8 +194,8 @@
  // OPENSSL_EXPORT int FIPS_query_algorithm_status(const char *algorithm);
  
