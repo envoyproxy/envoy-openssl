@@ -195,6 +195,7 @@ set(utests-source-list
   source/test/test_asn1.cc
   source/test/test_bn.cc
   source/test/test_cipher.cc
+  source/test/test_crypto.cc
   source/test/test_evp.cc
   source/test/test_ssl.cc
   source/test/test_stack.cc
