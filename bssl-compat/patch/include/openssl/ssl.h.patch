@@ -529,6 +529,20 @@
  
  // SSL_add_bio_cert_subjects_to_stack behaves like
  // |SSL_add_file_cert_subjects_to_stack| but reads from |bio|.
+@@ -2816,11 +2817,11 @@
+ // deployments to select one of a several certificates on a single IP. Only the
+ // host_name name type is supported.
+ 
+-// #define TLSEXT_NAMETYPE_host_name 0
++#define TLSEXT_NAMETYPE_host_name 0
+ 
+ // SSL_set_tlsext_host_name, for a client, configures |ssl| to advertise |name|
+ // in the server_name extension. It returns one on success and zero on error.
+-// OPENSSL_EXPORT int SSL_set_tlsext_host_name(SSL *ssl, const char *name);
++OPENSSL_EXPORT int SSL_set_tlsext_host_name(SSL *ssl, const char *name);
+ 
+ // SSL_get_servername, for a server, returns the hostname supplied by the
+ // client or NULL if there was none. The |type| argument must be
 @@ -2868,7 +2869,7 @@
  // the session cache between different domains.
  //
@@ -581,7 +595,7 @@
  
  // SSL_renegotiate starts a deferred renegotiation on |ssl| if it was configured
  // with |ssl_renegotiate_explicit| and has a pending HelloRequest. It returns
-@@ -4359,36 +4360,36 @@
+@@ -4359,45 +4360,45 @@
  // callbacks that are called very early on during the server handshake. At this
  // point, much of the SSL* hasn't been filled out and only the ClientHello can
  // be depended on.
@@ -645,6 +659,18 @@
  
  // SSL_early_callback_ctx_extension_get searches the extensions in
  // |client_hello| for an extension of the given type. If not found, it returns
+ // zero. Otherwise it sets |out_data| to point to the extension contents (not
+ // including the type and length bytes), sets |out_len| to the length of the
+ // extension contents and returns one.
+-// OPENSSL_EXPORT int SSL_early_callback_ctx_extension_get(
+-//     const SSL_CLIENT_HELLO *client_hello, uint16_t extension_type,
+-//     const uint8_t **out_data, size_t *out_len);
++OPENSSL_EXPORT int SSL_early_callback_ctx_extension_get(
++    const SSL_CLIENT_HELLO *client_hello, uint16_t extension_type,
++    const uint8_t **out_data, size_t *out_len);
+ 
+ // SSL_CTX_set_select_certificate_cb sets a callback that is called before most
+ // ClientHello processing and before the decision whether to resume a session
 @@ -4413,9 +4414,9 @@
  //
  // Note: The |SSL_CLIENT_HELLO| is only valid for the duration of the callback

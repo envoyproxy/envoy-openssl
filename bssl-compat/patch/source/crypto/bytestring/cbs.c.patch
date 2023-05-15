@@ -46,6 +46,14 @@
 -//   const uint8_t *dummy;
 -//   return cbs_get(cbs, &dummy, len);
 -// }
+-
+-// const uint8_t *CBS_data(const CBS *cbs) {
+-//   return cbs->data;
+-// }
+-
+-// size_t CBS_len(const CBS *cbs) {
+-//   return cbs->len;
+-// }
 +void CBS_init(CBS *cbs, const uint8_t *data, size_t len) {
 +  cbs->data = data;
 +  cbs->len = len;
@@ -66,21 +74,18 @@
 +  const uint8_t *dummy;
 +  return cbs_get(cbs, &dummy, len);
 +}
- 
- // const uint8_t *CBS_data(const CBS *cbs) {
- //   return cbs->data;
- // }
- 
--// size_t CBS_len(const CBS *cbs) {
--//   return cbs->len;
--// }
++
++const uint8_t *CBS_data(const CBS *cbs) {
++  return cbs->data;
++}
++
 +size_t CBS_len(const CBS *cbs) {
 +  return cbs->len;
 +}
  
  // int CBS_stow(const CBS *cbs, uint8_t **out_ptr, size_t *out_len) {
  //   OPENSSL_free(*out_ptr);
-@@ -90,20 +90,20 @@
+@@ -90,38 +90,38 @@
  //   return CRYPTO_memcmp(cbs->data, data, len) == 0;
  // }
  
@@ -98,6 +103,24 @@
 -//   *out = result;
 -//   return 1;
 -// }
+-
+-// int CBS_get_u8(CBS *cbs, uint8_t *out) {
+-//   const uint8_t *v;
+-//   if (!cbs_get(cbs, &v, 1)) {
+-//     return 0;
+-//   }
+-//   *out = *v;
+-//   return 1;
+-// }
+-
+-// int CBS_get_u16(CBS *cbs, uint16_t *out) {
+-//   uint64_t v;
+-//   if (!cbs_get_u(cbs, &v, 2)) {
+-//     return 0;
+-//   }
+-//   *out = v;
+-//   return 1;
+-// }
 +static int cbs_get_u(CBS *cbs, uint64_t *out, size_t len) {
 +  uint64_t result = 0;
 +  const uint8_t *data;
@@ -112,21 +135,16 @@
 +  *out = result;
 +  return 1;
 +}
- 
- // int CBS_get_u8(CBS *cbs, uint8_t *out) {
- //   const uint8_t *v;
-@@ -114,14 +114,14 @@
- //   return 1;
- // }
- 
--// int CBS_get_u16(CBS *cbs, uint16_t *out) {
--//   uint64_t v;
--//   if (!cbs_get_u(cbs, &v, 2)) {
--//     return 0;
--//   }
--//   *out = v;
--//   return 1;
--// }
++
++int CBS_get_u8(CBS *cbs, uint8_t *out) {
++  const uint8_t *v;
++  if (!cbs_get(cbs, &v, 1)) {
++    return 0;
++  }
++  *out = *v;
++  return 1;
++}
++
 +int CBS_get_u16(CBS *cbs, uint16_t *out) {
 +  uint64_t v;
 +  if (!cbs_get_u(cbs, &v, 2)) {
@@ -138,3 +156,64 @@
  
  // int CBS_get_u16le(CBS *cbs, uint16_t *out) {
  //   if (!CBS_get_u16(cbs, out)) {
+@@ -178,14 +178,14 @@
+ //   return 1;
+ // }
+ 
+-// int CBS_get_bytes(CBS *cbs, CBS *out, size_t len) {
+-//   const uint8_t *v;
+-//   if (!cbs_get(cbs, &v, len)) {
+-//     return 0;
+-//   }
+-//   CBS_init(out, v, len);
+-//   return 1;
+-// }
++int CBS_get_bytes(CBS *cbs, CBS *out, size_t len) {
++  const uint8_t *v;
++  if (!cbs_get(cbs, &v, len)) {
++    return 0;
++  }
++  CBS_init(out, v, len);
++  return 1;
++}
+ 
+ // int CBS_copy_bytes(CBS *cbs, uint8_t *out, size_t len) {
+ //   const uint8_t *v;
+@@ -196,24 +196,24 @@
+ //   return 1;
+ // }
+ 
+-// static int cbs_get_length_prefixed(CBS *cbs, CBS *out, size_t len_len) {
+-//   uint64_t len;
+-//   if (!cbs_get_u(cbs, &len, len_len)) {
+-//     return 0;
+-//   }
+-//   // If |len_len| <= 3 then we know that |len| will fit into a |size_t|, even on
+-//   // 32-bit systems.
+-//   assert(len_len <= 3);
+-//   return CBS_get_bytes(cbs, out, len);
+-// }
++static int cbs_get_length_prefixed(CBS *cbs, CBS *out, size_t len_len) {
++  uint64_t len;
++  if (!cbs_get_u(cbs, &len, len_len)) {
++    return 0;
++  }
++  // If |len_len| <= 3 then we know that |len| will fit into a |size_t|, even on
++  // 32-bit systems.
++  assert(len_len <= 3);
++  return CBS_get_bytes(cbs, out, len);
++}
+ 
+ // int CBS_get_u8_length_prefixed(CBS *cbs, CBS *out) {
+ //   return cbs_get_length_prefixed(cbs, out, 1);
+ // }
+ 
+-// int CBS_get_u16_length_prefixed(CBS *cbs, CBS *out) {
+-//   return cbs_get_length_prefixed(cbs, out, 2);
+-// }
++int CBS_get_u16_length_prefixed(CBS *cbs, CBS *out) {
++  return cbs_get_length_prefixed(cbs, out, 2);
++}
+ 
+ // int CBS_get_u24_length_prefixed(CBS *cbs, CBS *out) {
+ //   return cbs_get_length_prefixed(cbs, out, 3);

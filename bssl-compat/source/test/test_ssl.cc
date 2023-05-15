@@ -374,3 +374,110 @@ TEST(SSLTest, test_SSL_CTX_set_verify_algorithm_prefs) {
 
   ASSERT_EQ(1, SSL_CTX_set_verify_algorithm_prefs(ctx.get(), prefs, (sizeof(prefs) / sizeof(prefs[0]))));
 }
+
+TEST(SSLTest, test_SSL_early_callback_ctx_extension_get) {
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  static const char MESSAGE[] { "HELLO" };
+  static const char SERVERNAME[] { "www.example.com" };
+  std::promise<in_port_t> server_port;
+
+  signal(SIGPIPE, SIG_IGN);
+
+  // Start a TLS server
+  std::thread server([&]() {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_server_method()));
+
+    ASSERT_EQ(1, SSL_CTX_use_certificate_chain_file(ctx.get(), server_2_cert_chain_pem.path()));
+    ASSERT_EQ(1, SSL_CTX_use_PrivateKey_file(ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+
+    // Install a callback that will use SSL_early_callback_ctx_extension_get()
+    // to check the server name extension that we configured the client to send.
+    // The extension bytes should contain: u16->[u8, u16->[www.example.com]]
+    SSL_CTX_set_select_certificate_cb(ctx.get(), [](const SSL_CLIENT_HELLO *client_hello) -> ssl_select_cert_result_t {
+      const uint8_t *tlsext_data;
+      size_t         tlsext_len;
+
+      if(SSL_early_callback_ctx_extension_get(client_hello, TLSEXT_TYPE_server_name, &tlsext_data, &tlsext_len)) {
+        CBS     server_name_extension;
+        CBS     server_name_extension_bytes;
+        uint8_t server_name_extension_nametype;
+        CBS     server_name_extension_name;
+
+        CBS_init(&server_name_extension, tlsext_data, tlsext_len);
+
+        if (CBS_len(&server_name_extension) == (2 + 1 + 2 + strlen(SERVERNAME)) &&
+            CBS_get_u16_length_prefixed(&server_name_extension, &server_name_extension_bytes) &&
+            CBS_len(&server_name_extension_bytes) == (1 + 2 + strlen(SERVERNAME)) &&
+            CBS_get_u8(&server_name_extension_bytes, &server_name_extension_nametype) &&
+            server_name_extension_nametype == TLSEXT_NAMETYPE_host_name &&
+            CBS_len(&server_name_extension_bytes) == (2 + strlen(SERVERNAME)) &&
+            CBS_get_u16_length_prefixed(&server_name_extension_bytes, &server_name_extension_name) &&
+            CBS_len(&server_name_extension_name) == strlen(SERVERNAME) &&
+            memcmp(CBS_data(&server_name_extension_name), SERVERNAME, strlen(SERVERNAME)) == 0) {
+              return ssl_select_cert_success;
+        }
+      }
+
+      return ssl_select_cert_error; // Causes SSL_connect() to fail in the client
+    });
+
+    bssl::UniquePtr<SSL> ssl { SSL_new(ctx.get()) };
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    socklen_t addrlen = sizeof(addr);
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_LT(0, sock);
+    ASSERT_EQ(0, bind(sock, (struct sockaddr*)&addr, sizeof(addr)));
+    ASSERT_EQ(0, listen(sock, 1));
+    ASSERT_EQ(0, getsockname(sock, (struct sockaddr*)&addr, &addrlen));
+    server_port.set_value(ntohs(addr.sin_port)); // Tell the client our port number
+    int client = accept(sock, nullptr, nullptr);
+    ASSERT_LT(0, client);
+
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), client));
+    ASSERT_EQ(1, SSL_accept(ssl.get())) << ERR_error_string(ERR_get_error(), nullptr);
+    ASSERT_EQ(1, SSL_is_server(ssl.get()));
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+
+    SSL_shutdown(ssl.get());
+    close(client);
+    close(sock);
+  });
+
+  {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_client_method()));
+    SSL_CTX_set_verify(ctx.get(), SSL_VERIFY_NONE, nullptr);
+    bssl::UniquePtr<SSL> ssl (SSL_new(ctx.get()));
+
+    // Send a TLSEXT_TYPE_server_name extension. The server will inspect this
+    // extension using SSL_early_callback_ctx_extension_get(), and fail the
+    // handshake if there's an error.
+    ASSERT_EQ(1, SSL_set_tlsext_host_name(ssl.get(), SERVERNAME));
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    addr.sin_port = htons(server_port.get_future().get());
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_EQ(0, connect(sock, (const struct sockaddr *)&addr, sizeof(addr)));
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), sock));
+    ASSERT_TRUE(SSL_connect(ssl.get()) > 0) << (ERR_print_errors_fp(stderr), "");
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+  }
+
+  server.join();
+}
