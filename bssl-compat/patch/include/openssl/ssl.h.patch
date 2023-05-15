@@ -328,7 +328,7 @@
  
  // SSL_CTX_set_default_passwd_cb sets the password callback for PEM-based
  // convenience functions called on |ctx|.
-@@ -1391,7 +1392,7 @@
+@@ -1391,12 +1392,12 @@
  //
  // |SSL_CIPHER| objects represent cipher suites.
  
@@ -337,6 +337,12 @@
  
  // SSL_get_cipher_by_value returns the structure representing a TLS cipher
  // suite based on its assigned number, or NULL if unknown. See
+ // https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4.
+-// OPENSSL_EXPORT const SSL_CIPHER *SSL_get_cipher_by_value(uint16_t value);
++OPENSSL_EXPORT const SSL_CIPHER *SSL_get_cipher_by_value(uint16_t value);
+ 
+ // SSL_CIPHER_get_id returns |cipher|'s non-IANA id. This is not its
+ // IANA-assigned number, which is called the "value" here, although it may be
 @@ -1445,7 +1446,7 @@
  
  // SSL_CIPHER_get_min_version returns the minimum protocol version required
@@ -346,7 +352,13 @@
  
  // SSL_CIPHER_get_max_version returns the maximum protocol version that
  // supports |cipher|.
-@@ -1458,7 +1459,7 @@
+@@ -1453,12 +1454,12 @@
+ 
+ // SSL_CIPHER_standard_name returns the standard IETF name for |cipher|. For
+ // example, "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256".
+-// OPENSSL_EXPORT const char *SSL_CIPHER_standard_name(const SSL_CIPHER *cipher);
++OPENSSL_EXPORT const char *SSL_CIPHER_standard_name(const SSL_CIPHER *cipher);
+ 
  // SSL_CIPHER_get_name returns the OpenSSL name of |cipher|. For example,
  // "ECDHE-RSA-AES128-GCM-SHA256". Callers are recommended to use
  // |SSL_CIPHER_standard_name| instead.
