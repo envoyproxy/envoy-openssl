@@ -61,7 +61,9 @@ add_library(bssl-compat STATIC
   source/ssl_cipher.c
   source/ssl_ctx.c
   source/ssl_ctx.cc
+  source/SSL_early_callback_ctx_extension_get.c
   source/ssl_ext.c
+  source/SSL_set_tlsext_host_name.c
   source/ssl.c
   source/stack.c
 )

@@ -78,8 +78,9 @@
 +OPENSSL_EXPORT int CBS_skip(CBS *cbs, size_t len);
  
 -// CBS_data returns a pointer to the contents of |cbs|.
+-// OPENSSL_EXPORT const uint8_t *CBS_data(const CBS *cbs);
 +//  CBS_data returns a pointer to the contents of |cbs|.
- // OPENSSL_EXPORT const uint8_t *CBS_data(const CBS *cbs);
++OPENSSL_EXPORT const uint8_t *CBS_data(const CBS *cbs);
  
  // CBS_len returns the number of bytes remaining in |cbs|.
 -// OPENSSL_EXPORT size_t CBS_len(const CBS *cbs);
@@ -87,7 +88,12 @@
  
  // CBS_stow copies the current contents of |cbs| into |*out_ptr| and
  // |*out_len|. If |*out_ptr| is not NULL, the contents are freed with
-@@ -102,7 +102,7 @@
+@@ -98,11 +98,11 @@
+ 
+ // CBS_get_u8 sets |*out| to the next uint8_t from |cbs| and advances |cbs|. It
+ // returns one on success and zero on error.
+-// OPENSSL_EXPORT int CBS_get_u8(CBS *cbs, uint8_t *out);
++OPENSSL_EXPORT int CBS_get_u8(CBS *cbs, uint8_t *out);
  
  // CBS_get_u16 sets |*out| to the next, big-endian uint16_t from |cbs| and
  // advances |cbs|. It returns one on success and zero on error.
@@ -96,6 +102,15 @@
  
  // CBS_get_u16le sets |*out| to the next, little-endian uint16_t from |cbs| and
  // advances |cbs|. It returns one on success and zero on error.
+@@ -148,7 +148,7 @@
+ // CBS_get_u16_length_prefixed sets |*out| to the contents of a 16-bit,
+ // big-endian, length-prefixed value from |cbs| and advances |cbs| over it. It
+ // returns one on success and zero on error.
+-// OPENSSL_EXPORT int CBS_get_u16_length_prefixed(CBS *cbs, CBS *out);
++OPENSSL_EXPORT int CBS_get_u16_length_prefixed(CBS *cbs, CBS *out);
+ 
+ // CBS_get_u24_length_prefixed sets |*out| to the contents of a 24-bit,
+ // big-endian, length-prefixed value from |cbs| and advances |cbs| over it. It
 @@ -183,7 +183,7 @@
  
  // CBS_ASN1_TAG_SHIFT is how much the in-memory representation shifts the class
