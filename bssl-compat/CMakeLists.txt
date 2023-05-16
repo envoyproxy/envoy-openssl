@@ -59,11 +59,13 @@ add_library(bssl-compat STATIC
   source/ossl.c
   source/rand.c
   source/ssl_cipher.c
+  source/SSL_CTX_set1_curves_list.c
   source/ssl_ctx.c
   source/ssl_ctx.cc
   source/SSL_early_callback_ctx_extension_get.c
   source/ssl_ext.c
   source/SSL_get_cipher_by_value.c
+  source/SSL_get_curve_id.c
   source/SSL_set_tlsext_host_name.c
   source/ssl.c
   source/stack.c
