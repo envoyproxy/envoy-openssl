@@ -510,3 +510,111 @@ TEST(SSLTest, test_SSL_get_cipher_by_value) {
     EXPECT_STREQ(c.name, SSL_CIPHER_standard_name(cipher));
   }
 }
+
+
+struct Curves {
+  const char *server_curves;
+  const char *client_curves;
+  uint16_t expected_curve;
+};
+
+class SSLTestWithCurves : public testing::TestWithParam<Curves> {
+};
+
+TEST_P(SSLTestWithCurves, test_SSL_get_curve_id) {
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  static const char MESSAGE[] { "HELLO" };
+  std::promise<in_port_t> server_port;
+
+  signal(SIGPIPE, SIG_IGN);
+
+  const auto &curves {GetParam()};
+
+  // Start a TLS server
+  std::thread server([&]() {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_server_method()));
+
+    ASSERT_EQ(1, SSL_CTX_use_certificate_chain_file(ctx.get(), server_2_cert_chain_pem.path()));
+    ASSERT_EQ(1, SSL_CTX_use_PrivateKey_file(ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+    ASSERT_EQ(1, SSL_CTX_set1_curves_list(ctx.get(), curves.server_curves));
+
+    bssl::UniquePtr<SSL> ssl { SSL_new(ctx.get()) };
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    socklen_t addrlen = sizeof(addr);
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_LT(0, sock);
+    ASSERT_EQ(0, bind(sock, (struct sockaddr*)&addr, sizeof(addr)));
+    ASSERT_EQ(0, listen(sock, 1));
+    ASSERT_EQ(0, getsockname(sock, (struct sockaddr*)&addr, &addrlen));
+    server_port.set_value(ntohs(addr.sin_port)); // Tell the client our port number
+    int client = accept(sock, nullptr, nullptr);
+    ASSERT_LT(0, client);
+
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), client));
+    ASSERT_EQ(1, SSL_accept(ssl.get())) << ERR_error_string(ERR_get_error(), nullptr);
+    ASSERT_EQ(1, SSL_is_server(ssl.get()));
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+
+    SSL_shutdown(ssl.get());
+    close(client);
+    close(sock);
+  });
+
+  {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_client_method()));
+    SSL_CTX_set_verify(ctx.get(), SSL_VERIFY_NONE, nullptr);
+    SSL_CTX_set_max_proto_version(ctx.get(), TLS1_2_VERSION);
+    ASSERT_EQ(1, SSL_CTX_set1_curves_list(ctx.get(), curves.client_curves));
+    bssl::UniquePtr<SSL> ssl (SSL_new(ctx.get()));
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    addr.sin_port = htons(server_port.get_future().get());
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_EQ(0, connect(sock, (const struct sockaddr *)&addr, sizeof(addr)));
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), sock));
+    ASSERT_TRUE(SSL_connect(ssl.get()) > 0) << (ERR_print_errors_fp(stderr), "");
+
+    ASSERT_EQ(curves.expected_curve, SSL_get_curve_id(ssl.get()));
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+  }
+
+  server.join();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+        SSLTestWithCurves,
+        SSLTestWithCurves,
+        ::testing::Values(
+          Curves {
+            SN_secp224r1 ":" SN_secp384r1 ":" SN_secp521r1 ":" SN_X25519 ":" SN_X9_62_prime256v1,
+            SN_secp224r1,
+            SSL_CURVE_SECP224R1
+          },
+          Curves {
+            SN_secp224r1 ":" SN_secp384r1 ":" SN_secp521r1 ":" SN_X25519 ":" SN_X9_62_prime256v1,
+            SN_secp521r1,
+            SSL_CURVE_SECP521R1
+          },
+          Curves {
+            SN_secp224r1 ":" SN_secp384r1 ":" SN_secp521r1 ":" SN_X25519 ":" SN_X9_62_prime256v1,
+            SN_X9_62_prime256v1,
+            SSL_CURVE_SECP256R1
+          }
+        ));
