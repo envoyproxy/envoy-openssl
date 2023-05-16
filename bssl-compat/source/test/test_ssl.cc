@@ -618,3 +618,14 @@ INSTANTIATE_TEST_SUITE_P(
             SSL_CURVE_SECP256R1
           }
         ));
+
+TEST(SSLTest, test_SSL_get_curve_name) {
+  EXPECT_STREQ("P-224", SSL_get_curve_name(SSL_CURVE_SECP224R1));
+  EXPECT_STREQ("P-256", SSL_get_curve_name(SSL_CURVE_SECP256R1));
+  EXPECT_STREQ("P-384", SSL_get_curve_name(SSL_CURVE_SECP384R1));
+  EXPECT_STREQ("P-521", SSL_get_curve_name(SSL_CURVE_SECP521R1));
+  EXPECT_STREQ("X25519", SSL_get_curve_name(SSL_CURVE_X25519));
+#ifndef BSSL_COMPAT
+  EXPECT_STREQ("CECPQ2", SSL_get_curve_name(SSL_CURVE_CECPQ2));
+#endif
+}
