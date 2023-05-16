@@ -66,6 +66,7 @@ add_library(bssl-compat STATIC
   source/ssl_ext.c
   source/SSL_get_cipher_by_value.c
   source/SSL_get_curve_id.c
+  source/SSL_get_curve_name.c
   source/SSL_set_tlsext_host_name.c
   source/ssl.c
   source/stack.c
