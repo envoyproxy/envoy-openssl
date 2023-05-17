@@ -629,3 +629,131 @@ TEST(SSLTest, test_SSL_get_curve_name) {
   EXPECT_STREQ("CECPQ2", SSL_get_curve_name(SSL_CURVE_CECPQ2));
 #endif
 }
+
+
+struct Sigalgs {
+  const char *server_sigalgs;
+  const char *client_sigalgs;
+  uint16_t expected_sigalg;
+};
+
+class SSLTestWithSigalgs : public testing::TestWithParam<Sigalgs> {
+};
+
+TEST_P(SSLTestWithSigalgs, test_SSL_get_peer_signature_algorithm) {
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  static const char MESSAGE[] { "HELLO" };
+  std::promise<in_port_t> server_port;
+
+  signal(SIGPIPE, SIG_IGN);
+
+  const auto &sigalgs {GetParam()};
+
+  // Start a TLS server
+  std::thread server([&]() {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_server_method()));
+    ASSERT_EQ(1, SSL_CTX_use_certificate_chain_file(ctx.get(), server_2_cert_chain_pem.path()));
+    ASSERT_EQ(1, SSL_CTX_use_PrivateKey_file(ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+    if(sigalgs.server_sigalgs) {
+      ASSERT_EQ(1, SSL_CTX_set1_sigalgs_list(ctx.get(), sigalgs.server_sigalgs)) << ERR_error_string(ERR_get_error(), nullptr);
+    }
+    bssl::UniquePtr<SSL> ssl { SSL_new(ctx.get()) };
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    socklen_t addrlen = sizeof(addr);
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_LT(0, sock);
+    ASSERT_EQ(0, bind(sock, (struct sockaddr*)&addr, sizeof(addr)));
+    ASSERT_EQ(0, listen(sock, 1));
+    ASSERT_EQ(0, getsockname(sock, (struct sockaddr*)&addr, &addrlen));
+    server_port.set_value(ntohs(addr.sin_port)); // Tell the client our port number
+    int client = accept(sock, nullptr, nullptr);
+    ASSERT_LT(0, client);
+
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), client));
+    ASSERT_EQ(1, SSL_accept(ssl.get())) << ERR_error_string(ERR_get_error(), nullptr);
+    ASSERT_EQ(1, SSL_is_server(ssl.get()));
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+
+    SSL_shutdown(ssl.get());
+    close(client);
+    close(sock);
+  });
+
+  {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_client_method()));
+    SSL_CTX_set_verify(ctx.get(), SSL_VERIFY_NONE, nullptr);
+    if(sigalgs.client_sigalgs) {
+      ASSERT_EQ(1, SSL_CTX_set1_sigalgs_list(ctx.get(), sigalgs.client_sigalgs)) << ERR_error_string(ERR_get_error(), nullptr);
+    }
+    bssl::UniquePtr<SSL> ssl (SSL_new(ctx.get()));
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    addr.sin_port = htons(server_port.get_future().get());
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_EQ(0, connect(sock, (const struct sockaddr *)&addr, sizeof(addr)));
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), sock));
+    ASSERT_TRUE(SSL_connect(ssl.get()) > 0) << (ERR_print_errors_fp(stderr), "");
+
+    ASSERT_EQ(sigalgs.expected_sigalg, SSL_get_peer_signature_algorithm(ssl.get()));
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+  }
+
+  server.join();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+        SSLTestWithSigalgs,
+        SSLTestWithSigalgs,
+        ::testing::Values(
+          Sigalgs {
+            "rsa_pss_rsae_sha256",
+            "rsa_pss_rsae_sha256",
+            SSL_SIGN_RSA_PSS_RSAE_SHA256
+          },
+          Sigalgs {
+            "rsa_pss_rsae_sha384",
+            "rsa_pss_rsae_sha384",
+            SSL_SIGN_RSA_PSS_RSAE_SHA384
+          },
+          Sigalgs {
+            "rsa_pss_rsae_sha512",
+            "rsa_pss_rsae_sha512",
+            SSL_SIGN_RSA_PSS_RSAE_SHA512
+          }
+        )
+);
+
+TEST(SSLTest, test_SSL_get_signature_algorithm_name) {
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_RSA_PKCS1_SHA1, 0), "rsa_pkcs1_sha1");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_RSA_PKCS1_SHA256, 0), "rsa_pkcs1_sha256");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_RSA_PKCS1_SHA384, 0), "rsa_pkcs1_sha384");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_RSA_PKCS1_SHA512, 0), "rsa_pkcs1_sha512");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_ECDSA_SHA1, 0), "ecdsa_sha1");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_ECDSA_SECP256R1_SHA256, 0), "ecdsa_sha256");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_ECDSA_SECP256R1_SHA256, 1), "ecdsa_secp256r1_sha256");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_ECDSA_SECP384R1_SHA384, 0), "ecdsa_sha384");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_ECDSA_SECP384R1_SHA384, 1), "ecdsa_secp384r1_sha384");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_ECDSA_SECP521R1_SHA512, 0), "ecdsa_sha512");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_ECDSA_SECP521R1_SHA512, 1), "ecdsa_secp521r1_sha512");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_RSA_PSS_RSAE_SHA256, 0), "rsa_pss_rsae_sha256");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_RSA_PSS_RSAE_SHA384, 0), "rsa_pss_rsae_sha384");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_RSA_PSS_RSAE_SHA512, 0), "rsa_pss_rsae_sha512");
+    EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_ED25519, 0), "ed25519");
+}
