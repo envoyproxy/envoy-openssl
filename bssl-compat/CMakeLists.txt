@@ -60,6 +60,7 @@ add_library(bssl-compat STATIC
   source/rand.c
   source/ssl_cipher.c
   source/SSL_CTX_set1_curves_list.c
+  source/SSL_CTX_set1_sigalgs_list.c
   source/ssl_ctx.c
   source/ssl_ctx.cc
   source/SSL_early_callback_ctx_extension_get.c
@@ -67,6 +68,8 @@ add_library(bssl-compat STATIC
   source/SSL_get_cipher_by_value.c
   source/SSL_get_curve_id.c
   source/SSL_get_curve_name.c
+  source/SSL_get_peer_signature_algorithm.c
+  source/SSL_get_signature_algorithm_name.c
   source/SSL_set_tlsext_host_name.c
   source/ssl.c
   source/stack.c
@@ -231,7 +234,7 @@ gtest_discover_tests(utests-bssl-compat)
 ################################################################################
 # Unit Tests built on BoringSSL
 ################################################################################
-add_executable(utests-boring ${utests-source-list})
+add_executable(utests-boring ${utests-source-list} ${utests-bssl-source-list})
 add_dependencies(utests-boring BoringSSL)
 target_link_libraries(utests-boring PRIVATE BoringSSL::SSL BoringSSL::Crypto)
 target_link_libraries(utests-boring PRIVATE GTest::gtest_main)
