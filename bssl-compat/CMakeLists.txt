@@ -59,6 +59,7 @@ add_library(bssl-compat STATIC
   source/ossl.c
   source/rand.c
   source/ssl_cipher.c
+  source/SSL_CTX_set_tlsext_status_cb.c
   source/SSL_CTX_set1_curves_list.c
   source/SSL_CTX_set1_sigalgs_list.c
   source/ssl_ctx.c
@@ -70,6 +71,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_curve_name.c
   source/SSL_get_peer_signature_algorithm.c
   source/SSL_get_signature_algorithm_name.c
+  source/SSL_get0_ocsp_response.c
   source/SSL_set_tlsext_host_name.c
   source/ssl.c
   source/stack.c
