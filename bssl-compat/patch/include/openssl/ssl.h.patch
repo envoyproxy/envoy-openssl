@@ -424,6 +424,17 @@
  
  // SSL_get0_peer_certificates returns the peer's certificate chain, or NULL if
  // unavailable or the peer did not use certificates. This is the unverified list
+@@ -1683,8 +1684,8 @@
+ // OCSPResponse type as defined in RFC 2560.
+ //
+ // WARNING: the returned data is not guaranteed to be well formed.
+-// OPENSSL_EXPORT void SSL_get0_ocsp_response(const SSL *ssl, const uint8_t **out,
+-//                                            size_t *out_len);
++OPENSSL_EXPORT void SSL_get0_ocsp_response(const SSL *ssl, const uint8_t **out,
++                                           size_t *out_len);
+ 
+ // SSL_get_tls_unique writes at most |max_out| bytes of the tls-unique value
+ // for |ssl| to |out| and sets |*out_len| to the number of bytes written. It
 @@ -1753,7 +1754,7 @@
  // SSL_SESSION_new returns a newly-allocated blank |SSL_SESSION| or NULL on
  // error. This may be useful when writing tests but should otherwise not be
@@ -606,7 +617,15 @@
  
  // SSL_get_servername, for a server, returns the hostname supplied by the
  // client or NULL if there was none. The |type| argument must be
-@@ -2868,7 +2869,7 @@
+@@ -2862,7 +2863,6 @@
+ #ifdef ossl_SSL_TLSEXT_ERR_NOACK
+ #define SSL_TLSEXT_ERR_NOACK ossl_SSL_TLSEXT_ERR_NOACK
+ #endif
+-
+ // SSL_set_SSL_CTX changes |ssl|'s |SSL_CTX|. |ssl| will use the
+ // certificate-related settings from |ctx|, and |SSL_get_SSL_CTX| will report
+ // |ctx|. This function may be used during the callbacks registered by
+@@ -2876,7 +2876,7 @@
  // the session cache between different domains.
  //
  // TODO(davidben): Should other settings change after this call?
@@ -615,7 +634,7 @@
  
  
  // Application-layer protocol negotiation.
-@@ -4037,8 +4038,8 @@
+@@ -4045,8 +4045,8 @@
  //                                                 CRYPTO_EX_dup *dup_unused,
  //                                                 CRYPTO_EX_free *free_func);
  
@@ -626,7 +645,7 @@
  // OPENSSL_EXPORT int SSL_CTX_get_ex_new_index(long argl, void *argp,
  //                                             CRYPTO_EX_unused *unused,
  //                                             CRYPTO_EX_dup *dup_unused,
-@@ -4262,13 +4263,13 @@
+@@ -4270,13 +4270,13 @@
  // such as HTTP/1.1, and not others, such as HTTP/2.
  // OPENSSL_EXPORT void SSL_set_shed_handshake_config(SSL *ssl, int enable);
  
@@ -647,7 +666,7 @@
  
  // SSL_set_renegotiate_mode configures how |ssl|, a client, reacts to
  // renegotiation attempts by a server. If |ssl| is a server, peer-initiated
-@@ -4297,8 +4298,8 @@
+@@ -4305,8 +4305,8 @@
  //
  // There is no support in BoringSSL for initiating renegotiations as a client
  // or server.
@@ -658,7 +677,7 @@
  
  // SSL_renegotiate starts a deferred renegotiation on |ssl| if it was configured
  // with |ssl_renegotiate_explicit| and has a pending HelloRequest. It returns
-@@ -4359,45 +4360,45 @@
+@@ -4367,45 +4367,45 @@
  // callbacks that are called very early on during the server handshake. At this
  // point, much of the SSL* hasn't been filled out and only the ClientHello can
  // be depended on.
@@ -734,7 +753,7 @@
  
  // SSL_CTX_set_select_certificate_cb sets a callback that is called before most
  // ClientHello processing and before the decision whether to resume a session
-@@ -4413,9 +4414,9 @@
+@@ -4421,9 +4421,9 @@
  //
  // Note: The |SSL_CLIENT_HELLO| is only valid for the duration of the callback
  // and is not valid while the handshake is paused.
@@ -747,7 +766,7 @@
  
  // SSL_CTX_set_dos_protection_cb sets a callback that is called once the
  // resumption decision for a ClientHello has been made. It can return one to
-@@ -4531,7 +4532,7 @@
+@@ -4539,7 +4539,7 @@
  
  // SSL_get_peer_signature_algorithm returns the signature algorithm used by the
  // peer. If not applicable, it returns zero.
@@ -756,7 +775,7 @@
  
  // SSL_get_client_random writes up to |max_out| bytes of the most recent
  // handshake's client_random to |out| and returns the number of bytes written.
-@@ -4665,8 +4666,8 @@
+@@ -4673,8 +4673,8 @@
  
  // These client- and server-specific methods call their corresponding generic
  // methods.
@@ -767,7 +786,7 @@
  // OPENSSL_EXPORT const SSL_METHOD *SSLv23_server_method(void);
  // OPENSSL_EXPORT const SSL_METHOD *SSLv23_client_method(void);
  // OPENSSL_EXPORT const SSL_METHOD *TLSv1_server_method(void);
-@@ -4877,7 +4878,7 @@
+@@ -4885,7 +4885,7 @@
  // This API is compatible with OpenSSL. However, BoringSSL-specific code should
  // prefer |SSL_CTX_set_signing_algorithm_prefs| because it's clearer and it's
  // more convenient to codesearch for specific algorithm values.
@@ -776,7 +795,20 @@
  
  // SSL_set1_sigalgs_list takes a textual specification of a set of signature
  // algorithms and configures them on |ssl|. It returns one on success and zero
-@@ -5462,21 +5463,21 @@
+@@ -5238,9 +5238,9 @@
+ // OCSP responses like other server credentials, such as certificates or SCT
+ // lists. Configure, store, and refresh them eagerly. This avoids downtime if
+ // the CA's OCSP responder is briefly offline.
+-// OPENSSL_EXPORT int SSL_CTX_set_tlsext_status_cb(SSL_CTX *ctx,
+-//                                                 int (*callback)(SSL *ssl,
+-//                                                                 void *arg));
++OPENSSL_EXPORT int SSL_CTX_set_tlsext_status_cb(SSL_CTX *ctx,
++                                                int (*callback)(SSL *ssl,
++                                                                void *arg));
+ 
+ // SSL_CTX_set_tlsext_status_arg sets additional data for
+ // |SSL_CTX_set_tlsext_status_cb|'s callback and returns one.
+@@ -5470,21 +5470,21 @@
  // #endif // !defined(BORINGSSL_PREFIX)
  
  
@@ -806,7 +838,7 @@
  // BORINGSSL_MAKE_UP_REF(SSL_SESSION, SSL_SESSION_up_ref)
  
  // enum class OpenRecordResult {
-@@ -5593,13 +5594,13 @@
+@@ -5601,13 +5601,13 @@
  //     Span<const uint8_t> *out_write_traffic_secret);
  
  
@@ -824,7 +856,7 @@
  
  #ifdef ossl_SSL_R_APP_DATA_IN_HANDSHAKE
  #define SSL_R_APP_DATA_IN_HANDSHAKE ossl_SSL_R_APP_DATA_IN_HANDSHAKE
-@@ -6367,4 +6368,4 @@
+@@ -6375,4 +6375,4 @@
  #define SSL_R_TLSV1_ALERT_ECH_REQUIRED ossl_SSL_R_TLSV1_ALERT_ECH_REQUIRED
  #endif
  

@@ -757,3 +757,90 @@ TEST(SSLTest, test_SSL_get_signature_algorithm_name) {
     EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_RSA_PSS_RSAE_SHA512, 0), "rsa_pss_rsae_sha512");
     EXPECT_STREQ(SSL_get_signature_algorithm_name(SSL_SIGN_ED25519, 0), "ed25519");
 }
+
+
+TEST(SSLTest, test_SSL_get0_ocsp_response) {
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  static const char MESSAGE[] { "HELLO" };
+  static const uint8_t OCSP_RESPONSE[] { 'H', 'E', 'L', 'P' };
+  std::promise<in_port_t> server_port;
+
+  signal(SIGPIPE, SIG_IGN);
+
+  // Start a TLS server
+  std::thread server([&]() {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_server_method()));
+    ASSERT_EQ(1, SSL_CTX_use_certificate_chain_file(ctx.get(), server_2_cert_chain_pem.path()));
+    ASSERT_EQ(1, SSL_CTX_use_PrivateKey_file(ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+
+    SSL_CTX_set_tlsext_status_cb(ctx.get(), [](SSL* ssl, void* arg) -> int {
+      if(!SSL_set_ocsp_response(ssl, OCSP_RESPONSE, sizeof(OCSP_RESPONSE))) {
+        return SSL_TLSEXT_ERR_ALERT_FATAL;
+      }
+      return SSL_TLSEXT_ERR_OK;
+    });
+
+    bssl::UniquePtr<SSL> ssl { SSL_new(ctx.get()) };
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    socklen_t addrlen = sizeof(addr);
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_LT(0, sock);
+    ASSERT_EQ(0, bind(sock, (struct sockaddr*)&addr, sizeof(addr)));
+    ASSERT_EQ(0, listen(sock, 1));
+    ASSERT_EQ(0, getsockname(sock, (struct sockaddr*)&addr, &addrlen));
+    server_port.set_value(ntohs(addr.sin_port)); // Tell the client our port number
+    int client = accept(sock, nullptr, nullptr);
+    ASSERT_LT(0, client);
+
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), client));
+    ASSERT_EQ(1, SSL_accept(ssl.get())) << ERR_error_string(ERR_get_error(), nullptr);
+    ASSERT_EQ(1, SSL_is_server(ssl.get()));
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+
+    SSL_shutdown(ssl.get());
+    close(client);
+    close(sock);
+  });
+
+  {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_client_method()));
+    SSL_CTX_set_verify(ctx.get(), SSL_VERIFY_NONE, nullptr);
+    bssl::UniquePtr<SSL> ssl (SSL_new(ctx.get()));
+    SSL_enable_ocsp_stapling(ssl.get());
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    addr.sin_port = htons(server_port.get_future().get());
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_EQ(0, connect(sock, (const struct sockaddr *)&addr, sizeof(addr)));
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), sock));
+    ASSERT_TRUE(SSL_connect(ssl.get()) > 0) << (ERR_print_errors_fp(stderr), "");
+
+    const uint8_t *ocsp_resp_data;
+    size_t ocsp_resp_len;
+
+    SSL_get0_ocsp_response(ssl.get(), &ocsp_resp_data, &ocsp_resp_len);
+
+    ASSERT_EQ(sizeof(OCSP_RESPONSE), ocsp_resp_len);
+    ASSERT_EQ(0, memcmp(OCSP_RESPONSE, ocsp_resp_data, ocsp_resp_len));
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+  }
+
+  server.join();
+}
