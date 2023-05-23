@@ -306,6 +306,19 @@
  
  // SSL_get_signature_algorithm_key_type returns the key type associated with
  // |sigalg| as an |EVP_PKEY_*| constant or |EVP_PKEY_NONE| if unknown.
+@@ -1202,9 +1203,9 @@
+ // client or server. References to the given |CRYPTO_BUFFER| and |EVP_PKEY|
+ // objects are added as needed. Exactly one of |privkey| or |privkey_method|
+ // may be non-NULL. Returns one on success and zero on error.
+-// OPENSSL_EXPORT int SSL_set_chain_and_key(
+-//     SSL *ssl, CRYPTO_BUFFER *const *certs, size_t num_certs, EVP_PKEY *privkey,
+-//     const SSL_PRIVATE_KEY_METHOD *privkey_method);
++OPENSSL_EXPORT int SSL_set_chain_and_key(
++    SSL *ssl, CRYPTO_BUFFER *const *certs, size_t num_certs, EVP_PKEY *privkey,
++    const SSL_PRIVATE_KEY_METHOD *privkey_method);
+ 
+ // SSL_CTX_get0_chain returns the list of |CRYPTO_BUFFER|s that were set by
+ // |SSL_CTX_set_chain_and_key|. Reference counts are not incremented by this
 @@ -1254,8 +1255,8 @@
  // |type| parameter is one of the |SSL_FILETYPE_*| values and determines whether
  // the file's contents are read as PEM or DER.

@@ -1,0 +1,77 @@
+--- a/include/openssl/pool.h
++++ b/include/openssl/pool.h
+@@ -12,16 +12,16 @@
+  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
+ 
+-// #ifndef OPENSSL_HEADER_POOL_H
+-// #define OPENSSL_HEADER_POOL_H
++#ifndef OPENSSL_HEADER_POOL_H
++#define OPENSSL_HEADER_POOL_H
+ 
+-// #include <openssl/base.h>
++#include <openssl/base.h>
+ 
+-// #include <openssl/stack.h>
++#include <openssl/stack.h>
+ 
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // Buffers and buffer pools.
+@@ -45,8 +45,8 @@
+ // reference to a previously existing |CRYPTO_BUFFER| that contained the same
+ // data. Otherwise, the returned, fresh |CRYPTO_BUFFER| will be added to the
+ // pool.
+-// OPENSSL_EXPORT CRYPTO_BUFFER *CRYPTO_BUFFER_new(const uint8_t *data, size_t len,
+-//                                                 CRYPTO_BUFFER_POOL *pool);
++OPENSSL_EXPORT CRYPTO_BUFFER *CRYPTO_BUFFER_new(const uint8_t *data, size_t len,
++                                                CRYPTO_BUFFER_POOL *pool);
+ 
+ // CRYPTO_BUFFER_alloc creates an unpooled |CRYPTO_BUFFER| of the given size and
+ // writes the underlying data pointer to |*out_data|. It returns NULL on error.
+@@ -71,7 +71,7 @@
+ // CRYPTO_BUFFER_free decrements the reference count of |buf|. If there are no
+ // other references, or if the only remaining reference is from a pool, then
+ // |buf| will be freed.
+-// OPENSSL_EXPORT void CRYPTO_BUFFER_free(CRYPTO_BUFFER *buf);
++OPENSSL_EXPORT void CRYPTO_BUFFER_free(CRYPTO_BUFFER *buf);
+ 
+ // CRYPTO_BUFFER_up_ref increments the reference count of |buf| and returns
+ // one.
+@@ -88,21 +88,21 @@
+ // OPENSSL_EXPORT void CRYPTO_BUFFER_init_CBS(const CRYPTO_BUFFER *buf, CBS *out);
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
++#if defined(__cplusplus)
++}  // extern C
+ 
+-// extern "C++" {
++extern "C++" {
+ 
+-// BSSL_NAMESPACE_BEGIN
++BSSL_NAMESPACE_BEGIN
+ 
+ // BORINGSSL_MAKE_DELETER(CRYPTO_BUFFER_POOL, CRYPTO_BUFFER_POOL_free)
+-// BORINGSSL_MAKE_DELETER(CRYPTO_BUFFER, CRYPTO_BUFFER_free)
++BORINGSSL_MAKE_DELETER(CRYPTO_BUFFER, CRYPTO_BUFFER_free)
+ // BORINGSSL_MAKE_UP_REF(CRYPTO_BUFFER, CRYPTO_BUFFER_up_ref)
+ 
+-// BSSL_NAMESPACE_END
++BSSL_NAMESPACE_END
+ 
+-// }  // extern C++
++}  // extern C++
+ 
+-// #endif
++#endif
+ 
+-// #endif  // OPENSSL_HEADER_POOL_H
++#endif  // OPENSSL_HEADER_POOL_H

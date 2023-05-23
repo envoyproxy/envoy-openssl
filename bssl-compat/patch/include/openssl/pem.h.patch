@@ -1,6 +1,6 @@
 --- a/include/openssl/pem.h
 +++ b/include/openssl/pem.h
-@@ -54,25 +54,25 @@
+@@ -54,53 +54,53 @@
   * copied and put under another distribution licence
   * [including the GNU Public Licence.] */
  
@@ -40,7 +40,59 @@
  
  
  // #define PEM_BUFSIZE 1024
-@@ -250,12 +250,12 @@
+ 
+-// #define PEM_STRING_X509_OLD "X509 CERTIFICATE"
+-// #define PEM_STRING_X509 "CERTIFICATE"
+-// #define PEM_STRING_X509_PAIR "CERTIFICATE PAIR"
+-// #define PEM_STRING_X509_TRUSTED "TRUSTED CERTIFICATE"
+-// #define PEM_STRING_X509_REQ_OLD "NEW CERTIFICATE REQUEST"
+-// #define PEM_STRING_X509_REQ "CERTIFICATE REQUEST"
+-// #define PEM_STRING_X509_CRL "X509 CRL"
+-// #define PEM_STRING_EVP_PKEY "ANY PRIVATE KEY"
+-// #define PEM_STRING_PUBLIC "PUBLIC KEY"
+-// #define PEM_STRING_RSA "RSA PRIVATE KEY"
+-// #define PEM_STRING_RSA_PUBLIC "RSA PUBLIC KEY"
+-// #define PEM_STRING_DSA "DSA PRIVATE KEY"
+-// #define PEM_STRING_DSA_PUBLIC "DSA PUBLIC KEY"
+-// #define PEM_STRING_EC "EC PRIVATE KEY"
+-// #define PEM_STRING_PKCS7 "PKCS7"
+-// #define PEM_STRING_PKCS7_SIGNED "PKCS #7 SIGNED DATA"
+-// #define PEM_STRING_PKCS8 "ENCRYPTED PRIVATE KEY"
+-// #define PEM_STRING_PKCS8INF "PRIVATE KEY"
+-// #define PEM_STRING_DHPARAMS "DH PARAMETERS"
+-// #define PEM_STRING_SSL_SESSION "SSL SESSION PARAMETERS"
+-// #define PEM_STRING_DSAPARAMS "DSA PARAMETERS"
+-// #define PEM_STRING_ECDSA_PUBLIC "ECDSA PUBLIC KEY"
+-// #define PEM_STRING_ECPRIVATEKEY "EC PRIVATE KEY"
+-// #define PEM_STRING_CMS "CMS"
++#define PEM_STRING_X509_OLD "X509 CERTIFICATE"
++#define PEM_STRING_X509 "CERTIFICATE"
++#define PEM_STRING_X509_PAIR "CERTIFICATE PAIR"
++#define PEM_STRING_X509_TRUSTED "TRUSTED CERTIFICATE"
++#define PEM_STRING_X509_REQ_OLD "NEW CERTIFICATE REQUEST"
++#define PEM_STRING_X509_REQ "CERTIFICATE REQUEST"
++#define PEM_STRING_X509_CRL "X509 CRL"
++#define PEM_STRING_EVP_PKEY "ANY PRIVATE KEY"
++#define PEM_STRING_PUBLIC "PUBLIC KEY"
++#define PEM_STRING_RSA "RSA PRIVATE KEY"
++#define PEM_STRING_RSA_PUBLIC "RSA PUBLIC KEY"
++#define PEM_STRING_DSA "DSA PRIVATE KEY"
++#define PEM_STRING_DSA_PUBLIC "DSA PUBLIC KEY"
++#define PEM_STRING_EC "EC PRIVATE KEY"
++#define PEM_STRING_PKCS7 "PKCS7"
++#define PEM_STRING_PKCS7_SIGNED "PKCS #7 SIGNED DATA"
++#define PEM_STRING_PKCS8 "ENCRYPTED PRIVATE KEY"
++#define PEM_STRING_PKCS8INF "PRIVATE KEY"
++#define PEM_STRING_DHPARAMS "DH PARAMETERS"
++#define PEM_STRING_SSL_SESSION "SSL SESSION PARAMETERS"
++#define PEM_STRING_DSAPARAMS "DSA PARAMETERS"
++#define PEM_STRING_ECDSA_PUBLIC "ECDSA PUBLIC KEY"
++#define PEM_STRING_ECPRIVATEKEY "EC PRIVATE KEY"
++#define PEM_STRING_CMS "CMS"
+ 
+ // enc_type is one off
+ // #define PEM_TYPE_ENCRYPTED 10
+@@ -250,67 +250,67 @@
  
  // These are the same except they are for the declarations
  
@@ -58,13 +110,20 @@
  
  // #define DECLARE_PEM_write_fp_const(name, type) \
  //   OPENSSL_EXPORT int PEM_write_##name(FILE *fp, const type *x);
-@@ -265,12 +265,12 @@
- //       FILE *fp, type *x, const EVP_CIPHER *enc, unsigned char *kstr, int klen, \
- //       pem_password_cb *cb, void *u);
  
+-// #define DECLARE_PEM_write_cb_fp(name, type)                                    \
+-//   OPENSSL_EXPORT int PEM_write_##name(                                         \
+-//       FILE *fp, type *x, const EVP_CIPHER *enc, unsigned char *kstr, int klen, \
+-//       pem_password_cb *cb, void *u);
+-
 -// #define DECLARE_PEM_read_bio(name, type)                      \
 -//   OPENSSL_EXPORT type *PEM_read_bio_##name(BIO *bp, type **x, \
 -//                                            pem_password_cb *cb, void *u);
++#define DECLARE_PEM_write_cb_fp(name, type)                                    \
++  OPENSSL_EXPORT int PEM_write_##name(                                         \
++      FILE *fp, type *x, const EVP_CIPHER *enc, unsigned char *kstr, int klen, \
++      pem_password_cb *cb, void *u);
++
 +#define DECLARE_PEM_read_bio(name, type)                      \
 +  OPENSSL_EXPORT type *PEM_read_bio_##name(BIO *bp, type **x, \
 +                                           pem_password_cb *cb, void *u);
@@ -76,8 +135,15 @@
  
  // #define DECLARE_PEM_write_bio_const(name, type) \
  //   OPENSSL_EXPORT int PEM_write_bio_##name(BIO *bp, const type *x);
-@@ -281,9 +281,9 @@
- //       pem_password_cb *cb, void *u);
+ 
+-// #define DECLARE_PEM_write_cb_bio(name, type)                                  \
+-//   OPENSSL_EXPORT int PEM_write_bio_##name(                                    \
+-//       BIO *bp, type *x, const EVP_CIPHER *enc, unsigned char *kstr, int klen, \
+-//       pem_password_cb *cb, void *u);
++#define DECLARE_PEM_write_cb_bio(name, type)                                  \
++  OPENSSL_EXPORT int PEM_write_bio_##name(                                    \
++      BIO *bp, type *x, const EVP_CIPHER *enc, unsigned char *kstr, int klen, \
++      pem_password_cb *cb, void *u);
  
  
 -// #define DECLARE_PEM_write(name, type) \
@@ -89,10 +155,12 @@
  
  // #define DECLARE_PEM_write_const(name, type) \
  //   DECLARE_PEM_write_bio_const(name, type)   \
-@@ -293,13 +293,13 @@
- //   DECLARE_PEM_write_cb_bio(name, type)   \
- //   DECLARE_PEM_write_cb_fp(name, type)
+ //   DECLARE_PEM_write_fp_const(name, type)
  
+-// #define DECLARE_PEM_write_cb(name, type) \
+-//   DECLARE_PEM_write_cb_bio(name, type)   \
+-//   DECLARE_PEM_write_cb_fp(name, type)
+-
 -// #define DECLARE_PEM_read(name, type) \
 -//   DECLARE_PEM_read_bio(name, type)   \
 -//   DECLARE_PEM_read_fp(name, type)
@@ -100,6 +168,10 @@
 -// #define DECLARE_PEM_rw(name, type) \
 -//   DECLARE_PEM_read(name, type)     \
 -//   DECLARE_PEM_write(name, type)
++#define DECLARE_PEM_write_cb(name, type) \
++  DECLARE_PEM_write_cb_bio(name, type)   \
++  DECLARE_PEM_write_cb_fp(name, type)
++
 +#define DECLARE_PEM_read(name, type) \
 +  DECLARE_PEM_read_bio(name, type)   \
 +  DECLARE_PEM_read_fp(name, type)
@@ -110,8 +182,14 @@
  
  // #define DECLARE_PEM_rw_const(name, type) \
  //   DECLARE_PEM_read(name, type)           \
-@@ -310,7 +310,7 @@
- //   DECLARE_PEM_write_cb(name, type)
+ //   DECLARE_PEM_write_const(name, type)
+ 
+-// #define DECLARE_PEM_rw_cb(name, type) \
+-//   DECLARE_PEM_read(name, type)        \
+-//   DECLARE_PEM_write_cb(name, type)
++#define DECLARE_PEM_rw_cb(name, type) \
++  DECLARE_PEM_read(name, type)        \
++  DECLARE_PEM_write_cb(name, type)
  
  // "userdata": new with OpenSSL 0.9.4
 -// typedef int pem_password_cb(char *buf, int size, int rwflag, void *userdata);
@@ -119,6 +197,19 @@
  
  // OPENSSL_EXPORT int PEM_get_EVP_CIPHER_INFO(char *header,
  //                                            EVP_CIPHER_INFO *cipher);
+@@ -336,9 +336,9 @@
+ // OPENSSL_EXPORT int PEM_write_bio(BIO *bp, const char *name, const char *hdr,
+ //                                  const unsigned char *data, long len);
+ 
+-// OPENSSL_EXPORT int PEM_bytes_read_bio(unsigned char **pdata, long *plen,
+-//                                       char **pnm, const char *name, BIO *bp,
+-//                                       pem_password_cb *cb, void *u);
++OPENSSL_EXPORT int PEM_bytes_read_bio(unsigned char **pdata, long *plen,
++                                      char **pnm, const char *name, BIO *bp,
++                                      pem_password_cb *cb, void *u);
+ // OPENSSL_EXPORT void *PEM_ASN1_read_bio(d2i_of_void *d2i, const char *name,
+ //                                        BIO *bp, void **x, pem_password_cb *cb,
+ //                                        void *u);
 @@ -381,7 +381,7 @@
  //                                  char *str);
  
@@ -128,6 +219,15 @@
  
  // DECLARE_PEM_rw(X509_AUX, X509)
  
+@@ -395,7 +395,7 @@
+ 
+ // DECLARE_PEM_rw(PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO)
+ 
+-// DECLARE_PEM_rw_cb(RSAPrivateKey, RSA)
++DECLARE_PEM_rw_cb(RSAPrivateKey, RSA)
+ 
+ // DECLARE_PEM_rw_const(RSAPublicKey, RSA)
+ // DECLARE_PEM_rw(RSA_PUBKEY, RSA)
 @@ -460,9 +460,9 @@
  //                                              void *u);
  
