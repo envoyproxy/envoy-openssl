@@ -48,6 +48,9 @@ add_library(bssl-compat STATIC
   source/bio.cpp
   source/bn.c
   source/cipher.c
+  source/CRYPTO_BUFFER_free.c
+  source/CRYPTO_BUFFER_new.c
+  source/CRYPTO_BUFFER.h
   source/crypto.c
   source/digest.c
   source/err.c
@@ -57,7 +60,10 @@ add_library(bssl-compat STATIC
   source/mem.c
   source/ossl_ERR_set_error.c
   source/ossl.c
+  source/PEM_bytes_read_bio.c
+  source/PEM_read_bio_RSAPrivateKey.c
   source/rand.c
+  source/RSA_free.c
   source/ssl_cipher.c
   source/SSL_CTX_set_tlsext_status_cb.c
   source/SSL_CTX_set1_curves_list.c
@@ -72,6 +78,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_peer_signature_algorithm.c
   source/SSL_get_signature_algorithm_name.c
   source/SSL_get0_ocsp_response.c
+  source/SSL_set_chain_and_key.cc
   source/SSL_set_tlsext_host_name.c
   source/ssl.c
   source/stack.c
@@ -167,6 +174,8 @@ target_add_bssl_include(bssl-compat
   include/openssl/x509_vfy.h
 )
 set_source_files_properties(source/evp.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+set_source_files_properties(source/RSA_free.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+set_source_files_properties(source/PEM_read_bio_RSAPrivateKey.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_include_directories(bssl-compat PUBLIC include)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 
