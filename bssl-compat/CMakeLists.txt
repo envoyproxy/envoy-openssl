@@ -52,9 +52,13 @@ add_library(bssl-compat STATIC
   source/CRYPTO_BUFFER_new.c
   source/CRYPTO_BUFFER.h
   source/crypto.c
+  source/d2i_SSL_SESSION.c
   source/digest.c
   source/err.c
+  source/EVP_DecodeBase64.c
+  source/EVP_DecodedLength.c
   source/evp.c
+  source/i2d_SSL_SESSION.c
   source/log.c
   source/log.h
   source/mem.c
@@ -78,6 +82,11 @@ add_library(bssl-compat STATIC
   source/SSL_get_peer_signature_algorithm.c
   source/SSL_get_signature_algorithm_name.c
   source/SSL_get0_ocsp_response.c
+  source/SSL_get1_session.c
+  source/SSL_SESSION_from_bytes.c
+  source/SSL_SESSION_get_id.c
+  source/SSL_SESSION_is_resumable.c
+  source/SSL_SESSION_to_bytes.c
   source/SSL_set_chain_and_key.cc
   source/SSL_set_tlsext_host_name.c
   source/ssl.c

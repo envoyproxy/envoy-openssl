@@ -945,3 +945,118 @@ TEST(SSLTest, test_SSL_set_chain_and_key) {
 
   server.join();
 }
+
+TEST(SSLTest, test_SSL_SESSION_from_bytes) {
+  TempFile root_ca_cert_pem { root_ca_cert_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+  TempFile server_2_key_pem { server_2_key_pem_str };
+
+  static const char MESSAGE[] { "HELLO" };
+  std::promise<in_port_t> server_port;
+
+  signal(SIGPIPE, SIG_IGN);
+
+  // Start a TLS server
+  std::thread server([&]() {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_server_method()));
+    ASSERT_EQ(1, SSL_CTX_use_certificate_chain_file(ctx.get(), server_2_cert_chain_pem.path()));
+    ASSERT_EQ(1, SSL_CTX_use_PrivateKey_file(ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+    bssl::UniquePtr<SSL> ssl { SSL_new(ctx.get()) };
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    socklen_t addrlen = sizeof(addr);
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_LT(0, sock);
+    ASSERT_EQ(0, bind(sock, (struct sockaddr*)&addr, sizeof(addr)));
+    ASSERT_EQ(0, listen(sock, 1));
+    ASSERT_EQ(0, getsockname(sock, (struct sockaddr*)&addr, &addrlen));
+    server_port.set_value(ntohs(addr.sin_port)); // Tell the client our port number
+    int client = accept(sock, nullptr, nullptr);
+    ASSERT_LT(0, client);
+
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), client));
+    ASSERT_EQ(1, SSL_accept(ssl.get())) << ERR_error_string(ERR_get_error(), nullptr);
+    ASSERT_EQ(1, SSL_is_server(ssl.get()));
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+
+    SSL_shutdown(ssl.get());
+    close(client);
+    close(sock);
+  });
+
+  {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_client_method()));
+    SSL_CTX_set_verify(ctx.get(), SSL_VERIFY_PEER, nullptr);
+    ASSERT_EQ(1, SSL_CTX_load_verify_locations(ctx.get(), root_ca_cert_pem.path(), nullptr));
+    bssl::UniquePtr<SSL> ssl (SSL_new(ctx.get()));
+
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    addr.sin_port = htons(server_port.get_future().get());
+
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    ASSERT_EQ(0, connect(sock, (const struct sockaddr *)&addr, sizeof(addr)));
+    ASSERT_EQ(1, SSL_set_fd(ssl.get(), sock));
+    ASSERT_TRUE(SSL_connect(ssl.get()) > 0)  << ERR_error_string(ERR_get_error(), nullptr);
+
+    // Obtain the SSL_SESSION
+    bssl::UniquePtr<SSL_SESSION> session1 {SSL_get1_session(ssl.get())};
+    ASSERT_TRUE(session1);
+
+    // SSL_SESSION_to_bytes()
+    uint8_t *session1_buf;
+    size_t session1_len;
+    ASSERT_TRUE(SSL_SESSION_to_bytes(session1.get(), &session1_buf, &session1_len));
+    bssl::UniquePtr<uint8_t> tmp1 {session1_buf}; // We own the returned buffer
+    ASSERT_TRUE(session1_buf);
+    ASSERT_TRUE(session1_len);
+
+    // SSL_SESSION_from_bytes()
+    bssl::UniquePtr<SSL_SESSION> session2 {SSL_SESSION_from_bytes(session1_buf, session1_len, ctx.get())};
+    ASSERT_TRUE(session2);
+
+    // Compare SSL_SESSION_get_id() on session1 and session2
+    unsigned int session1_id_len;
+    const uint8_t *session1_id_buf = SSL_SESSION_get_id(session1.get(), &session1_id_len);
+    unsigned int session2_id_len;
+    const uint8_t *session2_id_buf = SSL_SESSION_get_id(session2.get(), &session2_id_len);
+    ASSERT_EQ(session1_id_len, session2_id_len);
+    for(size_t i = 0; i < session1_id_len; i++) {
+      ASSERT_EQ(session1_id_buf[i], session2_id_buf[i]);
+    }
+
+    // Compare SSL_SESSION_is_resumable() on session1 and session2
+    int session1_resumable = SSL_SESSION_is_resumable(session1.get());
+    int session2_resumable = SSL_SESSION_is_resumable(session2.get());
+    ASSERT_EQ(session1_resumable, session2_resumable);
+
+    // SSL_SESSION_to_bytes()
+    uint8_t *session2_buf;
+    size_t session2_len;
+    ASSERT_TRUE(SSL_SESSION_to_bytes(session2.get(), &session2_buf, &session2_len));
+    bssl::UniquePtr<uint8_t> tmp2 {session2_buf}; // We own the returned buffer
+    ASSERT_TRUE(session2_buf);
+    ASSERT_TRUE(session2_len);
+
+    // Compare session2_len/buf & session1_len/buf
+    ASSERT_EQ(session1_len, session2_len);
+    for(size_t i = 0; i < session1_len; i++) {
+      ASSERT_EQ(session1_buf[i], session2_buf[i]);
+    }
+
+    char buf[sizeof(MESSAGE)];
+    ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
+    ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
+  }
+
+  server.join();
+}
