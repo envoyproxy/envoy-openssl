@@ -655,6 +655,19 @@
  
  // SSL_get_verify_result returns the result of certificate verification. It is
  // either |X509_V_OK| or a |X509_V_ERR_*| value.
+@@ -2649,9 +2650,9 @@
+ //
+ // The callback may use |SSL_get_ex_data_X509_STORE_CTX_idx| to recover the
+ // |SSL| object from |store_ctx|.
+-// OPENSSL_EXPORT void SSL_CTX_set_cert_verify_callback(
+-//     SSL_CTX *ctx, int (*callback)(X509_STORE_CTX *store_ctx, void *arg),
+-//     void *arg);
++OPENSSL_EXPORT void SSL_CTX_set_cert_verify_callback(
++    SSL_CTX *ctx, int (*callback)(X509_STORE_CTX *store_ctx, void *arg),
++    void *arg);
+ 
+ // SSL_enable_signed_cert_timestamps causes |ssl| (which must be the client end
+ // of a connection) to request SCTs from the server. See
 @@ -2673,7 +2674,7 @@
  //
  // Call |SSL_get0_ocsp_response| to recover the OCSP response after the
