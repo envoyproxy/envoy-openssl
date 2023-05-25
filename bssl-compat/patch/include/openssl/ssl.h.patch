@@ -128,7 +128,7 @@
  
  // SSL_is_dtls returns one if |ssl| is a DTLS connection and zero otherwise.
  // OPENSSL_EXPORT int SSL_is_dtls(const SSL *ssl);
-@@ -265,21 +266,21 @@
+@@ -265,27 +266,27 @@
  // Due to the very complex historical behavior of this function, calling this
  // function if |ssl| already has |BIO|s configured is deprecated. Prefer
  // |SSL_set0_rbio| and |SSL_set0_wbio| instead.
@@ -153,6 +153,13 @@
  
  // SSL_get_rbio returns the |BIO| that |ssl| reads from.
  // OPENSSL_EXPORT BIO *SSL_get_rbio(const SSL *ssl);
+ 
+ // SSL_get_wbio returns the |BIO| that |ssl| writes to.
+-// OPENSSL_EXPORT BIO *SSL_get_wbio(const SSL *ssl);
++OPENSSL_EXPORT BIO *SSL_get_wbio(const SSL *ssl);
+ 
+ // SSL_get_fd calls |SSL_get_rfd|.
+ // OPENSSL_EXPORT int SSL_get_fd(const SSL *ssl);
 @@ -313,7 +314,7 @@
  // |fd|.
  //
