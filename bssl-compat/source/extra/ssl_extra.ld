@@ -17,7 +17,6 @@ PROVIDE(SSL_new = ossl_SSL_new);
 PROVIDE(SSL_set_fd = ossl_SSL_set_fd);
 PROVIDE(SSL_shutdown = ossl_SSL_shutdown);
 PROVIDE(SSL_read = ossl_SSL_read);
-PROVIDE(SSL_write = ossl_SSL_write);
 PROVIDE(SSL_SESSION_set_protocol_version = ossl_SSL_SESSION_set_protocol_version);
 PROVIDE(SSL_SESSION_free = ossl_SSL_SESSION_free);
 PROVIDE(SSL_is_server = ossl_SSL_is_server);
