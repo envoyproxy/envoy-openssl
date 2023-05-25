@@ -89,9 +89,10 @@ add_library(bssl-compat STATIC
   source/SSL_SESSION_to_bytes.c
   source/SSL_set_chain_and_key.cc
   source/SSL_set_tlsext_host_name.c
-  source/TLS_method.cc
+  source/SSL_write.cc
   source/ssl.c
   source/stack.c
+  source/TLS_method.cc
 )
 
 target_add_bssl_source(bssl-compat
