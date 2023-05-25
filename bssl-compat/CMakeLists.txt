@@ -54,6 +54,7 @@ add_library(bssl-compat STATIC
   source/crypto.c
   source/d2i_SSL_SESSION.c
   source/digest.c
+  source/DTLS_method.cc
   source/err.c
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
