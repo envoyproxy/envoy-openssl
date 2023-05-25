@@ -87,6 +87,7 @@ add_library(bssl-compat STATIC
   source/SSL_SESSION_get_id.c
   source/SSL_SESSION_is_resumable.c
   source/SSL_SESSION_to_bytes.c
+  source/SSL_set_accept_state.cc
   source/SSL_set_chain_and_key.cc
   source/SSL_set_tlsext_host_name.c
   source/SSL_version.cc
