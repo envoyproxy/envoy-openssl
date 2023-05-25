@@ -99,14 +99,6 @@ int SSL_CTX_use_certificate(SSL_CTX *ctx, X509 *x509) {
   return (ret == 1) ? 1 : 0;
 }
 
-/*
- * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L867
- * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_use_PrivateKey.html
- */
-int SSL_CTX_use_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey) {
-  return (ossl_SSL_CTX_use_PrivateKey(ctx, pkey) == 1) ? 1 : 0;
-}
-
 int SSL_CTX_set_cipher_list(SSL_CTX *ctx, const char *str) {
   return ossl_SSL_CTX_set_cipher_list(ctx, str);
 }

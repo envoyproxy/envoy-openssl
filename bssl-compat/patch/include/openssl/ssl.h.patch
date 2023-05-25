@@ -263,6 +263,15 @@
  
  // SSL_use_certificate sets |ssl|'s leaf certificate to |x509|. It returns one
  // on success and zero on failure.
+@@ -936,7 +937,7 @@
+ 
+ // SSL_CTX_use_PrivateKey sets |ctx|'s private key to |pkey|. It returns one on
+ // success and zero on failure.
+-// OPENSSL_EXPORT int SSL_CTX_use_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey);
++OPENSSL_EXPORT int SSL_CTX_use_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey);
+ 
+ // SSL_use_PrivateKey sets |ssl|'s private key to |pkey|. It returns one on
+ // success and zero on failure.
 @@ -1074,10 +1075,10 @@
  // OPENSSL_EXPORT int SSL_check_private_key(const SSL *ssl);
  

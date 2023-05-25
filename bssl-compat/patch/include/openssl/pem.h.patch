@@ -228,6 +228,15 @@
  
  // DECLARE_PEM_rw_const(RSAPublicKey, RSA)
  // DECLARE_PEM_rw(RSA_PUBKEY, RSA)
+@@ -417,7 +417,7 @@
+ // DECLARE_PEM_rw_const(DHparams, DH)
+ 
+ 
+-// DECLARE_PEM_rw_cb(PrivateKey, EVP_PKEY)
++DECLARE_PEM_rw_cb(PrivateKey, EVP_PKEY)
+ 
+ // DECLARE_PEM_rw(PUBKEY, EVP_PKEY)
+ 
 @@ -460,9 +460,9 @@
  //                                              void *u);
  

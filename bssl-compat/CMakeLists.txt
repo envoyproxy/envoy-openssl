@@ -73,6 +73,7 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_tlsext_status_cb.c
   source/SSL_CTX_set1_curves_list.c
   source/SSL_CTX_set1_sigalgs_list.c
+  source/SSL_CTX_use_PrivateKey.cc
   source/ssl_ctx.c
   source/ssl_ctx.cc
   source/SSL_early_callback_ctx_extension_get.c
