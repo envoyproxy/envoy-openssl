@@ -45,6 +45,7 @@ add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h)
 
 add_library(bssl-compat STATIC
   source/asn1.c
+  source/BIO_up_ref.cc
   source/bio.cpp
   source/bn.c
   source/cipher.c

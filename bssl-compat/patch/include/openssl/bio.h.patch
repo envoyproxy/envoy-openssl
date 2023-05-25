@@ -54,7 +54,15 @@
  
  // BIO_vfree performs the same actions as |BIO_free|, but has a void return
  // value. This is provided for API-compat.
-@@ -105,7 +105,7 @@
+@@ -98,14 +98,14 @@
+ // OPENSSL_EXPORT void BIO_vfree(BIO *bio);
+ 
+ // BIO_up_ref increments the reference count of |bio| and returns one.
+-// OPENSSL_EXPORT int BIO_up_ref(BIO *bio);
++OPENSSL_EXPORT int BIO_up_ref(BIO *bio);
+ 
+ 
+ // Basic I/O.
  
  // BIO_read attempts to read |len| bytes into |data|. It returns the number of
  // bytes read, zero on EOF, or a negative number on error.
@@ -256,8 +264,9 @@
 +BSSL_NAMESPACE_BEGIN
  
 -// BORINGSSL_MAKE_DELETER(BIO, BIO_free)
+-// BORINGSSL_MAKE_UP_REF(BIO, BIO_up_ref)
 +BORINGSSL_MAKE_DELETER(BIO, BIO_free)
- // BORINGSSL_MAKE_UP_REF(BIO, BIO_up_ref)
++BORINGSSL_MAKE_UP_REF(BIO, BIO_up_ref)
  // BORINGSSL_MAKE_DELETER(BIO_METHOD, BIO_meth_free)
  
 -// BSSL_NAMESPACE_END
