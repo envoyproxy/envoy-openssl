@@ -234,6 +234,15 @@
  
  // SSL_CTX_get_min_proto_version returns the minimum protocol version for |ctx|
  // OPENSSL_EXPORT uint16_t SSL_CTX_get_min_proto_version(const SSL_CTX *ctx);
+@@ -752,7 +753,7 @@
+ // SSL_version returns the TLS or DTLS protocol version used by |ssl|, which is
+ // one of the |*_VERSION| values. (E.g. |TLS1_2_VERSION|.) Before the version
+ // is negotiated, the result is undefined.
+-// OPENSSL_EXPORT int SSL_version(const SSL *ssl);
++OPENSSL_EXPORT int SSL_version(const SSL *ssl);
+ 
+ 
+ // Options.
 @@ -928,7 +929,7 @@
  
  // SSL_CTX_use_certificate sets |ctx|'s leaf certificate to |x509|. It returns
