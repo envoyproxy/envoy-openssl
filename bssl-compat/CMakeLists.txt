@@ -66,6 +66,7 @@ add_library(bssl-compat STATIC
   source/ossl_ERR_set_error.c
   source/ossl.c
   source/PEM_bytes_read_bio.c
+  source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
   source/rand.c
   source/RSA_free.c
