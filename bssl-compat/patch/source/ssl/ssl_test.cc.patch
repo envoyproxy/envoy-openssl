@@ -1,6 +1,6 @@
 --- a/source/ssl/ssl_test.cc
 +++ b/source/ssl/ssl_test.cc
-@@ -12,56 +12,60 @@
+@@ -12,56 +12,61 @@
   * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
   * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
  
@@ -69,6 +69,7 @@
 -// #if defined(OPENSSL_WINDOWS)
 +#ifdef BSSL_COMPAT
 +#include <ossl/openssl/ssl.h>
++#include <ossl/openssl/provider.h>
 +#endif
 +
 +#if defined(OPENSSL_WINDOWS)
@@ -102,7 +103,47 @@
  
  // #define TRACED_CALL(code)                     \
  //   do {                                        \
-@@ -1196,14 +1200,14 @@
+@@ -72,22 +77,26 @@
+ //     }                                         \
+ //   } while (false)
+ 
+-// struct VersionParam {
+-//   uint16_t version;
+-//   enum { is_tls, is_dtls } ssl_method;
+-//   const char name[8];
+-// };
++struct VersionParam {
++  uint16_t version;
++  enum { is_tls, is_dtls } ssl_method;
++  const char name[8];
++};
+ 
+ // static const size_t kTicketKeyLen = 48;
+ 
+-// static const VersionParam kAllVersions[] = {
+-//     {TLS1_VERSION, VersionParam::is_tls, "TLS1"},
+-//     {TLS1_1_VERSION, VersionParam::is_tls, "TLS1_1"},
+-//     {TLS1_2_VERSION, VersionParam::is_tls, "TLS1_2"},
+-//     {TLS1_3_VERSION, VersionParam::is_tls, "TLS1_3"},
+-//     {DTLS1_VERSION, VersionParam::is_dtls, "DTLS1"},
+-//     {DTLS1_2_VERSION, VersionParam::is_dtls, "DTLS1_2"},
+-// };
++static const VersionParam kAllVersions[] = {
++#ifndef BSSL_COMPAT // OpenSSL 3.0.x no longer supports TLS 1.0 or TLS1.1
++    {TLS1_VERSION, VersionParam::is_tls, "TLS1"},
++    {TLS1_1_VERSION, VersionParam::is_tls, "TLS1_1"},
++#endif
++    {TLS1_2_VERSION, VersionParam::is_tls, "TLS1_2"},
++    {TLS1_3_VERSION, VersionParam::is_tls, "TLS1_3"},
++#ifndef BSSL_COMPAT // OpenSSL 3.0.x no longer supports DTLS 1.0
++    {DTLS1_VERSION, VersionParam::is_dtls, "DTLS1"},
++#endif
++    {DTLS1_2_VERSION, VersionParam::is_dtls, "DTLS1_2"},
++};
+ 
+ // struct ExpectedCipher {
+ //   unsigned long id;
+@@ -1196,63 +1205,63 @@
  //   }
  // }
  
@@ -114,21 +155,16 @@
 -//   return bssl::UniquePtr<X509>(
 -//       PEM_read_bio_X509(bio.get(), nullptr, nullptr, nullptr));
 -// }
-+static bssl::UniquePtr<X509> CertFromPEM(const char *pem) {
-+  bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(pem, strlen(pem)));
-+  if (!bio) {
-+    return nullptr;
-+  }
-+  return bssl::UniquePtr<X509>(
-+      PEM_read_bio_X509(bio.get(), nullptr, nullptr, nullptr));
-+}
- 
- // static bssl::UniquePtr<EVP_PKEY> KeyFromPEM(const char *pem) {
- //   bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(pem, strlen(pem)));
-@@ -1214,25 +1218,25 @@
- //       PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, nullptr));
- // }
- 
+-
+-// static bssl::UniquePtr<EVP_PKEY> KeyFromPEM(const char *pem) {
+-//   bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(pem, strlen(pem)));
+-//   if (!bio) {
+-//     return nullptr;
+-//   }
+-//   return bssl::UniquePtr<EVP_PKEY>(
+-//       PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, nullptr));
+-// }
+-
 -// static bssl::UniquePtr<X509> GetTestCertificate() {
 -//   static const char kCertPEM[] =
 -//       "-----BEGIN CERTIFICATE-----\n"
@@ -148,6 +184,44 @@
 -//       "-----END CERTIFICATE-----\n";
 -//   return CertFromPEM(kCertPEM);
 -// }
+-
+-// static bssl::UniquePtr<EVP_PKEY> GetTestKey() {
+-//   static const char kKeyPEM[] =
+-//       "-----BEGIN RSA PRIVATE KEY-----\n"
+-//       "MIICXgIBAAKBgQDYK8imMuRi/03z0K1Zi0WnvfFHvwlYeyK9Na6XJYaUoIDAtB92\n"
+-//       "kWdGMdAQhLciHnAjkXLI6W15OoV3gA/ElRZ1xUpxTMhjP6PyY5wqT5r6y8FxbiiF\n"
+-//       "KKAnHmUcrgfVW28tQ+0rkLGMryRtrukXOgXBv7gcrmU7G1jC2a7WqmeI8QIDAQAB\n"
+-//       "AoGBAIBy09Fd4DOq/Ijp8HeKuCMKTHqTW1xGHshLQ6jwVV2vWZIn9aIgmDsvkjCe\n"
+-//       "i6ssZvnbjVcwzSoByhjN8ZCf/i15HECWDFFh6gt0P5z0MnChwzZmvatV/FXCT0j+\n"
+-//       "WmGNB/gkehKjGXLLcjTb6dRYVJSCZhVuOLLcbWIV10gggJQBAkEA8S8sGe4ezyyZ\n"
+-//       "m4e9r95g6s43kPqtj5rewTsUxt+2n4eVodD+ZUlCULWVNAFLkYRTBCASlSrm9Xhj\n"
+-//       "QpmWAHJUkQJBAOVzQdFUaewLtdOJoPCtpYoY1zd22eae8TQEmpGOR11L6kbxLQsk\n"
+-//       "aMly/DOnOaa82tqAGTdqDEZgSNmCeKKknmECQAvpnY8GUOVAubGR6c+W90iBuQLj\n"
+-//       "LtFp/9ihd2w/PoDwrHZaoUYVcT4VSfJQog/k7kjE4MYXYWL8eEKg3WTWQNECQQDk\n"
+-//       "104Wi91Umd1PzF0ijd2jXOERJU1wEKe6XLkYYNHWQAe5l4J4MWj9OdxFXAxIuuR/\n"
+-//       "tfDwbqkta4xcux67//khAkEAvvRXLHTaa6VFzTaiiO8SaFsHV3lQyXOtMrBpB5jd\n"
+-//       "moZWgjHvB2W9Ckn7sDqsPB+U2tyX0joDdQEyuiMECDY8oQ==\n"
+-//       "-----END RSA PRIVATE KEY-----\n";
+-//   return KeyFromPEM(kKeyPEM);
+-// }
++static bssl::UniquePtr<X509> CertFromPEM(const char *pem) {
++  bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(pem, strlen(pem)));
++  if (!bio) {
++    return nullptr;
++  }
++  return bssl::UniquePtr<X509>(
++      PEM_read_bio_X509(bio.get(), nullptr, nullptr, nullptr));
++}
++
++static bssl::UniquePtr<EVP_PKEY> KeyFromPEM(const char *pem) {
++  bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(pem, strlen(pem)));
++  if (!bio) {
++    return nullptr;
++  }
++  return bssl::UniquePtr<EVP_PKEY>(
++      PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr, nullptr));
++}
++
 +static bssl::UniquePtr<X509> GetTestCertificate() {
 +  static const char kCertPEM[] =
 +      "-----BEGIN CERTIFICATE-----\n"
@@ -167,10 +241,792 @@
 +      "-----END CERTIFICATE-----\n";
 +  return CertFromPEM(kCertPEM);
 +}
++
++static bssl::UniquePtr<EVP_PKEY> GetTestKey() {
++  static const char kKeyPEM[] =
++      "-----BEGIN RSA PRIVATE KEY-----\n"
++      "MIICXgIBAAKBgQDYK8imMuRi/03z0K1Zi0WnvfFHvwlYeyK9Na6XJYaUoIDAtB92\n"
++      "kWdGMdAQhLciHnAjkXLI6W15OoV3gA/ElRZ1xUpxTMhjP6PyY5wqT5r6y8FxbiiF\n"
++      "KKAnHmUcrgfVW28tQ+0rkLGMryRtrukXOgXBv7gcrmU7G1jC2a7WqmeI8QIDAQAB\n"
++      "AoGBAIBy09Fd4DOq/Ijp8HeKuCMKTHqTW1xGHshLQ6jwVV2vWZIn9aIgmDsvkjCe\n"
++      "i6ssZvnbjVcwzSoByhjN8ZCf/i15HECWDFFh6gt0P5z0MnChwzZmvatV/FXCT0j+\n"
++      "WmGNB/gkehKjGXLLcjTb6dRYVJSCZhVuOLLcbWIV10gggJQBAkEA8S8sGe4ezyyZ\n"
++      "m4e9r95g6s43kPqtj5rewTsUxt+2n4eVodD+ZUlCULWVNAFLkYRTBCASlSrm9Xhj\n"
++      "QpmWAHJUkQJBAOVzQdFUaewLtdOJoPCtpYoY1zd22eae8TQEmpGOR11L6kbxLQsk\n"
++      "aMly/DOnOaa82tqAGTdqDEZgSNmCeKKknmECQAvpnY8GUOVAubGR6c+W90iBuQLj\n"
++      "LtFp/9ihd2w/PoDwrHZaoUYVcT4VSfJQog/k7kjE4MYXYWL8eEKg3WTWQNECQQDk\n"
++      "104Wi91Umd1PzF0ijd2jXOERJU1wEKe6XLkYYNHWQAe5l4J4MWj9OdxFXAxIuuR/\n"
++      "tfDwbqkta4xcux67//khAkEAvvRXLHTaa6VFzTaiiO8SaFsHV3lQyXOtMrBpB5jd\n"
++      "moZWgjHvB2W9Ckn7sDqsPB+U2tyX0joDdQEyuiMECDY8oQ==\n"
++      "-----END RSA PRIVATE KEY-----\n";
++  return KeyFromPEM(kKeyPEM);
++}
  
- // static bssl::UniquePtr<EVP_PKEY> GetTestKey() {
- //   static const char kKeyPEM[] =
-@@ -4214,43 +4218,46 @@
+ // static bssl::UniquePtr<SSL_CTX> CreateContextWithTestCertificate(
+ //     const SSL_METHOD *method) {
+@@ -1408,36 +1417,44 @@
+ //   return KeyFromPEM(kKeyPEM);
+ // }
+ 
+-// static bool CompleteHandshakes(SSL *client, SSL *server) {
+-//   // Drive both their handshakes to completion.
+-//   for (;;) {
+-//     int client_ret = SSL_do_handshake(client);
+-//     int client_err = SSL_get_error(client, client_ret);
+-//     if (client_err != SSL_ERROR_NONE &&
+-//         client_err != SSL_ERROR_WANT_READ &&
+-//         client_err != SSL_ERROR_WANT_WRITE &&
+-//         client_err != SSL_ERROR_PENDING_TICKET) {
+-//       fprintf(stderr, "Client error: %s\n", SSL_error_description(client_err));
+-//       return false;
+-//     }
+-
+-//     int server_ret = SSL_do_handshake(server);
+-//     int server_err = SSL_get_error(server, server_ret);
+-//     if (server_err != SSL_ERROR_NONE &&
+-//         server_err != SSL_ERROR_WANT_READ &&
+-//         server_err != SSL_ERROR_WANT_WRITE &&
+-//         server_err != SSL_ERROR_PENDING_TICKET) {
+-//       fprintf(stderr, "Server error: %s\n", SSL_error_description(server_err));
+-//       return false;
+-//     }
+-
+-//     if (client_ret == 1 && server_ret == 1) {
+-//       break;
+-//     }
+-//   }
++static bool CompleteHandshakes(SSL *client, SSL *server) {
++  // Drive both their handshakes to completion.
++  for (;;) {
++    int client_ret = SSL_do_handshake(client);
++    int client_err = SSL_get_error(client, client_ret);
++    if (client_err != SSL_ERROR_NONE &&
++        client_err != SSL_ERROR_WANT_READ &&
++        client_err != SSL_ERROR_WANT_WRITE &&
++#ifdef SSL_ERROR_PENDING_TICKET
++        client_err != SSL_ERROR_PENDING_TICKET) {
++#else
++        true) {
++#endif
++      fprintf(stderr, "Client error: %s\n", SSL_error_description(client_err));
++      return false;
++    }
++
++    int server_ret = SSL_do_handshake(server);
++    int server_err = SSL_get_error(server, server_ret);
++    if (server_err != SSL_ERROR_NONE &&
++        server_err != SSL_ERROR_WANT_READ &&
++        server_err != SSL_ERROR_WANT_WRITE &&
++#ifdef SSL_ERROR_PENDING_TICKET
++        server_err != SSL_ERROR_PENDING_TICKET) {
++#else
++        true) {
++#endif
++      fprintf(stderr, "Server error: %s\n", SSL_error_description(server_err));
++      return false;
++    }
++
++    if (client_ret == 1 && server_ret == 1) {
++      break;
++    }
++  }
+ 
+-//   return true;
+-// }
++  return true;
++}
+ 
+ // static bool FlushNewSessionTickets(SSL *client, SSL *server) {
+ //   // NewSessionTickets are deferred on the server to |SSL_write|, and clients do
+@@ -1473,74 +1490,90 @@
+ // CreateClientAndServer creates a client and server |SSL| objects whose |BIO|s
+ // are paired with each other. It does not run the handshake. The caller is
+ // expected to configure the objects and drive the handshake as needed.
+-// static bool CreateClientAndServer(bssl::UniquePtr<SSL> *out_client,
+-//                                   bssl::UniquePtr<SSL> *out_server,
+-//                                   SSL_CTX *client_ctx, SSL_CTX *server_ctx) {
+-//   bssl::UniquePtr<SSL> client(SSL_new(client_ctx)), server(SSL_new(server_ctx));
+-//   if (!client || !server) {
+-//     return false;
+-//   }
+-//   SSL_set_connect_state(client.get());
+-//   SSL_set_accept_state(server.get());
+-
+-//   BIO *bio1, *bio2;
+-//   if (!BIO_new_bio_pair(&bio1, 0, &bio2, 0)) {
+-//     return false;
+-//   }
+-//   // SSL_set_bio takes ownership.
+-//   SSL_set_bio(client.get(), bio1, bio1);
+-//   SSL_set_bio(server.get(), bio2, bio2);
+-
+-//   *out_client = std::move(client);
+-//   *out_server = std::move(server);
+-//   return true;
+-// }
+-
+-// struct ClientConfig {
+-//   SSL_SESSION *session = nullptr;
+-//   std::string servername;
+-//   std::string verify_hostname;
+-//   unsigned hostflags = 0;
+-//   bool early_data = false;
+-// };
+-
+-// static bool ConnectClientAndServer(bssl::UniquePtr<SSL> *out_client,
+-//                                    bssl::UniquePtr<SSL> *out_server,
+-//                                    SSL_CTX *client_ctx, SSL_CTX *server_ctx,
+-//                                    const ClientConfig &config = ClientConfig(),
+-//                                    bool shed_handshake_config = true) {
+-//   bssl::UniquePtr<SSL> client, server;
+-//   if (!CreateClientAndServer(&client, &server, client_ctx, server_ctx)) {
+-//     return false;
+-//   }
+-//   if (config.early_data) {
+-//     SSL_set_early_data_enabled(client.get(), 1);
+-//   }
+-//   if (config.session) {
+-//     SSL_set_session(client.get(), config.session);
+-//   }
+-//   if (!config.servername.empty() &&
+-//       !SSL_set_tlsext_host_name(client.get(), config.servername.c_str())) {
+-//     return false;
+-//   }
+-//   if (!config.verify_hostname.empty()) {
+-//     if (!SSL_set1_host(client.get(), config.verify_hostname.c_str())) {
+-//       return false;
+-//     }
+-//     SSL_set_hostflags(client.get(), config.hostflags);
+-//   }
+-
+-//   SSL_set_shed_handshake_config(client.get(), shed_handshake_config);
+-//   SSL_set_shed_handshake_config(server.get(), shed_handshake_config);
+-
+-//   if (!CompleteHandshakes(client.get(), server.get())) {
+-//     return false;
+-//   }
+-
+-//   *out_client = std::move(client);
+-//   *out_server = std::move(server);
+-//   return true;
+-// }
++static bool CreateClientAndServer(bssl::UniquePtr<SSL> *out_client,
++                                  bssl::UniquePtr<SSL> *out_server,
++                                  SSL_CTX *client_ctx, SSL_CTX *server_ctx) {
++  bssl::UniquePtr<SSL> client(SSL_new(client_ctx)), server(SSL_new(server_ctx));
++  if (!client || !server) {
++    return false;
++  }
++  SSL_set_connect_state(client.get());
++  SSL_set_accept_state(server.get());
++
++  BIO *bio1, *bio2;
++  if (!BIO_new_bio_pair(&bio1, 0, &bio2, 0)) {
++    return false;
++  }
++  // SSL_set_bio takes ownership.
++  SSL_set_bio(client.get(), bio1, bio1);
++  SSL_set_bio(server.get(), bio2, bio2);
++
++  *out_client = std::move(client);
++  *out_server = std::move(server);
++  return true;
++}
++
++struct ClientConfig {
++  SSL_SESSION *session = nullptr;
++  std::string servername;
++  std::string verify_hostname;
++  unsigned hostflags = 0;
++  bool early_data = false;
++};
++
++static bool ConnectClientAndServer(bssl::UniquePtr<SSL> *out_client,
++                                   bssl::UniquePtr<SSL> *out_server,
++                                   SSL_CTX *client_ctx, SSL_CTX *server_ctx,
++                                   const ClientConfig &config = ClientConfig(),
++                                   bool shed_handshake_config = true) {
++  bssl::UniquePtr<SSL> client, server;
++  if (!CreateClientAndServer(&client, &server, client_ctx, server_ctx)) {
++    return false;
++  }
++  if (config.early_data) {
++#ifndef BSSL_COMPAT
++    SSL_set_early_data_enabled(client.get(), 1);
++#else
++    std::cout << __FILE__ << ":" << __LINE__ << " Skipped SSL_set_early_data_enabled()" << std::endl;
++    return false;
++#endif
++  }
++  if (config.session) {
++    SSL_set_session(client.get(), config.session);
++  }
++  if (!config.servername.empty() &&
++      !SSL_set_tlsext_host_name(client.get(), config.servername.c_str())) {
++    return false;
++  }
++  if (!config.verify_hostname.empty()) {
++#ifndef BSSL_COMPAT
++    if (!SSL_set1_host(client.get(), config.verify_hostname.c_str())) {
++      return false;
++    }
++    SSL_set_hostflags(client.get(), config.hostflags);
++#else
++    std::cout << "WARNING: Skipped SSL_set1_host() & SSL_set_hostflags()" << std::endl;
++    return false;
++#endif
++  }
++
++#ifndef BSSL_COMPAT
++  SSL_set_shed_handshake_config(client.get(), shed_handshake_config);
++  SSL_set_shed_handshake_config(server.get(), shed_handshake_config);
++#else
++  if(shed_handshake_config) {
++    std::cout << "WARNING: Skipped SSL_set_shed_handshake_config()" << std::endl;
++  }
++#endif
++
++  if (!CompleteHandshakes(client.get(), server.get())) {
++    return false;
++  }
++
++  *out_client = std::move(client);
++  *out_server = std::move(server);
++  return true;
++}
+ 
+ // static bssl::UniquePtr<SSL_SESSION> g_last_session;
+ 
+@@ -2495,62 +2528,71 @@
+ // SSLVersionTest executes its test cases under all available protocol versions.
+ // Test cases call |Connect| to create a connection using context objects with
+ // the protocol version fixed to the current version under test.
+-// class SSLVersionTest : public ::testing::TestWithParam<VersionParam> {
+-//  protected:
+-//   SSLVersionTest() : cert_(GetTestCertificate()), key_(GetTestKey()) {}
+-
+-//   void SetUp() { ResetContexts(); }
+-
+-//   bssl::UniquePtr<SSL_CTX> CreateContext() const {
+-//     const SSL_METHOD *method = is_dtls() ? DTLS_method() : TLS_method();
+-//     bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(method));
+-//     if (!ctx || !SSL_CTX_set_min_proto_version(ctx.get(), version()) ||
+-//         !SSL_CTX_set_max_proto_version(ctx.get(), version())) {
+-//       return nullptr;
+-//     }
+-//     return ctx;
+-//   }
+-
+-//   void ResetContexts() {
+-//     ASSERT_TRUE(cert_);
+-//     ASSERT_TRUE(key_);
+-//     client_ctx_ = CreateContext();
+-//     ASSERT_TRUE(client_ctx_);
+-//     server_ctx_ = CreateContext();
+-//     ASSERT_TRUE(server_ctx_);
+-//     // Set up a server cert. Client certs can be set up explicitly.
+-//     ASSERT_TRUE(UseCertAndKey(server_ctx_.get()));
+-//   }
+-
+-//   bool UseCertAndKey(SSL_CTX *ctx) const {
+-//     return SSL_CTX_use_certificate(ctx, cert_.get()) &&
+-//            SSL_CTX_use_PrivateKey(ctx, key_.get());
+-//   }
+-
+-//   bool Connect(const ClientConfig &config = ClientConfig()) {
+-//     return ConnectClientAndServer(&client_, &server_, client_ctx_.get(),
+-//                                   server_ctx_.get(), config,
+-//                                   shed_handshake_config_);
+-//   }
+-
+-//   uint16_t version() const { return GetParam().version; }
+-
+-//   bool is_dtls() const {
+-//     return GetParam().ssl_method == VersionParam::is_dtls;
+-//   }
+-
+-//   bool shed_handshake_config_ = true;
+-//   bssl::UniquePtr<SSL> client_, server_;
+-//   bssl::UniquePtr<SSL_CTX> server_ctx_, client_ctx_;
+-//   bssl::UniquePtr<X509> cert_;
+-//   bssl::UniquePtr<EVP_PKEY> key_;
+-// };
+-
+-// INSTANTIATE_TEST_SUITE_P(WithVersion, SSLVersionTest,
+-//                          testing::ValuesIn(kAllVersions),
+-//                          [](const testing::TestParamInfo<VersionParam> &i) {
+-//                            return i.param.name;
+-//                          });
++class SSLVersionTest : public ::testing::TestWithParam<VersionParam> {
++ protected:
++  SSLVersionTest() : cert_(GetTestCertificate()), key_(GetTestKey()) {}
++
++  void SetUp() { ResetContexts(); }
++
++  bssl::UniquePtr<SSL_CTX> CreateContext() const {
++    const SSL_METHOD *method = is_dtls() ? DTLS_method() : TLS_method();
++    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(method));
++    if (!ctx || !SSL_CTX_set_min_proto_version(ctx.get(), version()) ||
++        !SSL_CTX_set_max_proto_version(ctx.get(), version())) {
++      return nullptr;
++    }
++    return ctx;
++  }
++
++  void ResetContexts() {
++    ASSERT_TRUE(cert_);
++    ASSERT_TRUE(key_);
++    client_ctx_ = CreateContext();
++    ASSERT_TRUE(client_ctx_);
++    server_ctx_ = CreateContext();
++    ASSERT_TRUE(server_ctx_);
++    // Set up a server cert. Client certs can be set up explicitly.
++    ASSERT_TRUE(UseCertAndKey(server_ctx_.get())) << ERR_error_string(ERR_get_error(), nullptr);
++  }
++
++  bool UseCertAndKey(SSL_CTX *ctx) const {
++#ifdef BSSL_COMPAT
++    // By default, OpenSSL 3 doesn't like keys less than 2048 bits, so we
++    // have to drop the security level to 1 so that it will accept them.
++    bssl::UniquePtr<EVP_PKEY> pkey {X509_get_pubkey(cert_.get())};
++    if(ossl_EVP_PKEY_bits(pkey.get()) < 2048) {
++      std::cerr << "WARNING: ossl_SSL_CTX_set_security_level(server_ctx_.get(), 1)" << std::endl;
++      ossl_SSL_CTX_set_security_level(ctx, 1);
++    }
++#endif
++    return SSL_CTX_use_certificate(ctx, cert_.get()) &&
++           SSL_CTX_use_PrivateKey(ctx, key_.get());
++  }
++
++  bool Connect(const ClientConfig &config = ClientConfig()) {
++    return ConnectClientAndServer(&client_, &server_, client_ctx_.get(),
++                                  server_ctx_.get(), config,
++                                  shed_handshake_config_);
++  }
++
++  uint16_t version() const { return GetParam().version; }
++
++  bool is_dtls() const {
++    return GetParam().ssl_method == VersionParam::is_dtls;
++  }
++
++  bool shed_handshake_config_ = true;
++  bssl::UniquePtr<SSL> client_, server_;
++  bssl::UniquePtr<SSL_CTX> server_ctx_, client_ctx_;
++  bssl::UniquePtr<X509> cert_;
++  bssl::UniquePtr<EVP_PKEY> key_;
++};
++
++INSTANTIATE_TEST_SUITE_P(WithVersion, SSLVersionTest,
++                         testing::ValuesIn(kAllVersions),
++                         [](const testing::TestParamInfo<VersionParam> &i) {
++                           return i.param.name;
++                         });
+ 
+ // TEST_P(SSLVersionTest, SequenceNumber) {
+ //   ASSERT_TRUE(Connect());
+@@ -2591,110 +2633,110 @@
+ //   EXPECT_EQ(server_read_seq + 1, SSL_get_read_sequence(server_.get()));
+ // }
+ 
+-// TEST_P(SSLVersionTest, OneSidedShutdown) {
+-//   // SSL_shutdown is a no-op in DTLS.
+-//   if (is_dtls()) {
+-//     return;
+-//   }
+-//   ASSERT_TRUE(Connect());
+-
+-//   // Shut down half the connection. |SSL_shutdown| will return 0 to signal only
+-//   // one side has shut down.
+-//   ASSERT_EQ(SSL_shutdown(client_.get()), 0);
+-
+-//   // Reading from the server should consume the EOF.
+-//   uint8_t byte;
+-//   ASSERT_EQ(SSL_read(server_.get(), &byte, 1), 0);
+-//   ASSERT_EQ(SSL_get_error(server_.get(), 0), SSL_ERROR_ZERO_RETURN);
+-
+-//   // However, the server may continue to write data and then shut down the
+-//   // connection.
+-//   byte = 42;
+-//   ASSERT_EQ(SSL_write(server_.get(), &byte, 1), 1);
+-//   ASSERT_EQ(SSL_read(client_.get(), &byte, 1), 1);
+-//   ASSERT_EQ(byte, 42);
+-
+-//   // The server may then shutdown the connection.
+-//   EXPECT_EQ(SSL_shutdown(server_.get()), 1);
+-//   EXPECT_EQ(SSL_shutdown(client_.get()), 1);
+-// }
++TEST_P(SSLVersionTest, OneSidedShutdown) {
++  // SSL_shutdown is a no-op in DTLS.
++  if (is_dtls()) {
++    return;
++  }
++  ASSERT_TRUE(Connect());
++
++  // Shut down half the connection. |SSL_shutdown| will return 0 to signal only
++  // one side has shut down.
++  ASSERT_EQ(SSL_shutdown(client_.get()), 0);
++
++  // Reading from the server should consume the EOF.
++  uint8_t byte;
++  ASSERT_EQ(SSL_read(server_.get(), &byte, 1), 0);
++  ASSERT_EQ(SSL_get_error(server_.get(), 0), SSL_ERROR_ZERO_RETURN);
++
++  // However, the server may continue to write data and then shut down the
++  // connection.
++  byte = 42;
++  ASSERT_EQ(SSL_write(server_.get(), &byte, 1), 1);
++  ASSERT_EQ(SSL_read(client_.get(), &byte, 1), 1);
++  ASSERT_EQ(byte, 42);
++
++  // The server may then shutdown the connection.
++  EXPECT_EQ(SSL_shutdown(server_.get()), 1);
++  EXPECT_EQ(SSL_shutdown(client_.get()), 1);
++}
+ 
+ // Test that, after calling |SSL_shutdown|, |SSL_write| fails.
+-// TEST_P(SSLVersionTest, WriteAfterShutdown) {
+-//   ASSERT_TRUE(Connect());
+-
+-//   for (SSL *ssl : {client_.get(), server_.get()}) {
+-//     SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
+-
+-//     bssl::UniquePtr<BIO> mem(BIO_new(BIO_s_mem()));
+-//     ASSERT_TRUE(mem);
+-//     SSL_set0_wbio(ssl, bssl::UpRef(mem).release());
+-
+-//     // Shut down half the connection. |SSL_shutdown| will return 0 to signal
+-//     // only one side has shut down.
+-//     ASSERT_EQ(SSL_shutdown(ssl), 0);
++TEST_P(SSLVersionTest, WriteAfterShutdown) {
++  ASSERT_TRUE(Connect());
+ 
+-//     // |ssl| should have written an alert to the transport.
+-//     const uint8_t *unused;
+-//     size_t len;
+-//     ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
+-//     EXPECT_NE(0u, len);
+-//     EXPECT_TRUE(BIO_reset(mem.get()));
++  for (SSL *ssl : {client_.get(), server_.get()}) {
++    SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
+ 
+-//     // Writing should fail.
+-//     EXPECT_EQ(-1, SSL_write(ssl, "a", 1));
+-
+-//     // Nothing should be written to the transport.
+-//     ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
+-//     EXPECT_EQ(0u, len);
+-//   }
+-// }
++    bssl::UniquePtr<BIO> mem(BIO_new(BIO_s_mem()));
++    ASSERT_TRUE(mem);
++    SSL_set0_wbio(ssl, bssl::UpRef(mem).release());
++
++    // Shut down half the connection. |SSL_shutdown| will return 0 to signal
++    // only one side has shut down.
++    ASSERT_EQ(SSL_shutdown(ssl), 0);
++
++    // |ssl| should have written an alert to the transport.
++    const uint8_t *unused;
++    size_t len;
++    ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
++    EXPECT_NE(0u, len);
++    EXPECT_TRUE(BIO_reset(mem.get()));
++
++    // Writing should fail.
++    EXPECT_EQ(-1, SSL_write(ssl, "a", 1));
++
++    // Nothing should be written to the transport.
++    ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
++    EXPECT_EQ(0u, len);
++  }
++}
+ 
+ // Test that, after sending a fatal alert in a failed |SSL_read|, |SSL_write|
+ // fails.
+-// TEST_P(SSLVersionTest, WriteAfterReadSentFatalAlert) {
+-//   // Decryption failures are not fatal in DTLS.
+-//   if (is_dtls()) {
+-//     return;
+-//   }
+-
+-//   ASSERT_TRUE(Connect());
+-
+-//   // Save the write |BIO|s as the test will overwrite them.
+-//   bssl::UniquePtr<BIO> client_wbio = bssl::UpRef(SSL_get_wbio(client_.get()));
+-//   bssl::UniquePtr<BIO> server_wbio = bssl::UpRef(SSL_get_wbio(server_.get()));
+-
+-//   for (bool test_server : {false, true}) {
+-//     SCOPED_TRACE(test_server ? "server" : "client");
+-//     SSL *ssl = test_server ? server_.get() : client_.get();
+-//     BIO *other_wbio = test_server ? client_wbio.get() : server_wbio.get();
+-
+-//     bssl::UniquePtr<BIO> mem(BIO_new(BIO_s_mem()));
+-//     ASSERT_TRUE(mem);
+-//     SSL_set0_wbio(ssl, bssl::UpRef(mem).release());
+-
+-//     // Read an invalid record from the peer.
+-//     static const uint8_t kInvalidRecord[] = "invalid record";
+-//     EXPECT_EQ(int{sizeof(kInvalidRecord)},
+-//               BIO_write(other_wbio, kInvalidRecord, sizeof(kInvalidRecord)));
+-//     char buf[256];
+-//     EXPECT_EQ(-1, SSL_read(ssl, buf, sizeof(buf)));
+-
+-//     // |ssl| should have written an alert to the transport.
+-//     const uint8_t *unused;
+-//     size_t len;
+-//     ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
+-//     EXPECT_NE(0u, len);
+-//     EXPECT_TRUE(BIO_reset(mem.get()));
+-
+-//     // Writing should fail.
+-//     EXPECT_EQ(-1, SSL_write(ssl, "a", 1));
+-
+-//     // Nothing should be written to the transport.
+-//     ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
+-//     EXPECT_EQ(0u, len);
+-//   }
+-// }
++TEST_P(SSLVersionTest, WriteAfterReadSentFatalAlert) {
++  // Decryption failures are not fatal in DTLS.
++  if (is_dtls()) {
++    return;
++  }
++
++  ASSERT_TRUE(Connect());
++
++  // Save the write |BIO|s as the test will overwrite them.
++  bssl::UniquePtr<BIO> client_wbio = bssl::UpRef(SSL_get_wbio(client_.get()));
++  bssl::UniquePtr<BIO> server_wbio = bssl::UpRef(SSL_get_wbio(server_.get()));
++
++  for (bool test_server : {false, true}) {
++    SCOPED_TRACE(test_server ? "server" : "client");
++    SSL *ssl = test_server ? server_.get() : client_.get();
++    BIO *other_wbio = test_server ? client_wbio.get() : server_wbio.get();
++
++    bssl::UniquePtr<BIO> mem(BIO_new(BIO_s_mem()));
++    ASSERT_TRUE(mem);
++    SSL_set0_wbio(ssl, bssl::UpRef(mem).release());
++
++    // Read an invalid record from the peer.
++    static const uint8_t kInvalidRecord[] = "invalid record";
++    EXPECT_EQ(int{sizeof(kInvalidRecord)},
++              BIO_write(other_wbio, kInvalidRecord, sizeof(kInvalidRecord)));
++    char buf[256];
++    EXPECT_EQ(-1, SSL_read(ssl, buf, sizeof(buf)));
++
++    // |ssl| should have written an alert to the transport.
++    const uint8_t *unused;
++    size_t len;
++    ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
++    EXPECT_NE(0u, len);
++    EXPECT_TRUE(BIO_reset(mem.get()));
++
++    // Writing should fail.
++    EXPECT_EQ(-1, SSL_write(ssl, "a", 1));
++
++    // Nothing should be written to the transport.
++    ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
++    EXPECT_EQ(0u, len);
++  }
++}
+ 
+ // Test that, after sending a fatal alert from the handshake, |SSL_write| fails.
+ // TEST_P(SSLVersionTest, WriteAfterHandshakeSentFatalAlert) {
+@@ -2935,97 +2977,101 @@
+ //   // is correct.
+ // }
+ 
+-// TEST(SSLTest, SetBIO) {
+-//   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
+-//   ASSERT_TRUE(ctx);
+-
+-//   bssl::UniquePtr<SSL> ssl(SSL_new(ctx.get()));
+-//   bssl::UniquePtr<BIO> bio1(BIO_new(BIO_s_mem())), bio2(BIO_new(BIO_s_mem())),
+-//       bio3(BIO_new(BIO_s_mem()));
+-//   ASSERT_TRUE(ssl);
+-//   ASSERT_TRUE(bio1);
+-//   ASSERT_TRUE(bio2);
+-//   ASSERT_TRUE(bio3);
+-
+-//   // SSL_set_bio takes one reference when the parameters are the same.
+-//   BIO_up_ref(bio1.get());
+-//   SSL_set_bio(ssl.get(), bio1.get(), bio1.get());
+-
+-//   // Repeating the call does nothing.
+-//   SSL_set_bio(ssl.get(), bio1.get(), bio1.get());
+-
+-//   // It takes one reference each when the parameters are different.
+-//   BIO_up_ref(bio2.get());
+-//   BIO_up_ref(bio3.get());
+-//   SSL_set_bio(ssl.get(), bio2.get(), bio3.get());
+-
+-//   // Repeating the call does nothing.
+-//   SSL_set_bio(ssl.get(), bio2.get(), bio3.get());
+-
+-//   // It takes one reference when changing only wbio.
+-//   BIO_up_ref(bio1.get());
+-//   SSL_set_bio(ssl.get(), bio2.get(), bio1.get());
+-
+-//   // It takes one reference when changing only rbio and the two are different.
+-//   BIO_up_ref(bio3.get());
+-//   SSL_set_bio(ssl.get(), bio3.get(), bio1.get());
+-
+-//   // If setting wbio to rbio, it takes no additional references.
+-//   SSL_set_bio(ssl.get(), bio3.get(), bio3.get());
+-
+-//   // From there, wbio may be switched to something else.
+-//   BIO_up_ref(bio1.get());
+-//   SSL_set_bio(ssl.get(), bio3.get(), bio1.get());
+-
+-//   // If setting rbio to wbio, it takes no additional references.
+-//   SSL_set_bio(ssl.get(), bio1.get(), bio1.get());
+-
+-//   // From there, rbio may be switched to something else, but, for historical
+-//   // reasons, it takes a reference to both parameters.
+-//   BIO_up_ref(bio1.get());
+-//   BIO_up_ref(bio2.get());
+-//   SSL_set_bio(ssl.get(), bio2.get(), bio1.get());
+-
+-//   // ASAN builds will implicitly test that the internal |BIO| reference-counting
+-//   // is correct.
+-// }
+-
+-// static int VerifySucceed(X509_STORE_CTX *store_ctx, void *arg) { return 1; }
+-
+-// TEST_P(SSLVersionTest, GetPeerCertificate) {
+-//   ASSERT_TRUE(UseCertAndKey(client_ctx_.get()));
+-
+-//   // Configure both client and server to accept any certificate.
+-//   SSL_CTX_set_verify(client_ctx_.get(),
+-//                      SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+-//                      nullptr);
+-//   SSL_CTX_set_cert_verify_callback(client_ctx_.get(), VerifySucceed, NULL);
+-//   SSL_CTX_set_verify(server_ctx_.get(),
+-//                      SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
+-//                      nullptr);
+-//   SSL_CTX_set_cert_verify_callback(server_ctx_.get(), VerifySucceed, NULL);
+-
+-//   ASSERT_TRUE(Connect());
+-
+-//   // Client and server should both see the leaf certificate.
+-//   bssl::UniquePtr<X509> peer(SSL_get_peer_certificate(server_.get()));
+-//   ASSERT_TRUE(peer);
+-//   ASSERT_EQ(X509_cmp(cert_.get(), peer.get()), 0);
+-
+-//   peer.reset(SSL_get_peer_certificate(client_.get()));
+-//   ASSERT_TRUE(peer);
+-//   ASSERT_EQ(X509_cmp(cert_.get(), peer.get()), 0);
+-
+-//   // However, for historical reasons, the X509 chain includes the leaf on the
+-//   // client, but does not on the server.
+-//   EXPECT_EQ(sk_X509_num(SSL_get_peer_cert_chain(client_.get())), 1u);
+-//   EXPECT_EQ(sk_CRYPTO_BUFFER_num(SSL_get0_peer_certificates(client_.get())),
+-//             1u);
+-
+-//   EXPECT_EQ(sk_X509_num(SSL_get_peer_cert_chain(server_.get())), 0u);
+-//   EXPECT_EQ(sk_CRYPTO_BUFFER_num(SSL_get0_peer_certificates(server_.get())),
+-//             1u);
+-// }
++TEST(SSLTest, SetBIO) {
++  bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
++  ASSERT_TRUE(ctx);
++
++  bssl::UniquePtr<SSL> ssl(SSL_new(ctx.get()));
++  bssl::UniquePtr<BIO> bio1(BIO_new(BIO_s_mem())), bio2(BIO_new(BIO_s_mem())),
++      bio3(BIO_new(BIO_s_mem()));
++  ASSERT_TRUE(ssl);
++  ASSERT_TRUE(bio1);
++  ASSERT_TRUE(bio2);
++  ASSERT_TRUE(bio3);
++
++  // SSL_set_bio takes one reference when the parameters are the same.
++  BIO_up_ref(bio1.get());
++  SSL_set_bio(ssl.get(), bio1.get(), bio1.get());
++
++  // Repeating the call does nothing.
++  SSL_set_bio(ssl.get(), bio1.get(), bio1.get());
++
++  // It takes one reference each when the parameters are different.
++  BIO_up_ref(bio2.get());
++  BIO_up_ref(bio3.get());
++  SSL_set_bio(ssl.get(), bio2.get(), bio3.get());
++
++  // Repeating the call does nothing.
++  SSL_set_bio(ssl.get(), bio2.get(), bio3.get());
++
++  // It takes one reference when changing only wbio.
++  BIO_up_ref(bio1.get());
++  SSL_set_bio(ssl.get(), bio2.get(), bio1.get());
++
++  // It takes one reference when changing only rbio and the two are different.
++  BIO_up_ref(bio3.get());
++  SSL_set_bio(ssl.get(), bio3.get(), bio1.get());
++
++  // If setting wbio to rbio, it takes no additional references.
++  SSL_set_bio(ssl.get(), bio3.get(), bio3.get());
++
++  // From there, wbio may be switched to something else.
++  BIO_up_ref(bio1.get());
++  SSL_set_bio(ssl.get(), bio3.get(), bio1.get());
++
++  // If setting rbio to wbio, it takes no additional references.
++  SSL_set_bio(ssl.get(), bio1.get(), bio1.get());
++
++  // From there, rbio may be switched to something else, but, for historical
++  // reasons, it takes a reference to both parameters.
++  BIO_up_ref(bio1.get());
++  BIO_up_ref(bio2.get());
++  SSL_set_bio(ssl.get(), bio2.get(), bio1.get());
++
++  // ASAN builds will implicitly test that the internal |BIO| reference-counting
++  // is correct.
++}
++
++static int VerifySucceed(X509_STORE_CTX *store_ctx, void *arg) { return 1; }
++
++TEST_P(SSLVersionTest, GetPeerCertificate) {
++  ASSERT_TRUE(UseCertAndKey(client_ctx_.get()));
++
++  // Configure both client and server to accept any certificate.
++  SSL_CTX_set_verify(client_ctx_.get(),
++                     SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
++                     nullptr);
++  SSL_CTX_set_cert_verify_callback(client_ctx_.get(), VerifySucceed, NULL);
++  SSL_CTX_set_verify(server_ctx_.get(),
++                     SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT,
++                     nullptr);
++  SSL_CTX_set_cert_verify_callback(server_ctx_.get(), VerifySucceed, NULL);
++
++  ASSERT_TRUE(Connect());
++
++  // Client and server should both see the leaf certificate.
++  bssl::UniquePtr<X509> peer(SSL_get_peer_certificate(server_.get()));
++  ASSERT_TRUE(peer);
++  ASSERT_EQ(X509_cmp(cert_.get(), peer.get()), 0);
++
++  peer.reset(SSL_get_peer_certificate(client_.get()));
++  ASSERT_TRUE(peer);
++  ASSERT_EQ(X509_cmp(cert_.get(), peer.get()), 0);
++
++  // However, for historical reasons, the X509 chain includes the leaf on the
++  // client, but does not on the server.
++  EXPECT_EQ(sk_X509_num(SSL_get_peer_cert_chain(client_.get())), 1u);
++#ifndef BSSL_COMPAT // Envoy doesn't need SSL_get0_peer_certificates() so skip this
++  EXPECT_EQ(sk_CRYPTO_BUFFER_num(SSL_get0_peer_certificates(client_.get())),
++            1u);
++#endif
++
++  EXPECT_EQ(sk_X509_num(SSL_get_peer_cert_chain(server_.get())), 0u);
++#ifndef BSSL_COMPAT // Envoy doesn't need SSL_get0_peer_certificates() so skip this
++  EXPECT_EQ(sk_CRYPTO_BUFFER_num(SSL_get0_peer_certificates(server_.get())),
++            1u);
++#endif
++}
+ 
+ // TEST_P(SSLVersionTest, NoPeerCertificate) {
+ //   SSL_CTX_set_verify(server_ctx_.get(), SSL_VERIFY_PEER, nullptr);
+@@ -4214,43 +4260,46 @@
  //   X509_cmp(cert, cert);
  // }
  
@@ -254,7 +1110,7 @@
  
  // TEST(SSLTest, SetChainAndKeyMismatch) {
  //   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_with_buffers_method()));
-@@ -4920,33 +4927,37 @@
+@@ -4920,33 +4969,37 @@
  // }
  
  // The client should gracefully handle no suitable ciphers being enabled.
@@ -319,7 +1175,7 @@
  
  // TEST_P(SSLVersionTest, SessionVersion) {
  //   SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
-@@ -5721,25 +5732,28 @@
+@@ -5721,25 +5774,28 @@
  // }
  
  // SSL_CTX_get0_certificate needs to lock internally. Test this works.
@@ -367,7 +1223,7 @@
  
  // Functions which access properties on the negotiated session are thread-safe
  // where needed. Prior to TLS 1.3, clients resuming sessions and servers
-@@ -8260,5 +8274,5 @@
+@@ -8260,5 +8316,5 @@
  //   }
  // }
  
