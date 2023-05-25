@@ -177,10 +177,6 @@ void SSL_set0_wbio(SSL *ssl, BIO *wbio) {
   ossl_SSL_set0_wbio(ssl, wbio);
 }
 
-void SSL_set_connect_state(SSL *ssl) {
-  ossl_SSL_set_connect_state(ssl);
-}
-
 SSL_CTX *SSL_set_SSL_CTX(SSL *ssl, SSL_CTX *ctx) {
   return ossl_SSL_set_SSL_CTX(ssl, ctx);
 }
