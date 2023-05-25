@@ -59,7 +59,7 @@
  
  
  // SSL implementation.
-@@ -186,7 +187,7 @@
+@@ -186,16 +187,16 @@
  // configuration may not be used.
  
  // TLS_method is the |SSL_METHOD| used for TLS connections.
@@ -67,8 +67,10 @@
 +OPENSSL_EXPORT const SSL_METHOD *TLS_method(void);
  
  // DTLS_method is the |SSL_METHOD| used for DTLS connections.
- // OPENSSL_EXPORT const SSL_METHOD *DTLS_method(void);
-@@ -195,7 +196,7 @@
+-// OPENSSL_EXPORT const SSL_METHOD *DTLS_method(void);
++OPENSSL_EXPORT const SSL_METHOD *DTLS_method(void);
+ 
+ // TLS_with_buffers_method is like |TLS_method|, but avoids all use of
  // crypto/x509. All client connections created with |TLS_with_buffers_method|
  // will fail unless a certificate verifier is installed with
  // |SSL_set_custom_verify| or |SSL_CTX_set_custom_verify|.
