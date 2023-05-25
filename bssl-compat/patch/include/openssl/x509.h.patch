@@ -82,6 +82,15 @@
  
  // X509_VERSION_* are X.509 version numbers. Note the numerical values of all
  // defined X.509 versions are one less than the named version.
+@@ -197,7 +197,7 @@
+ // public key was unsupported or could not be decoded. This function returns a
+ // reference to the |EVP_PKEY|. The caller must release the result with
+ // |EVP_PKEY_free| when done.
+-// OPENSSL_EXPORT EVP_PKEY *X509_get_pubkey(X509 *x509);
++OPENSSL_EXPORT EVP_PKEY *X509_get_pubkey(X509 *x509);
+ 
+ // X509_get0_pubkey_bitstr returns the BIT STRING portion of |x509|'s public
+ // key. Note this does not contain the AlgorithmIdentifier portion.
 @@ -835,8 +835,8 @@
  // moved to the subject alternative name extension. In modern usage, X.509 names
  // are primarily opaque identifiers to link a certificate with its issuer.
