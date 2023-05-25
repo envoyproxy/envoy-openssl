@@ -91,6 +91,7 @@ add_library(bssl-compat STATIC
   source/SSL_set_bio.cc
   source/SSL_set_chain_and_key.cc
   source/SSL_set_connect_state.cc
+  source/SSL_set_session.cc
   source/SSL_set_tlsext_host_name.c
   source/SSL_version.cc
   source/SSL_write.cc
