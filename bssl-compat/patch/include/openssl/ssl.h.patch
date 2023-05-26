@@ -587,6 +587,17 @@
  
  // SSL_DEFAULT_SESSION_TIMEOUT is the default lifetime, in seconds, of a
  // session in TLS 1.2 or earlier. This is how long we are willing to use the
+@@ -2151,8 +2152,8 @@
+ // |SSL_do_handshake| or |SSL_connect| completes if False Start is enabled. Thus
+ // it's recommended to use this callback over calling |SSL_get_session| on
+ // handshake completion.
+-// OPENSSL_EXPORT void SSL_CTX_sess_set_new_cb(
+-//     SSL_CTX *ctx, int (*new_session_cb)(SSL *ssl, SSL_SESSION *session));
++OPENSSL_EXPORT void SSL_CTX_sess_set_new_cb(
++    SSL_CTX *ctx, int (*new_session_cb)(SSL *ssl, SSL_SESSION *session));
+ 
+ // SSL_CTX_sess_get_new_cb returns the callback set by
+ // |SSL_CTX_sess_set_new_cb|.
 @@ -2393,7 +2394,7 @@
  // colon-separated list |curves|. Each element of |curves| should be a curve
  // name (e.g. P-256, X25519, ...). It returns one on success and zero on
