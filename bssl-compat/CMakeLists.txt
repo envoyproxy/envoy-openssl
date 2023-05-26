@@ -76,6 +76,7 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_cert_verify_callback.cc
   source/SSL_CTX_set_session_cache_mode.cc
   source/SSL_CTX_set_session_id_context.cc
+  source/SSL_CTX_set_tlsext_servername_callback.cc
   source/SSL_CTX_set_tlsext_status_cb.c
   source/SSL_CTX_set1_curves_list.c
   source/SSL_CTX_set1_sigalgs_list.c
