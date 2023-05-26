@@ -587,6 +587,19 @@
  
  // SSL_DEFAULT_SESSION_TIMEOUT is the default lifetime, in seconds, of a
  // session in TLS 1.2 or earlier. This is how long we are willing to use the
+@@ -2088,9 +2089,9 @@
+ //
+ // For a server, if |SSL_VERIFY_PEER| is enabled, it is an error to not set a
+ // session ID context.
+-// OPENSSL_EXPORT int SSL_CTX_set_session_id_context(SSL_CTX *ctx,
+-//                                                   const uint8_t *sid_ctx,
+-//                                                   size_t sid_ctx_len);
++OPENSSL_EXPORT int SSL_CTX_set_session_id_context(SSL_CTX *ctx,
++                                                  const uint8_t *sid_ctx,
++                                                  size_t sid_ctx_len);
+ 
+ // SSL_set_session_id_context sets |ssl|'s session ID context to |sid_ctx|. It
+ // returns one on success and zero on error. See also
 @@ -2151,8 +2152,8 @@
  // |SSL_do_handshake| or |SSL_connect| completes if False Start is enabled. Thus
  // it's recommended to use this callback over calling |SSL_get_session| on
