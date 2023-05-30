@@ -236,8 +236,9 @@ set(utests-bssl-source-list
   source/crypto/err/err_test.cc
   source/crypto/rand_extra/rand_test.cc
   source/crypto/stack/stack_test.cc
-  source/crypto/test/test_util.h
   source/crypto/test/test_util.cc
+  source/crypto/test/test_util.h
+  source/ssl/ssl_c_test.c
   source/ssl/ssl_test.cc
 )
 

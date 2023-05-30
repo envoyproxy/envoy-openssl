@@ -96,4 +96,5 @@ source/crypto/test/test_util.h
 source/ossl.c
 source/ssl/
 source/ssl/internal.h
+source/ssl/ssl_c_test.c
 source/ssl/ssl_test.cc

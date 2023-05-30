@@ -388,6 +388,23 @@
  
  // SSL_CTX_set_default_passwd_cb sets the password callback for PEM-based
  // convenience functions called on |ctx|.
+@@ -1302,11 +1303,11 @@
+ 
+ // Custom private keys.
+ 
+-// enum ssl_private_key_result_t BORINGSSL_ENUM_INT {
+-//   ssl_private_key_success,
+-//   ssl_private_key_retry,
+-//   ssl_private_key_failure,
+-// };
++enum ssl_private_key_result_t BORINGSSL_ENUM_INT {
++  ssl_private_key_success,
++  ssl_private_key_retry,
++  ssl_private_key_failure,
++};
+ 
+ // ssl_private_key_method_st (aka |SSL_PRIVATE_KEY_METHOD|) describes private
+ // key hooks. This is used to off-load signing operations to a custom,
 @@ -1391,12 +1392,12 @@
  //
  // |SSL_CIPHER| objects represent cipher suites.

@@ -1,6 +1,6 @@
 --- a/source/ssl/ssl_test.cc
 +++ b/source/ssl/ssl_test.cc
-@@ -12,56 +12,61 @@
+@@ -12,82 +12,91 @@
   * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
   * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
  
@@ -67,51 +67,68 @@
 +#include "../crypto/test/test_util.h"
  
 -// #if defined(OPENSSL_WINDOWS)
-+#ifdef BSSL_COMPAT
-+#include <ossl/openssl/ssl.h>
-+#include <ossl/openssl/provider.h>
-+#endif
-+
-+#if defined(OPENSSL_WINDOWS)
- // Windows defines struct timeval in winsock2.h.
+-// Windows defines struct timeval in winsock2.h.
 -// OPENSSL_MSVC_PRAGMA(warning(push, 3))
 -// #include <winsock2.h>
 -// OPENSSL_MSVC_PRAGMA(warning(pop))
 -// #else
 -// #include <sys/time.h>
 -// #endif
+-
+-// #if defined(OPENSSL_THREADS)
+-// #include <thread>
+-// #endif
+-
+-
+-// BSSL_NAMESPACE_BEGIN
++#ifdef BSSL_COMPAT
++#include <ossl/openssl/ssl.h>
++#include <ossl/openssl/provider.h>
++#endif
+ 
+-// namespace {
+-
+-// #define TRACED_CALL(code)                     \
+-//   do {                                        \
+-//     SCOPED_TRACE("<- called from here");      \
+-//     code;                                     \
+-//     if (::testing::Test::HasFatalFailure()) { \
+-//       return;                                 \
+-//     }                                         \
+-//   } while (false)
+-
+-// struct VersionParam {
+-//   uint16_t version;
+-//   enum { is_tls, is_dtls } ssl_method;
+-//   const char name[8];
+-// };
++#if defined(OPENSSL_WINDOWS)
++// Windows defines struct timeval in winsock2.h.
 +OPENSSL_MSVC_PRAGMA(warning(push, 3))
 +#include <winsock2.h>
 +OPENSSL_MSVC_PRAGMA(warning(pop))
 +#else
 +#include <sys/time.h>
 +#endif
- 
--// #if defined(OPENSSL_THREADS)
--// #include <thread>
--// #endif
++
 +#if defined(OPENSSL_THREADS)
 +#include <thread>
 +#endif
- 
- 
--// BSSL_NAMESPACE_BEGIN
++
++
 +BSSL_NAMESPACE_BEGIN
- 
--// namespace {
++
 +namespace {
- 
- // #define TRACED_CALL(code)                     \
- //   do {                                        \
-@@ -72,22 +77,26 @@
- //     }                                         \
- //   } while (false)
- 
--// struct VersionParam {
--//   uint16_t version;
--//   enum { is_tls, is_dtls } ssl_method;
--//   const char name[8];
--// };
++
++#define TRACED_CALL(code)                     \
++  do {                                        \
++    SCOPED_TRACE("<- called from here");      \
++    code;                                     \
++    if (::testing::Test::HasFatalFailure()) { \
++      return;                                 \
++    }                                         \
++  } while (false)
++
 +struct VersionParam {
 +  uint16_t version;
 +  enum { is_tls, is_dtls } ssl_method;
@@ -264,7 +281,7 @@
  
  // static bssl::UniquePtr<SSL_CTX> CreateContextWithTestCertificate(
  //     const SSL_METHOD *method) {
-@@ -1408,36 +1417,44 @@
+@@ -1408,171 +1417,195 @@
  //   return KeyFromPEM(kKeyPEM);
  // }
  
@@ -295,6 +312,40 @@
 -//       break;
 -//     }
 -//   }
+-
+-//   return true;
+-// }
+-
+-// static bool FlushNewSessionTickets(SSL *client, SSL *server) {
+-//   // NewSessionTickets are deferred on the server to |SSL_write|, and clients do
+-//   // not pick them up until |SSL_read|.
+-//   for (;;) {
+-//     int server_ret = SSL_write(server, nullptr, 0);
+-//     int server_err = SSL_get_error(server, server_ret);
+-//     // The server may either succeed (|server_ret| is zero) or block on write
+-//     // (|server_ret| is -1 and |server_err| is |SSL_ERROR_WANT_WRITE|).
+-//     if (server_ret > 0 ||
+-//         (server_ret < 0 && server_err != SSL_ERROR_WANT_WRITE)) {
+-//       fprintf(stderr, "Unexpected server result: %d %d\n", server_ret,
+-//               server_err);
+-//       return false;
+-//     }
+-
+-//     int client_ret = SSL_read(client, nullptr, 0);
+-//     int client_err = SSL_get_error(client, client_ret);
+-//     // The client must always block on read.
+-//     if (client_ret != -1 || client_err != SSL_ERROR_WANT_READ) {
+-//       fprintf(stderr, "Unexpected client result: %d %d\n", client_ret,
+-//               client_err);
+-//       return false;
+-//     }
+-
+-//     // The server flushed everything it had to write.
+-//     if (server_ret == 0) {
+-//       return true;
+-//     }
+-//   }
+-// }
 +static bool CompleteHandshakes(SSL *client, SSL *server) {
 +  // Drive both their handshakes to completion.
 +  for (;;) {
@@ -330,15 +381,41 @@
 +      break;
 +    }
 +  }
- 
--//   return true;
--// }
++
 +  return true;
 +}
++
++static bool FlushNewSessionTickets(SSL *client, SSL *server) {
++  // NewSessionTickets are deferred on the server to |SSL_write|, and clients do
++  // not pick them up until |SSL_read|.
++  for (;;) {
++    int server_ret = SSL_write(server, nullptr, 0);
++    int server_err = SSL_get_error(server, server_ret);
++    // The server may either succeed (|server_ret| is zero) or block on write
++    // (|server_ret| is -1 and |server_err| is |SSL_ERROR_WANT_WRITE|).
++    if (server_ret > 0 ||
++        (server_ret < 0 && server_err != SSL_ERROR_WANT_WRITE)) {
++      fprintf(stderr, "Unexpected server result: %d %d\n", server_ret,
++              server_err);
++      return false;
++    }
++
++    int client_ret = SSL_read(client, nullptr, 0);
++    int client_err = SSL_get_error(client, client_ret);
++    // The client must always block on read.
++    if (client_ret != -1 || client_err != SSL_ERROR_WANT_READ) {
++      fprintf(stderr, "Unexpected client result: %d %d\n", client_ret,
++              client_err);
++      return false;
++    }
++
++    // The server flushed everything it had to write.
++    if (server_ret == 0) {
++      return true;
++    }
++  }
++}
  
- // static bool FlushNewSessionTickets(SSL *client, SSL *server) {
- //   // NewSessionTickets are deferred on the server to |SSL_write|, and clients do
-@@ -1473,74 +1490,90 @@
  // CreateClientAndServer creates a client and server |SSL| objects whose |BIO|s
  // are paired with each other. It does not run the handshake. The caller is
  // expected to configure the objects and drive the handshake as needed.
@@ -410,6 +487,38 @@
 -//   *out_server = std::move(server);
 -//   return true;
 -// }
+-
+-// static bssl::UniquePtr<SSL_SESSION> g_last_session;
+-
+-// static int SaveLastSession(SSL *ssl, SSL_SESSION *session) {
+-//   // Save the most recent session.
+-//   g_last_session.reset(session);
+-//   return 1;
+-// }
+-
+-// static bssl::UniquePtr<SSL_SESSION> CreateClientSession(
+-//     SSL_CTX *client_ctx, SSL_CTX *server_ctx,
+-//     const ClientConfig &config = ClientConfig()) {
+-//   g_last_session = nullptr;
+-//   SSL_CTX_sess_set_new_cb(client_ctx, SaveLastSession);
+-
+-//   // Connect client and server to get a session.
+-//   bssl::UniquePtr<SSL> client, server;
+-//   if (!ConnectClientAndServer(&client, &server, client_ctx, server_ctx,
+-//                               config) ||
+-//       !FlushNewSessionTickets(client.get(), server.get())) {
+-//     fprintf(stderr, "Failed to connect client and server.\n");
+-//     return nullptr;
+-//   }
+-
+-//   SSL_CTX_sess_set_new_cb(client_ctx, nullptr);
+-
+-//   if (!g_last_session) {
+-//     fprintf(stderr, "Client did not receive a session.\n");
+-//     return nullptr;
+-//   }
+-//   return std::move(g_last_session);
+-// }
 +static bool CreateClientAndServer(bssl::UniquePtr<SSL> *out_client,
 +                                  bssl::UniquePtr<SSL> *out_server,
 +                                  SSL_CTX *client_ctx, SSL_CTX *server_ctx) {
@@ -454,7 +563,7 @@
 +#ifndef BSSL_COMPAT
 +    SSL_set_early_data_enabled(client.get(), 1);
 +#else
-+    std::cout << __FILE__ << ":" << __LINE__ << " Skipped SSL_set_early_data_enabled()" << std::endl;
++    std::cout << "WARNING: Skipped SSL_set_early_data_enabled()" << std::endl;
 +    return false;
 +#endif
 +  }
@@ -494,9 +603,41 @@
 +  *out_server = std::move(server);
 +  return true;
 +}
++
++static bssl::UniquePtr<SSL_SESSION> g_last_session;
++
++static int SaveLastSession(SSL *ssl, SSL_SESSION *session) {
++  // Save the most recent session.
++  g_last_session.reset(session);
++  return 1;
++}
++
++static bssl::UniquePtr<SSL_SESSION> CreateClientSession(
++    SSL_CTX *client_ctx, SSL_CTX *server_ctx,
++    const ClientConfig &config = ClientConfig()) {
++  g_last_session = nullptr;
++  SSL_CTX_sess_set_new_cb(client_ctx, SaveLastSession);
++
++  // Connect client and server to get a session.
++  bssl::UniquePtr<SSL> client, server;
++  if (!ConnectClientAndServer(&client, &server, client_ctx, server_ctx,
++                              config) ||
++      !FlushNewSessionTickets(client.get(), server.get())) {
++    fprintf(stderr, "Failed to connect client and server.\n");
++    return nullptr;
++  }
++
++  SSL_CTX_sess_set_new_cb(client_ctx, nullptr);
++
++  if (!g_last_session) {
++    fprintf(stderr, "Client did not receive a session.\n");
++    return nullptr;
++  }
++  return std::move(g_last_session);
++}
  
- // static bssl::UniquePtr<SSL_SESSION> g_last_session;
- 
+ // Test that |SSL_get_client_CA_list| echoes back the configured parameter even
+ // before configuring as a server.
 @@ -2495,62 +2528,71 @@
  // SSLVersionTest executes its test cases under all available protocol versions.
  // Test cases call |Connect| to create a connection using context objects with
@@ -687,10 +828,14 @@
  // Test that, after calling |SSL_shutdown|, |SSL_write| fails.
 -// TEST_P(SSLVersionTest, WriteAfterShutdown) {
 -//   ASSERT_TRUE(Connect());
--
++TEST_P(SSLVersionTest, WriteAfterShutdown) {
++  ASSERT_TRUE(Connect());
+ 
 -//   for (SSL *ssl : {client_.get(), server_.get()}) {
 -//     SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
--
++  for (SSL *ssl : {client_.get(), server_.get()}) {
++    SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
+ 
 -//     bssl::UniquePtr<BIO> mem(BIO_new(BIO_s_mem()));
 -//     ASSERT_TRUE(mem);
 -//     SSL_set0_wbio(ssl, bssl::UpRef(mem).release());
@@ -698,18 +843,14 @@
 -//     // Shut down half the connection. |SSL_shutdown| will return 0 to signal
 -//     // only one side has shut down.
 -//     ASSERT_EQ(SSL_shutdown(ssl), 0);
-+TEST_P(SSLVersionTest, WriteAfterShutdown) {
-+  ASSERT_TRUE(Connect());
- 
+-
 -//     // |ssl| should have written an alert to the transport.
 -//     const uint8_t *unused;
 -//     size_t len;
 -//     ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
 -//     EXPECT_NE(0u, len);
 -//     EXPECT_TRUE(BIO_reset(mem.get()));
-+  for (SSL *ssl : {client_.get(), server_.get()}) {
-+    SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
- 
+-
 -//     // Writing should fail.
 -//     EXPECT_EQ(-1, SSL_write(ssl, "a", 1));
 -
@@ -833,7 +974,7 @@
  
  // Test that, after sending a fatal alert from the handshake, |SSL_write| fails.
  // TEST_P(SSLVersionTest, WriteAfterHandshakeSentFatalAlert) {
-@@ -2935,97 +2977,101 @@
+@@ -2935,110 +2977,116 @@
  //   // is correct.
  // }
  
@@ -927,6 +1068,19 @@
 -//   EXPECT_EQ(sk_X509_num(SSL_get_peer_cert_chain(server_.get())), 0u);
 -//   EXPECT_EQ(sk_CRYPTO_BUFFER_num(SSL_get0_peer_certificates(server_.get())),
 -//             1u);
+-// }
+-
+-// TEST_P(SSLVersionTest, NoPeerCertificate) {
+-//   SSL_CTX_set_verify(server_ctx_.get(), SSL_VERIFY_PEER, nullptr);
+-//   SSL_CTX_set_cert_verify_callback(server_ctx_.get(), VerifySucceed, NULL);
+-//   SSL_CTX_set_cert_verify_callback(client_ctx_.get(), VerifySucceed, NULL);
+-
+-//   ASSERT_TRUE(Connect());
+-
+-//   // Server should not see a peer certificate.
+-//   bssl::UniquePtr<X509> peer(SSL_get_peer_certificate(server_.get()));
+-//   ASSERT_FALSE(peer);
+-//   ASSERT_FALSE(SSL_get0_peer_certificates(server_.get()));
 -// }
 +TEST(SSLTest, SetBIO) {
 +  bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
@@ -1023,10 +1177,201 @@
 +            1u);
 +#endif
 +}
++
++TEST_P(SSLVersionTest, NoPeerCertificate) {
++  SSL_CTX_set_verify(server_ctx_.get(), SSL_VERIFY_PEER, nullptr);
++  SSL_CTX_set_cert_verify_callback(server_ctx_.get(), VerifySucceed, NULL);
++  SSL_CTX_set_cert_verify_callback(client_ctx_.get(), VerifySucceed, NULL);
++
++  ASSERT_TRUE(Connect());
++
++  // Server should not see a peer certificate.
++  bssl::UniquePtr<X509> peer(SSL_get_peer_certificate(server_.get()));
++  ASSERT_FALSE(peer);
++#ifndef BSSL_COMPAT // Envoy doesn't need SSL_get0_peer_certificates() so skip this
++  ASSERT_FALSE(SSL_get0_peer_certificates(server_.get()));
++#endif
++}
  
- // TEST_P(SSLVersionTest, NoPeerCertificate) {
- //   SSL_CTX_set_verify(server_ctx_.get(), SSL_VERIFY_PEER, nullptr);
-@@ -4214,43 +4260,46 @@
+ // TEST_P(SSLVersionTest, RetainOnlySHA256OfCerts) {
+ //   uint8_t *cert_der = NULL;
+@@ -3167,19 +3215,19 @@
+ //   }
+ // }
+ 
+-// static void ExpectSessionReused(SSL_CTX *client_ctx, SSL_CTX *server_ctx,
+-//                                 SSL_SESSION *session, bool want_reused) {
+-//   bssl::UniquePtr<SSL> client, server;
+-//   ClientConfig config;
+-//   config.session = session;
+-//   EXPECT_TRUE(
+-//       ConnectClientAndServer(&client, &server, client_ctx, server_ctx, config));
+-
+-//   EXPECT_EQ(SSL_session_reused(client.get()), SSL_session_reused(server.get()));
+-
+-//   bool was_reused = !!SSL_session_reused(client.get());
+-//   EXPECT_EQ(was_reused, want_reused);
+-// }
++static void ExpectSessionReused(SSL_CTX *client_ctx, SSL_CTX *server_ctx,
++                                SSL_SESSION *session, bool want_reused) {
++  bssl::UniquePtr<SSL> client, server;
++  ClientConfig config;
++  config.session = session;
++  EXPECT_TRUE(
++      ConnectClientAndServer(&client, &server, client_ctx, server_ctx, config));
++
++  EXPECT_EQ(SSL_session_reused(client.get()), SSL_session_reused(server.get()));
++
++  bool was_reused = !!SSL_session_reused(client.get());
++  EXPECT_EQ(was_reused, want_reused);
++}
+ 
+ // static bssl::UniquePtr<SSL_SESSION> ExpectSessionRenewed(SSL_CTX *client_ctx,
+ //                                                          SSL_CTX *server_ctx,
+@@ -3229,73 +3277,76 @@
+ //   OPENSSL_memcpy(inout_key, new_key, kTicketKeyLen);
+ // }
+ 
+-// static int SwitchSessionIDContextSNI(SSL *ssl, int *out_alert, void *arg) {
+-//   static const uint8_t kContext[] = {3};
+-
+-//   if (!SSL_set_session_id_context(ssl, kContext, sizeof(kContext))) {
+-//     return SSL_TLSEXT_ERR_ALERT_FATAL;
+-//   }
+-
+-//   return SSL_TLSEXT_ERR_OK;
+-// }
+-
+-// TEST_P(SSLVersionTest, SessionIDContext) {
+-//   static const uint8_t kContext1[] = {1};
+-//   static const uint8_t kContext2[] = {2};
+-
+-//   ASSERT_TRUE(SSL_CTX_set_session_id_context(server_ctx_.get(), kContext1,
+-//                                              sizeof(kContext1)));
+-
+-//   SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
+-//   SSL_CTX_set_session_cache_mode(server_ctx_.get(), SSL_SESS_CACHE_BOTH);
+-
+-//   bssl::UniquePtr<SSL_SESSION> session =
+-//       CreateClientSession(client_ctx_.get(), server_ctx_.get());
+-//   ASSERT_TRUE(session);
+-
+-//   TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
+-//                                   session.get(),
+-//                                   true /* expect session reused */));
+-
+-//   // Change the session ID context.
+-//   ASSERT_TRUE(SSL_CTX_set_session_id_context(server_ctx_.get(), kContext2,
+-//                                              sizeof(kContext2)));
+-
+-//   TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
+-//                                   session.get(),
+-//                                   false /* expect session not reused */));
+-
+-//   // Change the session ID context back and install an SNI callback to switch
+-//   // it.
+-//   ASSERT_TRUE(SSL_CTX_set_session_id_context(server_ctx_.get(), kContext1,
+-//                                              sizeof(kContext1)));
+-
+-//   SSL_CTX_set_tlsext_servername_callback(server_ctx_.get(),
+-//                                          SwitchSessionIDContextSNI);
+-
+-//   TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
+-//                                   session.get(),
+-//                                   false /* expect session not reused */));
+-
+-//   // Switch the session ID context with the early callback instead.
+-//   SSL_CTX_set_tlsext_servername_callback(server_ctx_.get(), nullptr);
+-//   SSL_CTX_set_select_certificate_cb(
+-//       server_ctx_.get(),
+-//       [](const SSL_CLIENT_HELLO *client_hello) -> ssl_select_cert_result_t {
+-//         static const uint8_t kContext[] = {3};
+-
+-//         if (!SSL_set_session_id_context(client_hello->ssl, kContext,
+-//                                         sizeof(kContext))) {
+-//           return ssl_select_cert_error;
+-//         }
+-
+-//         return ssl_select_cert_success;
+-//       });
++static int SwitchSessionIDContextSNI(SSL *ssl, int *out_alert, void *arg) {
++  static const uint8_t kContext[] = {3};
+ 
+-//   TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
+-//                                   session.get(),
+-//                                   false /* expect session not reused */));
+-// }
++  if (!SSL_set_session_id_context(ssl, kContext, sizeof(kContext))) {
++    return SSL_TLSEXT_ERR_ALERT_FATAL;
++  }
++
++  return SSL_TLSEXT_ERR_OK;
++}
++
++TEST_P(SSLVersionTest, SessionIDContext) {
++#ifdef BSSL_COMPAT
++  GTEST_SKIP(); // TODO: Investigate failures on BSSL_COMPAT
++#endif
++  static const uint8_t kContext1[] = {1};
++  static const uint8_t kContext2[] = {2};
++
++  ASSERT_TRUE(SSL_CTX_set_session_id_context(server_ctx_.get(), kContext1,
++                                             sizeof(kContext1)));
++
++  SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
++  SSL_CTX_set_session_cache_mode(server_ctx_.get(), SSL_SESS_CACHE_BOTH);
++
++  bssl::UniquePtr<SSL_SESSION> session =
++      CreateClientSession(client_ctx_.get(), server_ctx_.get());
++  ASSERT_TRUE(session);
++
++  TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
++                                  session.get(),
++                                  true /* expect session reused */));
++
++  // Change the session ID context.
++  ASSERT_TRUE(SSL_CTX_set_session_id_context(server_ctx_.get(), kContext2,
++                                             sizeof(kContext2)));
++
++  TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
++                                  session.get(),
++                                  false /* expect session not reused */));
++
++  // Change the session ID context back and install an SNI callback to switch
++  // it.
++  ASSERT_TRUE(SSL_CTX_set_session_id_context(server_ctx_.get(), kContext1,
++                                             sizeof(kContext1)));
++
++  SSL_CTX_set_tlsext_servername_callback(server_ctx_.get(),
++                                         SwitchSessionIDContextSNI);
++
++  TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
++                                  session.get(),
++                                  false /* expect session not reused */));
++
++  // Switch the session ID context with the early callback instead.
++  SSL_CTX_set_tlsext_servername_callback(server_ctx_.get(), nullptr);
++  SSL_CTX_set_select_certificate_cb(
++      server_ctx_.get(),
++      [](const SSL_CLIENT_HELLO *client_hello) -> ssl_select_cert_result_t {
++        static const uint8_t kContext[] = {3};
++
++        if (!SSL_set_session_id_context(client_hello->ssl, kContext,
++                                        sizeof(kContext))) {
++          return ssl_select_cert_error;
++        }
++
++        return ssl_select_cert_success;
++      });
++
++  TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
++                                  session.get(),
++                                  false /* expect session not reused */));
++}
+ 
+ // static timeval g_current_time;
+ 
+@@ -4214,43 +4265,46 @@
  //   X509_cmp(cert, cert);
  // }
  
@@ -1110,7 +1455,7 @@
  
  // TEST(SSLTest, SetChainAndKeyMismatch) {
  //   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_with_buffers_method()));
-@@ -4920,33 +4969,37 @@
+@@ -4920,33 +4974,37 @@
  // }
  
  // The client should gracefully handle no suitable ciphers being enabled.
@@ -1175,7 +1520,7 @@
  
  // TEST_P(SSLVersionTest, SessionVersion) {
  //   SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
-@@ -5721,25 +5774,28 @@
+@@ -5721,25 +5779,28 @@
  // }
  
  // SSL_CTX_get0_certificate needs to lock internally. Test this works.
@@ -1223,7 +1568,30 @@
  
  // Functions which access properties on the negotiated session are thread-safe
  // where needed. Prior to TLS 1.3, clients resuming sessions and servers
-@@ -8260,5 +8316,5 @@
+@@ -7167,14 +7228,14 @@
+ //   ASSERT_TRUE(CompleteHandshakesForQUIC());
+ // }
+ 
+-// extern "C" {
+-// int BORINGSSL_enum_c_type_test(void);
+-// }
+-
+-// TEST(SSLTest, EnumTypes) {
+-//   EXPECT_EQ(sizeof(int), sizeof(ssl_private_key_result_t));
+-//   EXPECT_EQ(1, BORINGSSL_enum_c_type_test());
+-// }
++extern "C" {
++int BORINGSSL_enum_c_type_test(void);
++}
++
++TEST(SSLTest, EnumTypes) {
++  EXPECT_EQ(sizeof(int), sizeof(ssl_private_key_result_t));
++  EXPECT_EQ(1, BORINGSSL_enum_c_type_test());
++}
+ 
+ // TEST_P(SSLVersionTest, DoubleSSLError) {
+ //   // Connect the inner SSL connections.
+@@ -8260,5 +8321,5 @@
  //   }
  // }
  
