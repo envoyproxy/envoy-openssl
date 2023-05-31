@@ -110,6 +110,7 @@ add_library(bssl-compat STATIC
   source/SSL_set_session_id_context.cc
   source/SSL_set_session.cc
   source/SSL_set_tlsext_host_name.c
+  source/SSL_shutdown.cc
   source/SSL_version.cc
   source/SSL_write.cc
   source/ssl.c
