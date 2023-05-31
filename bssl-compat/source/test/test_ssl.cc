@@ -1083,3 +1083,74 @@ TEST(SSLTest, test_SSL_set1_curves_list) {
     ASSERT_EQ(test_string.expected_result, SSL_set1_curves_list(ssl.get(), test_string.curves));
   }
 }
+
+
+
+
+
+static bool CompleteHandshakes(SSL *client, SSL *server) {
+  for (;;) {
+    int client_ret = SSL_do_handshake(client);
+    int client_err = SSL_get_error(client, client_ret);
+    if (client_err != SSL_ERROR_NONE && client_err != SSL_ERROR_WANT_READ && client_err != SSL_ERROR_WANT_WRITE) {
+      fprintf(stderr, "Client error: %s\n", SSL_error_description(client_err));
+      ERR_print_errors_fp(stderr);
+      return false;
+    }
+
+    int server_ret = SSL_do_handshake(server);
+    int server_err = SSL_get_error(server, server_ret);
+    if (server_err != SSL_ERROR_NONE && server_err != SSL_ERROR_WANT_READ && server_err != SSL_ERROR_WANT_WRITE) {
+      fprintf(stderr, "Server error: %s\n", SSL_error_description(server_err));
+      ERR_print_errors_fp(stderr);
+      return false;
+    }
+
+    if (client_ret == 1 && server_ret == 1) {
+      break;
+    }
+  }
+
+  return true;
+}
+
+class SocketCloser {
+  public:
+    SocketCloser(int socket) : m_socket{socket} {}
+    ~SocketCloser() { ::close(m_socket); }
+  private:
+    SocketCloser(const SocketCloser&) = default;
+    SocketCloser &operator=(const SocketCloser&) = default;
+  private:
+    int m_socket;
+};
+
+TEST(SSLTest, test_SSL_set_fd) {
+  TempFile root_ca_cert_pem        { root_ca_cert_pem_str };
+  TempFile client_2_key_pem        { client_2_key_pem_str };
+  TempFile client_2_cert_chain_pem { client_2_cert_chain_pem_str };
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_method()));
+
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  ASSERT_TRUE(SSL_CTX_load_verify_locations(client_ctx.get(), root_ca_cert_pem.path(), nullptr));
+
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+  SSL_set_connect_state(client_ssl.get());
+
+  ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+}
