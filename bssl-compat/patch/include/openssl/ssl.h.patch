@@ -233,7 +233,7 @@
  
  // SSL_set_mtu sets the |ssl|'s MTU in DTLS to |mtu|. It returns one on success
  // and zero on failure.
-@@ -716,14 +717,14 @@
+@@ -716,20 +717,20 @@
  // SSL_CTX_set_min_proto_version sets the minimum protocol version for |ctx| to
  // |version|. If |version| is zero, the default minimum version is used. It
  // returns one on success and zero if |version| is invalid.
@@ -251,7 +251,15 @@
 +                                                 uint16_t version);
  
  // SSL_CTX_get_min_proto_version returns the minimum protocol version for |ctx|
- // OPENSSL_EXPORT uint16_t SSL_CTX_get_min_proto_version(const SSL_CTX *ctx);
+-// OPENSSL_EXPORT uint16_t SSL_CTX_get_min_proto_version(const SSL_CTX *ctx);
++OPENSSL_EXPORT uint16_t SSL_CTX_get_min_proto_version(const SSL_CTX *ctx);
+ 
+ // SSL_CTX_get_max_proto_version returns the maximum protocol version for |ctx|
+-// OPENSSL_EXPORT uint16_t SSL_CTX_get_max_proto_version(const SSL_CTX *ctx);
++OPENSSL_EXPORT uint16_t SSL_CTX_get_max_proto_version(const SSL_CTX *ctx);
+ 
+ // SSL_set_min_proto_version sets the minimum protocol version for |ssl| to
+ // |version|. If |version| is zero, the default minimum version is used. It
 @@ -752,7 +753,7 @@
  // SSL_version returns the TLS or DTLS protocol version used by |ssl|, which is
  // one of the |*_VERSION| values. (E.g. |TLS1_2_VERSION|.) Before the version
