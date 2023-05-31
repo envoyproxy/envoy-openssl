@@ -882,6 +882,15 @@
  
  
  // Application-layer protocol negotiation.
+@@ -4045,7 +4045,7 @@
+ //
+ // See |ex_data.h| for details.
+ 
+-// OPENSSL_EXPORT int SSL_set_ex_data(SSL *ssl, int idx, void *data);
++OPENSSL_EXPORT int SSL_set_ex_data(SSL *ssl, int idx, void *data);
+ // OPENSSL_EXPORT void *SSL_get_ex_data(const SSL *ssl, int idx);
+ // OPENSSL_EXPORT int SSL_get_ex_new_index(long argl, void *argp,
+ //                                         CRYPTO_EX_unused *unused,
 @@ -4061,8 +4061,8 @@
  //                                                 CRYPTO_EX_dup *dup_unused,
  //                                                 CRYPTO_EX_free *free_func);
