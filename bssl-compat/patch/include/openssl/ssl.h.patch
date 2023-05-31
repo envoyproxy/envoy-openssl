@@ -673,7 +673,7 @@
  
  // SSL_TICKET_KEY_NAME_LEN is the length of the key name prefix of a session
  // ticket.
-@@ -2409,7 +2410,7 @@
+@@ -2409,20 +2410,20 @@
  // colon-separated list |curves|. Each element of |curves| should be a curve
  // name (e.g. P-256, X25519, ...). It returns one on success and zero on
  // failure.
@@ -682,8 +682,10 @@
  
  // SSL_set1_curves_list sets the preferred curves for |ssl| to be the
  // colon-separated list |curves|. Each element of |curves| should be a curve
-@@ -2418,11 +2419,11 @@
- // OPENSSL_EXPORT int SSL_set1_curves_list(SSL *ssl, const char *curves);
+ // name (e.g. P-256, X25519, ...). It returns one on success and zero on
+ // failure.
+-// OPENSSL_EXPORT int SSL_set1_curves_list(SSL *ssl, const char *curves);
++OPENSSL_EXPORT int SSL_set1_curves_list(SSL *ssl, const char *curves);
  
  // SSL_CURVE_* define TLS curve IDs.
 -// #define SSL_CURVE_SECP224R1 21
