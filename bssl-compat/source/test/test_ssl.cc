@@ -1060,3 +1060,26 @@ TEST(SSLTest, test_SSL_SESSION_from_bytes) {
 
   server.join();
 }
+
+TEST(SSLTest, test_SSL_set1_curves_list) {
+  struct {
+    const char *curves;
+    int expected_result;
+  }
+  test_strings[] {
+    { SN_secp224r1 ":" SN_secp384r1 ":" SN_secp521r1 ":" SN_X25519 ":" SN_X9_62_prime256v1, 1},
+    { "P-224", 1 },
+    { "P-224:P-521:P-256:X25519", 1 },
+    { "P-224:P-521:P-25:X25519", 0 },
+    { "no:valid:curves", 0 },
+    { ":", 0 },
+    { ":::", 0 },
+    { "", 0 }
+  };
+
+  for(const auto &test_string : test_strings) {
+    bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_server_method()));
+    bssl::UniquePtr<SSL> ssl { SSL_new(ctx.get()) };
+    ASSERT_EQ(test_string.expected_result, SSL_set1_curves_list(ssl.get(), test_string.curves));
+  }
+}
