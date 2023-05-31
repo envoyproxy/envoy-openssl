@@ -215,6 +215,15 @@
  
  // SSL_CTX_set_quiet_shutdown sets quiet shutdown on |ctx| to |mode|. If
  // enabled, |SSL_shutdown| will not send a close_notify alert or wait for one
+@@ -466,7 +467,7 @@
+ // SSL_set_quiet_shutdown sets quiet shutdown on |ssl| to |mode|. If enabled,
+ // |SSL_shutdown| will not send a close_notify alert or wait for one from the
+ // peer. It will instead synchronously return one.
+-// OPENSSL_EXPORT void SSL_set_quiet_shutdown(SSL *ssl, int mode);
++OPENSSL_EXPORT void SSL_set_quiet_shutdown(SSL *ssl, int mode);
+ 
+ // SSL_get_quiet_shutdown returns whether quiet shutdown is enabled for
+ // |ssl|.
 @@ -475,7 +476,7 @@
  // SSL_get_error returns a |SSL_ERROR_*| value for the most recent operation on
  // |ssl|. It should be called after an operation failed to determine whether the
