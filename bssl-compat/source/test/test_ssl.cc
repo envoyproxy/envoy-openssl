@@ -1154,3 +1154,41 @@ TEST(SSLTest, test_SSL_set_fd) {
 
   ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
 }
+
+TEST(SSLTest, test_SSL_ex_data) {
+  int free_func_calls = 0;
+
+  int my_int_index = SSL_get_ex_new_index(0, &free_func_calls, nullptr, nullptr, [](void *parent, void *ptr, CRYPTO_EX_DATA *ad, int index, long argl, void *argp) {
+    (*reinterpret_cast<int*>(argp))++;
+    if (ptr) {
+      ASSERT_EQ(42, *reinterpret_cast<int*>(ptr));
+      delete reinterpret_cast<int*>(ptr);
+    }
+  });
+
+  ASSERT_EQ(0, free_func_calls);
+  ASSERT_NE(-1, my_int_index);
+
+  ASSERT_NE(my_int_index, SSL_get_ex_new_index(0, nullptr, nullptr, nullptr, nullptr));
+
+  bssl::UniquePtr<SSL_CTX> ctx {SSL_CTX_new(TLS_method())};
+  {
+    bssl::UniquePtr<SSL> ssl {SSL_new(ctx.get())};
+    int *i {new int{42}};
+    SSL_set_ex_data(ssl.get(), my_int_index, i);
+    ASSERT_EQ(i, SSL_get_ex_data(ssl.get(), my_int_index));
+    // ssl gets deleted, so *i hould get deleted
+    ASSERT_EQ(0, free_func_calls);
+  }
+  ASSERT_EQ(1, free_func_calls);
+  {
+    int i {42};
+    bssl::UniquePtr<SSL> ssl {SSL_new(ctx.get())};
+    SSL_set_ex_data(ssl.get(), my_int_index, &i);
+    ASSERT_EQ(&i, SSL_get_ex_data(ssl.get(), my_int_index));
+    // Setting the data to nullptr should not delete the previous value
+    SSL_set_ex_data(ssl.get(), my_int_index, nullptr);
+    ASSERT_EQ(1, free_func_calls);
+  }
+  ASSERT_EQ(2, free_func_calls);
+}

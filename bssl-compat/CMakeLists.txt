@@ -72,8 +72,8 @@ add_library(bssl-compat STATIC
   source/rand.c
   source/RSA_free.c
   source/ssl_cipher.c
-  source/SSL_CTX_get_min_proto_version.cc
   source/SSL_CTX_get_max_proto_version.cc
+  source/SSL_CTX_get_min_proto_version.cc
   source/SSL_CTX_sess_set_new_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
   source/SSL_CTX_set_session_cache_mode.cc
@@ -91,6 +91,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_cipher_by_value.c
   source/SSL_get_curve_id.c
   source/SSL_get_curve_name.c
+  source/SSL_get_ex_data.cc
   source/SSL_get_ex_new_index.cc
   source/SSL_get_peer_cert_chain.cc
   source/SSL_get_peer_certificate.cc
