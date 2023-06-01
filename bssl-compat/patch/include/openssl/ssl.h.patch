@@ -1096,6 +1096,17 @@
  
  // SSL_set1_sigalgs_list takes a textual specification of a set of signature
  // algorithms and configures them on |ssl|. It returns one on success and zero
+@@ -4916,8 +4916,8 @@
+ // more convenient to codesearch for specific algorithm values.
+ // OPENSSL_EXPORT int SSL_set1_sigalgs_list(SSL *ssl, const char *str);
+ 
+-// #define SSL_set_app_data(s, arg) (SSL_set_ex_data(s, 0, (char *)(arg)))
+-// #define SSL_get_app_data(s) (SSL_get_ex_data(s, 0))
++#define SSL_set_app_data(s, arg) (SSL_set_ex_data(s, 0, (char *)(arg)))
++#define SSL_get_app_data(s) (SSL_get_ex_data(s, 0))
+ // #define SSL_SESSION_set_app_data(s, a) \
+ //   (SSL_SESSION_set_ex_data(s, 0, (char *)(a)))
+ // #define SSL_SESSION_get_app_data(s) (SSL_SESSION_get_ex_data(s, 0))
 @@ -5186,7 +5186,7 @@
  
  // SSL_get1_session acts like |SSL_get_session| but returns a new reference to
