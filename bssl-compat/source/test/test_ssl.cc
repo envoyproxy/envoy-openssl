@@ -1203,3 +1203,15 @@ TEST(SSLTest, test_SSL_set_cipher_list) {
   ASSERT_TRUE(SSL_set_cipher_list(ssl.get(), "ONE:VALID:CIPHER:PSK"));
   ASSERT_TRUE(SSL_set_cipher_list(ssl.get(), "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4"));
 }
+
+TEST(SSLTest, test_SSL_set_app_data) {
+  bssl::UniquePtr<SSL_CTX> ctx {SSL_CTX_new(TLS_server_method())};
+  bssl::UniquePtr<SSL> ssl {SSL_new(ctx.get())};
+
+  int i {42};
+
+  ASSERT_TRUE(SSL_set_app_data(ssl.get(), &i));
+  ASSERT_EQ(&i, SSL_get_app_data(ssl.get()));
+  ASSERT_TRUE(SSL_set_app_data(ssl.get(), nullptr));
+  ASSERT_EQ(nullptr, SSL_get_app_data(ssl.get()));
+}
