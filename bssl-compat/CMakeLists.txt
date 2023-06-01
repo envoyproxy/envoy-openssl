@@ -106,6 +106,7 @@ add_library(bssl-compat STATIC
   source/SSL_session_reused.cc
   source/SSL_SESSION_to_bytes.c
   source/SSL_set_accept_state.cc
+  source/SSL_set_alpn_protos.cc
   source/SSL_set_bio.cc
   source/SSL_set_cert_cb.cc
   source/SSL_set_chain_and_key.cc

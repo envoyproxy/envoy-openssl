@@ -898,6 +898,17 @@
  
  
  // Application-layer protocol negotiation.
+@@ -2920,8 +2920,8 @@
+ //
+ // WARNING: this function is dangerous because it breaks the usual return value
+ // convention.
+-// OPENSSL_EXPORT int SSL_set_alpn_protos(SSL *ssl, const uint8_t *protos,
+-//                                        unsigned protos_len);
++OPENSSL_EXPORT int SSL_set_alpn_protos(SSL *ssl, const uint8_t *protos,
++                                       unsigned protos_len);
+ 
+ // SSL_CTX_set_alpn_select_cb sets a callback function on |ctx| that is called
+ // during ClientHello processing in order to select an ALPN protocol from the
 @@ -4045,12 +4045,12 @@
  //
  // See |ex_data.h| for details.
