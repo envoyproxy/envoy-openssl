@@ -909,6 +909,21 @@
  
  // SSL_CTX_set_alpn_select_cb sets a callback function on |ctx| that is called
  // during ClientHello processing in order to select an ALPN protocol from the
+@@ -2953,10 +2953,10 @@
+ // The cipher suite is selected before negotiating ALPN. The callback may use
+ // |SSL_get_pending_cipher| to query the cipher suite. This may be used to
+ // implement HTTP/2's cipher suite constraints.
+-// OPENSSL_EXPORT void SSL_CTX_set_alpn_select_cb(
+-//     SSL_CTX *ctx, int (*cb)(SSL *ssl, const uint8_t **out, uint8_t *out_len,
+-//                             const uint8_t *in, unsigned in_len, void *arg),
+-//     void *arg);
++OPENSSL_EXPORT void SSL_CTX_set_alpn_select_cb(
++    SSL_CTX *ctx, int (*cb)(SSL *ssl, const uint8_t **out, uint8_t *out_len,
++                            const uint8_t *in, unsigned in_len, void *arg),
++    void *arg);
+ 
+ // SSL_get0_alpn_selected gets the selected ALPN protocol (if any) from |ssl|.
+ // On return it sets |*out_data| to point to |*out_len| bytes of protocol name
 @@ -4045,12 +4045,12 @@
  //
  // See |ex_data.h| for details.
