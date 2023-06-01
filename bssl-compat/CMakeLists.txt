@@ -91,6 +91,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_cipher_by_value.c
   source/SSL_get_curve_id.c
   source/SSL_get_curve_name.c
+  source/SSL_get_ex_new_index.cc
   source/SSL_get_peer_cert_chain.cc
   source/SSL_get_peer_certificate.cc
   source/SSL_get_peer_signature_algorithm.c
