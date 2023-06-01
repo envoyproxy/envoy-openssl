@@ -296,6 +296,17 @@
  
  // SSL_use_PrivateKey sets |ssl|'s private key to |pkey|. It returns one on
  // success and zero on failure.
+@@ -1022,8 +1023,8 @@
+ // On the server, the callback will be called after extensions have been
+ // processed, but before the resumption decision has been made. This differs
+ // from OpenSSL which handles resumption before selecting the certificate.
+-// OPENSSL_EXPORT void SSL_set_cert_cb(SSL *ssl, int (*cb)(SSL *ssl, void *arg),
+-//                                     void *arg);
++OPENSSL_EXPORT void SSL_set_cert_cb(SSL *ssl, int (*cb)(SSL *ssl, void *arg),
++                                    void *arg);
+ 
+ // SSL_get0_certificate_types, for a client, sets |*out_types| to an array
+ // containing the client certificate types requested by a server. It returns the
 @@ -1074,10 +1075,10 @@
  // OPENSSL_EXPORT int SSL_check_private_key(const SSL *ssl);
  

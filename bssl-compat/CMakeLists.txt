@@ -107,6 +107,7 @@ add_library(bssl-compat STATIC
   source/SSL_SESSION_to_bytes.c
   source/SSL_set_accept_state.cc
   source/SSL_set_bio.cc
+  source/SSL_set_cert_cb.cc
   source/SSL_set_chain_and_key.cc
   source/SSL_set_cipher_list.cc
   source/SSL_set_connect_state.cc
