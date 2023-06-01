@@ -935,7 +935,22 @@
  
  // SSL_get0_alpn_selected gets the selected ALPN protocol (if any) from |ssl|.
  // On return it sets |*out_data| to point to |*out_len| bytes of protocol name
-@@ -4045,12 +4045,12 @@
+@@ -3126,10 +3126,10 @@
+ // and returns |OPENSSL_NPN_NEGOTIATED|. Otherwise, it returns
+ // |OPENSSL_NPN_NO_OVERLAP| and sets |*out| and |*out_len| to the first
+ // supported protocol.
+-// OPENSSL_EXPORT int SSL_select_next_proto(uint8_t **out, uint8_t *out_len,
+-//                                          const uint8_t *peer, unsigned peer_len,
+-//                                          const uint8_t *supported,
+-//                                          unsigned supported_len);
++OPENSSL_EXPORT int SSL_select_next_proto(uint8_t **out, uint8_t *out_len,
++                                         const uint8_t *peer, unsigned peer_len,
++                                         const uint8_t *supported,
++                                         unsigned supported_len);
+ 
+ #ifdef ossl_OPENSSL_NPN_UNSUPPORTED
+ #define OPENSSL_NPN_UNSUPPORTED ossl_OPENSSL_NPN_UNSUPPORTED
+@@ -4051,12 +4051,12 @@
  //
  // See |ex_data.h| for details.
  
@@ -954,7 +969,7 @@
  
  // OPENSSL_EXPORT int SSL_SESSION_set_ex_data(SSL_SESSION *session, int idx,
  //                                            void *data);
-@@ -4061,8 +4061,8 @@
+@@ -4067,8 +4067,8 @@
  //                                                 CRYPTO_EX_dup *dup_unused,
  //                                                 CRYPTO_EX_free *free_func);
  
@@ -965,7 +980,7 @@
  // OPENSSL_EXPORT int SSL_CTX_get_ex_new_index(long argl, void *argp,
  //                                             CRYPTO_EX_unused *unused,
  //                                             CRYPTO_EX_dup *dup_unused,
-@@ -4286,13 +4286,13 @@
+@@ -4292,13 +4292,13 @@
  // such as HTTP/1.1, and not others, such as HTTP/2.
  // OPENSSL_EXPORT void SSL_set_shed_handshake_config(SSL *ssl, int enable);
  
@@ -986,7 +1001,7 @@
  
  // SSL_set_renegotiate_mode configures how |ssl|, a client, reacts to
  // renegotiation attempts by a server. If |ssl| is a server, peer-initiated
-@@ -4321,8 +4321,8 @@
+@@ -4327,8 +4327,8 @@
  //
  // There is no support in BoringSSL for initiating renegotiations as a client
  // or server.
@@ -997,7 +1012,7 @@
  
  // SSL_renegotiate starts a deferred renegotiation on |ssl| if it was configured
  // with |ssl_renegotiate_explicit| and has a pending HelloRequest. It returns
-@@ -4383,45 +4383,45 @@
+@@ -4389,45 +4389,45 @@
  // callbacks that are called very early on during the server handshake. At this
  // point, much of the SSL* hasn't been filled out and only the ClientHello can
  // be depended on.
@@ -1073,7 +1088,7 @@
  
  // SSL_CTX_set_select_certificate_cb sets a callback that is called before most
  // ClientHello processing and before the decision whether to resume a session
-@@ -4437,9 +4437,9 @@
+@@ -4443,9 +4443,9 @@
  //
  // Note: The |SSL_CLIENT_HELLO| is only valid for the duration of the callback
  // and is not valid while the handshake is paused.
@@ -1086,7 +1101,7 @@
  
  // SSL_CTX_set_dos_protection_cb sets a callback that is called once the
  // resumption decision for a ClientHello has been made. It can return one to
-@@ -4555,7 +4555,7 @@
+@@ -4561,7 +4561,7 @@
  
  // SSL_get_peer_signature_algorithm returns the signature algorithm used by the
  // peer. If not applicable, it returns zero.
@@ -1095,7 +1110,7 @@
  
  // SSL_get_client_random writes up to |max_out| bytes of the most recent
  // handshake's client_random to |out| and returns the number of bytes written.
-@@ -4689,8 +4689,8 @@
+@@ -4695,8 +4695,8 @@
  
  // These client- and server-specific methods call their corresponding generic
  // methods.
@@ -1106,7 +1121,7 @@
  // OPENSSL_EXPORT const SSL_METHOD *SSLv23_server_method(void);
  // OPENSSL_EXPORT const SSL_METHOD *SSLv23_client_method(void);
  // OPENSSL_EXPORT const SSL_METHOD *TLSv1_server_method(void);
-@@ -4805,14 +4805,14 @@
+@@ -4811,14 +4811,14 @@
  // i2d_SSL_SESSION serializes |in|, as described in |i2d_SAMPLE|.
  //
  // Use |SSL_SESSION_to_bytes| instead.
@@ -1124,7 +1139,7 @@
  
  // i2d_SSL_SESSION_bio serializes |session| and writes the result to |bio|. It
  // returns the number of bytes written on success and <= 0 on error.
-@@ -4901,7 +4901,7 @@
+@@ -4907,7 +4907,7 @@
  // This API is compatible with OpenSSL. However, BoringSSL-specific code should
  // prefer |SSL_CTX_set_signing_algorithm_prefs| because it's clearer and it's
  // more convenient to codesearch for specific algorithm values.
@@ -1133,7 +1148,7 @@
  
  // SSL_set1_sigalgs_list takes a textual specification of a set of signature
  // algorithms and configures them on |ssl|. It returns one on success and zero
-@@ -4916,8 +4916,8 @@
+@@ -4922,8 +4922,8 @@
  // more convenient to codesearch for specific algorithm values.
  // OPENSSL_EXPORT int SSL_set1_sigalgs_list(SSL *ssl, const char *str);
  
@@ -1144,7 +1159,7 @@
  // #define SSL_SESSION_set_app_data(s, a) \
  //   (SSL_SESSION_set_ex_data(s, 0, (char *)(a)))
  // #define SSL_SESSION_get_app_data(s) (SSL_SESSION_get_ex_data(s, 0))
-@@ -5186,7 +5186,7 @@
+@@ -5192,7 +5192,7 @@
  
  // SSL_get1_session acts like |SSL_get_session| but returns a new reference to
  // the session.
@@ -1153,7 +1168,7 @@
  
  // #define OPENSSL_INIT_NO_LOAD_SSL_STRINGS 0
  // #define OPENSSL_INIT_LOAD_SSL_STRINGS 0
-@@ -5254,9 +5254,9 @@
+@@ -5260,9 +5260,9 @@
  // OCSP responses like other server credentials, such as certificates or SCT
  // lists. Configure, store, and refresh them eagerly. This avoids downtime if
  // the CA's OCSP responder is briefly offline.
@@ -1166,7 +1181,7 @@
  
  // SSL_CTX_set_tlsext_status_arg sets additional data for
  // |SSL_CTX_set_tlsext_status_cb|'s callback and returns one.
-@@ -5486,21 +5486,21 @@
+@@ -5492,21 +5492,21 @@
  // #endif // !defined(BORINGSSL_PREFIX)
  
  
@@ -1196,7 +1211,7 @@
  // BORINGSSL_MAKE_UP_REF(SSL_SESSION, SSL_SESSION_up_ref)
  
  // enum class OpenRecordResult {
-@@ -5617,13 +5617,13 @@
+@@ -5623,13 +5623,13 @@
  //     Span<const uint8_t> *out_write_traffic_secret);
  
  
@@ -1214,7 +1229,7 @@
  
  #ifdef ossl_SSL_R_APP_DATA_IN_HANDSHAKE
  #define SSL_R_APP_DATA_IN_HANDSHAKE ossl_SSL_R_APP_DATA_IN_HANDSHAKE
-@@ -6391,4 +6391,4 @@
+@@ -6397,4 +6397,4 @@
  #define SSL_R_TLSV1_ALERT_ECH_REQUIRED ossl_SSL_R_TLSV1_ALERT_ECH_REQUIRED
  #endif
  

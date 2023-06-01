@@ -101,6 +101,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_wbio.cc
   source/SSL_get0_ocsp_response.c
   source/SSL_get1_session.c
+  source/SSL_select_next_proto.cc
   source/SSL_SESSION_free.cc
   source/SSL_SESSION_from_bytes.c
   source/SSL_SESSION_get_id.c
