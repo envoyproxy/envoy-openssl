@@ -920,7 +920,7 @@
  
  // SSL_CTX_set_alpn_select_cb sets a callback function on |ctx| that is called
  // during ClientHello processing in order to select an ALPN protocol from the
-@@ -2953,10 +2953,10 @@
+@@ -2953,18 +2953,18 @@
  // The cipher suite is selected before negotiating ALPN. The callback may use
  // |SSL_get_pending_cipher| to query the cipher suite. This may be used to
  // implement HTTP/2's cipher suite constraints.
@@ -935,6 +935,17 @@
  
  // SSL_get0_alpn_selected gets the selected ALPN protocol (if any) from |ssl|.
  // On return it sets |*out_data| to point to |*out_len| bytes of protocol name
+ // (not including the leading length-prefix byte). If the server didn't respond
+ // with a negotiated protocol then |*out_len| will be zero.
+-// OPENSSL_EXPORT void SSL_get0_alpn_selected(const SSL *ssl,
+-//                                            const uint8_t **out_data,
+-//                                            unsigned *out_len);
++OPENSSL_EXPORT void SSL_get0_alpn_selected(const SSL *ssl,
++                                           const uint8_t **out_data,
++                                           unsigned *out_len);
+ 
+ // SSL_CTX_set_allow_unknown_alpn_protos configures client connections on |ctx|
+ // to allow unknown ALPN protocols from the server. Otherwise, by default, the
 @@ -3126,10 +3126,10 @@
  // and returns |OPENSSL_NPN_NEGOTIATED|. Otherwise, it returns
  // |OPENSSL_NPN_NO_OVERLAP| and sets |*out| and |*out_len| to the first

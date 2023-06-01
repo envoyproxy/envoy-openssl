@@ -99,6 +99,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_peer_signature_algorithm.c
   source/SSL_get_signature_algorithm_name.c
   source/SSL_get_wbio.cc
+  source/SSL_get0_alpn_selected.cc
   source/SSL_get0_ocsp_response.c
   source/SSL_get1_session.c
   source/SSL_select_next_proto.cc

@@ -1243,23 +1243,46 @@ TEST(SSLTest, test_SSL_set_alpn_protos) {
   ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
   SSL_set_connect_state(client_ssl.get());
 
-  static const uint8_t protos[] {
+  static const uint8_t server_protos[] {
+    2, 'h', '2',
+    8, 'h', 't', 't', 'p', '/', '1', '.', '1',
+    6, 's', 'p', 'd', 'y', '/', '1',
+  };
+
+  static const uint8_t client_protos[] {
     6, 's', 'p', 'd', 'y', '/', '1',
     8, 'h', 't', 't', 'p', '/', '1', '.', '1'
   };
   
-  // Set up a ALPN callback on the server which checks in == protos
+  // Set up a ALPN callback on the server which checks that in == client_protos
+  // and then uses SSL_select_next_proto() to make it's selection
   SSL_CTX_set_alpn_select_cb(server_ctx.get(), [](SSL *ssl, const uint8_t **out, uint8_t *out_len, const uint8_t *in, unsigned in_len, void *arg)-> int {
-    if ((in_len == sizeof(protos)) && (memcmp(protos, in, in_len) == 0)) {
-      *out = in + 1; // pick the first one (sans u8 length)
-      *out_len = in[0]; // u8 length prefix
+    if (in_len != sizeof(client_protos)) {
+      return SSL_TLSEXT_ERR_ALERT_FATAL;
+    }
+    if (memcmp(client_protos, in, in_len) != 0) {
+      return SSL_TLSEXT_ERR_ALERT_FATAL;
+    }
+
+    if (SSL_select_next_proto(const_cast<uint8_t**>(out), out_len, in, in_len, server_protos, sizeof(server_protos)) == OPENSSL_NPN_NEGOTIATED) {
       return SSL_TLSEXT_ERR_OK;
     }
+
     return SSL_TLSEXT_ERR_ALERT_FATAL;
   }, nullptr);
 
   // Set the clients list of ALPN protocols
-  ASSERT_EQ(0, SSL_set_alpn_protos(client_ssl.get(), protos, sizeof(protos)));
+  ASSERT_EQ(0, SSL_set_alpn_protos(client_ssl.get(), client_protos, sizeof(client_protos)));
 
   ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+
+  const uint8_t *selected;
+  unsigned selected_len;
+  SSL_get0_alpn_selected(client_ssl.get(), &selected, &selected_len);
+  // const uint8_t **out_data, unsigned *out_len
+
+  const char *expected {"spdy/1"};
+  size_t expected_len {strlen(expected)};
+  ASSERT_EQ(expected_len, selected_len);
+  ASSERT_EQ(0, memcmp(expected, selected, expected_len));
 }
