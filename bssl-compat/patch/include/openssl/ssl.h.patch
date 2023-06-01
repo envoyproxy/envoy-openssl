@@ -637,6 +637,17 @@
  
  // SSL_SESSION_has_ticket returns one if |session| has a ticket and zero
  // otherwise.
+@@ -1933,8 +1934,8 @@
+ 
+ // SSL_SESSION_get_ticket_lifetime_hint returns ticket lifetime hint of
+ // |session| in seconds or zero if none was set.
+-// OPENSSL_EXPORT uint32_t
+-// SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *session);
++OPENSSL_EXPORT uint32_t
++SSL_SESSION_get_ticket_lifetime_hint(const SSL_SESSION *session);
+ 
+ // SSL_SESSION_get0_cipher returns the cipher negotiated by the connection which
+ // established |session|.
 @@ -2049,7 +2050,7 @@
  
  // SSL_CTX_set_session_cache_mode sets the session cache mode bits for |ctx| to

@@ -103,6 +103,7 @@ add_library(bssl-compat STATIC
   source/SSL_get1_session.c
   source/SSL_SESSION_from_bytes.c
   source/SSL_SESSION_get_id.c
+  source/SSL_SESSION_get_ticket_lifetime_hint.cc
   source/SSL_SESSION_is_resumable.c
   source/SSL_session_reused.cc
   source/SSL_SESSION_to_bytes.c
