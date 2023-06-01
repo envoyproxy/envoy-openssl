@@ -1192,3 +1192,14 @@ TEST(SSLTest, test_SSL_ex_data) {
   }
   ASSERT_EQ(2, free_func_calls);
 }
+
+TEST(SSLTest, test_SSL_set_cipher_list) {
+  bssl::UniquePtr<SSL_CTX> ctx {SSL_CTX_new(TLS_server_method())};
+  bssl::UniquePtr<SSL> ssl {SSL_new(ctx.get())};
+
+  ASSERT_TRUE(SSL_set_cipher_list(ssl.get(), "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4"));
+  ASSERT_TRUE(SSL_set_cipher_list(ssl.get(), "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4"));
+  ASSERT_FALSE(SSL_set_cipher_list(ssl.get(), "NO:VALID:CIPHERS"));
+  ASSERT_TRUE(SSL_set_cipher_list(ssl.get(), "ONE:VALID:CIPHER:PSK"));
+  ASSERT_TRUE(SSL_set_cipher_list(ssl.get(), "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4"));
+}

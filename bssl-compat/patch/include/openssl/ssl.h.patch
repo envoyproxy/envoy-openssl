@@ -480,7 +480,12 @@
  
  // SSL_set_strict_cipher_list configures the cipher list for |ssl|, evaluating
  // |str| as a cipher string and returning error if |str| contains anything
-@@ -1601,7 +1602,7 @@
+@@ -1597,11 +1598,11 @@
+ //
+ // Prefer to use |SSL_set_strict_cipher_list|. This function tolerates garbage
+ // inputs, unless an empty cipher list results.
+-// OPENSSL_EXPORT int SSL_set_cipher_list(SSL *ssl, const char *str);
++OPENSSL_EXPORT int SSL_set_cipher_list(SSL *ssl, const char *str);
  
  // SSL_CTX_get_ciphers returns the cipher list for |ctx|, in order of
  // preference.
