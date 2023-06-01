@@ -1215,3 +1215,51 @@ TEST(SSLTest, test_SSL_set_app_data) {
   ASSERT_TRUE(SSL_set_app_data(ssl.get(), nullptr));
   ASSERT_EQ(nullptr, SSL_get_app_data(ssl.get()));
 }
+
+TEST(SSLTest, test_SSL_set_alpn_protos) {
+  TempFile root_ca_cert_pem        { root_ca_cert_pem_str };
+  TempFile client_2_key_pem        { client_2_key_pem_str };
+  TempFile client_2_cert_chain_pem { client_2_cert_chain_pem_str };
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_method()));
+
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  ASSERT_TRUE(SSL_CTX_load_verify_locations(client_ctx.get(), root_ca_cert_pem.path(), nullptr));
+
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+  SSL_set_connect_state(client_ssl.get());
+
+  static const uint8_t protos[] {
+    6, 's', 'p', 'd', 'y', '/', '1',
+    8, 'h', 't', 't', 'p', '/', '1', '.', '1'
+  };
+  
+  // Set up a ALPN callback on the server which checks in == protos
+  SSL_CTX_set_alpn_select_cb(server_ctx.get(), [](SSL *ssl, const uint8_t **out, uint8_t *out_len, const uint8_t *in, unsigned in_len, void *arg)-> int {
+    if ((in_len == sizeof(protos)) && (memcmp(protos, in, in_len) == 0)) {
+      *out = in + 1; // pick the first one (sans u8 length)
+      *out_len = in[0]; // u8 length prefix
+      return SSL_TLSEXT_ERR_OK;
+    }
+    return SSL_TLSEXT_ERR_ALERT_FATAL;
+  }, nullptr);
+
+  // Set the clients list of ALPN protocols
+  ASSERT_EQ(0, SSL_set_alpn_protos(client_ssl.get(), protos, sizeof(protos)));
+
+  ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+}
