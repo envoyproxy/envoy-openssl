@@ -148,6 +148,7 @@ add_library(bssl-compat STATIC
   source/X509_get_pubkey.cc
   source/X509_NAME_cmp.cc
   source/X509_NAME_dup.cc
+  source/X509_NAME_free.cc
   source/X509_NAME_new.cc
 )
 
