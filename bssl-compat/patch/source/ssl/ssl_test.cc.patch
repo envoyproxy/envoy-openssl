@@ -78,14 +78,14 @@
 -// #if defined(OPENSSL_THREADS)
 -// #include <thread>
 -// #endif
--
--
--// BSSL_NAMESPACE_BEGIN
 +#ifdef BSSL_COMPAT
 +#include <ossl/openssl/ssl.h>
 +#include <ossl/openssl/provider.h>
 +#endif
  
+-
+-// BSSL_NAMESPACE_BEGIN
+-
 -// namespace {
 -
 -// #define TRACED_CALL(code)                     \
@@ -160,6 +160,51 @@
  
  // struct ExpectedCipher {
  //   unsigned long id;
+@@ -110,25 +119,25 @@
+ //   std::vector<uint16_t> expected;
+ // };
+ 
+-// template <typename T>
+-// class UnownedSSLExData {
+-//  public:
+-//   UnownedSSLExData() {
+-//     index_ = SSL_get_ex_new_index(0, nullptr, nullptr, nullptr, nullptr);
+-//   }
+-
+-//   T *Get(const SSL *ssl) {
+-//     return index_ < 0 ? nullptr
+-//                       : static_cast<T *>(SSL_get_ex_data(ssl, index_));
+-//   }
+-
+-//   bool Set(SSL *ssl, T *t) {
+-//     return index_ >= 0 && SSL_set_ex_data(ssl, index_, t);
+-//   }
+-
+-//  private:
+-//   int index_;
+-// };
++template <typename T>
++class UnownedSSLExData {
++ public:
++  UnownedSSLExData() {
++    index_ = SSL_get_ex_new_index(0, nullptr, nullptr, nullptr, nullptr);
++  }
++
++  T *Get(const SSL *ssl) {
++    return index_ < 0 ? nullptr
++                      : static_cast<T *>(SSL_get_ex_data(ssl, index_));
++  }
++
++  bool Set(SSL *ssl, T *t) {
++    return index_ >= 0 && SSL_set_ex_data(ssl, index_, t);
++  }
++
++ private:
++  int index_;
++};
+ 
+ // static const CipherTest kCipherTests[] = {
+ //     // Selecting individual ciphers should work.
 @@ -1196,63 +1205,63 @@
  //   }
  // }
@@ -1248,7 +1293,9 @@
 -
 -//   ASSERT_TRUE(SSL_CTX_set_session_id_context(server_ctx_.get(), kContext1,
 -//                                              sizeof(kContext1)));
--
++static int SwitchSessionIDContextSNI(SSL *ssl, int *out_alert, void *arg) {
++  static const uint8_t kContext[] = {3};
+ 
 -//   SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
 -//   SSL_CTX_set_session_cache_mode(server_ctx_.get(), SSL_SESS_CACHE_BOTH);
 -
@@ -1294,9 +1341,7 @@
 -
 -//         return ssl_select_cert_success;
 -//       });
-+static int SwitchSessionIDContextSNI(SSL *ssl, int *out_alert, void *arg) {
-+  static const uint8_t kContext[] = {3};
- 
+-
 -//   TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
 -//                                   session.get(),
 -//                                   false /* expect session not reused */));
@@ -1371,6 +1416,89 @@
  
  // static timeval g_current_time;
  
+@@ -3719,44 +3770,44 @@
+ //   EXPECT_EQ(DTLS1_VERSION, SSL_CTX_get_min_proto_version(ctx.get()));
+ // }
+ 
+-// static const char *GetVersionName(uint16_t version) {
+-//   switch (version) {
+-//     case TLS1_VERSION:
+-//       return "TLSv1";
+-//     case TLS1_1_VERSION:
+-//       return "TLSv1.1";
+-//     case TLS1_2_VERSION:
+-//       return "TLSv1.2";
+-//     case TLS1_3_VERSION:
+-//       return "TLSv1.3";
+-//     case DTLS1_VERSION:
+-//       return "DTLSv1";
+-//     case DTLS1_2_VERSION:
+-//       return "DTLSv1.2";
+-//     default:
+-//       return "???";
+-//   }
+-// }
+-
+-// TEST_P(SSLVersionTest, Version) {
+-//   ASSERT_TRUE(Connect());
+-
+-//   EXPECT_EQ(SSL_version(client_.get()), version());
+-//   EXPECT_EQ(SSL_version(server_.get()), version());
+-
+-//   // Test the version name is reported as expected.
+-//   const char *version_name = GetVersionName(version());
+-//   EXPECT_EQ(strcmp(version_name, SSL_get_version(client_.get())), 0);
+-//   EXPECT_EQ(strcmp(version_name, SSL_get_version(server_.get())), 0);
+-
+-//   // Test SSL_SESSION reports the same name.
+-//   const char *client_name =
+-//       SSL_SESSION_get_version(SSL_get_session(client_.get()));
+-//   const char *server_name =
+-//       SSL_SESSION_get_version(SSL_get_session(server_.get()));
+-//   EXPECT_EQ(strcmp(version_name, client_name), 0);
+-//   EXPECT_EQ(strcmp(version_name, server_name), 0);
+-// }
++static const char *GetVersionName(uint16_t version) {
++  switch (version) {
++    case TLS1_VERSION:
++      return "TLSv1";
++    case TLS1_1_VERSION:
++      return "TLSv1.1";
++    case TLS1_2_VERSION:
++      return "TLSv1.2";
++    case TLS1_3_VERSION:
++      return "TLSv1.3";
++    case DTLS1_VERSION:
++      return "DTLSv1";
++    case DTLS1_2_VERSION:
++      return "DTLSv1.2";
++    default:
++      return "???";
++  }
++}
++
++TEST_P(SSLVersionTest, Version) {
++  ASSERT_TRUE(Connect());
++
++  EXPECT_EQ(SSL_version(client_.get()), version());
++  EXPECT_EQ(SSL_version(server_.get()), version());
++
++  // Test the version name is reported as expected.
++  const char *version_name = GetVersionName(version());
++  EXPECT_EQ(strcmp(version_name, SSL_get_version(client_.get())), 0);
++  EXPECT_EQ(strcmp(version_name, SSL_get_version(server_.get())), 0);
++
++  // Test SSL_SESSION reports the same name.
++  const char *client_name =
++      SSL_SESSION_get_version(SSL_get_session(client_.get()));
++  const char *server_name =
++      SSL_SESSION_get_version(SSL_get_session(server_.get()));
++  EXPECT_EQ(strcmp(version_name, client_name), 0);
++  EXPECT_EQ(strcmp(version_name, server_name), 0);
++}
+ 
+ // Tests that that |SSL_get_pending_cipher| is available during the ALPN
+ // selection callback.
 @@ -4214,43 +4265,46 @@
  //   X509_cmp(cert, cert);
  // }
@@ -1591,7 +1719,89 @@
  
  // TEST_P(SSLVersionTest, DoubleSSLError) {
  //   // Connect the inner SSL connections.
-@@ -8260,5 +8321,5 @@
+@@ -7265,42 +7326,46 @@
+ //   }
+ // }
+ 
+-// TEST_P(SSLVersionTest, SameKeyResume) {
+-//   uint8_t key[48];
+-//   RAND_bytes(key, sizeof(key));
+ 
+-//   bssl::UniquePtr<SSL_CTX> server_ctx2 = CreateContext();
+-//   ASSERT_TRUE(server_ctx2);
+-//   ASSERT_TRUE(UseCertAndKey(server_ctx2.get()));
+-//   ASSERT_TRUE(
+-//       SSL_CTX_set_tlsext_ticket_keys(server_ctx_.get(), key, sizeof(key)));
+-//   ASSERT_TRUE(
+-//       SSL_CTX_set_tlsext_ticket_keys(server_ctx2.get(), key, sizeof(key)));
+-
+-//   SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
+-//   SSL_CTX_set_session_cache_mode(server_ctx_.get(), SSL_SESS_CACHE_BOTH);
+-//   SSL_CTX_set_session_cache_mode(server_ctx2.get(), SSL_SESS_CACHE_BOTH);
+-
+-//   // Establish a session for |server_ctx_|.
+-//   bssl::UniquePtr<SSL_SESSION> session =
+-//       CreateClientSession(client_ctx_.get(), server_ctx_.get());
+-//   ASSERT_TRUE(session);
+-//   ClientConfig config;
+-//   config.session = session.get();
+-
+-//   // Resuming with |server_ctx_| again works.
+-//   bssl::UniquePtr<SSL> client, server;
+-//   ASSERT_TRUE(ConnectClientAndServer(&client, &server, client_ctx_.get(),
+-//                                      server_ctx_.get(), config));
+-//   EXPECT_TRUE(SSL_session_reused(client.get()));
+-//   EXPECT_TRUE(SSL_session_reused(server.get()));
+-
+-//   // Resuming with |server_ctx2| also works.
+-//   ASSERT_TRUE(ConnectClientAndServer(&client, &server, client_ctx_.get(),
+-//                                      server_ctx2.get(), config));
+-//   EXPECT_TRUE(SSL_session_reused(client.get()));
+-//   EXPECT_TRUE(SSL_session_reused(server.get()));
+-// }
++TEST_P(SSLVersionTest, SameKeyResume) {
++#ifdef BSSL_COMPAT
++  GTEST_SKIP(); // FIXME: Investigate failures on bssl-compat
++#endif
++  uint8_t key[48];
++  RAND_bytes(key, sizeof(key));
++
++  bssl::UniquePtr<SSL_CTX> server_ctx2 = CreateContext();
++  ASSERT_TRUE(server_ctx2);
++  ASSERT_TRUE(UseCertAndKey(server_ctx2.get()));
++  ASSERT_TRUE(
++      SSL_CTX_set_tlsext_ticket_keys(server_ctx_.get(), key, sizeof(key)));
++  ASSERT_TRUE(
++      SSL_CTX_set_tlsext_ticket_keys(server_ctx2.get(), key, sizeof(key)));
++
++  SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
++  SSL_CTX_set_session_cache_mode(server_ctx_.get(), SSL_SESS_CACHE_BOTH);
++  SSL_CTX_set_session_cache_mode(server_ctx2.get(), SSL_SESS_CACHE_BOTH);
++
++  // Establish a session for |server_ctx_|.
++  bssl::UniquePtr<SSL_SESSION> session =
++      CreateClientSession(client_ctx_.get(), server_ctx_.get());
++  ASSERT_TRUE(session);
++  ClientConfig config;
++  config.session = session.get();
++
++  // Resuming with |server_ctx_| again works.
++  bssl::UniquePtr<SSL> client, server;
++  ASSERT_TRUE(ConnectClientAndServer(&client, &server, client_ctx_.get(),
++                                     server_ctx_.get(), config));
++  EXPECT_TRUE(SSL_session_reused(client.get()));
++  EXPECT_TRUE(SSL_session_reused(server.get()));
++
++  // Resuming with |server_ctx2| also works.
++  ASSERT_TRUE(ConnectClientAndServer(&client, &server, client_ctx_.get(),
++                                     server_ctx2.get(), config));
++  EXPECT_TRUE(SSL_session_reused(client.get()));
++  EXPECT_TRUE(SSL_session_reused(server.get()));
++}
+ 
+ // TEST_P(SSLVersionTest, DifferentKeyNoResume) {
+ //   uint8_t key1[48], key2[48];
+@@ -8260,5 +8325,5 @@
  //   }
  // }
  
