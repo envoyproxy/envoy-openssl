@@ -101,6 +101,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_peer_cert_chain.cc
   source/SSL_get_peer_certificate.cc
   source/SSL_get_peer_signature_algorithm.c
+  source/SSL_get_session.cc
   source/SSL_get_signature_algorithm_name.c
   source/SSL_get_version.cc
   source/SSL_get_wbio.cc
