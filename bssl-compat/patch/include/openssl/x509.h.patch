@@ -102,6 +102,15 @@
  
  // X509_NAME is an |ASN1_ITEM| whose ASN.1 type is X.509 Name (RFC 5280) and C
  // type is |X509_NAME*|.
+@@ -844,7 +844,7 @@
+ 
+ // X509_NAME_new returns a new, empty |X509_NAME_new|, or NULL on
+ // error.
+-// OPENSSL_EXPORT X509_NAME *X509_NAME_new(void);
++OPENSSL_EXPORT X509_NAME *X509_NAME_new(void);
+ 
+ // X509_NAME_free releases memory associated with |name|.
+ // OPENSSL_EXPORT void X509_NAME_free(X509_NAME *name);
 @@ -2054,7 +2054,7 @@
  // OPENSSL_EXPORT unsigned long X509_issuer_name_hash_old(X509 *a);
  // OPENSSL_EXPORT unsigned long X509_subject_name_hash_old(X509 *x);

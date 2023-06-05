@@ -146,6 +146,7 @@ add_library(bssl-compat STATIC
   source/TLS_method.cc
   source/TLS_VERSION_to_string.cc
   source/X509_get_pubkey.cc
+  source/X509_NAME_new.cc
 )
 
 target_add_bssl_source(bssl-compat
