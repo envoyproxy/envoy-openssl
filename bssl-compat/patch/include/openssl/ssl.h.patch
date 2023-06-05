@@ -1170,6 +1170,15 @@
  // #define SSL_SESSION_set_app_data(s, a) \
  //   (SSL_SESSION_set_ex_data(s, 0, (char *)(a)))
  // #define SSL_SESSION_get_app_data(s) (SSL_SESSION_get_ex_data(s, 0))
+@@ -5005,7 +5005,7 @@
+ 
+ // SSL_get_version returns a string describing the TLS version used by |ssl|.
+ // For example, "TLSv1.2" or "DTLSv1".
+-// OPENSSL_EXPORT const char *SSL_get_version(const SSL *ssl);
++OPENSSL_EXPORT const char *SSL_get_version(const SSL *ssl);
+ 
+ // SSL_get_cipher_list returns the name of the |n|th cipher in the output of
+ // |SSL_get_ciphers| or NULL if out of range. Use |SSL_get_ciphers| instead.
 @@ -5192,7 +5192,7 @@
  
  // SSL_get1_session acts like |SSL_get_session| but returns a new reference to

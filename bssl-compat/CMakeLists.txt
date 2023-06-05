@@ -45,36 +45,41 @@ add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h)
 
 add_library(bssl-compat STATIC
   source/asn1.c
-  source/BIO_up_ref.cc
   source/bio.cpp
+  source/BIO_up_ref.cc
   source/bn.c
   source/cipher.c
   source/CRYPTO_BUFFER_free.c
-  source/CRYPTO_BUFFER_new.c
   source/CRYPTO_BUFFER.h
+  source/CRYPTO_BUFFER_new.c
   source/crypto.c
   source/d2i_SSL_SESSION.c
   source/digest.c
   source/DTLS_method.cc
   source/err.c
+  source/evp.c
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
-  source/evp.c
   source/i2d_SSL_SESSION.c
   source/log.c
   source/log.h
   source/mem.c
-  source/ossl_ERR_set_error.c
   source/ossl.c
+  source/ossl_ERR_set_error.c
   source/PEM_bytes_read_bio.c
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
   source/rand.c
   source/RSA_free.c
+  source/ssl.c
   source/ssl_cipher.c
+  source/ssl_ctx.c
+  source/ssl_ctx.cc
   source/SSL_CTX_get_max_proto_version.cc
   source/SSL_CTX_get_min_proto_version.cc
   source/SSL_CTX_sess_set_new_cb.cc
+  source/SSL_CTX_set1_curves_list.c
+  source/SSL_CTX_set1_sigalgs_list.c
   source/SSL_CTX_set_alpn_select_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
   source/SSL_CTX_set_session_cache_mode.cc
@@ -82,13 +87,12 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_tlsext_servername_callback.cc
   source/SSL_CTX_set_tlsext_status_cb.c
   source/SSL_CTX_set_tlsext_ticket_keys.cc
-  source/SSL_CTX_set1_curves_list.c
-  source/SSL_CTX_set1_sigalgs_list.c
   source/SSL_CTX_use_PrivateKey.cc
-  source/ssl_ctx.c
-  source/ssl_ctx.cc
   source/SSL_early_callback_ctx_extension_get.c
   source/ssl_ext.c
+  source/SSL_get0_alpn_selected.cc
+  source/SSL_get0_ocsp_response.c
+  source/SSL_get1_session.c
   source/SSL_get_cipher_by_value.c
   source/SSL_get_curve_id.c
   source/SSL_get_curve_name.c
@@ -98,10 +102,8 @@ add_library(bssl-compat STATIC
   source/SSL_get_peer_certificate.cc
   source/SSL_get_peer_signature_algorithm.c
   source/SSL_get_signature_algorithm_name.c
+  source/SSL_get_version.cc
   source/SSL_get_wbio.cc
-  source/SSL_get0_alpn_selected.cc
-  source/SSL_get0_ocsp_response.c
-  source/SSL_get1_session.c
   source/SSL_new.cc
   source/SSL_read.cc
   source/SSL_select_next_proto.cc
@@ -112,6 +114,7 @@ add_library(bssl-compat STATIC
   source/SSL_SESSION_is_resumable.c
   source/SSL_session_reused.cc
   source/SSL_SESSION_to_bytes.c
+  source/SSL_set1_curves_list.cc
   source/SSL_set_accept_state.cc
   source/SSL_set_alpn_protos.cc
   source/SSL_set_bio.cc
@@ -122,15 +125,13 @@ add_library(bssl-compat STATIC
   source/SSL_set_ex_data.cc
   source/SSL_set_fd.cc
   source/SSL_set_quiet_shutdown.cc
-  source/SSL_set_session_id_context.cc
   source/SSL_set_session.cc
+  source/SSL_set_session_id_context.cc
   source/SSL_set_tlsext_host_name.c
   source/SSL_set_verify.cc
-  source/SSL_set1_curves_list.cc
   source/SSL_shutdown.cc
   source/SSL_version.cc
   source/SSL_write.cc
-  source/ssl.c
   source/stack.c
   source/TLS_method.cc
   source/X509_get_pubkey.cc
