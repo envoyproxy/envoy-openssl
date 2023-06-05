@@ -872,7 +872,7 @@
  
  // SSL_add_bio_cert_subjects_to_stack behaves like
  // |SSL_add_file_cert_subjects_to_stack| but reads from |bio|.
-@@ -2832,11 +2833,11 @@
+@@ -2832,16 +2833,16 @@
  // deployments to select one of a several certificates on a single IP. Only the
  // host_name name type is supported.
  
@@ -886,6 +886,12 @@
  
  // SSL_get_servername, for a server, returns the hostname supplied by the
  // client or NULL if there was none. The |type| argument must be
+ // |TLSEXT_NAMETYPE_host_name|.
+-// OPENSSL_EXPORT const char *SSL_get_servername(const SSL *ssl, const int type);
++OPENSSL_EXPORT const char *SSL_get_servername(const SSL *ssl, const int type);
+ 
+ // SSL_get_servername_type, for a server, returns |TLSEXT_NAMETYPE_host_name|
+ // if the client sent a hostname and -1 otherwise.
 @@ -2858,8 +2859,8 @@
  // |SSL_TLSEXT_ERR_ALERT_FATAL|, then |*out_alert| is the alert to send,
  // defaulting to |SSL_AD_UNRECOGNIZED_NAME|. |SSL_TLSEXT_ERR_ALERT_WARNING| is
