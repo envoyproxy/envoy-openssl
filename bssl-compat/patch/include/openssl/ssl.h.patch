@@ -729,6 +729,21 @@
  
  // SSL_TICKET_KEY_NAME_LEN is the length of the key name prefix of a session
  // ticket.
+@@ -2301,10 +2302,10 @@
+ //
+ // WARNING: |callback| wildly breaks the usual return value convention and is
+ // called in two different modes.
+-// OPENSSL_EXPORT int SSL_CTX_set_tlsext_ticket_key_cb(
+-//     SSL_CTX *ctx, int (*callback)(SSL *ssl, uint8_t *key_name, uint8_t *iv,
+-//                                   EVP_CIPHER_CTX *ctx, HMAC_CTX *hmac_ctx,
+-//                                   int encrypt));
++OPENSSL_EXPORT int SSL_CTX_set_tlsext_ticket_key_cb(
++    SSL_CTX *ctx, int (*callback)(SSL *ssl, uint8_t *key_name, uint8_t *iv,
++                                  EVP_CIPHER_CTX *ctx, HMAC_CTX *hmac_ctx,
++                                  int encrypt));
+ 
+ // ssl_ticket_aead_result_t enumerates the possible results from decrypting a
+ // ticket with an |SSL_TICKET_AEAD_METHOD|.
 @@ -2409,20 +2410,20 @@
  // colon-separated list |curves|. Each element of |curves| should be a curve
  // name (e.g. P-256, X25519, ...). It returns one on success and zero on
