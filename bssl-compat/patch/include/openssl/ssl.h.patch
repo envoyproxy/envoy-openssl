@@ -588,7 +588,7 @@
  
  // SSL_SESSION_to_bytes_for_ticket serializes |in|, but excludes the session
  // identification information, namely the session ID and ticket.
-@@ -1778,8 +1779,8 @@
+@@ -1778,12 +1779,12 @@
  
  // SSL_SESSION_from_bytes parses |in_len| bytes from |in| as an SSL_SESSION. It
  // returns a newly-allocated |SSL_SESSION| on success or NULL on error.
@@ -599,6 +599,11 @@
  
  // SSL_SESSION_get_version returns a string describing the TLS or DTLS version
  // |session| was established at. For example, "TLSv1.2" or "DTLSv1".
+-// OPENSSL_EXPORT const char *SSL_SESSION_get_version(const SSL_SESSION *session);
++OPENSSL_EXPORT const char *SSL_SESSION_get_version(const SSL_SESSION *session);
+ 
+ // SSL_SESSION_get_protocol_version returns the TLS or DTLS version |session|
+ // was established at.
 @@ -1793,8 +1794,8 @@
  // SSL_SESSION_set_protocol_version sets |session|'s TLS or DTLS version to
  // |version|. This may be useful when writing tests but should otherwise not be
