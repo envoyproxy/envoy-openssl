@@ -1179,7 +1179,15 @@
  
  // SSL_get_cipher_list returns the name of the |n|th cipher in the output of
  // |SSL_get_ciphers| or NULL if out of range. Use |SSL_get_ciphers| instead.
-@@ -5192,7 +5192,7 @@
+@@ -5185,14 +5185,14 @@
+ // unresumable session which may be cached, but will never be resumed.
+ //
+ // If querying properties of the connection, use APIs on the |SSL| object.
+-// OPENSSL_EXPORT SSL_SESSION *SSL_get_session(const SSL *ssl);
++OPENSSL_EXPORT SSL_SESSION *SSL_get_session(const SSL *ssl);
+ 
+ // SSL_get0_session is an alias for |SSL_get_session|.
+ // #define SSL_get0_session SSL_get_session
  
  // SSL_get1_session acts like |SSL_get_session| but returns a new reference to
  // the session.
