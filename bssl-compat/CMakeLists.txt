@@ -89,6 +89,7 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_tlsext_servername_callback.cc
   source/SSL_CTX_set_tlsext_status_cb.c
   source/SSL_CTX_set_tlsext_ticket_keys.cc
+  source/SSL_CTX_set_verify_depth.cc
   source/SSL_CTX_use_certificate_file.cc
   source/SSL_CTX_use_PrivateKey.cc
   source/SSL_CTX_use_PrivateKey_file.cc
