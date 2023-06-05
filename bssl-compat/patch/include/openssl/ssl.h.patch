@@ -394,7 +394,14 @@
  
  // OPENSSL_EXPORT int SSL_CTX_use_RSAPrivateKey_file(SSL_CTX *ctx,
  //                                                   const char *file,
-@@ -1268,8 +1269,8 @@
+@@ -1263,13 +1264,13 @@
+ // OPENSSL_EXPORT int SSL_use_RSAPrivateKey_file(SSL *ssl, const char *file,
+ //                                               int type);
+ 
+-// OPENSSL_EXPORT int SSL_CTX_use_certificate_file(SSL_CTX *ctx, const char *file,
+-//                                                 int type);
++OPENSSL_EXPORT int SSL_CTX_use_certificate_file(SSL_CTX *ctx, const char *file,
++                                                int type);
  // OPENSSL_EXPORT int SSL_use_certificate_file(SSL *ssl, const char *file,
  //                                             int type);
  
