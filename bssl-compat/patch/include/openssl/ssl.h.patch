@@ -552,7 +552,15 @@
  
  // SSL_get_tls_unique writes at most |max_out| bytes of the tls-unique value
  // for |ssl| to |out| and sets |*out_len| to the number of bytes written. It
-@@ -1719,7 +1720,7 @@
+@@ -1712,14 +1713,14 @@
+ 
+ // SSL_get_current_cipher returns cipher suite used by |ssl|, or NULL if it has
+ // not been negotiated yet.
+-// OPENSSL_EXPORT const SSL_CIPHER *SSL_get_current_cipher(const SSL *ssl);
++OPENSSL_EXPORT const SSL_CIPHER *SSL_get_current_cipher(const SSL *ssl);
+ 
+ // SSL_session_reused returns one if |ssl| performed an abbreviated handshake
+ // and zero otherwise.
  //
  // TODO(davidben): Hammer down the semantics of this API while a handshake,
  // initial or renego, is in progress.

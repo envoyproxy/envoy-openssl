@@ -96,6 +96,7 @@ add_library(bssl-compat STATIC
   source/SSL_get0_ocsp_response.c
   source/SSL_get1_session.c
   source/SSL_get_cipher_by_value.c
+  source/SSL_get_current_cipher.cc
   source/SSL_get_curve_id.c
   source/SSL_get_curve_name.c
   source/SSL_get_ex_data.cc
