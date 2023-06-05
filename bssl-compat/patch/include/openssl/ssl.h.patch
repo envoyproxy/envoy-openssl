@@ -1219,6 +1219,17 @@
  // #define SSL_SESSION_set_app_data(s, a) \
  //   (SSL_SESSION_set_ex_data(s, 0, (char *)(a)))
  // #define SSL_SESSION_get_app_data(s) (SSL_SESSION_get_ex_data(s, 0))
+@@ -4939,8 +4939,8 @@
+ //     SSL_CIPHER_get_bits(SSL_get_current_cipher(ssl), out_alg_bits)
+ // #define SSL_get_cipher_version(ssl) \
+ //     SSL_CIPHER_get_version(SSL_get_current_cipher(ssl))
+-// #define SSL_get_cipher_name(ssl) \
+-//     SSL_CIPHER_get_name(SSL_get_current_cipher(ssl))
++#define SSL_get_cipher_name(ssl) \
++    SSL_CIPHER_get_name(SSL_get_current_cipher(ssl))
+ // #define SSL_get_time(session) SSL_SESSION_get_time(session)
+ // #define SSL_set_time(session, time) SSL_SESSION_set_time((session), (time))
+ // #define SSL_get_timeout(session) SSL_SESSION_get_timeout(session)
 @@ -5005,7 +5005,7 @@
  
  // SSL_get_version returns a string describing the TLS version used by |ssl|.
