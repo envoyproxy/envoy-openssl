@@ -61,6 +61,7 @@ add_library(bssl-compat STATIC
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
   source/i2d_SSL_SESSION.c
+  source/internal.h
   source/log.c
   source/log.h
   source/mem.c
@@ -112,6 +113,7 @@ add_library(bssl-compat STATIC
   source/SSL_SESSION_from_bytes.c
   source/SSL_SESSION_get_id.c
   source/SSL_SESSION_get_ticket_lifetime_hint.cc
+  source/SSL_SESSION_get_version.cc
   source/SSL_SESSION_is_resumable.c
   source/SSL_session_reused.cc
   source/SSL_SESSION_to_bytes.c
@@ -135,6 +137,7 @@ add_library(bssl-compat STATIC
   source/SSL_write.cc
   source/stack.c
   source/TLS_method.cc
+  source/TLS_VERSION_to_string.cc
   source/X509_get_pubkey.cc
 )
 
