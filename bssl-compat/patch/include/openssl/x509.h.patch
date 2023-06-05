@@ -111,6 +111,15 @@
  
  // X509_NAME_free releases memory associated with |name|.
  // OPENSSL_EXPORT void X509_NAME_free(X509_NAME *name);
+@@ -867,7 +867,7 @@
+ // TODO(https://crbug.com/boringssl/407): This function should be const and
+ // thread-safe but is currently neither in some cases, notably if |name| was
+ // mutated.
+-// OPENSSL_EXPORT X509_NAME *X509_NAME_dup(X509_NAME *name);
++OPENSSL_EXPORT X509_NAME *X509_NAME_dup(X509_NAME *name);
+ 
+ // X509_NAME_get0_der sets |*out_der| and |*out_der_len|
+ //
 @@ -2054,7 +2054,7 @@
  // OPENSSL_EXPORT unsigned long X509_issuer_name_hash_old(X509 *a);
  // OPENSSL_EXPORT unsigned long X509_subject_name_hash_old(X509 *x);
