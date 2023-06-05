@@ -817,6 +817,15 @@
  
  // enum ssl_verify_result_t BORINGSSL_ENUM_INT {
  //   ssl_verify_ok,
+@@ -2566,7 +2567,7 @@
+ // SSL_CTX_set_verify_depth sets the maximum depth of a certificate chain
+ // accepted in verification. This number does not include the leaf, so a depth
+ // of 1 allows the leaf and one CA certificate.
+-// OPENSSL_EXPORT void SSL_CTX_set_verify_depth(SSL_CTX *ctx, int depth);
++OPENSSL_EXPORT void SSL_CTX_set_verify_depth(SSL_CTX *ctx, int depth);
+ 
+ // SSL_set_verify_depth sets the maximum depth of a certificate chain accepted
+ // in verification. This number does not include the leaf, so a depth of 1
 @@ -2640,9 +2641,9 @@
  // See
  // https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_load_verify_locations.html
