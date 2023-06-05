@@ -120,15 +120,17 @@
  
  // X509_NAME_get0_der sets |*out_der| and |*out_der_len|
  //
-@@ -2054,7 +2054,7 @@
+@@ -2054,8 +2054,8 @@
  // OPENSSL_EXPORT unsigned long X509_issuer_name_hash_old(X509 *a);
  // OPENSSL_EXPORT unsigned long X509_subject_name_hash_old(X509 *x);
  
 -// OPENSSL_EXPORT int X509_cmp(const X509 *a, const X509 *b);
+-// OPENSSL_EXPORT int X509_NAME_cmp(const X509_NAME *a, const X509_NAME *b);
 +OPENSSL_EXPORT int X509_cmp(const X509 *a, const X509 *b);
- // OPENSSL_EXPORT int X509_NAME_cmp(const X509_NAME *a, const X509_NAME *b);
++OPENSSL_EXPORT int X509_NAME_cmp(const X509_NAME *a, const X509_NAME *b);
  // OPENSSL_EXPORT unsigned long X509_NAME_hash(X509_NAME *x);
  // OPENSSL_EXPORT unsigned long X509_NAME_hash_old(X509_NAME *x);
+ 
 @@ -2404,7 +2404,7 @@
  
  // DECLARE_ASN1_FUNCTIONS_const(RSA_PSS_PARAMS)
