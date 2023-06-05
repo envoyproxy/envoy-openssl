@@ -12,7 +12,6 @@ PROVIDE(SSL_CTX_use_PrivateKey_file = ossl_SSL_CTX_use_PrivateKey_file);
 PROVIDE(SSL_CTX_load_verify_locations = ossl_SSL_CTX_load_verify_locations);
 PROVIDE(SSL_free = ossl_SSL_free);
 PROVIDE(SSL_get_ciphers = ossl_SSL_get_ciphers);
-PROVIDE(SSL_get_SSL_CTX = ossl_SSL_get_SSL_CTX);
 PROVIDE(SSL_set_fd = ossl_SSL_set_fd);
 PROVIDE(SSL_SESSION_set_protocol_version = ossl_SSL_SESSION_set_protocol_version);
 PROVIDE(SSL_is_server = ossl_SSL_is_server);
