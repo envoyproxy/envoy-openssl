@@ -326,7 +326,7 @@
  
  // static bssl::UniquePtr<SSL_CTX> CreateContextWithTestCertificate(
  //     const SSL_METHOD *method) {
-@@ -1408,171 +1417,195 @@
+@@ -1408,198 +1417,222 @@
  //   return KeyFromPEM(kKeyPEM);
  // }
  
@@ -683,6 +683,57 @@
  
  // Test that |SSL_get_client_CA_list| echoes back the configured parameter even
  // before configuring as a server.
+-// TEST(SSLTest, ClientCAList) {
+-//   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
+-//   ASSERT_TRUE(ctx);
+-//   bssl::UniquePtr<SSL> ssl(SSL_new(ctx.get()));
+-//   ASSERT_TRUE(ssl);
+-
+-//   bssl::UniquePtr<X509_NAME> name(X509_NAME_new());
+-//   ASSERT_TRUE(name);
+-
+-//   bssl::UniquePtr<X509_NAME> name_dup(X509_NAME_dup(name.get()));
+-//   ASSERT_TRUE(name_dup);
+-
+-//   bssl::UniquePtr<STACK_OF(X509_NAME)> stack(sk_X509_NAME_new_null());
+-//   ASSERT_TRUE(stack);
+-//   ASSERT_TRUE(PushToStack(stack.get(), std::move(name_dup)));
+-
+-//   // |SSL_set_client_CA_list| takes ownership.
+-//   SSL_set_client_CA_list(ssl.get(), stack.release());
+-
+-//   STACK_OF(X509_NAME) *result = SSL_get_client_CA_list(ssl.get());
+-//   ASSERT_TRUE(result);
+-//   ASSERT_EQ(1u, sk_X509_NAME_num(result));
+-//   EXPECT_EQ(0, X509_NAME_cmp(sk_X509_NAME_value(result, 0), name.get()));
+-// }
++TEST(SSLTest, ClientCAList) {
++  bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
++  ASSERT_TRUE(ctx);
++  bssl::UniquePtr<SSL> ssl(SSL_new(ctx.get()));
++  ASSERT_TRUE(ssl);
++
++  bssl::UniquePtr<X509_NAME> name(X509_NAME_new());
++  ASSERT_TRUE(name);
++
++  bssl::UniquePtr<X509_NAME> name_dup(X509_NAME_dup(name.get()));
++  ASSERT_TRUE(name_dup);
++
++  bssl::UniquePtr<STACK_OF(X509_NAME)> stack(sk_X509_NAME_new_null());
++  ASSERT_TRUE(stack);
++  ASSERT_TRUE(PushToStack(stack.get(), std::move(name_dup)));
++
++  // |SSL_set_client_CA_list| takes ownership.
++  SSL_set_client_CA_list(ssl.get(), stack.release());
++
++  STACK_OF(X509_NAME) *result = SSL_get_client_CA_list(ssl.get());
++  ASSERT_TRUE(result);
++  ASSERT_EQ(1u, sk_X509_NAME_num(result));
++  EXPECT_EQ(0, X509_NAME_cmp(sk_X509_NAME_value(result, 0), name.get()));
++}
+ 
+ // TEST(SSLTest, AddClientCA) {
+ //   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
 @@ -2495,62 +2528,71 @@
  // SSLVersionTest executes its test cases under all available protocol versions.
  // Test cases call |Connect| to create a connection using context objects with
@@ -876,14 +927,12 @@
 -
 -//   for (SSL *ssl : {client_.get(), server_.get()}) {
 -//     SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
-+TEST_P(SSLVersionTest, WriteAfterShutdown) {
-+  ASSERT_TRUE(Connect());
- 
+-
 -//     bssl::UniquePtr<BIO> mem(BIO_new(BIO_s_mem()));
 -//     ASSERT_TRUE(mem);
 -//     SSL_set0_wbio(ssl, bssl::UpRef(mem).release());
-+  for (SSL *ssl : {client_.get(), server_.get()}) {
-+    SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
++TEST_P(SSLVersionTest, WriteAfterShutdown) {
++  ASSERT_TRUE(Connect());
  
 -//     // Shut down half the connection. |SSL_shutdown| will return 0 to signal
 -//     // only one side has shut down.
@@ -895,7 +944,9 @@
 -//     ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
 -//     EXPECT_NE(0u, len);
 -//     EXPECT_TRUE(BIO_reset(mem.get()));
--
++  for (SSL *ssl : {client_.get(), server_.get()}) {
++    SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
+ 
 -//     // Writing should fail.
 -//     EXPECT_EQ(-1, SSL_write(ssl, "a", 1));
 -
@@ -1801,7 +1852,7 @@
 -// TEST_P(SSLVersionTest, SameKeyResume) {
 -//   uint8_t key[48];
 -//   RAND_bytes(key, sizeof(key));
- 
+-
 -//   bssl::UniquePtr<SSL_CTX> server_ctx2 = CreateContext();
 -//   ASSERT_TRUE(server_ctx2);
 -//   ASSERT_TRUE(UseCertAndKey(server_ctx2.get()));
@@ -1820,7 +1871,7 @@
 -//   ASSERT_TRUE(session);
 -//   ClientConfig config;
 -//   config.session = session.get();
--
+ 
 -//   // Resuming with |server_ctx_| again works.
 -//   bssl::UniquePtr<SSL> client, server;
 -//   ASSERT_TRUE(ConnectClientAndServer(&client, &server, client_ctx_.get(),
