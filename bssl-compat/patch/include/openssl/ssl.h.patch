@@ -867,7 +867,14 @@
  
  // SSL_set_verify_algorithm_prefs configures |ssl| to use |prefs| as the
  // preference list when verifying signatures from the peer's long-term key. It
-@@ -2755,8 +2756,8 @@
+@@ -2750,13 +2751,13 @@
+ 
+ // SSL_set_client_CA_list sets |ssl|'s client certificate CA list to
+ // |name_list|. It takes ownership of |name_list|.
+-// OPENSSL_EXPORT void SSL_set_client_CA_list(SSL *ssl,
+-//                                            STACK_OF(X509_NAME) *name_list);
++OPENSSL_EXPORT void SSL_set_client_CA_list(SSL *ssl,
++                                           STACK_OF(X509_NAME) *name_list);
  
  // SSL_CTX_set_client_CA_list sets |ctx|'s client certificate CA list to
  // |name_list|. It takes ownership of |name_list|.
