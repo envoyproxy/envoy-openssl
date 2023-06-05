@@ -99,6 +99,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_curve_id.c
   source/SSL_get_curve_name.c
   source/SSL_get_ex_data.cc
+  source/SSL_get_ex_data_X509_STORE_CTX_idx.cc
   source/SSL_get_ex_new_index.cc
   source/SSL_get_peer_cert_chain.cc
   source/SSL_get_peer_certificate.cc

@@ -815,6 +815,15 @@
  
  // SSL_get_verify_result returns the result of certificate verification. It is
  // either |X509_V_OK| or a |X509_V_ERR_*| value.
+@@ -2655,7 +2656,7 @@
+ 
+ // SSL_get_ex_data_X509_STORE_CTX_idx returns the ex_data index used to look up
+ // the |SSL| associated with an |X509_STORE_CTX| in the verify callback.
+-// OPENSSL_EXPORT int SSL_get_ex_data_X509_STORE_CTX_idx(void);
++OPENSSL_EXPORT int SSL_get_ex_data_X509_STORE_CTX_idx(void);
+ 
+ // SSL_CTX_set_cert_verify_callback sets a custom callback to be called on
+ // certificate verification rather than |X509_verify_cert|. |store_ctx| contains
 @@ -2665,9 +2666,9 @@
  //
  // The callback may use |SSL_get_ex_data_X509_STORE_CTX_idx| to recover the
