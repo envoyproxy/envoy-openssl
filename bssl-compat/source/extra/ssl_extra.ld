@@ -8,7 +8,6 @@ PROVIDE(SSL_CTX_get_ex_data = ossl_SSL_CTX_get_ex_data);
 PROVIDE(SSL_CTX_new = ossl_SSL_CTX_new);
 PROVIDE(SSL_CTX_set_ex_data = ossl_SSL_CTX_set_ex_data);
 PROVIDE(SSL_CTX_use_certificate_file = ossl_SSL_CTX_use_certificate_file);
-PROVIDE(SSL_CTX_use_PrivateKey_file = ossl_SSL_CTX_use_PrivateKey_file);
 PROVIDE(SSL_CTX_load_verify_locations = ossl_SSL_CTX_load_verify_locations);
 PROVIDE(SSL_free = ossl_SSL_free);
 PROVIDE(SSL_get_ciphers = ossl_SSL_get_ciphers);
