@@ -892,7 +892,7 @@
  
  // SSL_get_servername_type, for a server, returns |TLSEXT_NAMETYPE_host_name|
  // if the client sent a hostname and -1 otherwise.
-@@ -2858,8 +2859,8 @@
+@@ -2858,12 +2859,12 @@
  // |SSL_TLSEXT_ERR_ALERT_FATAL|, then |*out_alert| is the alert to send,
  // defaulting to |SSL_AD_UNRECOGNIZED_NAME|. |SSL_TLSEXT_ERR_ALERT_WARNING| is
  // ignored and treated as |SSL_TLSEXT_ERR_OK|.
@@ -903,6 +903,11 @@
  
  // SSL_CTX_set_tlsext_servername_arg sets the argument to the servername
  // callback and returns one. See |SSL_CTX_set_tlsext_servername_callback|.
+-// OPENSSL_EXPORT int SSL_CTX_set_tlsext_servername_arg(SSL_CTX *ctx, void *arg);
++OPENSSL_EXPORT int SSL_CTX_set_tlsext_servername_arg(SSL_CTX *ctx, void *arg);
+ 
+ // SSL_TLSEXT_ERR_* are values returned by some extension-related callbacks.
+ #ifdef ossl_SSL_TLSEXT_ERR_OK
 @@ -2878,7 +2879,6 @@
  #ifdef ossl_SSL_TLSEXT_ERR_NOACK
  #define SSL_TLSEXT_ERR_NOACK ossl_SSL_TLSEXT_ERR_NOACK
