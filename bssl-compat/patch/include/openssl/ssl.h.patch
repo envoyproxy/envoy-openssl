@@ -278,7 +278,7 @@
  
  
  // Options.
-@@ -928,7 +929,7 @@
+@@ -946,7 +947,7 @@
  
  // SSL_CTX_use_certificate sets |ctx|'s leaf certificate to |x509|. It returns
  // one on success and zero on failure.
@@ -287,7 +287,7 @@
  
  // SSL_use_certificate sets |ssl|'s leaf certificate to |x509|. It returns one
  // on success and zero on failure.
-@@ -936,7 +937,7 @@
+@@ -954,7 +955,7 @@
  
  // SSL_CTX_use_PrivateKey sets |ctx|'s private key to |pkey|. It returns one on
  // success and zero on failure.
@@ -296,7 +296,7 @@
  
  // SSL_use_PrivateKey sets |ssl|'s private key to |pkey|. It returns one on
  // success and zero on failure.
-@@ -1022,8 +1023,8 @@
+@@ -1040,8 +1041,8 @@
  // On the server, the callback will be called after extensions have been
  // processed, but before the resumption decision has been made. This differs
  // from OpenSSL which handles resumption before selecting the certificate.
@@ -307,7 +307,7 @@
  
  // SSL_get0_certificate_types, for a client, sets |*out_types| to an array
  // containing the client certificate types requested by a server. It returns the
-@@ -1074,10 +1075,10 @@
+@@ -1092,10 +1093,10 @@
  // OPENSSL_EXPORT int SSL_check_private_key(const SSL *ssl);
  
  // SSL_CTX_get0_certificate returns |ctx|'s leaf certificate.
@@ -320,7 +320,7 @@
  
  // SSL_CTX_get0_privatekey returns |ctx|'s private key.
  // OPENSSL_EXPORT EVP_PKEY *SSL_CTX_get0_privatekey(const SSL_CTX *ctx);
-@@ -1129,23 +1130,23 @@
+@@ -1147,23 +1148,23 @@
  // SSL_set_ocsp_response sets the OCSP response that is sent to clients which
  // request it. It returns one on success and zero on error. The caller retains
  // ownership of |response|.
@@ -359,7 +359,7 @@
  
  // SSL_SIGN_RSA_PKCS1_MD5_SHA1 is an internal signature algorithm used to
  // specify raw RSASSA-PKCS1-v1_5 with an MD5/SHA-1 concatenation, as used in TLS
-@@ -1155,8 +1156,8 @@
+@@ -1173,8 +1174,8 @@
  // SSL_get_signature_algorithm_name returns a human-readable name for |sigalg|,
  // or NULL if unknown. If |include_curve| is one, the curve for ECDSA algorithms
  // is included as in TLS 1.3. Otherwise, it is excluded as in TLS 1.2.
@@ -370,7 +370,7 @@
  
  // SSL_get_signature_algorithm_key_type returns the key type associated with
  // |sigalg| as an |EVP_PKEY_*| constant or |EVP_PKEY_NONE| if unknown.
-@@ -1202,9 +1203,9 @@
+@@ -1220,9 +1221,9 @@
  // client or server. References to the given |CRYPTO_BUFFER| and |EVP_PKEY|
  // objects are added as needed. Exactly one of |privkey| or |privkey_method|
  // may be non-NULL. Returns one on success and zero on error.
@@ -383,7 +383,7 @@
  
  // SSL_CTX_get0_chain returns the list of |CRYPTO_BUFFER|s that were set by
  // |SSL_CTX_set_chain_and_key|. Reference counts are not incremented by this
-@@ -1254,8 +1255,8 @@
+@@ -1272,8 +1273,8 @@
  // |type| parameter is one of the |SSL_FILETYPE_*| values and determines whether
  // the file's contents are read as PEM or DER.
  
@@ -394,7 +394,7 @@
  
  // OPENSSL_EXPORT int SSL_CTX_use_RSAPrivateKey_file(SSL_CTX *ctx,
  //                                                   const char *file,
-@@ -1263,13 +1264,13 @@
+@@ -1281,13 +1282,13 @@
  // OPENSSL_EXPORT int SSL_use_RSAPrivateKey_file(SSL *ssl, const char *file,
  //                                               int type);
  
@@ -412,7 +412,7 @@
  // OPENSSL_EXPORT int SSL_use_PrivateKey_file(SSL *ssl, const char *file,
  //                                            int type);
  
-@@ -1277,8 +1278,8 @@
+@@ -1295,8 +1296,8 @@
  // reads the contents of |file| as a PEM-encoded leaf certificate followed
  // optionally by the certificate chain to send to the peer. It returns one on
  // success and zero on failure.
@@ -423,7 +423,7 @@
  
  // SSL_CTX_set_default_passwd_cb sets the password callback for PEM-based
  // convenience functions called on |ctx|.
-@@ -1302,11 +1303,11 @@
+@@ -1320,11 +1321,11 @@
  
  // Custom private keys.
  
@@ -440,7 +440,7 @@
  
  // ssl_private_key_method_st (aka |SSL_PRIVATE_KEY_METHOD|) describes private
  // key hooks. This is used to off-load signing operations to a custom,
-@@ -1391,12 +1392,12 @@
+@@ -1409,12 +1410,12 @@
  //
  // |SSL_CIPHER| objects represent cipher suites.
  
@@ -455,7 +455,7 @@
  
  // SSL_CIPHER_get_id returns |cipher|'s non-IANA id. This is not its
  // IANA-assigned number, which is called the "value" here, although it may be
-@@ -1445,7 +1446,7 @@
+@@ -1463,7 +1464,7 @@
  
  // SSL_CIPHER_get_min_version returns the minimum protocol version required
  // for |cipher|.
@@ -464,7 +464,7 @@
  
  // SSL_CIPHER_get_max_version returns the maximum protocol version that
  // supports |cipher|.
-@@ -1453,12 +1454,12 @@
+@@ -1471,12 +1472,12 @@
  
  // SSL_CIPHER_standard_name returns the standard IETF name for |cipher|. For
  // example, "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256".
@@ -479,7 +479,7 @@
  
  // SSL_CIPHER_get_kx_name returns a string that describes the key-exchange
  // method used by |cipher|. For example, "ECDHE_ECDSA". TLS 1.3 AEAD-only
-@@ -1577,15 +1578,15 @@
+@@ -1595,15 +1596,15 @@
  // SSL_CTX_set_strict_cipher_list configures the cipher list for |ctx|,
  // evaluating |str| as a cipher string and returning error if |str| contains
  // anything meaningless. It returns one on success and zero on failure.
@@ -498,7 +498,7 @@
  
  // SSL_set_strict_cipher_list configures the cipher list for |ssl|, evaluating
  // |str| as a cipher string and returning error if |str| contains anything
-@@ -1597,11 +1598,11 @@
+@@ -1615,11 +1616,11 @@
  //
  // Prefer to use |SSL_set_strict_cipher_list|. This function tolerates garbage
  // inputs, unless an empty cipher list results.
@@ -512,7 +512,7 @@
  
  // SSL_CTX_cipher_in_group returns one if the |i|th cipher (see
  // |SSL_CTX_get_ciphers|) is in the same equipreference group as the one
-@@ -1609,7 +1610,7 @@
+@@ -1627,7 +1628,7 @@
  // OPENSSL_EXPORT int SSL_CTX_cipher_in_group(const SSL_CTX *ctx, size_t i);
  
  // SSL_get_ciphers returns the cipher list for |ssl|, in order of preference.
@@ -521,7 +521,7 @@
  
  
  // Connection information.
-@@ -1633,7 +1634,7 @@
+@@ -1651,7 +1652,7 @@
  // SSL_get_peer_certificate returns the peer's leaf certificate or NULL if the
  // peer did not use certificates. The caller must call |X509_free| on the
  // result to release it.
@@ -530,7 +530,7 @@
  
  // SSL_get_peer_cert_chain returns the peer's certificate chain or NULL if
  // unavailable or the peer did not use certificates. This is the unverified list
-@@ -1643,7 +1644,7 @@
+@@ -1661,7 +1662,7 @@
  // WARNING: This function behaves differently between client and server. If
  // |ssl| is a server, the returned chain does not include the leaf certificate.
  // If a client, it does.
@@ -539,7 +539,7 @@
  
  // SSL_get_peer_full_cert_chain returns the peer's certificate chain, or NULL if
  // unavailable or the peer did not use certificates. This is the unverified list
-@@ -1655,7 +1656,7 @@
+@@ -1673,7 +1674,7 @@
  // (if any) will be the leaf certificate. In constrast,
  // |SSL_get_peer_cert_chain| returns only the intermediate certificates if the
  // |ssl| is a server.
@@ -548,7 +548,7 @@
  
  // SSL_get0_peer_certificates returns the peer's certificate chain, or NULL if
  // unavailable or the peer did not use certificates. This is the unverified list
-@@ -1683,8 +1684,8 @@
+@@ -1701,8 +1702,8 @@
  // OCSPResponse type as defined in RFC 2560.
  //
  // WARNING: the returned data is not guaranteed to be well formed.
@@ -559,7 +559,7 @@
  
  // SSL_get_tls_unique writes at most |max_out| bytes of the tls-unique value
  // for |ssl| to |out| and sets |*out_len| to the number of bytes written. It
-@@ -1712,14 +1713,14 @@
+@@ -1730,14 +1731,14 @@
  
  // SSL_get_current_cipher returns cipher suite used by |ssl|, or NULL if it has
  // not been negotiated yet.
@@ -576,7 +576,7 @@
  
  // SSL_get_secure_renegotiation_support returns one if the peer supports secure
  // renegotiation (RFC 5746) or TLS 1.3. Otherwise, it returns zero.
-@@ -1753,7 +1754,7 @@
+@@ -1771,7 +1772,7 @@
  // SSL_SESSION_new returns a newly-allocated blank |SSL_SESSION| or NULL on
  // error. This may be useful when writing tests but should otherwise not be
  // used.
@@ -585,7 +585,7 @@
  
  // SSL_SESSION_up_ref increments the reference count of |session| and returns
  // one.
-@@ -1761,14 +1762,14 @@
+@@ -1779,14 +1780,14 @@
  
  // SSL_SESSION_free decrements the reference count of |session|. If it reaches
  // zero, all data referenced by |session| and |session| itself are released.
@@ -603,7 +603,7 @@
  
  // SSL_SESSION_to_bytes_for_ticket serializes |in|, but excludes the session
  // identification information, namely the session ID and ticket.
-@@ -1778,12 +1779,12 @@
+@@ -1796,12 +1797,12 @@
  
  // SSL_SESSION_from_bytes parses |in_len| bytes from |in| as an SSL_SESSION. It
  // returns a newly-allocated |SSL_SESSION| on success or NULL on error.
@@ -619,7 +619,7 @@
  
  // SSL_SESSION_get_protocol_version returns the TLS or DTLS version |session|
  // was established at.
-@@ -1793,8 +1794,8 @@
+@@ -1811,8 +1812,8 @@
  // SSL_SESSION_set_protocol_version sets |session|'s TLS or DTLS version to
  // |version|. This may be useful when writing tests but should otherwise not be
  // used. It returns one on success and zero on error.
@@ -630,7 +630,7 @@
  
  // SSL_MAX_SSL_SESSION_ID_LENGTH is the maximum length of an SSL session ID.
  // #define SSL_MAX_SSL_SESSION_ID_LENGTH 32
-@@ -1814,8 +1815,8 @@
+@@ -1832,8 +1833,8 @@
  // As a workaround for some broken applications, BoringSSL sometimes synthesizes
  // arbitrary session IDs for non-ID-based sessions. This behavior may be
  // removed in the future.
@@ -641,7 +641,7 @@
  
  // SSL_SESSION_set1_id sets |session|'s session ID to |sid|, It returns one on
  // success and zero on error. This function may be useful in writing tests but
-@@ -1905,13 +1906,13 @@
+@@ -1923,13 +1924,13 @@
  // only once. This prevents passive observers from correlating connections with
  // tickets. See RFC 8446, appendix C.4. If it returns zero, |session| cannot be
  // used without leaking a correlator.
@@ -657,7 +657,7 @@
  
  // SSL_SESSION_has_ticket returns one if |session| has a ticket and zero
  // otherwise.
-@@ -1933,8 +1934,8 @@
+@@ -1951,8 +1952,8 @@
  
  // SSL_SESSION_get_ticket_lifetime_hint returns ticket lifetime hint of
  // |session| in seconds or zero if none was set.
@@ -668,7 +668,7 @@
  
  // SSL_SESSION_get0_cipher returns the cipher negotiated by the connection which
  // established |session|.
-@@ -2049,7 +2050,7 @@
+@@ -2067,7 +2068,7 @@
  
  // SSL_CTX_set_session_cache_mode sets the session cache mode bits for |ctx| to
  // |mode|. It returns the previous value.
@@ -677,7 +677,7 @@
  
  // SSL_CTX_get_session_cache_mode returns the session cache mode bits for
  // |ctx|
-@@ -2064,7 +2065,7 @@
+@@ -2082,7 +2083,7 @@
  // |SSL_SESSION_get0_ocsp_response|.
  //
  // It is an error to call this function after the handshake has begun.
@@ -686,7 +686,7 @@
  
  // SSL_DEFAULT_SESSION_TIMEOUT is the default lifetime, in seconds, of a
  // session in TLS 1.2 or earlier. This is how long we are willing to use the
-@@ -2083,7 +2084,7 @@
+@@ -2101,7 +2102,7 @@
  
  // SSL_CTX_set_timeout sets the lifetime, in seconds, of TLS 1.2 (or earlier)
  // sessions created in |ctx| to |timeout|.
@@ -695,7 +695,7 @@
  
  // SSL_CTX_set_session_psk_dhe_timeout sets the lifetime, in seconds, of TLS 1.3
  // sessions created in |ctx| to |timeout|.
-@@ -2104,15 +2105,15 @@
+@@ -2122,15 +2123,15 @@
  //
  // For a server, if |SSL_VERIFY_PEER| is enabled, it is an error to not set a
  // session ID context.
@@ -716,7 +716,7 @@
  
  // SSL_get0_session_id_context returns a pointer to |ssl|'s session ID context
  // and sets |*out_len| to its length.  It returns NULL on error.
-@@ -2167,8 +2168,8 @@
+@@ -2185,8 +2186,8 @@
  // |SSL_do_handshake| or |SSL_connect| completes if False Start is enabled. Thus
  // it's recommended to use this callback over calling |SSL_get_session| on
  // handshake completion.
@@ -727,7 +727,7 @@
  
  // SSL_CTX_sess_get_new_cb returns the callback set by
  // |SSL_CTX_sess_set_new_cb|.
-@@ -2271,8 +2272,8 @@
+@@ -2289,8 +2290,8 @@
  // SSL_CTX_set_tlsext_ticket_keys sets |ctx|'s session ticket key material to
  // |len| bytes of |in|. It returns one on success and zero if |len| is not
  // 48. If |in| is NULL, it returns 48 instead.
@@ -738,7 +738,7 @@
  
  // SSL_TICKET_KEY_NAME_LEN is the length of the key name prefix of a session
  // ticket.
-@@ -2301,10 +2302,10 @@
+@@ -2319,10 +2320,10 @@
  //
  // WARNING: |callback| wildly breaks the usual return value convention and is
  // called in two different modes.
@@ -753,7 +753,7 @@
  
  // ssl_ticket_aead_result_t enumerates the possible results from decrypting a
  // ticket with an |SSL_TICKET_AEAD_METHOD|.
-@@ -2409,20 +2410,20 @@
+@@ -2427,20 +2428,20 @@
  // colon-separated list |curves|. Each element of |curves| should be a curve
  // name (e.g. P-256, X25519, ...). It returns one on success and zero on
  // failure.
@@ -781,7 +781,7 @@
  // #define SSL_CURVE_CECPQ2 16696
  
  // SSL_get_curve_id returns the ID of the curve used by |ssl|'s most recently
-@@ -2430,11 +2431,11 @@
+@@ -2448,11 +2449,11 @@
  //
  // TODO(davidben): This API currently does not work correctly if there is a
  // renegotiation in progress. Fix this.
@@ -795,7 +795,7 @@
  
  
  // Certificate verification.
-@@ -2465,18 +2466,18 @@
+@@ -2483,18 +2484,18 @@
  // SSL_VERIFY_NONE, on a client, verifies the server certificate but does not
  // make errors fatal. The result may be checked with |SSL_get_verify_result|. On
  // a server it does not request a client certificate. This is the default.
@@ -817,7 +817,7 @@
  
  // SSL_VERIFY_PEER_IF_NO_OBC configures a server to request a client certificate
  // if and only if Channel ID is not negotiated.
-@@ -2489,8 +2490,8 @@
+@@ -2507,8 +2508,8 @@
  //
  // The callback may use |SSL_get_ex_data_X509_STORE_CTX_idx| with
  // |X509_STORE_CTX_get_ex_data| to look up the |SSL| from |store_ctx|.
@@ -828,7 +828,7 @@
  
  // SSL_set_verify configures certificate verification behavior. |mode| is one of
  // the |SSL_VERIFY_*| values defined above. |callback|, if not NULL, is used to
-@@ -2499,9 +2500,9 @@
+@@ -2517,9 +2518,9 @@
  //
  // The callback may use |SSL_get_ex_data_X509_STORE_CTX_idx| with
  // |X509_STORE_CTX_get_ex_data| to look up the |SSL| from |store_ctx|.
@@ -841,7 +841,7 @@
  
  // enum ssl_verify_result_t BORINGSSL_ENUM_INT {
  //   ssl_verify_ok,
-@@ -2566,7 +2567,7 @@
+@@ -2584,7 +2585,7 @@
  // SSL_CTX_set_verify_depth sets the maximum depth of a certificate chain
  // accepted in verification. This number does not include the leaf, so a depth
  // of 1 allows the leaf and one CA certificate.
@@ -850,7 +850,7 @@
  
  // SSL_set_verify_depth sets the maximum depth of a certificate chain accepted
  // in verification. This number does not include the leaf, so a depth of 1
-@@ -2640,9 +2641,9 @@
+@@ -2658,9 +2659,9 @@
  // See
  // https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_load_verify_locations.html
  // for documentation on the directory format.
@@ -863,7 +863,7 @@
  
  // SSL_get_verify_result returns the result of certificate verification. It is
  // either |X509_V_OK| or a |X509_V_ERR_*| value.
-@@ -2655,7 +2656,7 @@
+@@ -2673,7 +2674,7 @@
  
  // SSL_get_ex_data_X509_STORE_CTX_idx returns the ex_data index used to look up
  // the |SSL| associated with an |X509_STORE_CTX| in the verify callback.
@@ -872,7 +872,7 @@
  
  // SSL_CTX_set_cert_verify_callback sets a custom callback to be called on
  // certificate verification rather than |X509_verify_cert|. |store_ctx| contains
-@@ -2665,9 +2666,9 @@
+@@ -2683,9 +2684,9 @@
  //
  // The callback may use |SSL_get_ex_data_X509_STORE_CTX_idx| to recover the
  // |SSL| object from |store_ctx|.
@@ -885,7 +885,7 @@
  
  // SSL_enable_signed_cert_timestamps causes |ssl| (which must be the client end
  // of a connection) to request SCTs from the server. See
-@@ -2689,7 +2690,7 @@
+@@ -2707,7 +2708,7 @@
  //
  // Call |SSL_get0_ocsp_response| to recover the OCSP response after the
  // handshake.
@@ -894,7 +894,7 @@
  
  // SSL_CTX_enable_ocsp_stapling enables OCSP stapling on all client SSL objects
  // created from |ctx|.
-@@ -2724,9 +2725,9 @@
+@@ -2742,9 +2743,9 @@
  // preference list when verifying signatures from the peer's long-term key. It
  // returns one on zero on error. |prefs| should not include the internal-only
  // value |SSL_SIGN_RSA_PKCS1_MD5_SHA1|.
@@ -907,7 +907,7 @@
  
  // SSL_set_verify_algorithm_prefs configures |ssl| to use |prefs| as the
  // preference list when verifying signatures from the peer's long-term key. It
-@@ -2750,13 +2751,13 @@
+@@ -2768,13 +2769,13 @@
  
  // SSL_set_client_CA_list sets |ssl|'s client certificate CA list to
  // |name_list|. It takes ownership of |name_list|.
@@ -925,7 +925,7 @@
  
  // SSL_set0_client_CAs sets |ssl|'s client certificate CA list to |name_list|,
  // which should contain DER-encoded distinguished names (RFC 5280). It takes
-@@ -2778,7 +2779,7 @@
+@@ -2796,7 +2797,7 @@
  // the server. In this mode, the behavior is undefined except during the
  // callbacks set by |SSL_CTX_set_cert_cb| and |SSL_CTX_set_client_cert_cb| or
  // when the handshake is paused because of them.
@@ -934,7 +934,7 @@
  
  // SSL_get0_server_requested_CAs returns the CAs sent by a server to guide a
  // client in certificate selection. They are a series of DER-encoded X.509
-@@ -2816,8 +2817,8 @@
+@@ -2834,8 +2835,8 @@
  // SSL_add_file_cert_subjects_to_stack behaves like |SSL_load_client_CA_file|
  // but appends the result to |out|. It returns one on success or zero on
  // error.
@@ -945,7 +945,7 @@
  
  // SSL_add_bio_cert_subjects_to_stack behaves like
  // |SSL_add_file_cert_subjects_to_stack| but reads from |bio|.
-@@ -2832,16 +2833,16 @@
+@@ -2850,16 +2851,16 @@
  // deployments to select one of a several certificates on a single IP. Only the
  // host_name name type is supported.
  
@@ -965,7 +965,7 @@
  
  // SSL_get_servername_type, for a server, returns |TLSEXT_NAMETYPE_host_name|
  // if the client sent a hostname and -1 otherwise.
-@@ -2858,12 +2859,12 @@
+@@ -2876,12 +2877,12 @@
  // |SSL_TLSEXT_ERR_ALERT_FATAL|, then |*out_alert| is the alert to send,
  // defaulting to |SSL_AD_UNRECOGNIZED_NAME|. |SSL_TLSEXT_ERR_ALERT_WARNING| is
  // ignored and treated as |SSL_TLSEXT_ERR_OK|.
@@ -981,7 +981,7 @@
  
  // SSL_TLSEXT_ERR_* are values returned by some extension-related callbacks.
  #ifdef ossl_SSL_TLSEXT_ERR_OK
-@@ -2878,7 +2879,6 @@
+@@ -2896,7 +2897,6 @@
  #ifdef ossl_SSL_TLSEXT_ERR_NOACK
  #define SSL_TLSEXT_ERR_NOACK ossl_SSL_TLSEXT_ERR_NOACK
  #endif
@@ -989,7 +989,7 @@
  // SSL_set_SSL_CTX changes |ssl|'s |SSL_CTX|. |ssl| will use the
  // certificate-related settings from |ctx|, and |SSL_get_SSL_CTX| will report
  // |ctx|. This function may be used during the callbacks registered by
-@@ -2892,7 +2892,7 @@
+@@ -2910,7 +2910,7 @@
  // the session cache between different domains.
  //
  // TODO(davidben): Should other settings change after this call?
@@ -998,7 +998,7 @@
  
  
  // Application-layer protocol negotiation.
-@@ -2920,8 +2920,8 @@
+@@ -2938,8 +2938,8 @@
  //
  // WARNING: this function is dangerous because it breaks the usual return value
  // convention.
@@ -1009,7 +1009,7 @@
  
  // SSL_CTX_set_alpn_select_cb sets a callback function on |ctx| that is called
  // during ClientHello processing in order to select an ALPN protocol from the
-@@ -2953,18 +2953,18 @@
+@@ -2971,18 +2971,18 @@
  // The cipher suite is selected before negotiating ALPN. The callback may use
  // |SSL_get_pending_cipher| to query the cipher suite. This may be used to
  // implement HTTP/2's cipher suite constraints.
@@ -1035,7 +1035,7 @@
  
  // SSL_CTX_set_allow_unknown_alpn_protos configures client connections on |ctx|
  // to allow unknown ALPN protocols from the server. Otherwise, by default, the
-@@ -3126,10 +3126,10 @@
+@@ -3144,10 +3144,10 @@
  // and returns |OPENSSL_NPN_NEGOTIATED|. Otherwise, it returns
  // |OPENSSL_NPN_NO_OVERLAP| and sets |*out| and |*out_len| to the first
  // supported protocol.
@@ -1050,7 +1050,7 @@
  
  #ifdef ossl_OPENSSL_NPN_UNSUPPORTED
  #define OPENSSL_NPN_UNSUPPORTED ossl_OPENSSL_NPN_UNSUPPORTED
-@@ -4051,12 +4051,12 @@
+@@ -4069,12 +4069,12 @@
  //
  // See |ex_data.h| for details.
  
@@ -1069,7 +1069,7 @@
  
  // OPENSSL_EXPORT int SSL_SESSION_set_ex_data(SSL_SESSION *session, int idx,
  //                                            void *data);
-@@ -4067,8 +4067,8 @@
+@@ -4085,8 +4085,8 @@
  //                                                 CRYPTO_EX_dup *dup_unused,
  //                                                 CRYPTO_EX_free *free_func);
  
@@ -1080,7 +1080,7 @@
  // OPENSSL_EXPORT int SSL_CTX_get_ex_new_index(long argl, void *argp,
  //                                             CRYPTO_EX_unused *unused,
  //                                             CRYPTO_EX_dup *dup_unused,
-@@ -4292,13 +4292,13 @@
+@@ -4310,13 +4310,13 @@
  // such as HTTP/1.1, and not others, such as HTTP/2.
  // OPENSSL_EXPORT void SSL_set_shed_handshake_config(SSL *ssl, int enable);
  
@@ -1101,7 +1101,7 @@
  
  // SSL_set_renegotiate_mode configures how |ssl|, a client, reacts to
  // renegotiation attempts by a server. If |ssl| is a server, peer-initiated
-@@ -4327,8 +4327,8 @@
+@@ -4345,8 +4345,8 @@
  //
  // There is no support in BoringSSL for initiating renegotiations as a client
  // or server.
@@ -1112,7 +1112,7 @@
  
  // SSL_renegotiate starts a deferred renegotiation on |ssl| if it was configured
  // with |ssl_renegotiate_explicit| and has a pending HelloRequest. It returns
-@@ -4389,45 +4389,45 @@
+@@ -4407,45 +4407,45 @@
  // callbacks that are called very early on during the server handshake. At this
  // point, much of the SSL* hasn't been filled out and only the ClientHello can
  // be depended on.
@@ -1188,7 +1188,7 @@
  
  // SSL_CTX_set_select_certificate_cb sets a callback that is called before most
  // ClientHello processing and before the decision whether to resume a session
-@@ -4443,9 +4443,9 @@
+@@ -4461,9 +4461,9 @@
  //
  // Note: The |SSL_CLIENT_HELLO| is only valid for the duration of the callback
  // and is not valid while the handshake is paused.
@@ -1201,7 +1201,7 @@
  
  // SSL_CTX_set_dos_protection_cb sets a callback that is called once the
  // resumption decision for a ClientHello has been made. It can return one to
-@@ -4561,7 +4561,7 @@
+@@ -4579,7 +4579,7 @@
  
  // SSL_get_peer_signature_algorithm returns the signature algorithm used by the
  // peer. If not applicable, it returns zero.
@@ -1210,7 +1210,7 @@
  
  // SSL_get_client_random writes up to |max_out| bytes of the most recent
  // handshake's client_random to |out| and returns the number of bytes written.
-@@ -4695,8 +4695,8 @@
+@@ -4713,8 +4713,8 @@
  
  // These client- and server-specific methods call their corresponding generic
  // methods.
@@ -1221,7 +1221,7 @@
  // OPENSSL_EXPORT const SSL_METHOD *SSLv23_server_method(void);
  // OPENSSL_EXPORT const SSL_METHOD *SSLv23_client_method(void);
  // OPENSSL_EXPORT const SSL_METHOD *TLSv1_server_method(void);
-@@ -4811,14 +4811,14 @@
+@@ -4829,14 +4829,14 @@
  // i2d_SSL_SESSION serializes |in|, as described in |i2d_SAMPLE|.
  //
  // Use |SSL_SESSION_to_bytes| instead.
@@ -1239,7 +1239,7 @@
  
  // i2d_SSL_SESSION_bio serializes |session| and writes the result to |bio|. It
  // returns the number of bytes written on success and <= 0 on error.
-@@ -4907,7 +4907,7 @@
+@@ -4925,7 +4925,7 @@
  // This API is compatible with OpenSSL. However, BoringSSL-specific code should
  // prefer |SSL_CTX_set_signing_algorithm_prefs| because it's clearer and it's
  // more convenient to codesearch for specific algorithm values.
@@ -1248,7 +1248,7 @@
  
  // SSL_set1_sigalgs_list takes a textual specification of a set of signature
  // algorithms and configures them on |ssl|. It returns one on success and zero
-@@ -4922,8 +4922,8 @@
+@@ -4940,8 +4940,8 @@
  // more convenient to codesearch for specific algorithm values.
  // OPENSSL_EXPORT int SSL_set1_sigalgs_list(SSL *ssl, const char *str);
  
@@ -1259,7 +1259,7 @@
  // #define SSL_SESSION_set_app_data(s, a) \
  //   (SSL_SESSION_set_ex_data(s, 0, (char *)(a)))
  // #define SSL_SESSION_get_app_data(s) (SSL_SESSION_get_ex_data(s, 0))
-@@ -4939,8 +4939,8 @@
+@@ -4957,8 +4957,8 @@
  //     SSL_CIPHER_get_bits(SSL_get_current_cipher(ssl), out_alg_bits)
  // #define SSL_get_cipher_version(ssl) \
  //     SSL_CIPHER_get_version(SSL_get_current_cipher(ssl))
@@ -1270,7 +1270,7 @@
  // #define SSL_get_time(session) SSL_SESSION_get_time(session)
  // #define SSL_set_time(session, time) SSL_SESSION_set_time((session), (time))
  // #define SSL_get_timeout(session) SSL_SESSION_get_timeout(session)
-@@ -5005,7 +5005,7 @@
+@@ -5075,7 +5075,7 @@
  
  // SSL_get_version returns a string describing the TLS version used by |ssl|.
  // For example, "TLSv1.2" or "DTLSv1".
@@ -1279,7 +1279,7 @@
  
  // SSL_get_cipher_list returns the name of the |n|th cipher in the output of
  // |SSL_get_ciphers| or NULL if out of range. Use |SSL_get_ciphers| instead.
-@@ -5185,14 +5185,14 @@
+@@ -5255,14 +5255,14 @@
  // unresumable session which may be cached, but will never be resumed.
  //
  // If querying properties of the connection, use APIs on the |SSL| object.
@@ -1296,7 +1296,7 @@
  
  // #define OPENSSL_INIT_NO_LOAD_SSL_STRINGS 0
  // #define OPENSSL_INIT_LOAD_SSL_STRINGS 0
-@@ -5260,9 +5260,9 @@
+@@ -5330,9 +5330,9 @@
  // OCSP responses like other server credentials, such as certificates or SCT
  // lists. Configure, store, and refresh them eagerly. This avoids downtime if
  // the CA's OCSP responder is briefly offline.
@@ -1309,7 +1309,7 @@
  
  // SSL_CTX_set_tlsext_status_arg sets additional data for
  // |SSL_CTX_set_tlsext_status_cb|'s callback and returns one.
-@@ -5492,21 +5492,21 @@
+@@ -5562,21 +5562,21 @@
  // #endif // !defined(BORINGSSL_PREFIX)
  
  
@@ -1339,7 +1339,7 @@
  // BORINGSSL_MAKE_UP_REF(SSL_SESSION, SSL_SESSION_up_ref)
  
  // enum class OpenRecordResult {
-@@ -5623,13 +5623,13 @@
+@@ -5693,13 +5693,13 @@
  //     Span<const uint8_t> *out_write_traffic_secret);
  
  
@@ -1357,7 +1357,7 @@
  
  #ifdef ossl_SSL_R_APP_DATA_IN_HANDSHAKE
  #define SSL_R_APP_DATA_IN_HANDSHAKE ossl_SSL_R_APP_DATA_IN_HANDSHAKE
-@@ -6397,4 +6397,4 @@
+@@ -6467,4 +6467,4 @@
  #define SSL_R_TLSV1_ALERT_ECH_REQUIRED ossl_SSL_R_TLSV1_ALERT_ECH_REQUIRED
  #endif
  

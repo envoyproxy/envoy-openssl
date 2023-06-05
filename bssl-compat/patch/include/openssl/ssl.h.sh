@@ -16,6 +16,7 @@ SUBSTITUTIONS+=('SSL_R_[a-zA-Z0-9_]*')
 SUBSTITUTIONS+=('SSL_TLSEXT_ERR_[A-Z_]*')
 SUBSTITUTIONS+=('SSL_SESS_CACHE_[A-Z_]*')
 SUBSTITUTIONS+=('OPENSSL_NPN_[A-Z_]*')
+SUBSTITUTIONS+=('SSL_OP_[a-zA-Z0-9_]*')
 
 EXPRE='s|^//[ \t]#[ \t]*define[ \t]*[^a-zA-Z0-9_]\('
 EXPOST='\)[^a-zA-Z0-9_].*$|#ifdef ossl_\1\n#define \1 ossl_\1\n#endif|'
