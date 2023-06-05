@@ -873,18 +873,18 @@
  // Test that, after calling |SSL_shutdown|, |SSL_write| fails.
 -// TEST_P(SSLVersionTest, WriteAfterShutdown) {
 -//   ASSERT_TRUE(Connect());
-+TEST_P(SSLVersionTest, WriteAfterShutdown) {
-+  ASSERT_TRUE(Connect());
- 
+-
 -//   for (SSL *ssl : {client_.get(), server_.get()}) {
 -//     SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
-+  for (SSL *ssl : {client_.get(), server_.get()}) {
-+    SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
++TEST_P(SSLVersionTest, WriteAfterShutdown) {
++  ASSERT_TRUE(Connect());
  
 -//     bssl::UniquePtr<BIO> mem(BIO_new(BIO_s_mem()));
 -//     ASSERT_TRUE(mem);
 -//     SSL_set0_wbio(ssl, bssl::UpRef(mem).release());
--
++  for (SSL *ssl : {client_.get(), server_.get()}) {
++    SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
+ 
 -//     // Shut down half the connection. |SSL_shutdown| will return 0 to signal
 -//     // only one side has shut down.
 -//     ASSERT_EQ(SSL_shutdown(ssl), 0);
@@ -1293,9 +1293,7 @@
 -
 -//   ASSERT_TRUE(SSL_CTX_set_session_id_context(server_ctx_.get(), kContext1,
 -//                                              sizeof(kContext1)));
-+static int SwitchSessionIDContextSNI(SSL *ssl, int *out_alert, void *arg) {
-+  static const uint8_t kContext[] = {3};
- 
+-
 -//   SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
 -//   SSL_CTX_set_session_cache_mode(server_ctx_.get(), SSL_SESS_CACHE_BOTH);
 -
@@ -1341,7 +1339,9 @@
 -
 -//         return ssl_select_cert_success;
 -//       });
--
++static int SwitchSessionIDContextSNI(SSL *ssl, int *out_alert, void *arg) {
++  static const uint8_t kContext[] = {3};
+ 
 -//   TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
 -//                                   session.get(),
 -//                                   false /* expect session not reused */));
@@ -1499,6 +1499,81 @@
  
  // Tests that that |SSL_get_pending_cipher| is available during the ALPN
  // selection callback.
+@@ -4076,40 +4127,40 @@
+ //   }
+ // }
+ 
+-// TEST_P(SSLVersionTest, GetServerName) {
+-//   ClientConfig config;
+-//   config.servername = "host1";
+-
+-//   SSL_CTX_set_tlsext_servername_callback(
+-//       server_ctx_.get(), [](SSL *ssl, int *out_alert, void *arg) -> int {
+-//         // During the handshake, |SSL_get_servername| must match |config|.
+-//         ClientConfig *config_p = reinterpret_cast<ClientConfig *>(arg);
+-//         EXPECT_STREQ(config_p->servername.c_str(),
+-//                      SSL_get_servername(ssl, TLSEXT_NAMETYPE_host_name));
+-//         return SSL_TLSEXT_ERR_OK;
+-//       });
+-//   SSL_CTX_set_tlsext_servername_arg(server_ctx_.get(), &config);
+-
+-//   ASSERT_TRUE(Connect(config));
+-//   // After the handshake, it must also be available.
+-//   EXPECT_STREQ(config.servername.c_str(),
+-//                SSL_get_servername(server_.get(), TLSEXT_NAMETYPE_host_name));
+-
+-//   // Establish a session under host1.
+-//   SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
+-//   SSL_CTX_set_session_cache_mode(server_ctx_.get(), SSL_SESS_CACHE_BOTH);
+-//   bssl::UniquePtr<SSL_SESSION> session =
+-//       CreateClientSession(client_ctx_.get(), server_ctx_.get(), config);
+-
+-//   // If the client resumes a session with a different name, |SSL_get_servername|
+-//   // must return the new name.
+-//   ASSERT_TRUE(session);
+-//   config.session = session.get();
+-//   config.servername = "host2";
+-//   ASSERT_TRUE(Connect(config));
+-//   EXPECT_STREQ(config.servername.c_str(),
+-//                SSL_get_servername(server_.get(), TLSEXT_NAMETYPE_host_name));
+-// }
++TEST_P(SSLVersionTest, GetServerName) {
++  ClientConfig config;
++  config.servername = "host1";
++
++  SSL_CTX_set_tlsext_servername_callback(
++      server_ctx_.get(), [](SSL *ssl, int *out_alert, void *arg) -> int {
++        // During the handshake, |SSL_get_servername| must match |config|.
++        ClientConfig *config_p = reinterpret_cast<ClientConfig *>(arg);
++        EXPECT_STREQ(config_p->servername.c_str(),
++                     SSL_get_servername(ssl, TLSEXT_NAMETYPE_host_name));
++        return SSL_TLSEXT_ERR_OK;
++      });
++  SSL_CTX_set_tlsext_servername_arg(server_ctx_.get(), &config);
++
++  ASSERT_TRUE(Connect(config));
++  // After the handshake, it must also be available.
++  EXPECT_STREQ(config.servername.c_str(),
++               SSL_get_servername(server_.get(), TLSEXT_NAMETYPE_host_name));
++
++  // Establish a session under host1.
++  SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
++  SSL_CTX_set_session_cache_mode(server_ctx_.get(), SSL_SESS_CACHE_BOTH);
++  bssl::UniquePtr<SSL_SESSION> session =
++      CreateClientSession(client_ctx_.get(), server_ctx_.get(), config);
++
++  // If the client resumes a session with a different name, |SSL_get_servername|
++  // must return the new name.
++  ASSERT_TRUE(session);
++  config.session = session.get();
++  config.servername = "host2";
++  ASSERT_TRUE(Connect(config));
++  EXPECT_STREQ(config.servername.c_str(),
++               SSL_get_servername(server_.get(), TLSEXT_NAMETYPE_host_name));
++}
+ 
+ // Test that session cache mode bits are honored in the client session callback.
+ // TEST_P(SSLVersionTest, ClientSessionCacheMode) {
 @@ -4214,43 +4265,46 @@
  //   X509_cmp(cert, cert);
  // }
