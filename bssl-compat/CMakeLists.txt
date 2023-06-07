@@ -75,6 +75,7 @@ add_library(bssl-compat STATIC
   source/RSA_check_key.cc
   source/RSA_free.c
   source/RSA_new.cc
+  source/RSA_set0_factors.cc
   source/RSA_set0_key.cc
   source/RSA_sign.cc
   source/RSA_size.cc
@@ -321,6 +322,7 @@ set(utests-source-list
   source/test/test_cipher.cc
   source/test/test_crypto.cc
   source/test/test_evp.cc
+  source/test/test_rsa.cc
   source/test/test_ssl.cc
   source/test/test_stack.cc
 )
