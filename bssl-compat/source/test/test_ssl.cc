@@ -1309,3 +1309,28 @@ TEST(SSLTest, test_SSL_get_signature_algorithm_digest) {
   EXPECT_EQ(EVP_sha512(), SSL_get_signature_algorithm_digest(SSL_SIGN_RSA_PSS_RSAE_SHA512));
   EXPECT_EQ(nullptr, SSL_get_signature_algorithm_digest(SSL_SIGN_ED25519));
 }
+
+TEST(SSLTest, test_SSL_get_signature_algorithm_key_type) {
+  struct {
+    uint16_t sigalg;
+    int keytype;
+  }
+  keytypes[] {
+    { SSL_SIGN_RSA_PKCS1_SHA1,         EVP_PKEY_RSA },
+    { SSL_SIGN_RSA_PKCS1_SHA256,       EVP_PKEY_RSA },
+    { SSL_SIGN_RSA_PKCS1_SHA384,       EVP_PKEY_RSA },
+    { SSL_SIGN_RSA_PKCS1_SHA512,       EVP_PKEY_RSA },
+    { SSL_SIGN_ECDSA_SHA1,             EVP_PKEY_EC },
+    { SSL_SIGN_ECDSA_SECP256R1_SHA256, EVP_PKEY_EC },
+    { SSL_SIGN_ECDSA_SECP384R1_SHA384, EVP_PKEY_EC },
+    { SSL_SIGN_ECDSA_SECP521R1_SHA512, EVP_PKEY_EC },
+    { SSL_SIGN_RSA_PSS_RSAE_SHA256,    EVP_PKEY_RSA },
+    { SSL_SIGN_RSA_PSS_RSAE_SHA384,    EVP_PKEY_RSA },
+    { SSL_SIGN_RSA_PSS_RSAE_SHA512,    EVP_PKEY_RSA },
+    { SSL_SIGN_ED25519,                EVP_PKEY_ED25519 },
+  };
+
+  for(int i = 0; i < (sizeof(keytypes) / sizeof(keytypes[0])); i++) {
+    EXPECT_EQ(keytypes[i].keytype, SSL_get_signature_algorithm_key_type(keytypes[i].sigalg)) << "keytypes[" << i << "]";
+  }
+}
