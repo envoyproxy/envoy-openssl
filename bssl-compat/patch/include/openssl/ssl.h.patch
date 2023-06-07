@@ -1248,7 +1248,7 @@
  
  // SSL_set1_sigalgs_list takes a textual specification of a set of signature
  // algorithms and configures them on |ssl|. It returns one on success and zero
-@@ -4940,8 +4940,8 @@
+@@ -4940,14 +4940,14 @@
  // more convenient to codesearch for specific algorithm values.
  // OPENSSL_EXPORT int SSL_set1_sigalgs_list(SSL *ssl, const char *str);
  
@@ -1259,6 +1259,14 @@
  // #define SSL_SESSION_set_app_data(s, a) \
  //   (SSL_SESSION_set_ex_data(s, 0, (char *)(a)))
  // #define SSL_SESSION_get_app_data(s) (SSL_SESSION_get_ex_data(s, 0))
+ // #define SSL_CTX_get_app_data(ctx) (SSL_CTX_get_ex_data(ctx, 0))
+-// #define SSL_CTX_set_app_data(ctx, arg) \
+-//   (SSL_CTX_set_ex_data(ctx, 0, (char *)(arg)))
++#define SSL_CTX_set_app_data(ctx, arg) \
++  (SSL_CTX_set_ex_data(ctx, 0, (char *)(arg)))
+ 
+ // #define OpenSSL_add_ssl_algorithms() SSL_library_init()
+ // #define SSLeay_add_ssl_algorithms() SSL_library_init()
 @@ -4957,8 +4957,8 @@
  //     SSL_CIPHER_get_bits(SSL_get_current_cipher(ssl), out_alg_bits)
  // #define SSL_get_cipher_version(ssl) \
