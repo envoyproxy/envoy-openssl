@@ -10,11 +10,11 @@ endif()
 set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.8.tar.gz)
 set(OPENSSL_URL_HASH 6933e2f1da6f23a50ea226eec6e91b543d277d2098025763b5931cf6a7e099c7)
 
-SET (CMAKE_C_COMPILER             "/usr/bin/clang")
+SET (CMAKE_C_COMPILER             "clang")
 SET (CMAKE_C_FLAGS                "-Wall")
 SET (CMAKE_C_FLAGS_DEBUG          "-g")
 
-SET (CMAKE_CXX_COMPILER           "/usr/bin/clang++")
+SET (CMAKE_CXX_COMPILER           "clang++")
 SET (CMAKE_CXX_FLAGS              "-Wall")
 SET (CMAKE_CXX_FLAGS_DEBUG        "-g")
 
@@ -83,6 +83,7 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set1_sigalgs_list.c
   source/SSL_CTX_set_alpn_select_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
+  source/SSL_CTX_set_max_proto_version.cc
   source/SSL_CTX_set_options.cc
   source/SSL_CTX_set_session_cache_mode.cc
   source/SSL_CTX_set_session_id_context.cc

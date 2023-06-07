@@ -120,14 +120,6 @@ int SSL_CTX_set_min_proto_version(SSL_CTX *ctx, uint16_t version) {
 }
 
 /*
- * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L667
- * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_set_max_proto_version.html
- */
-int SSL_CTX_set_max_proto_version(SSL_CTX *ctx, uint16_t version) {
-  return ossl_SSL_CTX_set_max_proto_version(ctx, version);
-}
-
-/*
  * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L2404
  * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_set_verify.html
  */
