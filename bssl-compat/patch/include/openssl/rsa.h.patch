@@ -68,6 +68,19 @@
  
  // RSA_sign_pss_mgf1 signs |digest_len| bytes from |digest| with the public key
  // from |rsa| using RSASSA-PSS with MGF1 as the mask generation function. It
+@@ -360,9 +360,9 @@
+ // WARNING: |digest| must be the result of hashing the data to be verified with
+ // |hash_nid|. Passing unhashed input will not result in a secure signature
+ // scheme.
+-// OPENSSL_EXPORT int RSA_verify(int hash_nid, const uint8_t *digest,
+-//                               size_t digest_len, const uint8_t *sig,
+-//                               size_t sig_len, RSA *rsa);
++OPENSSL_EXPORT int RSA_verify(int hash_nid, const uint8_t *digest,
++                              size_t digest_len, const uint8_t *sig,
++                              size_t sig_len, RSA *rsa);
+ 
+ // RSA_verify_pss_mgf1 verifies that |sig_len| bytes from |sig| are a valid,
+ // RSASSA-PSS signature of |digest_len| bytes at |digest| by |rsa|. It returns
 @@ -441,7 +441,7 @@
  
  // RSA_size returns the number of bytes in the modulus, which is also the size
