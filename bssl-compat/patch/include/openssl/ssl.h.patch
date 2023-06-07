@@ -998,6 +998,17 @@
  
  
  // Application-layer protocol negotiation.
+@@ -2927,8 +2927,8 @@
+ //
+ // WARNING: this function is dangerous because it breaks the usual return value
+ // convention.
+-// OPENSSL_EXPORT int SSL_CTX_set_alpn_protos(SSL_CTX *ctx, const uint8_t *protos,
+-//                                            unsigned protos_len);
++OPENSSL_EXPORT int SSL_CTX_set_alpn_protos(SSL_CTX *ctx, const uint8_t *protos,
++                                           unsigned protos_len);
+ 
+ // SSL_set_alpn_protos sets the client ALPN protocol list on |ssl| to |protos|.
+ // |protos| must be in wire-format (i.e. a series of non-empty, 8-bit
 @@ -2938,8 +2938,8 @@
  //
  // WARNING: this function is dangerous because it breaks the usual return value

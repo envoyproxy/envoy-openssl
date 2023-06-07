@@ -81,6 +81,7 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_sess_set_new_cb.cc
   source/SSL_CTX_set1_curves_list.c
   source/SSL_CTX_set1_sigalgs_list.c
+  source/SSL_CTX_set_alpn_protos.cc
   source/SSL_CTX_set_alpn_select_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
   source/SSL_CTX_set_max_proto_version.cc
