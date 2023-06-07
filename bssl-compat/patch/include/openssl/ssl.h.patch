@@ -1292,6 +1292,15 @@
  
  // SSL_get_client_random writes up to |max_out| bytes of the most recent
  // handshake's client_random to |out| and returns the number of bytes written.
+@@ -4675,7 +4675,7 @@
+ // responsible for calling |OPENSSL_free| on the result.
+ //
+ // Use |SSL_CIPHER_standard_name| instead.
+-// OPENSSL_EXPORT char *SSL_CIPHER_get_rfc_name(const SSL_CIPHER *cipher);
++OPENSSL_EXPORT char *SSL_CIPHER_get_rfc_name(const SSL_CIPHER *cipher);
+ 
+ // typedef void COMP_METHOD;
+ // typedef struct ssl_comp_st SSL_COMP;
 @@ -4713,8 +4713,8 @@
  
  // These client- and server-specific methods call their corresponding generic
