@@ -458,7 +458,7 @@
  
  // ssl_private_key_method_st (aka |SSL_PRIVATE_KEY_METHOD|) describes private
  // key hooks. This is used to off-load signing operations to a custom,
-@@ -1409,12 +1410,12 @@
+@@ -1409,17 +1410,17 @@
  //
  // |SSL_CIPHER| objects represent cipher suites.
  
@@ -473,6 +473,12 @@
  
  // SSL_CIPHER_get_id returns |cipher|'s non-IANA id. This is not its
  // IANA-assigned number, which is called the "value" here, although it may be
+ // cast to a |uint16_t| to get it.
+-// OPENSSL_EXPORT uint32_t SSL_CIPHER_get_id(const SSL_CIPHER *cipher);
++OPENSSL_EXPORT uint32_t SSL_CIPHER_get_id(const SSL_CIPHER *cipher);
+ 
+ // SSL_CIPHER_get_protocol_id returns |cipher|'s IANA-assigned number.
+ // OPENSSL_EXPORT uint16_t SSL_CIPHER_get_protocol_id(const SSL_CIPHER *cipher);
 @@ -1463,7 +1464,7 @@
  
  // SSL_CIPHER_get_min_version returns the minimum protocol version required

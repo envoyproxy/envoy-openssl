@@ -74,6 +74,7 @@ add_library(bssl-compat STATIC
   source/RSA_free.c
   source/ssl.c
   source/ssl_cipher.c
+  source/SSL_CIPHER_get_id.cc
   source/SSL_CTX_add_extra_chain_cert.cc
   source/ssl_ctx.c
   source/ssl_ctx.cc
