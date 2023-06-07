@@ -850,6 +850,15 @@
  
  // SSL_set_verify_depth sets the maximum depth of a certificate chain accepted
  // in verification. This number does not include the leaf, so a depth of 1
+@@ -2612,7 +2613,7 @@
+ // SSL_CTX_get0_param returns |ctx|'s |X509_VERIFY_PARAM| for certificate
+ // verification. The caller must not release the returned pointer but may call
+ // functions on it to configure it.
+-// OPENSSL_EXPORT X509_VERIFY_PARAM *SSL_CTX_get0_param(SSL_CTX *ctx);
++OPENSSL_EXPORT X509_VERIFY_PARAM *SSL_CTX_get0_param(SSL_CTX *ctx);
+ 
+ // SSL_get0_param returns |ssl|'s |X509_VERIFY_PARAM| for certificate
+ // verification. The caller must not release the returned pointer but may call
 @@ -2658,9 +2659,9 @@
  // See
  // https://www.openssl.org/docs/man1.1.0/man3/SSL_CTX_load_verify_locations.html
