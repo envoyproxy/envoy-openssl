@@ -479,6 +479,15 @@
  
  // SSL_CIPHER_get_protocol_id returns |cipher|'s IANA-assigned number.
  // OPENSSL_EXPORT uint16_t SSL_CIPHER_get_protocol_id(const SSL_CIPHER *cipher);
+@@ -1453,7 +1454,7 @@
+ // type. This may be |NID_auth_rsa|, |NID_auth_ecdsa|, or |NID_auth_psk| for TLS
+ // 1.2. In TLS 1.3, cipher suites do not specify authentication, so this
+ // function returns |NID_auth_any|.
+-// OPENSSL_EXPORT int SSL_CIPHER_get_auth_nid(const SSL_CIPHER *cipher);
++OPENSSL_EXPORT int SSL_CIPHER_get_auth_nid(const SSL_CIPHER *cipher);
+ 
+ // SSL_CIPHER_get_prf_nid retuns the NID for |cipher|'s PRF hash. If |cipher| is
+ // a pre-TLS-1.2 cipher, it returns |NID_md5_sha1| but note these ciphers use
 @@ -1463,7 +1464,7 @@
  
  // SSL_CIPHER_get_min_version returns the minimum protocol version required
