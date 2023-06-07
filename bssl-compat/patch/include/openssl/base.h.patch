@@ -582,9 +582,10 @@
  // typedef struct x509_revoked_st X509_REVOKED;
 -// typedef struct x509_st X509;
 -// typedef struct x509_store_ctx_st X509_STORE_CTX;
+-// typedef struct x509_store_st X509_STORE;
 +typedef ossl_X509 X509;
 +typedef ossl_X509_STORE_CTX X509_STORE_CTX;
- // typedef struct x509_store_st X509_STORE;
++typedef ossl_X509_STORE X509_STORE;
  // typedef struct x509_trust_st X509_TRUST;
  
  // typedef void *OPENSSL_BLOCK;
