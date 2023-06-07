@@ -77,6 +77,15 @@
  
  // RSA_is_opaque returns one if |rsa| is opaque and doesn't expose its key
  // material. Otherwise it returns zero.
+@@ -458,7 +458,7 @@
+ // RSA_check_key performs basic validity tests on |rsa|. It returns one if
+ // they pass and zero otherwise. Opaque keys and public keys always pass. If it
+ // returns zero then a more detailed error is available on the error queue.
+-// OPENSSL_EXPORT int RSA_check_key(const RSA *rsa);
++OPENSSL_EXPORT int RSA_check_key(const RSA *rsa);
+ 
+ // RSA_check_fips performs public key validity tests on |key|. It returns one if
+ // they pass and zero otherwise. Opaque keys always fail. This function does not
 @@ -789,21 +789,21 @@
  // };
  

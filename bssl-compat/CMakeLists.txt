@@ -71,6 +71,7 @@ add_library(bssl-compat STATIC
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
   source/rand.c
+  source/RSA_check_key.cc
   source/RSA_free.c
   source/RSA_new.cc
   source/RSA_set0_key.cc
@@ -302,6 +303,7 @@ set(utests-bssl-source-list
   source/crypto/bio/bio_test.cc
   source/crypto/digest_extra/digest_test.cc
   source/crypto/err/err_test.cc
+  #source/crypto/rsa_extra/rsa_test.cc
   source/crypto/rand_extra/rand_test.cc
   source/crypto/stack/stack_test.cc
   source/crypto/test/test_util.cc
