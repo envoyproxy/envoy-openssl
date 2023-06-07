@@ -55,6 +55,15 @@
  
  // RSA_set0_factors sets |rsa|'s prime factors to |p| and |q|, if non-NULL, and
  // takes ownership of them. On success, it takes ownership of each argument and
+@@ -167,7 +167,7 @@
+ //
+ // It is an error to call this function after |rsa| has been used for a
+ // cryptographic operation. Construct a new |RSA| object instead.
+-// OPENSSL_EXPORT int RSA_set0_factors(RSA *rsa, BIGNUM *p, BIGNUM *q);
++OPENSSL_EXPORT int RSA_set0_factors(RSA *rsa, BIGNUM *p, BIGNUM *q);
+ 
+ // RSA_set0_crt_params sets |rsa|'s CRT parameters to |dmp1|, |dmq1|, and
+ // |iqmp|, if non-NULL, and takes ownership of them. On success, it takes
 @@ -297,9 +297,9 @@
  // WARNING: |digest| must be the result of hashing the data to be signed with
  // |hash_nid|. Passing unhashed inputs will not result in a secure signature
