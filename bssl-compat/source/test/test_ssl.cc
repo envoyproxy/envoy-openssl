@@ -1290,4 +1290,5 @@ TEST(SSLTest, test_SSL_set_alpn_protos) {
 TEST(SSLTest, test_SSL_CTX_app_data) {
   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
   ASSERT_EQ(1, SSL_CTX_set_app_data(ctx.get(), ctx.get()));
+  ASSERT_EQ(ctx.get(), SSL_CTX_get_app_data(ctx.get()));
 }
