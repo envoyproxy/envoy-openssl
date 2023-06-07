@@ -75,6 +75,7 @@ add_library(bssl-compat STATIC
   source/RSA_check_key.cc
   source/RSA_free.c
   source/RSA_new.cc
+  source/RSA_set0_crt_params.cc
   source/RSA_set0_factors.cc
   source/RSA_set0_key.cc
   source/RSA_sign.cc
