@@ -138,6 +138,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_SSL_CTX.cc
   source/SSL_get_version.cc
   source/SSL_get_wbio.cc
+  source/SSL_is_signature_algorithm_rsa_pss.cc
   source/SSL_new.cc
   source/SSL_read.cc
   source/SSL_select_next_proto.cc
