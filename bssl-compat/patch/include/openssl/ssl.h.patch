@@ -377,7 +377,7 @@
  
  // SSL_SIGN_RSA_PKCS1_MD5_SHA1 is an internal signature algorithm used to
  // specify raw RSASSA-PKCS1-v1_5 with an MD5/SHA-1 concatenation, as used in TLS
-@@ -1173,8 +1174,8 @@
+@@ -1173,17 +1174,17 @@
  // SSL_get_signature_algorithm_name returns a human-readable name for |sigalg|,
  // or NULL if unknown. If |include_curve| is one, the curve for ECDSA algorithms
  // is included as in TLS 1.3. Otherwise, it is excluded as in TLS 1.2.
@@ -388,7 +388,8 @@
  
  // SSL_get_signature_algorithm_key_type returns the key type associated with
  // |sigalg| as an |EVP_PKEY_*| constant or |EVP_PKEY_NONE| if unknown.
-@@ -1182,8 +1183,8 @@
+-// OPENSSL_EXPORT int SSL_get_signature_algorithm_key_type(uint16_t sigalg);
++OPENSSL_EXPORT int SSL_get_signature_algorithm_key_type(uint16_t sigalg);
  
  // SSL_get_signature_algorithm_digest returns the digest function associated
  // with |sigalg| or |NULL| if |sigalg| has no prehash (Ed25519) or is unknown.
