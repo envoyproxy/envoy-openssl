@@ -492,28 +492,30 @@ TEST(SSLTest, test_SSL_get_cipher_by_value) {
   struct {
     uint16_t value; // IANA number
     const char *name; // IETF name
+    uint32_t id; // 
   }
   ciphers[] {
-    { 0x1302, "TLS_AES_256_GCM_SHA384" },
-    { 0x1303, "TLS_CHACHA20_POLY1305_SHA256" },
-    { 0x1301, "TLS_AES_128_GCM_SHA256" },
-    { 0xc02c, "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384" },
-    { 0xcca9, "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256" },
-    { 0xc02b, "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256" },
-    { 0xc00a, "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA" },
-    { 0xc009, "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA" },
-    { 0x009d, "TLS_RSA_WITH_AES_256_GCM_SHA384" },
-    { 0x009c, "TLS_RSA_WITH_AES_128_GCM_SHA256" },
-    { 0x0035, "TLS_RSA_WITH_AES_256_CBC_SHA" },
-    { 0x002f, "TLS_RSA_WITH_AES_128_CBC_SHA" },
-    { 0x008d, "TLS_PSK_WITH_AES_256_CBC_SHA" },
-    { 0x008c, "TLS_PSK_WITH_AES_128_CBC_SHA" }
+    { 0x1302, "TLS_AES_256_GCM_SHA384", TLS1_3_CK_AES_256_GCM_SHA384 },
+    { 0x1303, "TLS_CHACHA20_POLY1305_SHA256", TLS1_3_CK_CHACHA20_POLY1305_SHA256 },
+    { 0x1301, "TLS_AES_128_GCM_SHA256", TLS1_3_CK_AES_128_GCM_SHA256 },
+    { 0xc02c, "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", TLS1_CK_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 },
+    { 0xcca9, "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256", TLS1_CK_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 },
+    { 0xc02b, "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", TLS1_CK_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 },
+    { 0xc00a, "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", TLS1_CK_ECDHE_ECDSA_WITH_AES_256_CBC_SHA },
+    { 0xc009, "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", TLS1_CK_ECDHE_ECDSA_WITH_AES_128_CBC_SHA },
+    { 0x009d, "TLS_RSA_WITH_AES_256_GCM_SHA384", TLS1_CK_RSA_WITH_AES_256_GCM_SHA384 },
+    { 0x009c, "TLS_RSA_WITH_AES_128_GCM_SHA256", TLS1_CK_RSA_WITH_AES_128_GCM_SHA256 },
+    { 0x0035, "TLS_RSA_WITH_AES_256_CBC_SHA", TLS1_CK_RSA_WITH_AES_256_SHA },
+    { 0x002f, "TLS_RSA_WITH_AES_128_CBC_SHA", TLS1_CK_RSA_WITH_AES_128_SHA },
+    { 0x008d, "TLS_PSK_WITH_AES_256_CBC_SHA", TLS1_CK_PSK_WITH_AES_256_CBC_SHA },
+    { 0x008c, "TLS_PSK_WITH_AES_128_CBC_SHA", TLS1_CK_PSK_WITH_AES_128_CBC_SHA }
   };
 
   for(auto &c : ciphers) {
     const SSL_CIPHER *cipher = SSL_get_cipher_by_value(c.value);
     ASSERT_TRUE(cipher) << "Failed to get cipher " << c.value << " (" << c.name << ")";
     EXPECT_STREQ(c.name, SSL_CIPHER_standard_name(cipher));
+    EXPECT_EQ(c.id, SSL_CIPHER_get_id(cipher));
   }
 }
 
@@ -1292,3 +1294,8 @@ TEST(SSLTest, test_SSL_CTX_app_data) {
   ASSERT_EQ(1, SSL_CTX_set_app_data(ctx.get(), ctx.get()));
   ASSERT_EQ(ctx.get(), SSL_CTX_get_app_data(ctx.get()));
 }
+
+// TEST(SSLTest, test_SSL_CIPHER_get_id) {
+//   const SSL_CIPHER *cipher {SSL_get_cipher_by_value(uint16_t value)}
+//   ASSERT_EQ(999, SSL_CIPHER_get_id(cipher));
+// }
