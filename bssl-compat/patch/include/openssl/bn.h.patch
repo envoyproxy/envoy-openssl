@@ -113,6 +113,15 @@
  
  // BN_hex2bn parses the leading hex number from |in|, which may be proceeded by
  // a '-' to indicate a negative number and may contain trailing, non-hex data.
+@@ -275,7 +277,7 @@
+ // stores it in |*outp|. If |*outp| is NULL then it allocates a new BIGNUM and
+ // updates |*outp|. It returns the number of bytes of |in| processed or zero on
+ // error.
+-// OPENSSL_EXPORT int BN_hex2bn(BIGNUM **outp, const char *in);
++OPENSSL_EXPORT int BN_hex2bn(BIGNUM **outp, const char *in);
+ 
+ // BN_bn2dec returns an allocated string that contains a NUL-terminated,
+ // decimal representation of |bn|. If |bn| is negative, the first char in the
 @@ -374,7 +376,7 @@
  // OPENSSL_EXPORT int BN_uadd(BIGNUM *r, const BIGNUM *a, const BIGNUM *b);
  
