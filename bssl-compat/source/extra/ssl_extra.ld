@@ -5,7 +5,6 @@ PROVIDE(SSL_CIPHER_get_version = ossl_SSL_CIPHER_get_version);
 PROVIDE(SSL_CIPHER_standard_name = ossl_SSL_CIPHER_standard_name);
 PROVIDE(SSL_CTX_free = ossl_SSL_CTX_free);
 PROVIDE(SSL_CTX_get_ex_data = ossl_SSL_CTX_get_ex_data);
-PROVIDE(SSL_CTX_new = ossl_SSL_CTX_new);
 PROVIDE(SSL_CTX_set_ex_data = ossl_SSL_CTX_set_ex_data);
 PROVIDE(SSL_CTX_load_verify_locations = ossl_SSL_CTX_load_verify_locations);
 PROVIDE(SSL_free = ossl_SSL_free);
