@@ -73,6 +73,7 @@ add_library(bssl-compat STATIC
   source/rand.c
   source/RSA_free.c
   source/RSA_new.cc
+  source/RSA_set0_key.cc
   source/RSA_sign.cc
   source/RSA_size.cc
   source/ssl.c
