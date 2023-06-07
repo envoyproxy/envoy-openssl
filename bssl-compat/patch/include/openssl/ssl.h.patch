@@ -278,6 +278,15 @@
  
  
  // Options.
+@@ -811,7 +812,7 @@
+ 
+ // SSL_CTX_get_options returns a bitmask of |SSL_OP_*| values that represent all
+ // the options enabled for |ctx|.
+-// OPENSSL_EXPORT uint32_t SSL_CTX_get_options(const SSL_CTX *ctx);
++OPENSSL_EXPORT uint32_t SSL_CTX_get_options(const SSL_CTX *ctx);
+ 
+ // SSL_set_options enables all options set in |options| (which should be one or
+ // more of the |SSL_OP_*| values, ORed together) in |ssl|. It returns a bitmask
 @@ -946,7 +947,7 @@
  
  // SSL_CTX_use_certificate sets |ctx|'s leaf certificate to |x509|. It returns

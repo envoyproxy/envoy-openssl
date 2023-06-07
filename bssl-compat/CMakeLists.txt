@@ -79,6 +79,7 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_get0_param.cc
   source/SSL_CTX_get_max_proto_version.cc
   source/SSL_CTX_get_min_proto_version.cc
+  source/SSL_CTX_get_options.cc
   source/SSL_CTX_get_verify_mode.cc
   source/SSL_CTX_new.cc
   source/SSL_CTX_sess_set_new_cb.cc
