@@ -16,5 +16,4 @@ PROVIDE(SSL_CTX_use_certificate_chain_file = ossl_SSL_CTX_use_certificate_chain_
 PROVIDE(SSL_CTX_add_client_CA = ossl_SSL_CTX_add_client_CA);
 PROVIDE(SSL_load_client_CA_file = ossl_SSL_load_client_CA_file);
 PROVIDE(SSL_CTX_set1_param = ossl_SSL_CTX_set1_param);
-PROVIDE(SSL_CTX_get_verify_mode = ossl_SSL_CTX_get_verify_mode);
 PROVIDE(SSL_add_file_cert_subjects_to_stack = ossl_SSL_add_file_cert_subjects_to_stack);
