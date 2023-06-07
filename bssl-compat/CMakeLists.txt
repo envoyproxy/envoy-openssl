@@ -75,6 +75,7 @@ add_library(bssl-compat STATIC
   source/ssl.c
   source/ssl_cipher.c
   source/SSL_CIPHER_get_auth_nid.cc
+  source/SSL_CIPHER_get_cipher_nid.cc
   source/SSL_CIPHER_get_id.cc
   source/SSL_CIPHER_get_rfc_name.cc
   source/SSL_CIPHER_standard_name.cc
