@@ -1295,7 +1295,17 @@ TEST(SSLTest, test_SSL_CTX_app_data) {
   ASSERT_EQ(ctx.get(), SSL_CTX_get_app_data(ctx.get()));
 }
 
-// TEST(SSLTest, test_SSL_CIPHER_get_id) {
-//   const SSL_CIPHER *cipher {SSL_get_cipher_by_value(uint16_t value)}
-//   ASSERT_EQ(999, SSL_CIPHER_get_id(cipher));
-// }
+TEST(SSLTest, test_SSL_get_signature_algorithm_digest) {
+  EXPECT_EQ(EVP_sha1(), SSL_get_signature_algorithm_digest(SSL_SIGN_RSA_PKCS1_SHA1));
+  EXPECT_EQ(EVP_sha256(), SSL_get_signature_algorithm_digest(SSL_SIGN_RSA_PKCS1_SHA256));
+  EXPECT_EQ(EVP_sha384(), SSL_get_signature_algorithm_digest(SSL_SIGN_RSA_PKCS1_SHA384));
+  EXPECT_EQ(EVP_sha512(), SSL_get_signature_algorithm_digest(SSL_SIGN_RSA_PKCS1_SHA512));
+  EXPECT_EQ(EVP_sha1(), SSL_get_signature_algorithm_digest(SSL_SIGN_ECDSA_SHA1));
+  EXPECT_EQ(EVP_sha256(), SSL_get_signature_algorithm_digest(SSL_SIGN_ECDSA_SECP256R1_SHA256));
+  EXPECT_EQ(EVP_sha384(), SSL_get_signature_algorithm_digest(SSL_SIGN_ECDSA_SECP384R1_SHA384));
+  EXPECT_EQ(EVP_sha512(), SSL_get_signature_algorithm_digest(SSL_SIGN_ECDSA_SECP521R1_SHA512));
+  EXPECT_EQ(EVP_sha256(), SSL_get_signature_algorithm_digest(SSL_SIGN_RSA_PSS_RSAE_SHA256));
+  EXPECT_EQ(EVP_sha384(), SSL_get_signature_algorithm_digest(SSL_SIGN_RSA_PSS_RSAE_SHA384));
+  EXPECT_EQ(EVP_sha512(), SSL_get_signature_algorithm_digest(SSL_SIGN_RSA_PSS_RSAE_SHA512));
+  EXPECT_EQ(nullptr, SSL_get_signature_algorithm_digest(SSL_SIGN_ED25519));
+}

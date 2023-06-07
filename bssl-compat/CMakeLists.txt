@@ -132,6 +132,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_peer_signature_algorithm.c
   source/SSL_get_servername.cc
   source/SSL_get_session.cc
+  source/SSL_get_signature_algorithm_digest.cc
   source/SSL_get_signature_algorithm_name.c
   source/SSL_get_SSL_CTX.cc
   source/SSL_get_version.cc
