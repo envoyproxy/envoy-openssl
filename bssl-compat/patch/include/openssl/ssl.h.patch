@@ -305,6 +305,15 @@
  
  // SSL_use_PrivateKey sets |ssl|'s private key to |pkey|. It returns one on
  // success and zero on failure.
+@@ -995,7 +996,7 @@
+ // OPENSSL_EXPORT int SSL_add0_chain_cert(SSL *ssl, X509 *x509);
+ 
+ // SSL_CTX_add_extra_chain_cert calls |SSL_CTX_add0_chain_cert|.
+-// OPENSSL_EXPORT int SSL_CTX_add_extra_chain_cert(SSL_CTX *ctx, X509 *x509);
++OPENSSL_EXPORT int SSL_CTX_add_extra_chain_cert(SSL_CTX *ctx, X509 *x509);
+ 
+ // SSL_add1_chain_cert appends |x509| to |ctx|'s certificate chain. It returns
+ // one on success and zero on failure. The caller retains ownership of |x509|
 @@ -1040,8 +1041,8 @@
  // On the server, the callback will be called after extensions have been
  // processed, but before the resumption decision has been made. This differs
