@@ -1334,3 +1334,28 @@ TEST(SSLTest, test_SSL_get_signature_algorithm_key_type) {
     EXPECT_EQ(keytypes[i].keytype, SSL_get_signature_algorithm_key_type(keytypes[i].sigalg)) << "keytypes[" << i << "]";
   }
 }
+
+TEST(SSLTest, test_SSL_is_signature_algorithm_rsa_pss) {
+  struct {
+    uint16_t sigalg;
+    int is_rsa_pss;
+  }
+  sigalgs[] {
+    { SSL_SIGN_RSA_PKCS1_SHA1,         0 },
+    { SSL_SIGN_RSA_PKCS1_SHA256,       0 },
+    { SSL_SIGN_RSA_PKCS1_SHA384,       0 },
+    { SSL_SIGN_RSA_PKCS1_SHA512,       0 },
+    { SSL_SIGN_ECDSA_SHA1,             0 },
+    { SSL_SIGN_ECDSA_SECP256R1_SHA256, 0 },
+    { SSL_SIGN_ECDSA_SECP384R1_SHA384, 0 },
+    { SSL_SIGN_ECDSA_SECP521R1_SHA512, 0 },
+    { SSL_SIGN_RSA_PSS_RSAE_SHA256,    1 },
+    { SSL_SIGN_RSA_PSS_RSAE_SHA384,    1 },
+    { SSL_SIGN_RSA_PSS_RSAE_SHA512,    1 },
+    { SSL_SIGN_ED25519,                0 },
+  };
+
+  for(int i = 0; i < (sizeof(sigalgs) / sizeof(sigalgs[0])); i++) {
+    EXPECT_EQ(sigalgs[i].is_rsa_pss, SSL_is_signature_algorithm_rsa_pss(sigalgs[i].sigalg)) << "sigalgs[" << i << "]";
+  }
+}
