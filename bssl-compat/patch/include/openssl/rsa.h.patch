@@ -38,6 +38,19 @@
  
  // RSA_up_ref increments the reference count of |rsa| and returns one. It does
  // not mutate |rsa| for thread-safety purposes and may be used concurrently.
+@@ -297,9 +297,9 @@
+ // WARNING: |digest| must be the result of hashing the data to be signed with
+ // |hash_nid|. Passing unhashed inputs will not result in a secure signature
+ // scheme.
+-// OPENSSL_EXPORT int RSA_sign(int hash_nid, const uint8_t *digest,
+-//                             unsigned digest_len, uint8_t *out,
+-//                             unsigned *out_len, RSA *rsa);
++OPENSSL_EXPORT int RSA_sign(int hash_nid, const uint8_t *digest,
++                            unsigned digest_len, uint8_t *out,
++                            unsigned *out_len, RSA *rsa);
+ 
+ // RSA_sign_pss_mgf1 signs |digest_len| bytes from |digest| with the public key
+ // from |rsa| using RSASSA-PSS with MGF1 as the mask generation function. It
 @@ -441,7 +441,7 @@
  
  // RSA_size returns the number of bytes in the modulus, which is also the size
