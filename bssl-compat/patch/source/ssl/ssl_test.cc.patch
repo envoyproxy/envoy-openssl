@@ -64,8 +64,7 @@
  // #include "internal.h"
  // #include "../crypto/internal.h"
 -// #include "../crypto/test/test_util.h"
-+#include "../crypto/test/test_util.h"
- 
+-
 -// #if defined(OPENSSL_WINDOWS)
 -// Windows defines struct timeval in winsock2.h.
 -// OPENSSL_MSVC_PRAGMA(warning(push, 3))
@@ -78,12 +77,13 @@
 -// #if defined(OPENSSL_THREADS)
 -// #include <thread>
 -// #endif
++#include "../crypto/test/test_util.h"
+ 
 +#ifdef BSSL_COMPAT
 +#include <ossl/openssl/ssl.h>
 +#include <ossl/openssl/provider.h>
 +#endif
  
--
 -// BSSL_NAMESPACE_BEGIN
 -
 -// namespace {
@@ -205,7 +205,310 @@
  
  // static const CipherTest kCipherTests[] = {
  //     // Selecting individual ciphers should work.
-@@ -1196,63 +1205,63 @@
+@@ -901,153 +910,155 @@
+ //   ExpectDefaultVersion(DTLS1_2_VERSION, DTLS1_2_VERSION, &DTLSv1_2_method);
+ // }
+ 
+-// TEST(SSLTest, CipherProperties) {
+-//   static const struct {
+-//     int id;
+-//     const char *standard_name;
+-//     int cipher_nid;
+-//     int digest_nid;
+-//     int kx_nid;
+-//     int auth_nid;
+-//     int prf_nid;
+-//   } kTests[] = {
+-//       {
+-//           SSL3_CK_RSA_DES_192_CBC3_SHA,
+-//           "TLS_RSA_WITH_3DES_EDE_CBC_SHA",
+-//           NID_des_ede3_cbc,
+-//           NID_sha1,
+-//           NID_kx_rsa,
+-//           NID_auth_rsa,
+-//           NID_md5_sha1,
+-//       },
+-//       {
+-//           TLS1_CK_RSA_WITH_AES_128_SHA,
+-//           "TLS_RSA_WITH_AES_128_CBC_SHA",
+-//           NID_aes_128_cbc,
+-//           NID_sha1,
+-//           NID_kx_rsa,
+-//           NID_auth_rsa,
+-//           NID_md5_sha1,
+-//       },
+-//       {
+-//           TLS1_CK_PSK_WITH_AES_256_CBC_SHA,
+-//           "TLS_PSK_WITH_AES_256_CBC_SHA",
+-//           NID_aes_256_cbc,
+-//           NID_sha1,
+-//           NID_kx_psk,
+-//           NID_auth_psk,
+-//           NID_md5_sha1,
+-//       },
+-//       {
+-//           TLS1_CK_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+-//           "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+-//           NID_aes_128_cbc,
+-//           NID_sha1,
+-//           NID_kx_ecdhe,
+-//           NID_auth_rsa,
+-//           NID_md5_sha1,
+-//       },
+-//       {
+-//           TLS1_CK_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+-//           "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+-//           NID_aes_256_cbc,
+-//           NID_sha1,
+-//           NID_kx_ecdhe,
+-//           NID_auth_rsa,
+-//           NID_md5_sha1,
+-//       },
+-//       {
+-//           TLS1_CK_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+-//           "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+-//           NID_aes_128_gcm,
+-//           NID_undef,
+-//           NID_kx_ecdhe,
+-//           NID_auth_rsa,
+-//           NID_sha256,
+-//       },
+-//       {
+-//           TLS1_CK_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+-//           "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+-//           NID_aes_128_gcm,
+-//           NID_undef,
+-//           NID_kx_ecdhe,
+-//           NID_auth_ecdsa,
+-//           NID_sha256,
+-//       },
+-//       {
+-//           TLS1_CK_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+-//           "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+-//           NID_aes_256_gcm,
+-//           NID_undef,
+-//           NID_kx_ecdhe,
+-//           NID_auth_ecdsa,
+-//           NID_sha384,
+-//       },
+-//       {
+-//           TLS1_CK_ECDHE_PSK_WITH_AES_128_CBC_SHA,
+-//           "TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA",
+-//           NID_aes_128_cbc,
+-//           NID_sha1,
+-//           NID_kx_ecdhe,
+-//           NID_auth_psk,
+-//           NID_md5_sha1,
+-//       },
+-//       {
+-//           TLS1_CK_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+-//           "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
+-//           NID_chacha20_poly1305,
+-//           NID_undef,
+-//           NID_kx_ecdhe,
+-//           NID_auth_rsa,
+-//           NID_sha256,
+-//       },
+-//       {
+-//           TLS1_3_CK_AES_256_GCM_SHA384,
+-//           "TLS_AES_256_GCM_SHA384",
+-//           NID_aes_256_gcm,
+-//           NID_undef,
+-//           NID_kx_any,
+-//           NID_auth_any,
+-//           NID_sha384,
+-//       },
+-//       {
+-//           TLS1_3_CK_AES_128_GCM_SHA256,
+-//           "TLS_AES_128_GCM_SHA256",
+-//           NID_aes_128_gcm,
+-//           NID_undef,
+-//           NID_kx_any,
+-//           NID_auth_any,
+-//           NID_sha256,
+-//       },
+-//       {
+-//           TLS1_3_CK_CHACHA20_POLY1305_SHA256,
+-//           "TLS_CHACHA20_POLY1305_SHA256",
+-//           NID_chacha20_poly1305,
+-//           NID_undef,
+-//           NID_kx_any,
+-//           NID_auth_any,
+-//           NID_sha256,
+-//       },
+-//   };
+-
+-//   for (const auto &t : kTests) {
+-//     SCOPED_TRACE(t.standard_name);
+-
+-//     const SSL_CIPHER *cipher = SSL_get_cipher_by_value(t.id & 0xffff);
+-//     ASSERT_TRUE(cipher);
+-//     EXPECT_STREQ(t.standard_name, SSL_CIPHER_standard_name(cipher));
+-
+-//     bssl::UniquePtr<char> rfc_name(SSL_CIPHER_get_rfc_name(cipher));
+-//     ASSERT_TRUE(rfc_name);
+-//     EXPECT_STREQ(t.standard_name, rfc_name.get());
+-
+-//     EXPECT_EQ(t.cipher_nid, SSL_CIPHER_get_cipher_nid(cipher));
+-//     EXPECT_EQ(t.digest_nid, SSL_CIPHER_get_digest_nid(cipher));
+-//     EXPECT_EQ(t.kx_nid, SSL_CIPHER_get_kx_nid(cipher));
+-//     EXPECT_EQ(t.auth_nid, SSL_CIPHER_get_auth_nid(cipher));
+-//     EXPECT_EQ(t.prf_nid, SSL_CIPHER_get_prf_nid(cipher));
+-//   }
+-// }
++TEST(SSLTest, CipherProperties) {
++  static const struct {
++    int id;
++    const char *standard_name;
++    int cipher_nid;
++    int digest_nid;
++    int kx_nid;
++    int auth_nid;
++    int prf_nid;
++  } kTests[] = {
++#ifdef SSL3_CK_RSA_DES_192_CBC3_SHA
++      {
++          SSL3_CK_RSA_DES_192_CBC3_SHA,
++          "TLS_RSA_WITH_3DES_EDE_CBC_SHA",
++          NID_des_ede3_cbc,
++          NID_sha1,
++          NID_kx_rsa,
++          NID_auth_rsa,
++          NID_md5_sha1,
++      },
++#endif
++      {
++          TLS1_CK_RSA_WITH_AES_128_SHA,
++          "TLS_RSA_WITH_AES_128_CBC_SHA",
++          NID_aes_128_cbc,
++          NID_sha1,
++          NID_kx_rsa,
++          NID_auth_rsa,
++          NID_md5_sha1,
++      },
++      {
++          TLS1_CK_PSK_WITH_AES_256_CBC_SHA,
++          "TLS_PSK_WITH_AES_256_CBC_SHA",
++          NID_aes_256_cbc,
++          NID_sha1,
++          NID_kx_psk,
++          NID_auth_psk,
++          NID_md5_sha1,
++      },
++      {
++          TLS1_CK_ECDHE_RSA_WITH_AES_128_CBC_SHA,
++          "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
++          NID_aes_128_cbc,
++          NID_sha1,
++          NID_kx_ecdhe,
++          NID_auth_rsa,
++          NID_md5_sha1,
++      },
++      {
++          TLS1_CK_ECDHE_RSA_WITH_AES_256_CBC_SHA,
++          "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
++          NID_aes_256_cbc,
++          NID_sha1,
++          NID_kx_ecdhe,
++          NID_auth_rsa,
++          NID_md5_sha1,
++      },
++      {
++          TLS1_CK_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
++          "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
++          NID_aes_128_gcm,
++          NID_undef,
++          NID_kx_ecdhe,
++          NID_auth_rsa,
++          NID_sha256,
++      },
++      {
++          TLS1_CK_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
++          "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
++          NID_aes_128_gcm,
++          NID_undef,
++          NID_kx_ecdhe,
++          NID_auth_ecdsa,
++          NID_sha256,
++      },
++      {
++          TLS1_CK_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
++          "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
++          NID_aes_256_gcm,
++          NID_undef,
++          NID_kx_ecdhe,
++          NID_auth_ecdsa,
++          NID_sha384,
++      },
++      {
++          TLS1_CK_ECDHE_PSK_WITH_AES_128_CBC_SHA,
++          "TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA",
++          NID_aes_128_cbc,
++          NID_sha1,
++          NID_kx_ecdhe,
++          NID_auth_psk,
++          NID_md5_sha1,
++      },
++      {
++          TLS1_CK_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
++          "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256",
++          NID_chacha20_poly1305,
++          NID_undef,
++          NID_kx_ecdhe,
++          NID_auth_rsa,
++          NID_sha256,
++      },
++      {
++          TLS1_3_CK_AES_256_GCM_SHA384,
++          "TLS_AES_256_GCM_SHA384",
++          NID_aes_256_gcm,
++          NID_undef,
++          NID_kx_any,
++          NID_auth_any,
++          NID_sha384,
++      },
++      {
++          TLS1_3_CK_AES_128_GCM_SHA256,
++          "TLS_AES_128_GCM_SHA256",
++          NID_aes_128_gcm,
++          NID_undef,
++          NID_kx_any,
++          NID_auth_any,
++          NID_sha256,
++      },
++      {
++          TLS1_3_CK_CHACHA20_POLY1305_SHA256,
++          "TLS_CHACHA20_POLY1305_SHA256",
++          NID_chacha20_poly1305,
++          NID_undef,
++          NID_kx_any,
++          NID_auth_any,
++          NID_sha256,
++      },
++  };
++
++  for (const auto &t : kTests) {
++    SCOPED_TRACE(t.standard_name);
++
++    const SSL_CIPHER *cipher = SSL_get_cipher_by_value(t.id & 0xffff);
++    ASSERT_TRUE(cipher);
++    EXPECT_STREQ(t.standard_name, SSL_CIPHER_standard_name(cipher));
++
++    bssl::UniquePtr<char> rfc_name(SSL_CIPHER_get_rfc_name(cipher));
++    ASSERT_TRUE(rfc_name);
++    EXPECT_STREQ(t.standard_name, rfc_name.get());
++
++    EXPECT_EQ(t.cipher_nid, SSL_CIPHER_get_cipher_nid(cipher));
++    EXPECT_EQ(t.digest_nid, SSL_CIPHER_get_digest_nid(cipher));
++    EXPECT_EQ(t.kx_nid, SSL_CIPHER_get_kx_nid(cipher));
++    EXPECT_EQ(t.auth_nid, SSL_CIPHER_get_auth_nid(cipher));
++    EXPECT_EQ(t.prf_nid, SSL_CIPHER_get_prf_nid(cipher));
++  }
++}
+ 
+ // CreateSessionWithTicket returns a sample |SSL_SESSION| with the specified
+ // version and ticket length or nullptr on failure.
+@@ -1196,63 +1207,63 @@
  //   }
  // }
  
@@ -326,7 +629,7 @@
  
  // static bssl::UniquePtr<SSL_CTX> CreateContextWithTestCertificate(
  //     const SSL_METHOD *method) {
-@@ -1408,198 +1417,222 @@
+@@ -1408,198 +1419,222 @@
  //   return KeyFromPEM(kKeyPEM);
  // }
  
@@ -734,7 +1037,7 @@
  
  // TEST(SSLTest, AddClientCA) {
  //   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_method()));
-@@ -2495,62 +2528,71 @@
+@@ -2495,62 +2530,71 @@
  // SSLVersionTest executes its test cases under all available protocol versions.
  // Test cases call |Connect| to create a connection using context objects with
  // the protocol version fixed to the current version under test.
@@ -862,7 +1165,7 @@
  
  // TEST_P(SSLVersionTest, SequenceNumber) {
  //   ASSERT_TRUE(Connect());
-@@ -2591,110 +2633,110 @@
+@@ -2591,110 +2635,110 @@
  //   EXPECT_EQ(server_read_seq + 1, SSL_get_read_sequence(server_.get()));
  // }
  
@@ -931,9 +1234,7 @@
 -//     bssl::UniquePtr<BIO> mem(BIO_new(BIO_s_mem()));
 -//     ASSERT_TRUE(mem);
 -//     SSL_set0_wbio(ssl, bssl::UpRef(mem).release());
-+TEST_P(SSLVersionTest, WriteAfterShutdown) {
-+  ASSERT_TRUE(Connect());
- 
+-
 -//     // Shut down half the connection. |SSL_shutdown| will return 0 to signal
 -//     // only one side has shut down.
 -//     ASSERT_EQ(SSL_shutdown(ssl), 0);
@@ -944,12 +1245,14 @@
 -//     ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
 -//     EXPECT_NE(0u, len);
 -//     EXPECT_TRUE(BIO_reset(mem.get()));
-+  for (SSL *ssl : {client_.get(), server_.get()}) {
-+    SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
++TEST_P(SSLVersionTest, WriteAfterShutdown) {
++  ASSERT_TRUE(Connect());
  
 -//     // Writing should fail.
 -//     EXPECT_EQ(-1, SSL_write(ssl, "a", 1));
--
++  for (SSL *ssl : {client_.get(), server_.get()}) {
++    SCOPED_TRACE(SSL_is_server(ssl) ? "server" : "client");
+ 
 -//     // Nothing should be written to the transport.
 -//     ASSERT_TRUE(BIO_mem_contents(mem.get(), &unused, &len));
 -//     EXPECT_EQ(0u, len);
@@ -1070,7 +1373,7 @@
  
  // Test that, after sending a fatal alert from the handshake, |SSL_write| fails.
  // TEST_P(SSLVersionTest, WriteAfterHandshakeSentFatalAlert) {
-@@ -2935,110 +2977,116 @@
+@@ -2935,110 +2979,116 @@
  //   // is correct.
  // }
  
@@ -1291,7 +1594,7 @@
  
  // TEST_P(SSLVersionTest, RetainOnlySHA256OfCerts) {
  //   uint8_t *cert_der = NULL;
-@@ -3167,19 +3215,19 @@
+@@ -3167,19 +3217,19 @@
  //   }
  // }
  
@@ -1324,7 +1627,7 @@
  
  // static bssl::UniquePtr<SSL_SESSION> ExpectSessionRenewed(SSL_CTX *client_ctx,
  //                                                          SSL_CTX *server_ctx,
-@@ -3229,73 +3277,76 @@
+@@ -3229,73 +3279,76 @@
  //   OPENSSL_memcpy(inout_key, new_key, kTicketKeyLen);
  // }
  
@@ -1371,7 +1674,9 @@
 -
 -//   SSL_CTX_set_tlsext_servername_callback(server_ctx_.get(),
 -//                                          SwitchSessionIDContextSNI);
--
++static int SwitchSessionIDContextSNI(SSL *ssl, int *out_alert, void *arg) {
++  static const uint8_t kContext[] = {3};
+ 
 -//   TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
 -//                                   session.get(),
 -//                                   false /* expect session not reused */));
@@ -1390,9 +1695,7 @@
 -
 -//         return ssl_select_cert_success;
 -//       });
-+static int SwitchSessionIDContextSNI(SSL *ssl, int *out_alert, void *arg) {
-+  static const uint8_t kContext[] = {3};
- 
+-
 -//   TRACED_CALL(ExpectSessionReused(client_ctx_.get(), server_ctx_.get(),
 -//                                   session.get(),
 -//                                   false /* expect session not reused */));
@@ -1467,7 +1770,7 @@
  
  // static timeval g_current_time;
  
-@@ -3719,44 +3770,44 @@
+@@ -3719,44 +3772,44 @@
  //   EXPECT_EQ(DTLS1_VERSION, SSL_CTX_get_min_proto_version(ctx.get()));
  // }
  
@@ -1550,7 +1853,7 @@
  
  // Tests that that |SSL_get_pending_cipher| is available during the ALPN
  // selection callback.
-@@ -4076,40 +4127,40 @@
+@@ -4076,40 +4129,40 @@
  //   }
  // }
  
@@ -1625,7 +1928,7 @@
  
  // Test that session cache mode bits are honored in the client session callback.
  // TEST_P(SSLVersionTest, ClientSessionCacheMode) {
-@@ -4214,43 +4265,46 @@
+@@ -4214,43 +4267,46 @@
  //   X509_cmp(cert, cert);
  // }
  
@@ -1709,7 +2012,7 @@
  
  // TEST(SSLTest, SetChainAndKeyMismatch) {
  //   bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_with_buffers_method()));
-@@ -4920,33 +4974,37 @@
+@@ -4920,33 +4976,37 @@
  // }
  
  // The client should gracefully handle no suitable ciphers being enabled.
@@ -1774,7 +2077,7 @@
  
  // TEST_P(SSLVersionTest, SessionVersion) {
  //   SSL_CTX_set_session_cache_mode(client_ctx_.get(), SSL_SESS_CACHE_BOTH);
-@@ -5721,25 +5779,28 @@
+@@ -5721,25 +5781,28 @@
  // }
  
  // SSL_CTX_get0_certificate needs to lock internally. Test this works.
@@ -1822,7 +2125,7 @@
  
  // Functions which access properties on the negotiated session are thread-safe
  // where needed. Prior to TLS 1.3, clients resuming sessions and servers
-@@ -7167,14 +7228,14 @@
+@@ -7167,14 +7230,14 @@
  //   ASSERT_TRUE(CompleteHandshakesForQUIC());
  // }
  
@@ -1845,14 +2148,14 @@
  
  // TEST_P(SSLVersionTest, DoubleSSLError) {
  //   // Connect the inner SSL connections.
-@@ -7265,42 +7326,46 @@
+@@ -7265,42 +7328,46 @@
  //   }
  // }
  
 -// TEST_P(SSLVersionTest, SameKeyResume) {
 -//   uint8_t key[48];
 -//   RAND_bytes(key, sizeof(key));
--
+ 
 -//   bssl::UniquePtr<SSL_CTX> server_ctx2 = CreateContext();
 -//   ASSERT_TRUE(server_ctx2);
 -//   ASSERT_TRUE(UseCertAndKey(server_ctx2.get()));
@@ -1871,7 +2174,7 @@
 -//   ASSERT_TRUE(session);
 -//   ClientConfig config;
 -//   config.session = session.get();
- 
+-
 -//   // Resuming with |server_ctx_| again works.
 -//   bssl::UniquePtr<SSL> client, server;
 -//   ASSERT_TRUE(ConnectClientAndServer(&client, &server, client_ctx_.get(),
@@ -1927,7 +2230,7 @@
  
  // TEST_P(SSLVersionTest, DifferentKeyNoResume) {
  //   uint8_t key1[48], key2[48];
-@@ -8260,5 +8325,5 @@
+@@ -8260,5 +8327,5 @@
  //   }
  // }
  
