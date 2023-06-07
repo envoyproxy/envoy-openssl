@@ -79,6 +79,7 @@ add_library(bssl-compat STATIC
   source/SSL_CIPHER_get_digest_nid.cc
   source/SSL_CIPHER_get_id.cc
   source/SSL_CIPHER_get_kx_nid.cc
+  source/SSL_CIPHER_get_prf_nid.cc
   source/SSL_CIPHER_get_rfc_name.cc
   source/SSL_CIPHER_standard_name.cc
   source/SSL_CTX_add_extra_chain_cert.cc
