@@ -46,6 +46,15 @@
  
  // RSA_up_ref increments the reference count of |rsa| and returns one. It does
  // not mutate |rsa| for thread-safety purposes and may be used concurrently.
+@@ -97,7 +97,7 @@
+ // Properties.
+ 
+ // RSA_bits returns the size of |rsa|, in bits.
+-// OPENSSL_EXPORT unsigned RSA_bits(const RSA *rsa);
++OPENSSL_EXPORT unsigned RSA_bits(const RSA *rsa);
+ 
+ // RSA_get0_n returns |rsa|'s public modulus.
+ // OPENSSL_EXPORT const BIGNUM *RSA_get0_n(const RSA *rsa);
 @@ -132,21 +132,21 @@
  // RSA_get0_key sets |*out_n|, |*out_e|, and |*out_d|, if non-NULL, to |rsa|'s
  // modulus, public exponent, and private exponent, respectively. If |rsa| is a
