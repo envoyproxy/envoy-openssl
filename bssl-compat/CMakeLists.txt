@@ -72,6 +72,7 @@ add_library(bssl-compat STATIC
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
   source/rand.c
+  source/RSA_bits.cc
   source/RSA_check_key.cc
   source/RSA_free.c
   source/RSA_get0_crt_params.cc
