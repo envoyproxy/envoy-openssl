@@ -113,7 +113,33 @@
  
  
  // Key generation.
-@@ -297,9 +297,9 @@
+@@ -237,9 +237,9 @@
+ // The |padding| argument must be one of the |RSA_*_PADDING| values. If in
+ // doubt, use |RSA_PKCS1_OAEP_PADDING| for new protocols but
+ // |RSA_PKCS1_PADDING| is most common.
+-// OPENSSL_EXPORT int RSA_encrypt(RSA *rsa, size_t *out_len, uint8_t *out,
+-//                                size_t max_out, const uint8_t *in, size_t in_len,
+-//                                int padding);
++OPENSSL_EXPORT int RSA_encrypt(RSA *rsa, size_t *out_len, uint8_t *out,
++                               size_t max_out, const uint8_t *in, size_t in_len,
++                               int padding);
+ 
+ // RSA_decrypt decrypts |in_len| bytes from |in| with the private key from
+ // |rsa| and writes, at most, |max_out| bytes of plaintext to |out|. The
+@@ -256,9 +256,9 @@
+ // or other mitigation. See "Chosen Ciphertext Attacks Against Protocols Based
+ // on the RSA Encryption Standard PKCS #1", Daniel Bleichenbacher, Advances in
+ // Cryptology (Crypto '98).
+-// OPENSSL_EXPORT int RSA_decrypt(RSA *rsa, size_t *out_len, uint8_t *out,
+-//                                size_t max_out, const uint8_t *in, size_t in_len,
+-//                                int padding);
++OPENSSL_EXPORT int RSA_decrypt(RSA *rsa, size_t *out_len, uint8_t *out,
++                               size_t max_out, const uint8_t *in, size_t in_len,
++                               int padding);
+ 
+ // RSA_public_encrypt encrypts |flen| bytes from |from| to the public key in
+ // |rsa| and writes the encrypted data to |to|. The |to| buffer must have at
+@@ -305,9 +305,9 @@
  // WARNING: |digest| must be the result of hashing the data to be signed with
  // |hash_nid|. Passing unhashed inputs will not result in a secure signature
  // scheme.
@@ -126,7 +152,7 @@
  
  // RSA_sign_pss_mgf1 signs |digest_len| bytes from |digest| with the public key
  // from |rsa| using RSASSA-PSS with MGF1 as the mask generation function. It
-@@ -360,9 +360,9 @@
+@@ -368,9 +368,9 @@
  // WARNING: |digest| must be the result of hashing the data to be verified with
  // |hash_nid|. Passing unhashed input will not result in a secure signature
  // scheme.
@@ -139,7 +165,7 @@
  
  // RSA_verify_pss_mgf1 verifies that |sig_len| bytes from |sig| are a valid,
  // RSASSA-PSS signature of |digest_len| bytes at |digest| by |rsa|. It returns
-@@ -441,7 +441,7 @@
+@@ -449,7 +449,7 @@
  
  // RSA_size returns the number of bytes in the modulus, which is also the size
  // of a signature or encrypted value using |rsa|.
@@ -148,7 +174,7 @@
  
  // RSA_is_opaque returns one if |rsa| is opaque and doesn't expose its key
  // material. Otherwise it returns zero.
-@@ -458,7 +458,7 @@
+@@ -466,7 +466,7 @@
  // RSA_check_key performs basic validity tests on |rsa|. It returns one if
  // they pass and zero otherwise. Opaque keys and public keys always pass. If it
  // returns zero then a more detailed error is available on the error queue.
@@ -157,7 +183,33 @@
  
  // RSA_check_fips performs public key validity tests on |key|. It returns one if
  // they pass and zero otherwise. Opaque keys always fail. This function does not
-@@ -789,21 +789,21 @@
+@@ -526,10 +526,10 @@
+ // DigestInfo header for the given hash function and sets |out_msg| to point to
+ // it. On successful return, if |*is_alloced| is one, the caller must release
+ // |*out_msg| with |OPENSSL_free|.
+-// OPENSSL_EXPORT int RSA_add_pkcs1_prefix(uint8_t **out_msg, size_t *out_msg_len,
+-//                                         int *is_alloced, int hash_nid,
+-//                                         const uint8_t *digest,
+-//                                         size_t digest_len);
++OPENSSL_EXPORT int RSA_add_pkcs1_prefix(uint8_t **out_msg, size_t *out_msg_len,
++                                        int *is_alloced, int hash_nid,
++                                        const uint8_t *digest,
++                                        size_t digest_len);
+ 
+ 
+ // ASN.1 functions.
+@@ -562,8 +562,8 @@
+ 
+ // RSA_private_key_from_bytes parses |in| as a DER-encoded RSAPrivateKey
+ // structure (RFC 8017). It returns a newly-allocated |RSA| or NULL on error.
+-// OPENSSL_EXPORT RSA *RSA_private_key_from_bytes(const uint8_t *in,
+-//                                                size_t in_len);
++OPENSSL_EXPORT RSA *RSA_private_key_from_bytes(const uint8_t *in,
++                                               size_t in_len);
+ 
+ // RSA_marshal_private_key marshals |rsa| as a DER-encoded RSAPrivateKey
+ // structure (RFC 8017) and appends the result to |cbb|. It returns one on
+@@ -797,21 +797,21 @@
  // };
  
  
@@ -187,7 +239,7 @@
  
  #ifdef ossl_RSA_R_BAD_ENCODING
  #define RSA_R_BAD_ENCODING ossl_RSA_R_BAD_ENCODING
-@@ -953,4 +953,4 @@
+@@ -961,4 +961,4 @@
  #define RSA_R_BLOCK_TYPE_IS_NOT_02 ossl_RSA_R_BLOCK_TYPE_IS_NOT_02
  #endif
  
