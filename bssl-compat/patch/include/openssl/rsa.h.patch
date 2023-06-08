@@ -46,7 +46,7 @@
  
  // RSA_up_ref increments the reference count of |rsa| and returns one. It does
  // not mutate |rsa| for thread-safety purposes and may be used concurrently.
-@@ -132,8 +132,8 @@
+@@ -132,13 +132,13 @@
  // RSA_get0_key sets |*out_n|, |*out_e|, and |*out_d|, if non-NULL, to |rsa|'s
  // modulus, public exponent, and private exponent, respectively. If |rsa| is a
  // public key, the private exponent will be set to NULL.
@@ -57,6 +57,13 @@
  
  // RSA_get0_factors sets |*out_p| and |*out_q|, if non-NULL, to |rsa|'s prime
  // factors. If |rsa| is a public key, they will be set to NULL.
+-// OPENSSL_EXPORT void RSA_get0_factors(const RSA *rsa, const BIGNUM **out_p,
+-//                                      const BIGNUM **out_q);
++OPENSSL_EXPORT void RSA_get0_factors(const RSA *rsa, const BIGNUM **out_p,
++                                     const BIGNUM **out_q);
+ 
+ // RSA_get0_crt_params sets |*out_dmp1|, |*out_dmq1|, and |*out_iqmp|, if
+ // non-NULL, to |rsa|'s CRT parameters. These are d (mod p-1), d (mod q-1) and
 @@ -157,7 +157,7 @@
  //
  // It is an error to call this function after |rsa| has been used for a

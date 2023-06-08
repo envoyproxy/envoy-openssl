@@ -5,7 +5,14 @@
 
 TEST(RSATest, test_RSA_set0_factors) {
   bssl::UniquePtr<RSA> key {RSA_new()};
-  ASSERT_EQ(1, RSA_set0_factors(key.get(), BN_new(), BN_new()));
+  BIGNUM *p {BN_new()};
+  BIGNUM *q {BN_new()};
+  ASSERT_EQ(1, RSA_set0_factors(key.get(), p, q));
+  const BIGNUM *p2 {};
+  const BIGNUM *q2 {};
+  RSA_get0_factors(key.get(), &p2, &q2);
+  ASSERT_EQ(p, p2);
+  ASSERT_EQ(q, q2);
 }
 
 TEST(RSATest, test_RSA_set0_key) {
