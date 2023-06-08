@@ -29,3 +29,18 @@ TEST(RSATest, test_RSA_set0_key) {
   ASSERT_EQ(e2, e);
   ASSERT_EQ(d2, d);
 }
+
+TEST(RSATest, test_RSA_set0_crt_params) {
+  bssl::UniquePtr<RSA> key {RSA_new()};
+  BIGNUM *dmp1 {BN_new()};
+  BIGNUM *dmq1 {BN_new()};
+  BIGNUM *iqmp {BN_new()};
+  ASSERT_EQ(1, RSA_set0_crt_params(key.get(), dmp1, dmq1, iqmp));
+  const BIGNUM *dmp12 {};
+  const BIGNUM *dmq12 {};
+  const BIGNUM *iqmp2 {};
+  RSA_get0_crt_params(key.get(), &dmp12, &dmq12, &iqmp2);
+  ASSERT_EQ(dmp12, dmp1);
+  ASSERT_EQ(dmq12, dmq1);
+  ASSERT_EQ(iqmp2, iqmp);
+}
