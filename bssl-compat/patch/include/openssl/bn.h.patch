@@ -149,7 +149,7 @@
  
  // BN_equal_consttime returns one if |a| is equal to |b|, and zero otherwise.
  // It takes an amount of time dependent on the sizes of |a| and |b|, but
-@@ -1018,13 +1020,13 @@
+@@ -1018,15 +1020,15 @@
  // directly.
  
  
@@ -166,8 +166,11 @@
 -// BSSL_NAMESPACE_BEGIN
 +BSSL_NAMESPACE_BEGIN
  
- // BORINGSSL_MAKE_DELETER(BIGNUM, BN_free)
+-// BORINGSSL_MAKE_DELETER(BIGNUM, BN_free)
++BORINGSSL_MAKE_DELETER(BIGNUM, BN_free)
  // BORINGSSL_MAKE_DELETER(BN_CTX, BN_CTX_free)
+ // BORINGSSL_MAKE_DELETER(BN_MONT_CTX, BN_MONT_CTX_free)
+ 
 @@ -1042,12 +1044,12 @@
  //   BN_CTXScope &operator=(BN_CTXScope &) = delete;
  // };
