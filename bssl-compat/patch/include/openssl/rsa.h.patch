@@ -209,6 +209,15 @@
  
  
  // ASN.1 functions.
+@@ -541,7 +541,7 @@
+ 
+ // RSA_public_key_from_bytes parses |in| as a DER-encoded RSAPublicKey structure
+ // (RFC 8017). It returns a newly-allocated |RSA| or NULL on error.
+-// OPENSSL_EXPORT RSA *RSA_public_key_from_bytes(const uint8_t *in, size_t in_len);
++OPENSSL_EXPORT RSA *RSA_public_key_from_bytes(const uint8_t *in, size_t in_len);
+ 
+ // RSA_marshal_public_key marshals |rsa| as a DER-encoded RSAPublicKey structure
+ // (RFC 8017) and appends the result to |cbb|. It returns one on success and
 @@ -562,8 +562,8 @@
  
  // RSA_private_key_from_bytes parses |in| as a DER-encoded RSAPrivateKey
@@ -220,6 +229,15 @@
  
  // RSA_marshal_private_key marshals |rsa| as a DER-encoded RSAPrivateKey
  // structure (RFC 8017) and appends the result to |cbb|. It returns one on
+@@ -612,7 +612,7 @@
+ // RSA public exponent values.
+ 
+ // #define RSA_3 0x3
+-// #define RSA_F4 0x10001
++#define RSA_F4 ossl_RSA_F4
+ 
+ 
+ // Deprecated functions.
 @@ -797,21 +797,21 @@
  // };
  
