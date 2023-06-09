@@ -49,6 +49,7 @@ add_library(bssl-compat STATIC
   source/BIO_up_ref.cc
   source/bn.c
   source/BN_hex2bn.cc
+  source/BN_set_word.cc
   source/cipher.c
   source/CRYPTO_BUFFER_free.c
   source/CRYPTO_BUFFER.h

@@ -104,6 +104,15 @@
  
  // BN_num_bytes returns the minimum number of bytes needed to represent the
  // absolute value of |bn|.
+@@ -216,7 +218,7 @@
+ 
+ // BN_set_word sets |bn| to |value|. It returns one on success or zero on
+ // allocation failure.
+-// OPENSSL_EXPORT int BN_set_word(BIGNUM *bn, BN_ULONG value);
++OPENSSL_EXPORT int BN_set_word(BIGNUM *bn, BN_ULONG value);
+ 
+ // BN_set_u64 sets |bn| to |value|. It returns one on success or zero on
+ // allocation failure.
 @@ -267,7 +269,7 @@
  // BN_bn2hex returns an allocated string that contains a NUL-terminated, hex
  // representation of |bn|. If |bn| is negative, the first char in the resulting
