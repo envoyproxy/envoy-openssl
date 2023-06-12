@@ -1,0 +1,61 @@
+--- a/include/openssl/pkcs8.h
++++ b/include/openssl/pkcs8.h
+@@ -54,16 +54,16 @@
+  * Hudson (tjh@cryptsoft.com). */
+ 
+ 
+-// #ifndef OPENSSL_HEADER_PKCS8_H
+-// #define OPENSSL_HEADER_PKCS8_H
++#ifndef OPENSSL_HEADER_PKCS8_H
++#define OPENSSL_HEADER_PKCS8_H
+ 
+-// #include <openssl/base.h>
+-// #include <openssl/x509.h>
++#include <openssl/base.h>
++#include <openssl/x509.h>
+ 
+ 
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // PKCS8_encrypt serializes and encrypts a PKCS8_PRIV_KEY_INFO with PBES1 or
+@@ -236,21 +236,21 @@
+ // OPENSSL_EXPORT void PKCS12_free(PKCS12 *p12);
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
++#if defined(__cplusplus)
++}  // extern C
+ 
+-// extern "C++" {
++extern "C++" {
+ 
+-// BSSL_NAMESPACE_BEGIN
++BSSL_NAMESPACE_BEGIN
+ 
+ // BORINGSSL_MAKE_DELETER(PKCS12, PKCS12_free)
+ // BORINGSSL_MAKE_DELETER(PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free)
+ 
+-// BSSL_NAMESPACE_END
++BSSL_NAMESPACE_END
+ 
+-// }  // extern C++
++}  // extern C++
+ 
+-// #endif
++#endif
+ 
+ #ifdef ossl_PKCS8_R_BAD_PKCS12_DATA
+ #define PKCS8_R_BAD_PKCS12_DATA ossl_PKCS8_R_BAD_PKCS12_DATA
+@@ -355,4 +355,4 @@
+ #define PKCS8_R_AMBIGUOUS_FRIENDLY_NAME ossl_PKCS8_R_AMBIGUOUS_FRIENDLY_NAME
+ #endif
+ 
+-// #endif  // OPENSSL_HEADER_PKCS8_H
++#endif  // OPENSSL_HEADER_PKCS8_H

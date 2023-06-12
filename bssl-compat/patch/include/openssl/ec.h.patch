@@ -1,0 +1,66 @@
+--- a/include/openssl/ec.h
++++ b/include/openssl/ec.h
+@@ -65,14 +65,14 @@
+  * Sheueling Chang Shantz and Douglas Stebila of Sun Microsystems
+  * Laboratories. */
+ 
+-// #ifndef OPENSSL_HEADER_EC_H
+-// #define OPENSSL_HEADER_EC_H
++#ifndef OPENSSL_HEADER_EC_H
++#define OPENSSL_HEADER_EC_H
+ 
+-// #include <openssl/base.h>
++#include <openssl/base.h>
+ 
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // Low-level operations on elliptic curves.
+@@ -391,26 +391,26 @@
+ // OPENSSL_EXPORT void EC_POINT_clear_free(EC_POINT *point);
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
+-// #endif
++#if defined(__cplusplus)
++}  // extern C
++#endif
+ 
+ // Old code expects to get EC_KEY from ec.h.
+-// #include <openssl/ec_key.h>
++#include <openssl/ec_key.h>
+ 
+-// #if defined(__cplusplus)
+-// extern "C++" {
++#if defined(__cplusplus)
++extern "C++" {
+ 
+-// BSSL_NAMESPACE_BEGIN
++BSSL_NAMESPACE_BEGIN
+ 
+ // BORINGSSL_MAKE_DELETER(EC_POINT, EC_POINT_free)
+ // BORINGSSL_MAKE_DELETER(EC_GROUP, EC_GROUP_free)
+ 
+-// BSSL_NAMESPACE_END
++BSSL_NAMESPACE_END
+ 
+-// }  // extern C++
++}  // extern C++
+ 
+-// #endif
++#endif
+ 
+ #ifdef ossl_EC_R_BUFFER_TOO_SMALL
+ #define EC_R_BUFFER_TOO_SMALL ossl_EC_R_BUFFER_TOO_SMALL
+@@ -515,4 +515,4 @@
+ #define EC_R_INVALID_SCALAR ossl_EC_R_INVALID_SCALAR
+ #endif
+ 
+-// #endif  // OPENSSL_HEADER_EC_H
++#endif  // OPENSSL_HEADER_EC_H

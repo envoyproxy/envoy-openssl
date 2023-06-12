@@ -512,8 +512,9 @@
 +typedef struct crypto_buffer_st CRYPTO_BUFFER;
  // typedef struct dh_st DH;
  // typedef struct dsa_st DSA;
- // typedef struct ec_group_st EC_GROUP;
+-// typedef struct ec_group_st EC_GROUP;
 -// typedef struct ec_key_st EC_KEY;
++typedef ossl_EC_GROUP EC_GROUP;
 +typedef ossl_EC_KEY EC_KEY;
  // typedef struct ec_point_st EC_POINT;
  // typedef struct ecdsa_method_st ECDSA_METHOD;

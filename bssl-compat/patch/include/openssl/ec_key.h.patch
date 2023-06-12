@@ -1,0 +1,69 @@
+--- a/include/openssl/ec_key.h
++++ b/include/openssl/ec_key.h
+@@ -65,18 +65,18 @@
+  * Sheueling Chang Shantz and Douglas Stebila of Sun Microsystems
+  * Laboratories. */
+ 
+-// #ifndef OPENSSL_HEADER_EC_KEY_H
+-// #define OPENSSL_HEADER_EC_KEY_H
++#ifndef OPENSSL_HEADER_EC_KEY_H
++#define OPENSSL_HEADER_EC_KEY_H
+ 
+-// #include <openssl/base.h>
++#include <openssl/base.h>
+ 
+-// #include <openssl/ec.h>
+-// #include <openssl/engine.h>
+-// #include <openssl/ex_data.h>
+-
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#include <openssl/ec.h>
++#include <openssl/engine.h>
++#include <openssl/ex_data.h>
++
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // ec_key.h contains functions that handle elliptic-curve points that are
+@@ -117,7 +117,7 @@
+ // OPENSSL_EXPORT int EC_KEY_is_opaque(const EC_KEY *key);
+ 
+ // EC_KEY_get0_group returns a pointer to the |EC_GROUP| object inside |key|.
+-// OPENSSL_EXPORT const EC_GROUP *EC_KEY_get0_group(const EC_KEY *key);
++OPENSSL_EXPORT const EC_GROUP *EC_KEY_get0_group(const EC_KEY *key);
+ 
+ // EC_KEY_set_group sets the |EC_GROUP| object that |key| will use to |group|.
+ // It returns one on success and zero if |key| is already configured with a
+@@ -341,20 +341,20 @@
+ // OPENSSL_EXPORT int i2o_ECPublicKey(const EC_KEY *key, unsigned char **outp);
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
++#if defined(__cplusplus)
++}  // extern C
+ 
+-// extern "C++" {
++extern "C++" {
+ 
+-// BSSL_NAMESPACE_BEGIN
++BSSL_NAMESPACE_BEGIN
+ 
+ // BORINGSSL_MAKE_DELETER(EC_KEY, EC_KEY_free)
+ // BORINGSSL_MAKE_UP_REF(EC_KEY, EC_KEY_up_ref)
+ 
+-// BSSL_NAMESPACE_END
++BSSL_NAMESPACE_END
+ 
+-// }  // extern C++
++}  // extern C++
+ 
+-// #endif
++#endif
+ 
+-// #endif  // OPENSSL_HEADER_EC_KEY_H
++#endif  // OPENSSL_HEADER_EC_KEY_H
