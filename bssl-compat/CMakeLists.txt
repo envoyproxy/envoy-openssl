@@ -58,6 +58,7 @@ add_library(bssl-compat STATIC
   source/d2i_SSL_SESSION.c
   source/digest.c
   source/DTLS_method.cc
+  source/EC_GROUP_get0_order.cc
   source/EC_GROUP_get_curve_name.cc
   source/EC_KEY_free.cc
   source/EC_KEY_get0_group.cc
@@ -337,6 +338,7 @@ set(utests-source-list
   source/test/test_bn.cc
   source/test/test_cipher.cc
   source/test/test_crypto.cc
+  source/test/test_ec_key.cc
   source/test/test_evp.cc
   source/test/test_rsa.cc
   source/test/test_ssl.cc
