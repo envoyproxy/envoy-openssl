@@ -21,6 +21,15 @@
  
  
  // Low-level operations on elliptic curves.
+@@ -151,7 +151,7 @@
+ //                                           BN_CTX *ctx);
+ 
+ // EC_GROUP_get_curve_name returns a NID that identifies |group|.
+-// OPENSSL_EXPORT int EC_GROUP_get_curve_name(const EC_GROUP *group);
++OPENSSL_EXPORT int EC_GROUP_get_curve_name(const EC_GROUP *group);
+ 
+ // EC_GROUP_get_degree returns the number of bits needed to represent an
+ // element of the field underlying |group|.
 @@ -391,26 +391,26 @@
  // OPENSSL_EXPORT void EC_POINT_clear_free(EC_POINT *point);
  
