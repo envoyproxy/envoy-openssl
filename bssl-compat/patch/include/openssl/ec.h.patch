@@ -21,6 +21,15 @@
  
  
  // Low-level operations on elliptic curves.
+@@ -131,7 +131,7 @@
+ 
+ // EC_GROUP_get0_order returns a pointer to the internal |BIGNUM| object in
+ // |group| that specifies the order of the group.
+-// OPENSSL_EXPORT const BIGNUM *EC_GROUP_get0_order(const EC_GROUP *group);
++OPENSSL_EXPORT const BIGNUM *EC_GROUP_get0_order(const EC_GROUP *group);
+ 
+ // EC_GROUP_order_bits returns the number of bits of the order of |group|.
+ // OPENSSL_EXPORT int EC_GROUP_order_bits(const EC_GROUP *group);
 @@ -151,7 +151,7 @@
  //                                           BN_CTX *ctx);
  
