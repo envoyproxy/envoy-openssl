@@ -29,6 +29,15 @@
  
  
  // ec_key.h contains functions that handle elliptic-curve points that are
+@@ -103,7 +103,7 @@
+ // OPENSSL_EXPORT EC_KEY *EC_KEY_new_by_curve_name(int nid);
+ 
+ // EC_KEY_free frees all the data owned by |key| and |key| itself.
+-// OPENSSL_EXPORT void EC_KEY_free(EC_KEY *key);
++OPENSSL_EXPORT void EC_KEY_free(EC_KEY *key);
+ 
+ // EC_KEY_dup returns a fresh copy of |src| or NULL on error.
+ // OPENSSL_EXPORT EC_KEY *EC_KEY_dup(const EC_KEY *src);
 @@ -117,7 +117,7 @@
  // OPENSSL_EXPORT int EC_KEY_is_opaque(const EC_KEY *key);
  
