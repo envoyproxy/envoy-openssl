@@ -19,11 +19,17 @@ TEST(EC_KEYTest, test_EC_KEY_parse_private_key) {
 
   EC_KEY *key = EC_KEY_parse_private_key(&cbs, nullptr);
   ASSERT_TRUE(key);
+
   const EC_GROUP *group = EC_KEY_get0_group(key);
   ASSERT_TRUE(group);
+
   ASSERT_EQ(NID_X9_62_prime256v1, EC_GROUP_get_curve_name(group));
+
   const BIGNUM *order {EC_GROUP_get0_order(group)};
   ASSERT_TRUE(order);
   ASSERT_EQ(256, BN_num_bits(order));
+
+  ASSERT_EQ(256, EC_GROUP_get_degree(group));
+
   EC_KEY_free(key);
 }

@@ -30,7 +30,7 @@
  
  // EC_GROUP_order_bits returns the number of bits of the order of |group|.
  // OPENSSL_EXPORT int EC_GROUP_order_bits(const EC_GROUP *group);
-@@ -151,7 +151,7 @@
+@@ -151,11 +151,11 @@
  //                                           BN_CTX *ctx);
  
  // EC_GROUP_get_curve_name returns a NID that identifies |group|.
@@ -39,6 +39,11 @@
  
  // EC_GROUP_get_degree returns the number of bits needed to represent an
  // element of the field underlying |group|.
+-// OPENSSL_EXPORT unsigned EC_GROUP_get_degree(const EC_GROUP *group);
++OPENSSL_EXPORT unsigned EC_GROUP_get_degree(const EC_GROUP *group);
+ 
+ // EC_curve_nid2nist returns the NIST name of the elliptic curve specified by
+ // |nid|, or NULL if |nid| is not a NIST curve. For example, it returns "P-256"
 @@ -391,26 +391,26 @@
  // OPENSSL_EXPORT void EC_POINT_clear_free(EC_POINT *point);
  
