@@ -59,6 +59,7 @@ add_library(bssl-compat STATIC
   source/digest.c
   source/DTLS_method.cc
   source/EC_GROUP_get_curve_name.cc
+  source/EC_KEY_free.cc
   source/EC_KEY_get0_group.cc
   source/EC_KEY_parse_private_key.cc
   source/err.c
