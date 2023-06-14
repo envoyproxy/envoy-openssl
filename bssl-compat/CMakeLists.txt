@@ -58,6 +58,7 @@ add_library(bssl-compat STATIC
   source/d2i_SSL_SESSION.c
   source/digest.c
   source/DTLS_method.cc
+  source/ECDSA_sign.cc
   source/ECDSA_size.cc
   source/EC_GROUP_get0_order.cc
   source/EC_GROUP_get_curve_name.cc
