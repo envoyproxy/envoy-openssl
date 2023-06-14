@@ -39,6 +39,17 @@
  
  
  // Incremental operation.
+@@ -114,8 +114,8 @@
+ // WARNING: NULL and empty keys are ambiguous on non-initial calls. Passing NULL
+ // |key| but repeating the previous |md| reuses the previous key rather than the
+ // empty key.
+-// OPENSSL_EXPORT int HMAC_Init_ex(HMAC_CTX *ctx, const void *key, size_t key_len,
+-//                                 const EVP_MD *md, ENGINE *impl);
++OPENSSL_EXPORT int HMAC_Init_ex(HMAC_CTX *ctx, const void *key, size_t key_len,
++                                const EVP_MD *md, ENGINE *impl);
+ 
+ // HMAC_Update hashes |data_len| bytes from |data| into the current HMAC
+ // operation in |ctx|. It returns one.
 @@ -167,24 +167,24 @@
  // } /* HMAC_CTX */;
  
