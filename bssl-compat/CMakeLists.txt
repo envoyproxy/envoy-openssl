@@ -70,6 +70,7 @@ add_library(bssl-compat STATIC
   source/evp.c
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
+  source/HMAC.cc
   source/i2d_SSL_SESSION.c
   source/internal.h
   source/log.c
@@ -343,6 +344,7 @@ set(utests-source-list
   source/test/test_crypto.cc
   source/test/test_ec_key.cc
   source/test/test_evp.cc
+  source/test/test_hmac.cc
   source/test/test_rsa.cc
   source/test/test_ssl.cc
   source/test/test_stack.cc

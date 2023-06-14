@@ -94,7 +94,7 @@
  
  // EVP_DigestInit acts like |EVP_DigestInit_ex| except that |ctx| is
  // initialised before use.
-@@ -154,8 +154,8 @@
+@@ -154,13 +154,13 @@
  
  // EVP_DigestUpdate hashes |len| bytes from |data| into the hashing operation
  // in |ctx|. It returns one.
@@ -105,6 +105,12 @@
  
  // EVP_MAX_MD_SIZE is the largest digest size supported, in bytes.
  // Functions that output a digest generally require the buffer have
+ // at least this much space.
+-// #define EVP_MAX_MD_SIZE 64  // SHA-512 is the longest so far.
++#define EVP_MAX_MD_SIZE ossl_EVP_MAX_MD_SIZE
+ 
+ // EVP_MAX_MD_BLOCK_SIZE is the largest digest block size supported, in
+ // bytes.
 @@ -172,8 +172,8 @@
  // number of bytes written. It returns one. After this call, the hash cannot be
  // updated or finished again until |EVP_DigestInit_ex| is called to start

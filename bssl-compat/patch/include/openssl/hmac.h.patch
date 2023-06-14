@@ -1,0 +1,76 @@
+--- a/include/openssl/hmac.h
++++ b/include/openssl/hmac.h
+@@ -54,16 +54,16 @@
+  * copied and put under another distribution licence
+  * [including the GNU Public Licence.] */
+ 
+-// #ifndef OPENSSL_HEADER_HMAC_H
+-// #define OPENSSL_HEADER_HMAC_H
++#ifndef OPENSSL_HEADER_HMAC_H
++#define OPENSSL_HEADER_HMAC_H
+ 
+-// #include <openssl/base.h>
++#include <openssl/base.h>
+ 
+-// #include <openssl/digest.h>
++#include <openssl/digest.h>
+ 
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // HMAC contains functions for constructing PRFs from Merkle–Damgård hash
+@@ -77,10 +77,10 @@
+ // contain at least |EVP_MD_size| bytes of space. The actual length of the
+ // result is written to |*out_len|. An output size of |EVP_MAX_MD_SIZE| will
+ // always be large enough. It returns |out| or NULL on error.
+-// OPENSSL_EXPORT uint8_t *HMAC(const EVP_MD *evp_md, const void *key,
+-//                              size_t key_len, const uint8_t *data,
+-//                              size_t data_len, uint8_t *out,
+-//                              unsigned int *out_len);
++OPENSSL_EXPORT uint8_t *HMAC(const EVP_MD *evp_md, const void *key,
++                             size_t key_len, const uint8_t *data,
++                             size_t data_len, uint8_t *out,
++                             unsigned int *out_len);
+ 
+ 
+ // Incremental operation.
+@@ -167,24 +167,24 @@
+ // } /* HMAC_CTX */;
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
++#if defined(__cplusplus)
++}  // extern C
+ 
+-// #if !defined(BORINGSSL_NO_CXX)
+-// extern "C++" {
++#if !defined(BORINGSSL_NO_CXX)
++extern "C++" {
+ 
+-// BSSL_NAMESPACE_BEGIN
++BSSL_NAMESPACE_BEGIN
+ 
+ // BORINGSSL_MAKE_DELETER(HMAC_CTX, HMAC_CTX_free)
+ 
+ // using ScopedHMAC_CTX =
+ //     internal::StackAllocated<HMAC_CTX, void, HMAC_CTX_init, HMAC_CTX_cleanup>;
+ 
+-// BSSL_NAMESPACE_END
++BSSL_NAMESPACE_END
+ 
+-// }  // extern C++
+-// #endif
++}  // extern C++
++#endif
+ 
+-// #endif
++#endif
+ 
+-// #endif  // OPENSSL_HEADER_HMAC_H
++#endif  // OPENSSL_HEADER_HMAC_H
