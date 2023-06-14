@@ -1,0 +1,69 @@
+--- a/include/openssl/ecdsa.h
++++ b/include/openssl/ecdsa.h
+@@ -50,16 +50,16 @@
+  * (eay@cryptsoft.com).  This product includes software written by Tim
+  * Hudson (tjh@cryptsoft.com). */
+ 
+-// #ifndef OPENSSL_HEADER_ECDSA_H
+-// #define OPENSSL_HEADER_ECDSA_H
++#ifndef OPENSSL_HEADER_ECDSA_H
++#define OPENSSL_HEADER_ECDSA_H
+ 
+-// #include <openssl/base.h>
++#include <openssl/base.h>
+ 
+-// #include <openssl/ec_key.h>
++#include <openssl/ec_key.h>
+ 
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // ECDSA contains functions for signing and verifying with the Digital Signature
+@@ -94,7 +94,7 @@
+ 
+ // ECDSA_size returns the maximum size of an ECDSA signature using |key|. It
+ // returns zero if |key| is NULL or if it doesn't have a group set.
+-// OPENSSL_EXPORT size_t ECDSA_size(const EC_KEY *key);
++OPENSSL_EXPORT size_t ECDSA_size(const EC_KEY *key);
+ 
+ 
+ // Low-level signing and verification.
+@@ -211,20 +211,20 @@
+ // OPENSSL_EXPORT int i2d_ECDSA_SIG(const ECDSA_SIG *sig, uint8_t **outp);
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
++#if defined(__cplusplus)
++}  // extern C
+ 
+-// extern "C++" {
++extern "C++" {
+ 
+-// BSSL_NAMESPACE_BEGIN
++BSSL_NAMESPACE_BEGIN
+ 
+ // BORINGSSL_MAKE_DELETER(ECDSA_SIG, ECDSA_SIG_free)
+ 
+-// BSSL_NAMESPACE_END
++BSSL_NAMESPACE_END
+ 
+-// }  // extern C++
++}  // extern C++
+ 
+-// #endif
++#endif
+ 
+ #ifdef ossl_ECDSA_R_BAD_SIGNATURE
+ #define ECDSA_R_BAD_SIGNATURE ossl_ECDSA_R_BAD_SIGNATURE
+@@ -245,4 +245,4 @@
+ #define ECDSA_R_ENCODE_ERROR ossl_ECDSA_R_ENCODE_ERROR
+ #endif
+ 
+-// #endif  // OPENSSL_HEADER_ECDSA_H
++#endif  // OPENSSL_HEADER_ECDSA_H
