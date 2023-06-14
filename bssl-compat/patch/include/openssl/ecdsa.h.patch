@@ -24,6 +24,19 @@
  
  
  // ECDSA contains functions for signing and verifying with the Digital Signature
+@@ -76,9 +76,9 @@
+ //
+ // WARNING: |digest| must be the output of some hash function on the data to be
+ // signed. Passing unhashed inputs will not result in a secure signature scheme.
+-// OPENSSL_EXPORT int ECDSA_sign(int type, const uint8_t *digest,
+-//                               size_t digest_len, uint8_t *sig,
+-//                               unsigned int *sig_len, const EC_KEY *key);
++OPENSSL_EXPORT int ECDSA_sign(int type, const uint8_t *digest,
++                              size_t digest_len, uint8_t *sig,
++                              unsigned int *sig_len, const EC_KEY *key);
+ 
+ // ECDSA_verify verifies that |sig_len| bytes from |sig| constitute a valid
+ // signature by |key| of |digest|. (The |type| argument should be zero.) It
 @@ -94,7 +94,7 @@
  
  // ECDSA_size returns the maximum size of an ECDSA signature using |key|. It
