@@ -88,6 +88,7 @@ add_library(bssl-compat STATIC
   source/PEM_bytes_read_bio.c
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
+  source/PEM_X509_INFO_read_bio.cc
   source/rand.c
   source/RSA_bits.cc
   source/RSA_check_key.cc
