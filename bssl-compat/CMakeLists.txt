@@ -82,6 +82,7 @@ add_library(bssl-compat STATIC
   source/log.h
   source/MD5.cc
   source/mem.c
+  source/OBJ_txt2obj.cc
   source/ossl.c
   source/ossl_ERR_set_error.c
   source/PEM_bytes_read_bio.c
