@@ -90,7 +90,10 @@ add_library(bssl-compat STATIC
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
   source/PEM_X509_INFO_read_bio.cc
+  source/PKCS12_free.cc
+  source/PKCS12_get_key_and_certs.cc
   source/PKCS12_parse.cc
+  source/PKCS12_verify_mac.cc
   source/rand.c
   source/RSA_bits.cc
   source/RSA_check_key.cc
@@ -210,6 +213,7 @@ add_library(bssl-compat STATIC
   source/stack.c
   source/TLS_method.cc
   source/TLS_VERSION_to_string.cc
+  source/X509_alias_get0.cc
   source/X509_get_pubkey.cc
   source/X509_NAME_cmp.cc
   source/X509_NAME_dup.cc
@@ -336,8 +340,8 @@ set(utests-bssl-source-list
   source/crypto/bio/bio_test.cc
   source/crypto/digest_extra/digest_test.cc
   source/crypto/err/err_test.cc
-  #source/crypto/evp/evp_extra_test.cc
   source/crypto/hmac_extra/hmac_test.cc
+  source/crypto/pkcs8/pkcs12_test.cc
   source/crypto/rand_extra/rand_test.cc
   source/crypto/rsa_extra/rsa_test.cc
   source/crypto/stack/stack_test.cc
