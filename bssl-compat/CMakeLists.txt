@@ -80,6 +80,7 @@ add_library(bssl-compat STATIC
   source/internal.h
   source/log.c
   source/log.h
+  source/MD5.cc
   source/mem.c
   source/ossl.c
   source/ossl_ERR_set_error.c
