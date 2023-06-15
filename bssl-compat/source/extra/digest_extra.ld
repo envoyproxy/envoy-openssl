@@ -6,7 +6,6 @@ PROVIDE(EVP_md5 = ossl_EVP_md5);
 PROVIDE(EVP_md5_sha1 = ossl_EVP_md5_sha1);
 PROVIDE(EVP_MD_CTX_move = ossl_EVP_MD_CTX_copy_ex);
 PROVIDE(EVP_sha512_256 = ossl_EVP_sha512_256);
-PROVIDE(MD5 = ossl_MD5);
 PROVIDE(OBJ_nid2obj = ossl_OBJ_nid2obj);
 PROVIDE(OBJ_txt2obj = ossl_OBJ_txt2obj);
 PROVIDE(SHA1 = ossl_SHA1);
