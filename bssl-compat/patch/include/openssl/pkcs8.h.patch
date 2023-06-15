@@ -24,6 +24,19 @@
  
  
  // PKCS8_encrypt serializes and encrypts a PKCS8_PRIV_KEY_INFO with PBES1 or
+@@ -124,9 +124,9 @@
+ // success and zero on error. The caller takes ownership of the outputs.
+ // Any friendlyName attributes (RFC 2985) in the PKCS#12 structure will be
+ // returned on the |X509| objects as aliases. See also |X509_alias_get0|.
+-// OPENSSL_EXPORT int PKCS12_get_key_and_certs(EVP_PKEY **out_key,
+-//                                             STACK_OF(X509) *out_certs,
+-//                                             CBS *in, const char *password);
++OPENSSL_EXPORT int PKCS12_get_key_and_certs(EVP_PKEY **out_key,
++                                            STACK_OF(X509) *out_certs,
++                                            CBS *in, const char *password);
+ 
+ 
+ // Deprecated functions.
 @@ -149,7 +149,7 @@
  //                                   size_t ber_len);
  
@@ -46,8 +59,23 @@
  
  // PKCS12_verify_mac returns one if |password| is a valid password for |p12|
  // and zero otherwise. Since |PKCS12_parse| doesn't take a length parameter,
-@@ -236,21 +236,21 @@
- // OPENSSL_EXPORT void PKCS12_free(PKCS12 *p12);
+@@ -196,8 +196,8 @@
+ // |password[password_len]| must be zero and no other NUL bytes may appear in
+ // |password|. If the |password_len| checks fail, zero is returned
+ // immediately.
+-// OPENSSL_EXPORT int PKCS12_verify_mac(const PKCS12 *p12, const char *password,
+-//                                      int password_len);
++OPENSSL_EXPORT int PKCS12_verify_mac(const PKCS12 *p12, const char *password,
++                                     int password_len);
+ 
+ // PKCS12_DEFAULT_ITER is the default number of KDF iterations used when
+ // creating a |PKCS12| object.
+@@ -233,24 +233,24 @@
+ //                                      int mac_iterations, int key_type);
+ 
+ // PKCS12_free frees |p12| and its contents.
+-// OPENSSL_EXPORT void PKCS12_free(PKCS12 *p12);
++OPENSSL_EXPORT void PKCS12_free(PKCS12 *p12);
  
  
 -// #if defined(__cplusplus)
@@ -61,7 +89,8 @@
 -// BSSL_NAMESPACE_BEGIN
 +BSSL_NAMESPACE_BEGIN
  
- // BORINGSSL_MAKE_DELETER(PKCS12, PKCS12_free)
+-// BORINGSSL_MAKE_DELETER(PKCS12, PKCS12_free)
++BORINGSSL_MAKE_DELETER(PKCS12, PKCS12_free)
  // BORINGSSL_MAKE_DELETER(PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free)
  
 -// BSSL_NAMESPACE_END

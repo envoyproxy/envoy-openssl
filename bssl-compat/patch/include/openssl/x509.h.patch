@@ -91,6 +91,15 @@
  
  // X509_get0_pubkey_bitstr returns the BIT STRING portion of |x509|'s public
  // key. Note this does not contain the AlgorithmIdentifier portion.
+@@ -434,7 +434,7 @@
+ // WARNING: In OpenSSL, this function did not set |*out_len| when the alias was
+ // missing. Callers that target both OpenSSL and BoringSSL should set the value
+ // to zero before calling this function.
+-// OPENSSL_EXPORT unsigned char *X509_alias_get0(X509 *x509, int *out_len);
++OPENSSL_EXPORT unsigned char *X509_alias_get0(X509 *x509, int *out_len);
+ 
+ // X509_keyid_get0 looks up |x509|'s key ID. If found, it sets |*out_len| to the
+ // key ID's length and returns a pointer to a buffer containing the contents. If
 @@ -835,8 +835,8 @@
  // moved to the subject alternative name extension. In modern usage, X.509 names
  // are primarily opaque identifiers to link a certificate with its issuer.
