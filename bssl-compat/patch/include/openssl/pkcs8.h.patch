@@ -24,6 +24,28 @@
  
  
  // PKCS8_encrypt serializes and encrypts a PKCS8_PRIV_KEY_INFO with PBES1 or
+@@ -149,7 +149,7 @@
+ //                                   size_t ber_len);
+ 
+ // d2i_PKCS12_bio acts like |d2i_PKCS12| but reads from a |BIO|.
+-// OPENSSL_EXPORT PKCS12* d2i_PKCS12_bio(BIO *bio, PKCS12 **out_p12);
++OPENSSL_EXPORT PKCS12* d2i_PKCS12_bio(BIO *bio, PKCS12 **out_p12);
+ 
+ // d2i_PKCS12_fp acts like |d2i_PKCS12| but reads from a |FILE|.
+ // OPENSSL_EXPORT PKCS12* d2i_PKCS12_fp(FILE *fp, PKCS12 **out_p12);
+@@ -184,9 +184,9 @@
+ // It returns one on success and zero on error.
+ //
+ // Use |PKCS12_get_key_and_certs| instead.
+-// OPENSSL_EXPORT int PKCS12_parse(const PKCS12 *p12, const char *password,
+-//                                 EVP_PKEY **out_pkey, X509 **out_cert,
+-//                                 STACK_OF(X509) **out_ca_certs);
++OPENSSL_EXPORT int PKCS12_parse(const PKCS12 *p12, const char *password,
++                                EVP_PKEY **out_pkey, X509 **out_cert,
++                                STACK_OF(X509) **out_ca_certs);
+ 
+ // PKCS12_verify_mac returns one if |password| is a valid password for |p12|
+ // and zero otherwise. Since |PKCS12_parse| doesn't take a length parameter,
 @@ -236,21 +236,21 @@
  // OPENSSL_EXPORT void PKCS12_free(PKCS12 *p12);
  

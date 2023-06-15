@@ -542,7 +542,7 @@
  // typedef struct evp_encode_ctx_st EVP_ENCODE_CTX;
  // typedef struct evp_hpke_aead_st EVP_HPKE_AEAD;
  // typedef struct evp_hpke_ctx_st EVP_HPKE_CTX;
-@@ -410,10 +414,10 @@
+@@ -410,35 +414,35 @@
  // typedef struct evp_hpke_kem_st EVP_HPKE_KEM;
  // typedef struct evp_hpke_key_st EVP_HPKE_KEY;
  // typedef struct evp_pkey_asn1_method_st EVP_PKEY_ASN1_METHOD;
@@ -556,7 +556,11 @@
  // typedef struct md4_state_st MD4_CTX;
  // typedef struct md5_state_st MD5_CTX;
  // typedef struct ossl_init_settings_st OPENSSL_INIT_SETTINGS;
-@@ -424,21 +428,21 @@
+-// typedef struct pkcs12_st PKCS12;
++typedef struct ossl_PKCS12_st PKCS12;
+ // typedef struct pkcs8_priv_key_info_st PKCS8_PRIV_KEY_INFO;
+ // typedef struct private_key_st X509_PKEY;
+ // typedef struct rand_meth_st RAND_METHOD;
  // typedef struct rc4_key_st RC4_KEY;
  // typedef struct rsa_meth_st RSA_METHOD;
  // typedef struct rsa_pss_params_st RSA_PSS_PARAMS;
