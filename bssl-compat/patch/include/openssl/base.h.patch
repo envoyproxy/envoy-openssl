@@ -452,7 +452,15 @@
  
  // An |ASN1_NULL| is an opaque type. asn1.h represents the ASN.1 NULL value as
  // an opaque, non-NULL |ASN1_NULL*| pointer.
-@@ -343,13 +347,13 @@
+@@ -336,20 +340,20 @@
+ 
+ // typedef int ASN1_BOOLEAN;
+ // typedef struct ASN1_ITEM_st ASN1_ITEM;
+-// typedef struct asn1_object_st ASN1_OBJECT;
++typedef ossl_ASN1_OBJECT ASN1_OBJECT;
+ // typedef struct asn1_pctx_st ASN1_PCTX;
+ // typedef struct asn1_string_st ASN1_BIT_STRING;
+ // typedef struct asn1_string_st ASN1_BMPSTRING;
  // typedef struct asn1_string_st ASN1_ENUMERATED;
  // typedef struct asn1_string_st ASN1_GENERALIZEDTIME;
  // typedef struct asn1_string_st ASN1_GENERALSTRING;

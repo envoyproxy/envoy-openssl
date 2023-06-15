@@ -1,0 +1,56 @@
+--- a/include/openssl/obj.h
++++ b/include/openssl/obj.h
+@@ -54,17 +54,17 @@
+  * copied and put under another distribution licence
+  * [including the GNU Public Licence.] */
+ 
+-// #ifndef OPENSSL_HEADER_OBJ_H
+-// #define OPENSSL_HEADER_OBJ_H
++#ifndef OPENSSL_HEADER_OBJ_H
++#define OPENSSL_HEADER_OBJ_H
+ 
+-// #include <openssl/base.h>
++#include <openssl/base.h>
+ 
+-// #include <openssl/bytestring.h>
+-// #include <openssl/nid.h>
++#include <openssl/bytestring.h>
++#include <openssl/nid.h>
+ 
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // The objects library deals with the registration and indexing of ASN.1 object
+@@ -167,7 +167,7 @@
+ // contain an ASCII string with a dotted sequence of numbers. The resulting
+ // object need not be previously known. It returns a freshly allocated
+ // |ASN1_OBJECT| or NULL on error.
+-// OPENSSL_EXPORT ASN1_OBJECT *OBJ_txt2obj(const char *s, int dont_search_names);
++OPENSSL_EXPORT ASN1_OBJECT *OBJ_txt2obj(const char *s, int dont_search_names);
+ 
+ // OBJ_obj2txt converts |obj| to a textual representation. If
+ // |always_return_oid| is zero then |obj| will be matched against known objects
+@@ -246,9 +246,9 @@
+ // OPENSSL_EXPORT void OBJ_cleanup(void);
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
+-// #endif
++#if defined(__cplusplus)
++}  // extern C
++#endif
+ 
+ #ifdef ossl_OBJ_R_UNKNOWN_NID
+ #define OBJ_R_UNKNOWN_NID ossl_OBJ_R_UNKNOWN_NID
+@@ -257,4 +257,4 @@
+ #define OBJ_R_INVALID_OID_STRING ossl_OBJ_R_INVALID_OID_STRING
+ #endif
+ 
+-// #endif  // OPENSSL_HEADER_OBJ_H
++#endif  // OPENSSL_HEADER_OBJ_H
