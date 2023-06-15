@@ -55,6 +55,7 @@ add_library(bssl-compat STATIC
   source/CRYPTO_BUFFER.h
   source/CRYPTO_BUFFER_new.c
   source/crypto.c
+  source/d2i_PKCS12_bio.cc
   source/d2i_SSL_SESSION.c
   source/digest.c
   source/DTLS_method.cc
@@ -89,6 +90,7 @@ add_library(bssl-compat STATIC
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
   source/PEM_X509_INFO_read_bio.cc
+  source/PKCS12_parse.cc
   source/rand.c
   source/RSA_bits.cc
   source/RSA_check_key.cc
