@@ -1,6 +1,6 @@
 --- a/source/crypto/digest_extra/digest_test.cc
 +++ b/source/crypto/digest_extra/digest_test.cc
-@@ -12,324 +12,338 @@
+@@ -12,324 +12,324 @@
   * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
   * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
  
@@ -67,10 +67,6 @@
 +
 +#include "../internal.h"
 +#include "../test/test_util.h"
-+
-+#ifdef BSSL_COMPAT
-+#include <ossl/openssl/provider.h>
-+#endif
 +
 +
 +struct MD {
@@ -474,11 +470,6 @@
 +}
 +
 +static void TestDigest(const DigestTestVector *test) {
-+#ifdef BSSL_COMPAT
-+  ossl_OSSL_PROVIDER *legprov = ossl_OSSL_PROVIDER_load(nullptr, "legacy");
-+  ossl_OSSL_PROVIDER *defprov = ossl_OSSL_PROVIDER_load(nullptr, "default");
-+#endif
-+
 +  bssl::ScopedEVP_MD_CTX ctx;
 +
 +  // Test the input provided.
@@ -568,11 +559,6 @@
 +    EXPECT_EQ(digest.get(), out);
 +    CompareDigest(test, digest.get(), EVP_MD_size(test->md.func()));
 +  }
-+
-+#ifdef BSSL_COMPAT
-+  ossl_OSSL_PROVIDER_unload(legprov);
-+  ossl_OSSL_PROVIDER_unload(defprov);
-+#endif
 +}
 +
 +TEST(DigestTest, TestVectors) {
