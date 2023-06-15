@@ -32,6 +32,8 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Test
+      env:
+        OPENSSL_CONF: ${{github.workspace}}/bssl-compat/source/test/openssl.cnf
       run: ctest --test-dir ${{github.workspace}}/build --output-junit ${{github.workspace}}/build/results.xml
 
     - name: Results
