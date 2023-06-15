@@ -45,3 +45,9 @@ function(target_add_bssl_source target)
     _target_add_bssl_file(${target} "${src-file}" "${dst-file}")
   endforeach()
 endfunction()
+
+add_custom_command(OUTPUT source/crypto/test/crypto_test_data.cc
+                   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/external/boringssl/src/BoringSSL-build/crypto_test_data.cc
+                   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/external/boringssl/src/BoringSSL-build/crypto_test_data.cc
+                                                    source/crypto/test/crypto_test_data.cc
+)

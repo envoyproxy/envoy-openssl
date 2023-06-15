@@ -71,7 +71,11 @@ add_library(bssl-compat STATIC
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
   source/HMAC.cc
+  source/HMAC_CTX_free.cc
+  source/HMAC_CTX_new.cc
+  source/HMAC_Final.cc
   source/HMAC_Init_ex.cc
+  source/HMAC_Update.cc
   source/i2d_SSL_SESSION.c
   source/internal.h
   source/log.c
@@ -328,9 +332,13 @@ set(utests-bssl-source-list
   source/crypto/digest_extra/digest_test.cc
   source/crypto/err/err_test.cc
   #source/crypto/evp/evp_extra_test.cc
+  source/crypto/hmac_extra/hmac_test.cc
   source/crypto/rand_extra/rand_test.cc
   source/crypto/rsa_extra/rsa_test.cc
   source/crypto/stack/stack_test.cc
+  source/crypto/test/file_test_gtest.cc
+  source/crypto/test/file_test.cc
+  source/crypto/test/file_test.h
   source/crypto/test/test_util.cc
   source/crypto/test/test_util.h
   source/ssl/ssl_c_test.c
@@ -356,6 +364,7 @@ set(utests-source-list
 ################################################################################
 add_executable(utests-bssl-compat
   ${utests-source-list}
+  source/crypto/test/crypto_test_data.cc
   source/extra/asn1_extra.c
   source/extra/bio_extra.c
   source/extra/err_extra.c
@@ -375,7 +384,11 @@ gtest_discover_tests(utests-bssl-compat)
 ################################################################################
 # Unit Tests built on BoringSSL
 ################################################################################
-add_executable(utests-boring ${utests-source-list} ${utests-bssl-source-list})
+add_executable(utests-boring
+  ${utests-source-list}
+  ${utests-bssl-source-list}
+  source/crypto/test/crypto_test_data.cc
+)
 add_dependencies(utests-boring BoringSSL)
 target_link_libraries(utests-boring PRIVATE BoringSSL::SSL BoringSSL::Crypto)
 target_link_libraries(utests-boring PRIVATE GTest::gtest_main)

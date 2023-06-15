@@ -1,0 +1,153 @@
+--- a/source/crypto/hmac_extra/hmac_test.cc
++++ b/source/crypto/hmac_extra/hmac_test.cc
+@@ -54,81 +54,81 @@
+  * copied and put under another distribution licence
+  * [including the GNU Public Licence.] */
+ 
+-// #include <memory>
+-// #include <string>
+-// #include <vector>
++#include <memory>
++#include <string>
++#include <vector>
+ 
+-// #include <gtest/gtest.h>
++#include <gtest/gtest.h>
+ 
+-// #include <openssl/digest.h>
+-// #include <openssl/hmac.h>
++#include <openssl/digest.h>
++#include <openssl/hmac.h>
+ 
+-// #include "../test/file_test.h"
+-// #include "../test/test_util.h"
++#include "../test/file_test.h"
++#include "../test/test_util.h"
+ // #include "../test/wycheproof_util.h"
+ 
+ 
+-// static const EVP_MD *GetDigest(const std::string &name) {
+-//   if (name == "MD5") {
+-//     return EVP_md5();
+-//   } else if (name == "SHA1") {
+-//     return EVP_sha1();
+-//   } else if (name == "SHA224") {
+-//     return EVP_sha224();
+-//   } else if (name == "SHA256") {
+-//     return EVP_sha256();
+-//   } else if (name == "SHA384") {
+-//     return EVP_sha384();
+-//   } else if (name == "SHA512") {
+-//     return EVP_sha512();
+-//   }
+-//   return nullptr;
+-// }
+-
+-// TEST(HMACTest, TestVectors) {
+-//   FileTestGTest("crypto/hmac_extra/hmac_tests.txt", [](FileTest *t) {
+-//     std::string digest_str;
+-//     ASSERT_TRUE(t->GetAttribute(&digest_str, "HMAC"));
+-//     const EVP_MD *digest = GetDigest(digest_str);
+-//     ASSERT_TRUE(digest) << "Unknown digest: " << digest_str;
+-
+-//     std::vector<uint8_t> key, input, output;
+-//     ASSERT_TRUE(t->GetBytes(&key, "Key"));
+-//     ASSERT_TRUE(t->GetBytes(&input, "Input"));
+-//     ASSERT_TRUE(t->GetBytes(&output, "Output"));
+-//     ASSERT_EQ(EVP_MD_size(digest), output.size());
+-
+-//     // Test using the one-shot API.
+-//     unsigned expected_mac_len = EVP_MD_size(digest);
+-//     std::unique_ptr<uint8_t[]> mac(new uint8_t[expected_mac_len]);
+-//     unsigned mac_len;
+-//     ASSERT_TRUE(HMAC(digest, key.data(), key.size(), input.data(), input.size(),
+-//                      mac.get(), &mac_len));
+-//     EXPECT_EQ(Bytes(output), Bytes(mac.get(), mac_len));
+-
+-//     // Test using HMAC_CTX.
+-//     bssl::ScopedHMAC_CTX ctx;
+-//     ASSERT_TRUE(
+-//         HMAC_Init_ex(ctx.get(), key.data(), key.size(), digest, nullptr));
+-//     ASSERT_TRUE(HMAC_Update(ctx.get(), input.data(), input.size()));
+-//     ASSERT_TRUE(HMAC_Final(ctx.get(), mac.get(), &mac_len));
+-//     EXPECT_EQ(Bytes(output), Bytes(mac.get(), mac_len));
+-
+-//     // Test that an HMAC_CTX may be reset with the same key.
+-//     ASSERT_TRUE(HMAC_Init_ex(ctx.get(), nullptr, 0, digest, nullptr));
+-//     ASSERT_TRUE(HMAC_Update(ctx.get(), input.data(), input.size()));
+-//     ASSERT_TRUE(HMAC_Final(ctx.get(), mac.get(), &mac_len));
+-//     EXPECT_EQ(Bytes(output), Bytes(mac.get(), mac_len));
+-
+-//     // Test feeding the input in byte by byte.
+-//     ASSERT_TRUE(HMAC_Init_ex(ctx.get(), nullptr, 0, nullptr, nullptr));
+-//     for (size_t i = 0; i < input.size(); i++) {
+-//       ASSERT_TRUE(HMAC_Update(ctx.get(), &input[i], 1));
+-//     }
+-//     ASSERT_TRUE(HMAC_Final(ctx.get(), mac.get(), &mac_len));
+-//     EXPECT_EQ(Bytes(output), Bytes(mac.get(), mac_len));
+-//   });
+-// }
++static const EVP_MD *GetDigest(const std::string &name) {
++  if (name == "MD5") {
++    return EVP_md5();
++  } else if (name == "SHA1") {
++    return EVP_sha1();
++  } else if (name == "SHA224") {
++    return EVP_sha224();
++  } else if (name == "SHA256") {
++    return EVP_sha256();
++  } else if (name == "SHA384") {
++    return EVP_sha384();
++  } else if (name == "SHA512") {
++    return EVP_sha512();
++  }
++  return nullptr;
++}
++
++TEST(HMACTest, TestVectors) {
++  FileTestGTest("crypto/hmac_extra/hmac_tests.txt", [](FileTest *t) {
++    std::string digest_str;
++    ASSERT_TRUE(t->GetAttribute(&digest_str, "HMAC"));
++    const EVP_MD *digest = GetDigest(digest_str);
++    ASSERT_TRUE(digest) << "Unknown digest: " << digest_str;
++
++    std::vector<uint8_t> key, input, output;
++    ASSERT_TRUE(t->GetBytes(&key, "Key"));
++    ASSERT_TRUE(t->GetBytes(&input, "Input"));
++    ASSERT_TRUE(t->GetBytes(&output, "Output"));
++    ASSERT_EQ(EVP_MD_size(digest), output.size());
++
++    // Test using the one-shot API.
++    unsigned expected_mac_len = EVP_MD_size(digest);
++    std::unique_ptr<uint8_t[]> mac(new uint8_t[expected_mac_len]);
++    unsigned mac_len;
++    ASSERT_TRUE(HMAC(digest, key.data(), key.size(), input.data(), input.size(),
++                     mac.get(), &mac_len));
++    EXPECT_EQ(Bytes(output), Bytes(mac.get(), mac_len));
++
++    // Test using HMAC_CTX.
++    bssl::ScopedHMAC_CTX ctx;
++    ASSERT_TRUE(
++        HMAC_Init_ex(ctx.get(), key.data(), key.size(), digest, nullptr));
++    ASSERT_TRUE(HMAC_Update(ctx.get(), input.data(), input.size()));
++    ASSERT_TRUE(HMAC_Final(ctx.get(), mac.get(), &mac_len));
++    EXPECT_EQ(Bytes(output), Bytes(mac.get(), mac_len));
++
++    // Test that an HMAC_CTX may be reset with the same key.
++    ASSERT_TRUE(HMAC_Init_ex(ctx.get(), nullptr, 0, digest, nullptr));
++    ASSERT_TRUE(HMAC_Update(ctx.get(), input.data(), input.size()));
++    ASSERT_TRUE(HMAC_Final(ctx.get(), mac.get(), &mac_len));
++    EXPECT_EQ(Bytes(output), Bytes(mac.get(), mac_len));
++
++    // Test feeding the input in byte by byte.
++    ASSERT_TRUE(HMAC_Init_ex(ctx.get(), nullptr, 0, nullptr, nullptr));
++    for (size_t i = 0; i < input.size(); i++) {
++      ASSERT_TRUE(HMAC_Update(ctx.get(), &input[i], 1));
++    }
++    ASSERT_TRUE(HMAC_Final(ctx.get(), mac.get(), &mac_len));
++    EXPECT_EQ(Bytes(output), Bytes(mac.get(), mac_len));
++  });
++}
+ 
+ // static void RunWycheproofTest(const char *path, const EVP_MD *md) {
+ //   SCOPED_TRACE(path);

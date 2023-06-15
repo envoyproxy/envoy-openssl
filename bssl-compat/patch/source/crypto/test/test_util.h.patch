@@ -33,7 +33,7 @@
  
  
  // hexdump writes |msg| to |fp| followed by the hex encoding of |len| bytes
-@@ -35,29 +35,29 @@
+@@ -35,37 +35,37 @@
  
  // Bytes is a wrapper over a byte slice which may be compared for equality. This
  // allows it to be used in EXPECT_EQ macros.
@@ -84,8 +84,9 @@
  
  // DecodeHex decodes |in| from hexadecimal and writes the output to |out|. It
  // returns true on success and false if |in| is not a valid hexadecimal byte
-@@ -65,7 +65,7 @@
- // bool DecodeHex(std::vector<uint8_t> *out, const std::string &in);
+ // string.
+-// bool DecodeHex(std::vector<uint8_t> *out, const std::string &in);
++bool DecodeHex(std::vector<uint8_t> *out, const std::string &in);
  
  // EncodeHex returns |in| encoded in hexadecimal.
 -// std::string EncodeHex(bssl::Span<const uint8_t> in);
