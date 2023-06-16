@@ -215,21 +215,31 @@ add_library(bssl-compat STATIC
   source/TLS_method.cc
   source/TLS_VERSION_to_string.cc
   source/X509_alias_get0.cc
+  source/X509_CRL_free.cc
+  source/X509_CRL_up_ref.cc
   source/X509_get_pubkey.cc
   source/X509_NAME_cmp.cc
   source/X509_NAME_dup.cc
   source/X509_NAME_free.cc
   source/X509_NAME_new.cc
+  source/X509_STORE_CTX_free.cc
   source/X509_STORE_CTX_get0_param.cc
+  source/X509_STORE_CTX_get_error.cc
   source/X509_STORE_CTX_init.cc
   source/X509_STORE_CTX_new.cc
+  source/X509_STORE_CTX_set0_crls.cc
+  source/X509_STORE_CTX_trusted_stack.cc
+  source/X509_STORE_free.cc
   source/X509_STORE_new.cc
   source/X509_STORE_set_flags.cc
   source/X509_STORE_set_verify_cb.cc
   source/X509_up_ref.cc
   source/X509_verify_cert.cc
   source/X509_verify_cert_error_string.cc
+  source/X509_VERIFY_PARAM_clear_flags.cc
   source/X509_VERIFY_PARAM_set1.cc
+  source/X509_VERIFY_PARAM_set_flags.cc
+  source/X509_VERIFY_PARAM_set_time.cc
 )
 
 target_add_bssl_source(bssl-compat
@@ -361,6 +371,7 @@ set(utests-bssl-source-list
   source/crypto/test/file_test.h
   source/crypto/test/test_util.cc
   source/crypto/test/test_util.h
+  source/crypto/x509/x509_test.cc
   source/ssl/ssl_c_test.c
   source/ssl/ssl_test.cc
 )
