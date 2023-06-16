@@ -188,6 +188,15 @@
  // typedef int (*X509_STORE_CTX_verify_fn)(X509_STORE_CTX *);
  // typedef int (*X509_STORE_CTX_get_issuer_fn)(X509 **issuer, X509_STORE_CTX *ctx,
  //                                             X509 *x);
+@@ -2763,7 +2763,7 @@
+ // OPENSSL_EXPORT void X509_OBJECT_free_contents(X509_OBJECT *a);
+ // OPENSSL_EXPORT int X509_OBJECT_get_type(const X509_OBJECT *a);
+ // OPENSSL_EXPORT X509 *X509_OBJECT_get0_X509(const X509_OBJECT *a);
+-// OPENSSL_EXPORT X509_STORE *X509_STORE_new(void);
++OPENSSL_EXPORT X509_STORE *X509_STORE_new(void);
+ // OPENSSL_EXPORT int X509_STORE_up_ref(X509_STORE *store);
+ // OPENSSL_EXPORT void X509_STORE_free(X509_STORE *v);
+ 
 @@ -2772,7 +2772,7 @@
  //                                                      X509_NAME *nm);
  // OPENSSL_EXPORT STACK_OF(X509_CRL) *X509_STORE_get1_crls(X509_STORE_CTX *st,
