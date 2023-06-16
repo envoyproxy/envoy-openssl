@@ -219,6 +219,7 @@ add_library(bssl-compat STATIC
   source/X509_NAME_dup.cc
   source/X509_NAME_free.cc
   source/X509_NAME_new.cc
+  source/X509_verify_cert.cc
 )
 
 target_add_bssl_source(bssl-compat
