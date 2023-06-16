@@ -144,6 +144,15 @@
  // OPENSSL_EXPORT unsigned long X509_NAME_hash(X509_NAME *x);
  // OPENSSL_EXPORT unsigned long X509_NAME_hash_old(X509_NAME *x);
  
+@@ -2321,7 +2321,7 @@
+ // OPENSSL_EXPORT ASN1_TYPE *X509_ATTRIBUTE_get0_type(X509_ATTRIBUTE *attr,
+ //                                                    int idx);
+ 
+-// OPENSSL_EXPORT int X509_verify_cert(X509_STORE_CTX *ctx);
++OPENSSL_EXPORT int X509_verify_cert(X509_STORE_CTX *ctx);
+ 
+ // lookup a cert from a X509 STACK
+ // OPENSSL_EXPORT X509 *X509_find_by_issuer_and_serial(STACK_OF(X509) *sk,
 @@ -2404,7 +2404,7 @@
  
  // DECLARE_ASN1_FUNCTIONS_const(RSA_PSS_PARAMS)
