@@ -108,6 +108,32 @@
  
  // X509_keyid_get0 looks up |x509|'s key ID. If found, it sets |*out_len| to the
  // key ID's length and returns a pointer to a buffer containing the contents. If
+@@ -462,14 +462,14 @@
+ // Instead, mutation functions should only be used when issuing new CRLs, as
+ // described in a later section.
+ 
+-// DEFINE_STACK_OF(X509_CRL)
++DEFINE_STACK_OF(X509_CRL)
+ 
+ // X509_CRL is an |ASN1_ITEM| whose ASN.1 type is X.509 CertificateList (RFC
+ // 5280) and C type is |X509_CRL*|.
+ // DECLARE_ASN1_ITEM(X509_CRL)
+ 
+ // X509_CRL_up_ref adds one to the reference count of |crl| and returns one.
+-// OPENSSL_EXPORT int X509_CRL_up_ref(X509_CRL *crl);
++OPENSSL_EXPORT int X509_CRL_up_ref(X509_CRL *crl);
+ 
+ // X509_CRL_dup returns a newly-allocated copy of |crl|, or NULL on error. This
+ // function works by serializing the structure, so if |crl| is incomplete, it
+@@ -482,7 +482,7 @@
+ 
+ // X509_CRL_free decrements |crl|'s reference count and, if zero, releases
+ // memory associated with |crl|.
+-// OPENSSL_EXPORT void X509_CRL_free(X509_CRL *crl);
++OPENSSL_EXPORT void X509_CRL_free(X509_CRL *crl);
+ 
+ // d2i_X509_CRL parses up to |len| bytes from |*inp| as a DER-encoded X.509
+ // CertificateList (RFC 5280), as described in |d2i_SAMPLE_with_reuse|.
 @@ -835,8 +835,8 @@
  // moved to the subject alternative name extension. In modern usage, X.509 names
  // are primarily opaque identifiers to link a certificate with its issuer.
@@ -188,16 +214,18 @@
  // typedef int (*X509_STORE_CTX_verify_fn)(X509_STORE_CTX *);
  // typedef int (*X509_STORE_CTX_get_issuer_fn)(X509 **issuer, X509_STORE_CTX *ctx,
  //                                             X509 *x);
-@@ -2763,7 +2763,7 @@
+@@ -2763,16 +2763,16 @@
  // OPENSSL_EXPORT void X509_OBJECT_free_contents(X509_OBJECT *a);
  // OPENSSL_EXPORT int X509_OBJECT_get_type(const X509_OBJECT *a);
  // OPENSSL_EXPORT X509 *X509_OBJECT_get0_X509(const X509_OBJECT *a);
 -// OPENSSL_EXPORT X509_STORE *X509_STORE_new(void);
 +OPENSSL_EXPORT X509_STORE *X509_STORE_new(void);
  // OPENSSL_EXPORT int X509_STORE_up_ref(X509_STORE *store);
- // OPENSSL_EXPORT void X509_STORE_free(X509_STORE *v);
+-// OPENSSL_EXPORT void X509_STORE_free(X509_STORE *v);
++OPENSSL_EXPORT void X509_STORE_free(X509_STORE *v);
  
-@@ -2772,7 +2772,7 @@
+ // OPENSSL_EXPORT STACK_OF(X509_OBJECT) *X509_STORE_get0_objects(X509_STORE *st);
+ // OPENSSL_EXPORT STACK_OF(X509) *X509_STORE_get1_certs(X509_STORE_CTX *st,
  //                                                      X509_NAME *nm);
  // OPENSSL_EXPORT STACK_OF(X509_CRL) *X509_STORE_get1_crls(X509_STORE_CTX *st,
  //                                                         X509_NAME *nm);
@@ -217,7 +245,7 @@
  // #define X509_STORE_set_verify_cb_func(ctx, func) \
  //   X509_STORE_set_verify_cb((ctx), (func))
  // OPENSSL_EXPORT X509_STORE_CTX_verify_cb
-@@ -2831,15 +2831,15 @@
+@@ -2831,17 +2831,17 @@
  // OPENSSL_EXPORT X509_STORE_CTX_cleanup_fn
  // X509_STORE_get_cleanup(X509_STORE *ctx);
  
@@ -228,14 +256,39 @@
  //                                               X509_STORE_CTX *ctx, X509 *x);
  
  // OPENSSL_EXPORT void X509_STORE_CTX_zero(X509_STORE_CTX *ctx);
- // OPENSSL_EXPORT void X509_STORE_CTX_free(X509_STORE_CTX *ctx);
+-// OPENSSL_EXPORT void X509_STORE_CTX_free(X509_STORE_CTX *ctx);
 -// OPENSSL_EXPORT int X509_STORE_CTX_init(X509_STORE_CTX *ctx, X509_STORE *store,
 -//                                        X509 *x509, STACK_OF(X509) *chain);
+-// OPENSSL_EXPORT void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *ctx,
+-//                                                  STACK_OF(X509) *sk);
++OPENSSL_EXPORT void X509_STORE_CTX_free(X509_STORE_CTX *ctx);
 +OPENSSL_EXPORT int X509_STORE_CTX_init(X509_STORE_CTX *ctx, X509_STORE *store,
 +                                       X509 *x509, STACK_OF(X509) *chain);
- // OPENSSL_EXPORT void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *ctx,
- //                                                  STACK_OF(X509) *sk);
++OPENSSL_EXPORT void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *ctx,
++                                                 STACK_OF(X509) *sk);
  // OPENSSL_EXPORT void X509_STORE_CTX_cleanup(X509_STORE_CTX *ctx);
+ 
+ // OPENSSL_EXPORT X509_STORE *X509_STORE_CTX_get0_store(X509_STORE_CTX *ctx);
+@@ -2892,7 +2892,7 @@
+ //                                              const char *dir);
+ // OPENSSL_EXPORT int X509_STORE_set_default_paths(X509_STORE *ctx);
+ // #endif
+-// OPENSSL_EXPORT int X509_STORE_CTX_get_error(X509_STORE_CTX *ctx);
++OPENSSL_EXPORT int X509_STORE_CTX_get_error(X509_STORE_CTX *ctx);
+ // OPENSSL_EXPORT void X509_STORE_CTX_set_error(X509_STORE_CTX *ctx, int s);
+ // OPENSSL_EXPORT int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *ctx);
+ // OPENSSL_EXPORT X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *ctx);
+@@ -2908,8 +2908,8 @@
+ //                                              STACK_OF(X509) *sk);
+ // OPENSSL_EXPORT STACK_OF(X509) *X509_STORE_CTX_get0_untrusted(
+ //     X509_STORE_CTX *ctx);
+-// OPENSSL_EXPORT void X509_STORE_CTX_set0_crls(X509_STORE_CTX *c,
+-//                                              STACK_OF(X509_CRL) *sk);
++OPENSSL_EXPORT void X509_STORE_CTX_set0_crls(X509_STORE_CTX *c,
++                                             STACK_OF(X509_CRL) *sk);
+ // OPENSSL_EXPORT int X509_STORE_CTX_set_purpose(X509_STORE_CTX *ctx, int purpose);
+ // OPENSSL_EXPORT int X509_STORE_CTX_set_trust(X509_STORE_CTX *ctx, int trust);
+ // OPENSSL_EXPORT int X509_STORE_CTX_purpose_inherit(X509_STORE_CTX *ctx,
 @@ -2922,8 +2922,8 @@
  // OPENSSL_EXPORT void X509_STORE_CTX_set_verify_cb(
  //     X509_STORE_CTX *ctx, int (*verify_cb)(int, X509_STORE_CTX *));
@@ -247,7 +300,7 @@
  // OPENSSL_EXPORT void X509_STORE_CTX_set0_param(X509_STORE_CTX *ctx,
  //                                               X509_VERIFY_PARAM *param);
  // OPENSSL_EXPORT int X509_STORE_CTX_set_default(X509_STORE_CTX *ctx,
-@@ -2935,8 +2935,8 @@
+@@ -2935,14 +2935,14 @@
  // OPENSSL_EXPORT void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *param);
  // OPENSSL_EXPORT int X509_VERIFY_PARAM_inherit(X509_VERIFY_PARAM *to,
  //                                              const X509_VERIFY_PARAM *from);
@@ -257,8 +310,29 @@
 +                                          const X509_VERIFY_PARAM *from);
  // OPENSSL_EXPORT int X509_VERIFY_PARAM_set1_name(X509_VERIFY_PARAM *param,
  //                                                const char *name);
- // OPENSSL_EXPORT int X509_VERIFY_PARAM_set_flags(X509_VERIFY_PARAM *param,
-@@ -2988,18 +2988,18 @@
+-// OPENSSL_EXPORT int X509_VERIFY_PARAM_set_flags(X509_VERIFY_PARAM *param,
+-//                                                unsigned long flags);
+-// OPENSSL_EXPORT int X509_VERIFY_PARAM_clear_flags(X509_VERIFY_PARAM *param,
+-//                                                  unsigned long flags);
++OPENSSL_EXPORT int X509_VERIFY_PARAM_set_flags(X509_VERIFY_PARAM *param,
++                                               unsigned long flags);
++OPENSSL_EXPORT int X509_VERIFY_PARAM_clear_flags(X509_VERIFY_PARAM *param,
++                                                 unsigned long flags);
+ // OPENSSL_EXPORT unsigned long X509_VERIFY_PARAM_get_flags(
+ //     X509_VERIFY_PARAM *param);
+ // OPENSSL_EXPORT int X509_VERIFY_PARAM_set_purpose(X509_VERIFY_PARAM *param,
+@@ -2951,8 +2951,8 @@
+ //                                                int trust);
+ // OPENSSL_EXPORT void X509_VERIFY_PARAM_set_depth(X509_VERIFY_PARAM *param,
+ //                                                 int depth);
+-// OPENSSL_EXPORT void X509_VERIFY_PARAM_set_time(X509_VERIFY_PARAM *param,
+-//                                                time_t t);
++OPENSSL_EXPORT void X509_VERIFY_PARAM_set_time(X509_VERIFY_PARAM *param,
++                                               time_t t);
+ // OPENSSL_EXPORT int X509_VERIFY_PARAM_add0_policy(X509_VERIFY_PARAM *param,
+ //                                                  ASN1_OBJECT *policy);
+ // OPENSSL_EXPORT int X509_VERIFY_PARAM_set1_policies(
+@@ -2988,42 +2988,42 @@
  // OPENSSL_EXPORT void X509_VERIFY_PARAM_table_cleanup(void);
  
  
@@ -280,11 +354,15 @@
  // BORINGSSL_MAKE_DELETER(NETSCAPE_SPKI, NETSCAPE_SPKI_free)
  // BORINGSSL_MAKE_DELETER(RSA_PSS_PARAMS, RSA_PSS_PARAMS_free)
 -// BORINGSSL_MAKE_DELETER(X509, X509_free)
+-// BORINGSSL_MAKE_UP_REF(X509, X509_up_ref)
 +BORINGSSL_MAKE_DELETER(X509, X509_free)
- // BORINGSSL_MAKE_UP_REF(X509, X509_up_ref)
++BORINGSSL_MAKE_UP_REF(X509, X509_up_ref)
  // BORINGSSL_MAKE_DELETER(X509_ALGOR, X509_ALGOR_free)
  // BORINGSSL_MAKE_DELETER(X509_ATTRIBUTE, X509_ATTRIBUTE_free)
-@@ -3008,7 +3008,7 @@
+-// BORINGSSL_MAKE_DELETER(X509_CRL, X509_CRL_free)
+-// BORINGSSL_MAKE_UP_REF(X509_CRL, X509_CRL_up_ref)
++BORINGSSL_MAKE_DELETER(X509_CRL, X509_CRL_free)
++BORINGSSL_MAKE_UP_REF(X509_CRL, X509_CRL_up_ref)
  // BORINGSSL_MAKE_DELETER(X509_EXTENSION, X509_EXTENSION_free)
  // BORINGSSL_MAKE_DELETER(X509_INFO, X509_INFO_free)
  // BORINGSSL_MAKE_DELETER(X509_LOOKUP, X509_LOOKUP_free)
@@ -293,8 +371,14 @@
  // BORINGSSL_MAKE_DELETER(X509_NAME_ENTRY, X509_NAME_ENTRY_free)
  // BORINGSSL_MAKE_DELETER(X509_PKEY, X509_PKEY_free)
  // BORINGSSL_MAKE_DELETER(X509_PUBKEY, X509_PUBKEY_free)
-@@ -3020,10 +3020,10 @@
- // BORINGSSL_MAKE_DELETER(X509_STORE_CTX, X509_STORE_CTX_free)
+ // BORINGSSL_MAKE_DELETER(X509_REQ, X509_REQ_free)
+ // BORINGSSL_MAKE_DELETER(X509_REVOKED, X509_REVOKED_free)
+ // BORINGSSL_MAKE_DELETER(X509_SIG, X509_SIG_free)
+-// BORINGSSL_MAKE_DELETER(X509_STORE, X509_STORE_free)
++BORINGSSL_MAKE_DELETER(X509_STORE, X509_STORE_free)
+ // BORINGSSL_MAKE_UP_REF(X509_STORE, X509_STORE_up_ref)
+-// BORINGSSL_MAKE_DELETER(X509_STORE_CTX, X509_STORE_CTX_free)
++BORINGSSL_MAKE_DELETER(X509_STORE_CTX, X509_STORE_CTX_free)
  // BORINGSSL_MAKE_DELETER(X509_VERIFY_PARAM, X509_VERIFY_PARAM_free)
  
 -// BSSL_NAMESPACE_END

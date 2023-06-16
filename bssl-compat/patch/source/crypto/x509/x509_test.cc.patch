@@ -1,0 +1,733 @@
+--- a/source/crypto/x509/x509_test.cc
++++ b/source/crypto/x509/x509_test.cc
+@@ -12,177 +12,177 @@
+  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. */
+ 
+-// #include <algorithm>
+-// #include <functional>
+-// #include <string>
+-// #include <vector>
+-
+-// #include <gtest/gtest.h>
+-
+-// #include <openssl/asn1.h>
+-// #include <openssl/bio.h>
+-// #include <openssl/bytestring.h>
+-// #include <openssl/crypto.h>
+-// #include <openssl/curve25519.h>
+-// #include <openssl/digest.h>
+-// #include <openssl/err.h>
+-// #include <openssl/nid.h>
+-// #include <openssl/pem.h>
+-// #include <openssl/pool.h>
+-// #include <openssl/x509.h>
+-// #include <openssl/x509v3.h>
++#include <algorithm>
++#include <functional>
++#include <string>
++#include <vector>
++
++#include <gtest/gtest.h>
++
++#include <openssl/asn1.h>
++#include <openssl/bio.h>
++#include <openssl/bytestring.h>
++#include <openssl/crypto.h>
++#include <openssl/curve25519.h>
++#include <openssl/digest.h>
++#include <openssl/err.h>
++#include <openssl/nid.h>
++#include <openssl/pem.h>
++#include <openssl/pool.h>
++#include <openssl/x509.h>
++#include <openssl/x509v3.h>
+ 
+ // #include "internal.h"
+-// #include "../internal.h"
+-// #include "../test/test_util.h"
++#include "../internal.h"
++#include "../test/test_util.h"
+ // #include "../x509v3/internal.h"
+ 
+ 
+-// std::string GetTestData(const char *path);
++std::string GetTestData(const char *path);
+ 
+-// static const char kCrossSigningRootPEM[] = R"(
+-// -----BEGIN CERTIFICATE-----
+-// MIICcTCCAdqgAwIBAgIIagJHiPvE0MowDQYJKoZIhvcNAQELBQAwPDEaMBgGA1UE
+-// ChMRQm9yaW5nU1NMIFRFU1RJTkcxHjAcBgNVBAMTFUNyb3NzLXNpZ25pbmcgUm9v
+-// dCBDQTAgFw0xNTAxMDEwMDAwMDBaGA8yMTAwMDEwMTAwMDAwMFowPDEaMBgGA1UE
+-// ChMRQm9yaW5nU1NMIFRFU1RJTkcxHjAcBgNVBAMTFUNyb3NzLXNpZ25pbmcgUm9v
+-// dCBDQTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwo3qFvSB9Zmlbpzn9wJp
+-// ikI75Rxkatez8VkLqyxbOhPYl2Haz8F5p1gDG96dCI6jcLGgu3AKT9uhEQyyUko5
+-// EKYasazSeA9CQrdyhPg0mkTYVETnPM1W/ebid1YtqQbq1CMWlq2aTDoSGAReGFKP
+-// RTdXAbuAXzpCfi/d8LqV13UCAwEAAaN6MHgwDgYDVR0PAQH/BAQDAgIEMB0GA1Ud
+-// JQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAPBgNVHRMBAf8EBTADAQH/MBkGA1Ud
+-// DgQSBBBHKHC7V3Z/3oLvEZx0RZRwMBsGA1UdIwQUMBKAEEcocLtXdn/egu8RnHRF
+-// lHAwDQYJKoZIhvcNAQELBQADgYEAnglibsy6mGtpIXivtlcz4zIEnHw/lNW+r/eC
+-// CY7evZTmOoOuC/x9SS3MF9vawt1HFUummWM6ZgErqVBOXIB4//ykrcCgf5ZbF5Hr
+-// +3EFprKhBqYiXdD8hpBkrBoXwn85LPYWNd2TceCrx0YtLIprE2R5MB2RIq8y4Jk3
+-// YFXvkME=
+-// -----END CERTIFICATE-----
+-// )";
+-
+-// static const char kRootCAPEM[] = R"(
+-// -----BEGIN CERTIFICATE-----
+-// MIICVTCCAb6gAwIBAgIIAj5CwoHlWuYwDQYJKoZIhvcNAQELBQAwLjEaMBgGA1UE
+-// ChMRQm9yaW5nU1NMIFRFU1RJTkcxEDAOBgNVBAMTB1Jvb3QgQ0EwIBcNMTUwMTAx
+-// MDAwMDAwWhgPMjEwMDAxMDEwMDAwMDBaMC4xGjAYBgNVBAoTEUJvcmluZ1NTTCBU
+-// RVNUSU5HMRAwDgYDVQQDEwdSb290IENBMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB
+-// iQKBgQDpDn8RDOZa5oaDcPZRBy4CeBH1siSSOO4mYgLHlPE+oXdqwI/VImi2XeJM
+-// 2uCFETXCknJJjYG0iJdrt/yyRFvZTQZw+QzGj+mz36NqhGxDWb6dstB2m8PX+plZ
+-// w7jl81MDvUnWs8yiQ/6twgu5AbhWKZQDJKcNKCEpqa6UW0r5nwIDAQABo3oweDAO
+-// BgNVHQ8BAf8EBAMCAgQwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMA8G
+-// A1UdEwEB/wQFMAMBAf8wGQYDVR0OBBIEEEA31wH7QC+4HH5UBCeMWQEwGwYDVR0j
+-// BBQwEoAQQDfXAftAL7gcflQEJ4xZATANBgkqhkiG9w0BAQsFAAOBgQDXylEK77Za
+-// kKeY6ZerrScWyZhrjIGtHFu09qVpdJEzrk87k2G7iHHR9CAvSofCgEExKtWNS9dN
+-// +9WiZp/U48iHLk7qaYXdEuO07No4BYtXn+lkOykE+FUxmA4wvOF1cTd2tdj3MzX2
+-// kfGIBAYhzGZWhY3JbhIfTEfY1PNM1pWChQ==
+-// -----END CERTIFICATE-----
+-// )";
+-
+-// static const char kRootCrossSignedPEM[] = R"(
+-// -----BEGIN CERTIFICATE-----
+-// MIICYzCCAcygAwIBAgIIAj5CwoHlWuYwDQYJKoZIhvcNAQELBQAwPDEaMBgGA1UE
+-// ChMRQm9yaW5nU1NMIFRFU1RJTkcxHjAcBgNVBAMTFUNyb3NzLXNpZ25pbmcgUm9v
+-// dCBDQTAgFw0xNTAxMDEwMDAwMDBaGA8yMTAwMDEwMTAwMDAwMFowLjEaMBgGA1UE
+-// ChMRQm9yaW5nU1NMIFRFU1RJTkcxEDAOBgNVBAMTB1Jvb3QgQ0EwgZ8wDQYJKoZI
+-// hvcNAQEBBQADgY0AMIGJAoGBAOkOfxEM5lrmhoNw9lEHLgJ4EfWyJJI47iZiAseU
+-// 8T6hd2rAj9UiaLZd4kza4IURNcKSckmNgbSIl2u3/LJEW9lNBnD5DMaP6bPfo2qE
+-// bENZvp2y0Habw9f6mVnDuOXzUwO9SdazzKJD/q3CC7kBuFYplAMkpw0oISmprpRb
+-// SvmfAgMBAAGjejB4MA4GA1UdDwEB/wQEAwICBDAdBgNVHSUEFjAUBggrBgEFBQcD
+-// AQYIKwYBBQUHAwIwDwYDVR0TAQH/BAUwAwEB/zAZBgNVHQ4EEgQQQDfXAftAL7gc
+-// flQEJ4xZATAbBgNVHSMEFDASgBBHKHC7V3Z/3oLvEZx0RZRwMA0GCSqGSIb3DQEB
+-// CwUAA4GBAErTxYJ0en9HVRHAAr5OO5wuk5Iq3VMc79TMyQLCXVL8YH8Uk7KEwv+q
+-// 9MEKZv2eR/Vfm4HlXlUuIqfgUXbwrAYC/YVVX86Wnbpy/jc73NYVCq8FEZeO+0XU
+-// 90SWAPDdp+iL7aZdimnMtG1qlM1edmz8AKbrhN/R3IbA2CL0nCWV
+-// -----END CERTIFICATE-----
+-// )";
+-
+-// static const char kIntermediatePEM[] = R"(
+-// -----BEGIN CERTIFICATE-----
+-// MIICXjCCAcegAwIBAgIJAKJMH+7rscPcMA0GCSqGSIb3DQEBCwUAMC4xGjAYBgNV
+-// BAoTEUJvcmluZ1NTTCBURVNUSU5HMRAwDgYDVQQDEwdSb290IENBMCAXDTE1MDEw
+-// MTAwMDAwMFoYDzIxMDAwMTAxMDAwMDAwWjA2MRowGAYDVQQKExFCb3JpbmdTU0wg
+-// VEVTVElORzEYMBYGA1UEAxMPSW50ZXJtZWRpYXRlIENBMIGfMA0GCSqGSIb3DQEB
+-// AQUAA4GNADCBiQKBgQC7YtI0l8ocTYJ0gKyXTtPL4iMJCNY4OcxXl48jkncVG1Hl
+-// blicgNUa1r9m9YFtVkxvBinb8dXiUpEGhVg4awRPDcatlsBSEBuJkiZGYbRcAmSu
+-// CmZYnf6u3aYQ18SU8WqVERPpE4cwVVs+6kwlzRw0+XDoZAczu8ZezVhCUc6NbQID
+-// AQABo3oweDAOBgNVHQ8BAf8EBAMCAgQwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsG
+-// AQUFBwMCMA8GA1UdEwEB/wQFMAMBAf8wGQYDVR0OBBIEEIwaaKi1dttdV3sfjRSy
+-// BqMwGwYDVR0jBBQwEoAQQDfXAftAL7gcflQEJ4xZATANBgkqhkiG9w0BAQsFAAOB
+-// gQCvnolNWEHuQS8PFVVyuLR+FKBeUUdrVbSfHSzTqNAqQGp0C9fk5oCzDq6ZgTfY
+-// ESXM4cJhb3IAnW0UM0NFsYSKQJ50JZL2L3z5ZLQhHdbs4RmODGoC40BVdnJ4/qgB
+-// aGSh09eQRvAVmbVCviDK2ipkWNegdyI19jFfNP5uIkGlYg==
+-// -----END CERTIFICATE-----
+-// )";
+-
+-// static const char kIntermediateSelfSignedPEM[] = R"(
+-// -----BEGIN CERTIFICATE-----
+-// MIICZjCCAc+gAwIBAgIJAKJMH+7rscPcMA0GCSqGSIb3DQEBCwUAMDYxGjAYBgNV
+-// BAoTEUJvcmluZ1NTTCBURVNUSU5HMRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0Ew
+-// IBcNMTUwMTAxMDAwMDAwWhgPMjEwMDAxMDEwMDAwMDBaMDYxGjAYBgNVBAoTEUJv
+-// cmluZ1NTTCBURVNUSU5HMRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0EwgZ8wDQYJ
+-// KoZIhvcNAQEBBQADgY0AMIGJAoGBALti0jSXyhxNgnSArJdO08viIwkI1jg5zFeX
+-// jyOSdxUbUeVuWJyA1RrWv2b1gW1WTG8GKdvx1eJSkQaFWDhrBE8Nxq2WwFIQG4mS
+-// JkZhtFwCZK4KZlid/q7dphDXxJTxapURE+kThzBVWz7qTCXNHDT5cOhkBzO7xl7N
+-// WEJRzo1tAgMBAAGjejB4MA4GA1UdDwEB/wQEAwICBDAdBgNVHSUEFjAUBggrBgEF
+-// BQcDAQYIKwYBBQUHAwIwDwYDVR0TAQH/BAUwAwEB/zAZBgNVHQ4EEgQQjBpoqLV2
+-// 211Xex+NFLIGozAbBgNVHSMEFDASgBCMGmiotXbbXVd7H40UsgajMA0GCSqGSIb3
+-// DQEBCwUAA4GBALcccSrAQ0/EqQBsx0ZDTUydHXXNP2DrUkpUKmAXIe8McqIVSlkT
+-// 6H4xz7z8VRKBo9j+drjjtCw2i0CQc8aOLxRb5WJ8eVLnaW2XRlUqAzhF0CrulfVI
+-// E4Vs6ZLU+fra1WAuIj6qFiigRja+3YkZArG8tMA9vtlhTX/g7YBZIkqH
+-// -----END CERTIFICATE-----
+-// )";
+-
+-// static const char kLeafPEM[] = R"(
+-// -----BEGIN CERTIFICATE-----
+-// MIICXjCCAcegAwIBAgIIWjO48ufpunYwDQYJKoZIhvcNAQELBQAwNjEaMBgGA1UE
+-// ChMRQm9yaW5nU1NMIFRFU1RJTkcxGDAWBgNVBAMTD0ludGVybWVkaWF0ZSBDQTAg
+-// Fw0xNTAxMDEwMDAwMDBaGA8yMTAwMDEwMTAwMDAwMFowMjEaMBgGA1UEChMRQm9y
+-// aW5nU1NMIFRFU1RJTkcxFDASBgNVBAMTC2V4YW1wbGUuY29tMIGfMA0GCSqGSIb3
+-// DQEBAQUAA4GNADCBiQKBgQDD0U0ZYgqShJ7oOjsyNKyVXEHqeafmk/bAoPqY/h1c
+-// oPw2E8KmeqiUSoTPjG5IXSblOxcqpbAXgnjPzo8DI3GNMhAf8SYNYsoH7gc7Uy7j
+-// 5x8bUrisGnuTHqkqH6d4/e7ETJ7i3CpR8bvK16DggEvQTudLipz8FBHtYhFakfdh
+-// TwIDAQABo3cwdTAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEG
+-// CCsGAQUFBwMCMAwGA1UdEwEB/wQCMAAwGQYDVR0OBBIEEKN5pvbur7mlXjeMEYA0
+-// 4nUwGwYDVR0jBBQwEoAQjBpoqLV2211Xex+NFLIGozANBgkqhkiG9w0BAQsFAAOB
+-// gQBj/p+JChp//LnXWC1k121LM/ii7hFzQzMrt70bny406SGz9jAjaPOX4S3gt38y
+-// rhjpPukBlSzgQXFg66y6q5qp1nQTD1Cw6NkKBe9WuBlY3iYfmsf7WT8nhlT1CttU
+-// xNCwyMX9mtdXdQicOfNjIGUCD5OLV5PgHFPRKiHHioBAhg==
+-// -----END CERTIFICATE-----
+-// )";
+-
+-// static const char kLeafNoKeyUsagePEM[] = R"(
+-// -----BEGIN CERTIFICATE-----
+-// MIICNTCCAZ6gAwIBAgIJAIFQGaLQ0G2mMA0GCSqGSIb3DQEBCwUAMDYxGjAYBgNV
+-// BAoTEUJvcmluZ1NTTCBURVNUSU5HMRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0Ew
+-// IBcNMTUwMTAxMDAwMDAwWhgPMjEwMDAxMDEwMDAwMDBaMDcxGjAYBgNVBAoTEUJv
+-// cmluZ1NTTCBURVNUSU5HMRkwFwYDVQQDExBldmlsLmV4YW1wbGUuY29tMIGfMA0G
+-// CSqGSIb3DQEBAQUAA4GNADCBiQKBgQDOKoZe75NPz77EOaMMl4/0s3PyQw++zJvp
+-// ejHAxZiTPCJgMbEHLrSzNoHdopg+CLUH5bE4wTXM8w9Inv5P8OAFJt7gJuPUunmk
+-// j+NoU3QfzOR6BroePcz1vXX9jyVHRs087M/sLqWRHu9IR+/A+UTcBaWaFiDVUxtJ
+-// YOwFMwjNPQIDAQABo0gwRjAMBgNVHRMBAf8EAjAAMBkGA1UdDgQSBBBJfLEUWHq1
+-// 27rZ1AVx2J5GMBsGA1UdIwQUMBKAEIwaaKi1dttdV3sfjRSyBqMwDQYJKoZIhvcN
+-// AQELBQADgYEALVKN2Y3LZJOtu6SxFIYKxbLaXhTGTdIjxipZhmbBRDFjbZjZZOTe
+-// 6Oo+VDNPYco4rBexK7umYXJyfTqoY0E8dbiImhTcGTEj7OAB3DbBomgU1AYe+t2D
+-// uwBqh4Y3Eto+Zn4pMVsxGEfUpjzjZDel7bN1/oU/9KWPpDfywfUmjgk=
+-// -----END CERTIFICATE-----
+-// )";
+-
+-// static const char kForgeryPEM[] = R"(
+-// -----BEGIN CERTIFICATE-----
+-// MIICZzCCAdCgAwIBAgIIdTlMzQoKkeMwDQYJKoZIhvcNAQELBQAwNzEaMBgGA1UE
+-// ChMRQm9yaW5nU1NMIFRFU1RJTkcxGTAXBgNVBAMTEGV2aWwuZXhhbXBsZS5jb20w
+-// IBcNMTUwMTAxMDAwMDAwWhgPMjEwMDAxMDEwMDAwMDBaMDoxGjAYBgNVBAoTEUJv
+-// cmluZ1NTTCBURVNUSU5HMRwwGgYDVQQDExNmb3JnZXJ5LmV4YW1wbGUuY29tMIGf
+-// MA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDADTwruBQZGb7Ay6s9HiYv5d1lwtEy
+-// xQdA2Sy8Rn8uA20Q4KgqwVY7wzIZ+z5Butrsmwb70gdG1XU+yRaDeE7XVoW6jSpm
+-// 0sw35/5vJbTcL4THEFbnX0OPZnvpuZDFUkvVtq5kxpDWsVyM24G8EEq7kPih3Sa3
+-// OMhXVXF8kso6UQIDAQABo3cwdTAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYI
+-// KwYBBQUHAwEGCCsGAQUFBwMCMAwGA1UdEwEB/wQCMAAwGQYDVR0OBBIEEEYJ/WHM
+-// 8p64erPWIg4/liwwGwYDVR0jBBQwEoAQSXyxFFh6tdu62dQFcdieRjANBgkqhkiG
+-// 9w0BAQsFAAOBgQA+zH7bHPElWRWJvjxDqRexmYLn+D3Aivs8XgXQJsM94W0EzSUf
+-// DSLfRgaQwcb2gg2xpDFoG+W0vc6O651uF23WGt5JaFFJJxqjII05IexfCNhuPmp4
+-// 4UZAXPttuJXpn74IY1tuouaM06B3vXKZR+/ityKmfJvSwxacmFcK+2ziAg==
+-// -----END CERTIFICATE-----
+-// )";
++static const char kCrossSigningRootPEM[] = R"(
++-----BEGIN CERTIFICATE-----
++MIICcTCCAdqgAwIBAgIIagJHiPvE0MowDQYJKoZIhvcNAQELBQAwPDEaMBgGA1UE
++ChMRQm9yaW5nU1NMIFRFU1RJTkcxHjAcBgNVBAMTFUNyb3NzLXNpZ25pbmcgUm9v
++dCBDQTAgFw0xNTAxMDEwMDAwMDBaGA8yMTAwMDEwMTAwMDAwMFowPDEaMBgGA1UE
++ChMRQm9yaW5nU1NMIFRFU1RJTkcxHjAcBgNVBAMTFUNyb3NzLXNpZ25pbmcgUm9v
++dCBDQTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwo3qFvSB9Zmlbpzn9wJp
++ikI75Rxkatez8VkLqyxbOhPYl2Haz8F5p1gDG96dCI6jcLGgu3AKT9uhEQyyUko5
++EKYasazSeA9CQrdyhPg0mkTYVETnPM1W/ebid1YtqQbq1CMWlq2aTDoSGAReGFKP
++RTdXAbuAXzpCfi/d8LqV13UCAwEAAaN6MHgwDgYDVR0PAQH/BAQDAgIEMB0GA1Ud
++JQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjAPBgNVHRMBAf8EBTADAQH/MBkGA1Ud
++DgQSBBBHKHC7V3Z/3oLvEZx0RZRwMBsGA1UdIwQUMBKAEEcocLtXdn/egu8RnHRF
++lHAwDQYJKoZIhvcNAQELBQADgYEAnglibsy6mGtpIXivtlcz4zIEnHw/lNW+r/eC
++CY7evZTmOoOuC/x9SS3MF9vawt1HFUummWM6ZgErqVBOXIB4//ykrcCgf5ZbF5Hr
+++3EFprKhBqYiXdD8hpBkrBoXwn85LPYWNd2TceCrx0YtLIprE2R5MB2RIq8y4Jk3
++YFXvkME=
++-----END CERTIFICATE-----
++)";
++
++static const char kRootCAPEM[] = R"(
++-----BEGIN CERTIFICATE-----
++MIICVTCCAb6gAwIBAgIIAj5CwoHlWuYwDQYJKoZIhvcNAQELBQAwLjEaMBgGA1UE
++ChMRQm9yaW5nU1NMIFRFU1RJTkcxEDAOBgNVBAMTB1Jvb3QgQ0EwIBcNMTUwMTAx
++MDAwMDAwWhgPMjEwMDAxMDEwMDAwMDBaMC4xGjAYBgNVBAoTEUJvcmluZ1NTTCBU
++RVNUSU5HMRAwDgYDVQQDEwdSb290IENBMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCB
++iQKBgQDpDn8RDOZa5oaDcPZRBy4CeBH1siSSOO4mYgLHlPE+oXdqwI/VImi2XeJM
++2uCFETXCknJJjYG0iJdrt/yyRFvZTQZw+QzGj+mz36NqhGxDWb6dstB2m8PX+plZ
++w7jl81MDvUnWs8yiQ/6twgu5AbhWKZQDJKcNKCEpqa6UW0r5nwIDAQABo3oweDAO
++BgNVHQ8BAf8EBAMCAgQwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMA8G
++A1UdEwEB/wQFMAMBAf8wGQYDVR0OBBIEEEA31wH7QC+4HH5UBCeMWQEwGwYDVR0j
++BBQwEoAQQDfXAftAL7gcflQEJ4xZATANBgkqhkiG9w0BAQsFAAOBgQDXylEK77Za
++kKeY6ZerrScWyZhrjIGtHFu09qVpdJEzrk87k2G7iHHR9CAvSofCgEExKtWNS9dN
+++9WiZp/U48iHLk7qaYXdEuO07No4BYtXn+lkOykE+FUxmA4wvOF1cTd2tdj3MzX2
++kfGIBAYhzGZWhY3JbhIfTEfY1PNM1pWChQ==
++-----END CERTIFICATE-----
++)";
++
++static const char kRootCrossSignedPEM[] = R"(
++-----BEGIN CERTIFICATE-----
++MIICYzCCAcygAwIBAgIIAj5CwoHlWuYwDQYJKoZIhvcNAQELBQAwPDEaMBgGA1UE
++ChMRQm9yaW5nU1NMIFRFU1RJTkcxHjAcBgNVBAMTFUNyb3NzLXNpZ25pbmcgUm9v
++dCBDQTAgFw0xNTAxMDEwMDAwMDBaGA8yMTAwMDEwMTAwMDAwMFowLjEaMBgGA1UE
++ChMRQm9yaW5nU1NMIFRFU1RJTkcxEDAOBgNVBAMTB1Jvb3QgQ0EwgZ8wDQYJKoZI
++hvcNAQEBBQADgY0AMIGJAoGBAOkOfxEM5lrmhoNw9lEHLgJ4EfWyJJI47iZiAseU
++8T6hd2rAj9UiaLZd4kza4IURNcKSckmNgbSIl2u3/LJEW9lNBnD5DMaP6bPfo2qE
++bENZvp2y0Habw9f6mVnDuOXzUwO9SdazzKJD/q3CC7kBuFYplAMkpw0oISmprpRb
++SvmfAgMBAAGjejB4MA4GA1UdDwEB/wQEAwICBDAdBgNVHSUEFjAUBggrBgEFBQcD
++AQYIKwYBBQUHAwIwDwYDVR0TAQH/BAUwAwEB/zAZBgNVHQ4EEgQQQDfXAftAL7gc
++flQEJ4xZATAbBgNVHSMEFDASgBBHKHC7V3Z/3oLvEZx0RZRwMA0GCSqGSIb3DQEB
++CwUAA4GBAErTxYJ0en9HVRHAAr5OO5wuk5Iq3VMc79TMyQLCXVL8YH8Uk7KEwv+q
++9MEKZv2eR/Vfm4HlXlUuIqfgUXbwrAYC/YVVX86Wnbpy/jc73NYVCq8FEZeO+0XU
++90SWAPDdp+iL7aZdimnMtG1qlM1edmz8AKbrhN/R3IbA2CL0nCWV
++-----END CERTIFICATE-----
++)";
++
++static const char kIntermediatePEM[] = R"(
++-----BEGIN CERTIFICATE-----
++MIICXjCCAcegAwIBAgIJAKJMH+7rscPcMA0GCSqGSIb3DQEBCwUAMC4xGjAYBgNV
++BAoTEUJvcmluZ1NTTCBURVNUSU5HMRAwDgYDVQQDEwdSb290IENBMCAXDTE1MDEw
++MTAwMDAwMFoYDzIxMDAwMTAxMDAwMDAwWjA2MRowGAYDVQQKExFCb3JpbmdTU0wg
++VEVTVElORzEYMBYGA1UEAxMPSW50ZXJtZWRpYXRlIENBMIGfMA0GCSqGSIb3DQEB
++AQUAA4GNADCBiQKBgQC7YtI0l8ocTYJ0gKyXTtPL4iMJCNY4OcxXl48jkncVG1Hl
++blicgNUa1r9m9YFtVkxvBinb8dXiUpEGhVg4awRPDcatlsBSEBuJkiZGYbRcAmSu
++CmZYnf6u3aYQ18SU8WqVERPpE4cwVVs+6kwlzRw0+XDoZAczu8ZezVhCUc6NbQID
++AQABo3oweDAOBgNVHQ8BAf8EBAMCAgQwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsG
++AQUFBwMCMA8GA1UdEwEB/wQFMAMBAf8wGQYDVR0OBBIEEIwaaKi1dttdV3sfjRSy
++BqMwGwYDVR0jBBQwEoAQQDfXAftAL7gcflQEJ4xZATANBgkqhkiG9w0BAQsFAAOB
++gQCvnolNWEHuQS8PFVVyuLR+FKBeUUdrVbSfHSzTqNAqQGp0C9fk5oCzDq6ZgTfY
++ESXM4cJhb3IAnW0UM0NFsYSKQJ50JZL2L3z5ZLQhHdbs4RmODGoC40BVdnJ4/qgB
++aGSh09eQRvAVmbVCviDK2ipkWNegdyI19jFfNP5uIkGlYg==
++-----END CERTIFICATE-----
++)";
++
++static const char kIntermediateSelfSignedPEM[] = R"(
++-----BEGIN CERTIFICATE-----
++MIICZjCCAc+gAwIBAgIJAKJMH+7rscPcMA0GCSqGSIb3DQEBCwUAMDYxGjAYBgNV
++BAoTEUJvcmluZ1NTTCBURVNUSU5HMRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0Ew
++IBcNMTUwMTAxMDAwMDAwWhgPMjEwMDAxMDEwMDAwMDBaMDYxGjAYBgNVBAoTEUJv
++cmluZ1NTTCBURVNUSU5HMRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0EwgZ8wDQYJ
++KoZIhvcNAQEBBQADgY0AMIGJAoGBALti0jSXyhxNgnSArJdO08viIwkI1jg5zFeX
++jyOSdxUbUeVuWJyA1RrWv2b1gW1WTG8GKdvx1eJSkQaFWDhrBE8Nxq2WwFIQG4mS
++JkZhtFwCZK4KZlid/q7dphDXxJTxapURE+kThzBVWz7qTCXNHDT5cOhkBzO7xl7N
++WEJRzo1tAgMBAAGjejB4MA4GA1UdDwEB/wQEAwICBDAdBgNVHSUEFjAUBggrBgEF
++BQcDAQYIKwYBBQUHAwIwDwYDVR0TAQH/BAUwAwEB/zAZBgNVHQ4EEgQQjBpoqLV2
++211Xex+NFLIGozAbBgNVHSMEFDASgBCMGmiotXbbXVd7H40UsgajMA0GCSqGSIb3
++DQEBCwUAA4GBALcccSrAQ0/EqQBsx0ZDTUydHXXNP2DrUkpUKmAXIe8McqIVSlkT
++6H4xz7z8VRKBo9j+drjjtCw2i0CQc8aOLxRb5WJ8eVLnaW2XRlUqAzhF0CrulfVI
++E4Vs6ZLU+fra1WAuIj6qFiigRja+3YkZArG8tMA9vtlhTX/g7YBZIkqH
++-----END CERTIFICATE-----
++)";
++
++static const char kLeafPEM[] = R"(
++-----BEGIN CERTIFICATE-----
++MIICXjCCAcegAwIBAgIIWjO48ufpunYwDQYJKoZIhvcNAQELBQAwNjEaMBgGA1UE
++ChMRQm9yaW5nU1NMIFRFU1RJTkcxGDAWBgNVBAMTD0ludGVybWVkaWF0ZSBDQTAg
++Fw0xNTAxMDEwMDAwMDBaGA8yMTAwMDEwMTAwMDAwMFowMjEaMBgGA1UEChMRQm9y
++aW5nU1NMIFRFU1RJTkcxFDASBgNVBAMTC2V4YW1wbGUuY29tMIGfMA0GCSqGSIb3
++DQEBAQUAA4GNADCBiQKBgQDD0U0ZYgqShJ7oOjsyNKyVXEHqeafmk/bAoPqY/h1c
++oPw2E8KmeqiUSoTPjG5IXSblOxcqpbAXgnjPzo8DI3GNMhAf8SYNYsoH7gc7Uy7j
++5x8bUrisGnuTHqkqH6d4/e7ETJ7i3CpR8bvK16DggEvQTudLipz8FBHtYhFakfdh
++TwIDAQABo3cwdTAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEG
++CCsGAQUFBwMCMAwGA1UdEwEB/wQCMAAwGQYDVR0OBBIEEKN5pvbur7mlXjeMEYA0
++4nUwGwYDVR0jBBQwEoAQjBpoqLV2211Xex+NFLIGozANBgkqhkiG9w0BAQsFAAOB
++gQBj/p+JChp//LnXWC1k121LM/ii7hFzQzMrt70bny406SGz9jAjaPOX4S3gt38y
++rhjpPukBlSzgQXFg66y6q5qp1nQTD1Cw6NkKBe9WuBlY3iYfmsf7WT8nhlT1CttU
++xNCwyMX9mtdXdQicOfNjIGUCD5OLV5PgHFPRKiHHioBAhg==
++-----END CERTIFICATE-----
++)";
++
++static const char kLeafNoKeyUsagePEM[] = R"(
++-----BEGIN CERTIFICATE-----
++MIICNTCCAZ6gAwIBAgIJAIFQGaLQ0G2mMA0GCSqGSIb3DQEBCwUAMDYxGjAYBgNV
++BAoTEUJvcmluZ1NTTCBURVNUSU5HMRgwFgYDVQQDEw9JbnRlcm1lZGlhdGUgQ0Ew
++IBcNMTUwMTAxMDAwMDAwWhgPMjEwMDAxMDEwMDAwMDBaMDcxGjAYBgNVBAoTEUJv
++cmluZ1NTTCBURVNUSU5HMRkwFwYDVQQDExBldmlsLmV4YW1wbGUuY29tMIGfMA0G
++CSqGSIb3DQEBAQUAA4GNADCBiQKBgQDOKoZe75NPz77EOaMMl4/0s3PyQw++zJvp
++ejHAxZiTPCJgMbEHLrSzNoHdopg+CLUH5bE4wTXM8w9Inv5P8OAFJt7gJuPUunmk
++j+NoU3QfzOR6BroePcz1vXX9jyVHRs087M/sLqWRHu9IR+/A+UTcBaWaFiDVUxtJ
++YOwFMwjNPQIDAQABo0gwRjAMBgNVHRMBAf8EAjAAMBkGA1UdDgQSBBBJfLEUWHq1
++27rZ1AVx2J5GMBsGA1UdIwQUMBKAEIwaaKi1dttdV3sfjRSyBqMwDQYJKoZIhvcN
++AQELBQADgYEALVKN2Y3LZJOtu6SxFIYKxbLaXhTGTdIjxipZhmbBRDFjbZjZZOTe
++6Oo+VDNPYco4rBexK7umYXJyfTqoY0E8dbiImhTcGTEj7OAB3DbBomgU1AYe+t2D
++uwBqh4Y3Eto+Zn4pMVsxGEfUpjzjZDel7bN1/oU/9KWPpDfywfUmjgk=
++-----END CERTIFICATE-----
++)";
++
++static const char kForgeryPEM[] = R"(
++-----BEGIN CERTIFICATE-----
++MIICZzCCAdCgAwIBAgIIdTlMzQoKkeMwDQYJKoZIhvcNAQELBQAwNzEaMBgGA1UE
++ChMRQm9yaW5nU1NMIFRFU1RJTkcxGTAXBgNVBAMTEGV2aWwuZXhhbXBsZS5jb20w
++IBcNMTUwMTAxMDAwMDAwWhgPMjEwMDAxMDEwMDAwMDBaMDoxGjAYBgNVBAoTEUJv
++cmluZ1NTTCBURVNUSU5HMRwwGgYDVQQDExNmb3JnZXJ5LmV4YW1wbGUuY29tMIGf
++MA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDADTwruBQZGb7Ay6s9HiYv5d1lwtEy
++xQdA2Sy8Rn8uA20Q4KgqwVY7wzIZ+z5Butrsmwb70gdG1XU+yRaDeE7XVoW6jSpm
++0sw35/5vJbTcL4THEFbnX0OPZnvpuZDFUkvVtq5kxpDWsVyM24G8EEq7kPih3Sa3
++OMhXVXF8kso6UQIDAQABo3cwdTAOBgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYI
++KwYBBQUHAwEGCCsGAQUFBwMCMAwGA1UdEwEB/wQCMAAwGQYDVR0OBBIEEEYJ/WHM
++8p64erPWIg4/liwwGwYDVR0jBBQwEoAQSXyxFFh6tdu62dQFcdieRjANBgkqhkiG
++9w0BAQsFAAOBgQA+zH7bHPElWRWJvjxDqRexmYLn+D3Aivs8XgXQJsM94W0EzSUf
++DSLfRgaQwcb2gg2xpDFoG+W0vc6O651uF23WGt5JaFFJJxqjII05IexfCNhuPmp4
++4UZAXPttuJXpn74IY1tuouaM06B3vXKZR+/ityKmfJvSwxacmFcK+2ziAg==
++-----END CERTIFICATE-----
++)";
+ 
+ // kExamplePSSCert is an example RSA-PSS self-signed certificate, signed with
+ // the default hash functions.
+@@ -1049,11 +1049,11 @@
+ 
+ // CertFromPEM parses the given, NUL-terminated PEM block and returns an
+ // |X509*|.
+-// static bssl::UniquePtr<X509> CertFromPEM(const char *pem) {
+-//   bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(pem, strlen(pem)));
+-//   return bssl::UniquePtr<X509>(
+-//       PEM_read_bio_X509(bio.get(), nullptr, nullptr, nullptr));
+-// }
++static bssl::UniquePtr<X509> CertFromPEM(const char *pem) {
++  bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(pem, strlen(pem)));
++  return bssl::UniquePtr<X509>(
++      PEM_read_bio_X509(bio.get(), nullptr, nullptr, nullptr));
++}
+ 
+ // CRLFromPEM parses the given, NUL-terminated PEM block and returns an
+ // |X509_CRL*|.
+@@ -1082,190 +1082,190 @@
+ 
+ // CertsToStack converts a vector of |X509*| to an OpenSSL STACK_OF(X509),
+ // bumping the reference counts for each certificate in question.
+-// static bssl::UniquePtr<STACK_OF(X509)> CertsToStack(
+-//     const std::vector<X509 *> &certs) {
+-//   bssl::UniquePtr<STACK_OF(X509)> stack(sk_X509_new_null());
+-//   if (!stack) {
+-//     return nullptr;
+-//   }
+-//   for (auto cert : certs) {
+-//     if (!bssl::PushToStack(stack.get(), bssl::UpRef(cert))) {
+-//       return nullptr;
+-//     }
+-//   }
++static bssl::UniquePtr<STACK_OF(X509)> CertsToStack(
++    const std::vector<X509 *> &certs) {
++  bssl::UniquePtr<STACK_OF(X509)> stack(sk_X509_new_null());
++  if (!stack) {
++    return nullptr;
++  }
++  for (auto cert : certs) {
++    if (!bssl::PushToStack(stack.get(), bssl::UpRef(cert))) {
++      return nullptr;
++    }
++  }
+ 
+-//   return stack;
+-// }
++  return stack;
++}
+ 
+ // CRLsToStack converts a vector of |X509_CRL*| to an OpenSSL
+ // STACK_OF(X509_CRL), bumping the reference counts for each CRL in question.
+-// static bssl::UniquePtr<STACK_OF(X509_CRL)> CRLsToStack(
+-//     const std::vector<X509_CRL *> &crls) {
+-//   bssl::UniquePtr<STACK_OF(X509_CRL)> stack(sk_X509_CRL_new_null());
+-//   if (!stack) {
+-//     return nullptr;
+-//   }
+-//   for (auto crl : crls) {
+-//     if (!bssl::PushToStack(stack.get(), bssl::UpRef(crl))) {
+-//       return nullptr;
+-//     }
+-//   }
+-
+-//   return stack;
+-// }
+-
+-// static const time_t kReferenceTime = 1474934400 /* Sep 27th, 2016 */;
+-
+-// static int Verify(
+-//     X509 *leaf, const std::vector<X509 *> &roots,
+-//     const std::vector<X509 *> &intermediates,
+-//     const std::vector<X509_CRL *> &crls, unsigned long flags = 0,
+-//     std::function<void(X509_VERIFY_PARAM *)> configure_callback = nullptr,
+-//     int (*verify_callback)(int, X509_STORE_CTX *) = nullptr) {
+-//   bssl::UniquePtr<STACK_OF(X509)> roots_stack(CertsToStack(roots));
+-//   bssl::UniquePtr<STACK_OF(X509)> intermediates_stack(
+-//       CertsToStack(intermediates));
+-//   bssl::UniquePtr<STACK_OF(X509_CRL)> crls_stack(CRLsToStack(crls));
+-
+-//   if (!roots_stack ||
+-//       !intermediates_stack ||
+-//       !crls_stack) {
+-//     return X509_V_ERR_UNSPECIFIED;
+-//   }
+-
+-//   bssl::UniquePtr<X509_STORE_CTX> ctx(X509_STORE_CTX_new());
+-//   bssl::UniquePtr<X509_STORE> store(X509_STORE_new());
+-//   if (!ctx ||
+-//       !store) {
+-//     return X509_V_ERR_UNSPECIFIED;
+-//   }
+-
+-//   if (!X509_STORE_CTX_init(ctx.get(), store.get(), leaf,
+-//                            intermediates_stack.get())) {
+-//     return X509_V_ERR_UNSPECIFIED;
+-//   }
+-
+-//   X509_STORE_CTX_trusted_stack(ctx.get(), roots_stack.get());
+-//   X509_STORE_CTX_set0_crls(ctx.get(), crls_stack.get());
+-
+-//   X509_VERIFY_PARAM *param = X509_STORE_CTX_get0_param(ctx.get());
+-//   X509_VERIFY_PARAM_set_time(param, kReferenceTime);
+-//   if (configure_callback) {
+-//     configure_callback(param);
+-//   }
+-//   if (flags) {
+-//     X509_VERIFY_PARAM_set_flags(param, flags);
+-//   }
+-
+-//   ERR_clear_error();
+-//   if (X509_verify_cert(ctx.get()) != 1) {
+-//     return X509_STORE_CTX_get_error(ctx.get());
+-//   }
+-
+-//   return X509_V_OK;
+-// }
+-
+-// TEST(X509Test, TestVerify) {
+-//   //  cross_signing_root
+-//   //         |
+-//   //   root_cross_signed    root
+-//   //              \         /
+-//   //             intermediate
+-//   //                |     |
+-//   //              leaf  leaf_no_key_usage
+-//   //                      |
+-//   //                    forgery
+-//   bssl::UniquePtr<X509> cross_signing_root(CertFromPEM(kCrossSigningRootPEM));
+-//   bssl::UniquePtr<X509> root(CertFromPEM(kRootCAPEM));
+-//   bssl::UniquePtr<X509> root_cross_signed(CertFromPEM(kRootCrossSignedPEM));
+-//   bssl::UniquePtr<X509> intermediate(CertFromPEM(kIntermediatePEM));
+-//   bssl::UniquePtr<X509> intermediate_self_signed(
+-//       CertFromPEM(kIntermediateSelfSignedPEM));
+-//   bssl::UniquePtr<X509> leaf(CertFromPEM(kLeafPEM));
+-//   bssl::UniquePtr<X509> leaf_no_key_usage(CertFromPEM(kLeafNoKeyUsagePEM));
+-//   bssl::UniquePtr<X509> forgery(CertFromPEM(kForgeryPEM));
+-
+-//   ASSERT_TRUE(cross_signing_root);
+-//   ASSERT_TRUE(root);
+-//   ASSERT_TRUE(root_cross_signed);
+-//   ASSERT_TRUE(intermediate);
+-//   ASSERT_TRUE(intermediate_self_signed);
+-//   ASSERT_TRUE(leaf);
+-//   ASSERT_TRUE(forgery);
+-//   ASSERT_TRUE(leaf_no_key_usage);
+-
+-//   // Most of these tests work with or without |X509_V_FLAG_TRUSTED_FIRST|,
+-//   // though in different ways.
+-//   for (bool trusted_first : {true, false}) {
+-//     SCOPED_TRACE(trusted_first);
+-//     std::function<void(X509_VERIFY_PARAM *)> configure_callback;
+-//     if (!trusted_first) {
+-//       // Note we need the callback to clear the flag. Setting |flags| to zero
+-//       // only skips setting new flags.
+-//       configure_callback = [&](X509_VERIFY_PARAM *param) {
+-//         X509_VERIFY_PARAM_clear_flags(param, X509_V_FLAG_TRUSTED_FIRST);
+-//       };
+-//     }
+-
+-//     // No trust anchors configured.
+-//     ASSERT_EQ(X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY,
+-//               Verify(leaf.get(), /*roots=*/{}, /*intermediates=*/{},
+-//                      /*crls=*/{}, /*flags=*/0, configure_callback));
+-//     ASSERT_EQ(
+-//         X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY,
+-//         Verify(leaf.get(), /*roots=*/{}, {intermediate.get()}, /*crls=*/{},
+-//                /*flags=*/0, configure_callback));
+-
+-//     // Each chain works individually.
+-//     ASSERT_EQ(X509_V_OK, Verify(leaf.get(), {root.get()}, {intermediate.get()},
+-//                                 /*crls=*/{}, /*flags=*/0, configure_callback));
+-//     ASSERT_EQ(X509_V_OK, Verify(leaf.get(), {cross_signing_root.get()},
+-//                                 {intermediate.get(), root_cross_signed.get()},
+-//                                 /*crls=*/{}, /*flags=*/0, configure_callback));
+-
+-//     // When both roots are available, we pick one or the other.
+-//     ASSERT_EQ(X509_V_OK,
+-//               Verify(leaf.get(), {cross_signing_root.get(), root.get()},
+-//                      {intermediate.get(), root_cross_signed.get()}, /*crls=*/{},
+-//                      /*flags=*/0, configure_callback));
+-
+-//     // This is the “altchains” test – we remove the cross-signing CA but include
+-//     // the cross-sign in the intermediates. With |trusted_first|, we
+-//     // preferentially stop path-building at |intermediate|. Without
+-//     // |trusted_first|, the "altchains" logic repairs it.
+-//     ASSERT_EQ(X509_V_OK, Verify(leaf.get(), {root.get()},
+-//                                 {intermediate.get(), root_cross_signed.get()},
+-//                                 /*crls=*/{}, /*flags=*/0, configure_callback));
+-
+-//     // If |X509_V_FLAG_NO_ALT_CHAINS| is set and |trusted_first| is disabled, we
+-//     // get stuck on |root_cross_signed|. If either feature is enabled, we can
+-//     // build the path.
+-//     //
+-//     // This test exists to confirm our current behavior, but these modes are
+-//     // just workarounds for not having an actual path-building verifier. If we
+-//     // fix it, this test can be removed.
+-//     ASSERT_EQ(trusted_first ? X509_V_OK
+-//                             : X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY,
+-//               Verify(leaf.get(), {root.get()},
+-//                      {intermediate.get(), root_cross_signed.get()}, /*crls=*/{},
+-//                      /*flags=*/X509_V_FLAG_NO_ALT_CHAINS, configure_callback));
+-
+-//     // |forgery| is signed by |leaf_no_key_usage|, but is rejected because the
+-//     // leaf is not a CA.
+-//     ASSERT_EQ(X509_V_ERR_INVALID_CA,
+-//               Verify(forgery.get(), {intermediate_self_signed.get()},
+-//                      {leaf_no_key_usage.get()}, /*crls=*/{}, /*flags=*/0,
+-//                      configure_callback));
+-
+-//     // Test that one cannot skip Basic Constraints checking with a contorted set
+-//     // of roots and intermediates. This is a regression test for CVE-2015-1793.
+-//     ASSERT_EQ(X509_V_ERR_INVALID_CA,
+-//               Verify(forgery.get(),
+-//                      {intermediate_self_signed.get(), root_cross_signed.get()},
+-//                      {leaf_no_key_usage.get(), intermediate.get()}, /*crls=*/{},
+-//                      /*flags=*/0, configure_callback));
+-//   }
+-// }
++static bssl::UniquePtr<STACK_OF(X509_CRL)> CRLsToStack(
++    const std::vector<X509_CRL *> &crls) {
++  bssl::UniquePtr<STACK_OF(X509_CRL)> stack(sk_X509_CRL_new_null());
++  if (!stack) {
++    return nullptr;
++  }
++  for (auto crl : crls) {
++    if (!bssl::PushToStack(stack.get(), bssl::UpRef(crl))) {
++      return nullptr;
++    }
++  }
++
++  return stack;
++}
++
++static const time_t kReferenceTime = 1474934400 /* Sep 27th, 2016 */;
++
++static int Verify(
++    X509 *leaf, const std::vector<X509 *> &roots,
++    const std::vector<X509 *> &intermediates,
++    const std::vector<X509_CRL *> &crls, unsigned long flags = 0,
++    std::function<void(X509_VERIFY_PARAM *)> configure_callback = nullptr,
++    int (*verify_callback)(int, X509_STORE_CTX *) = nullptr) {
++  bssl::UniquePtr<STACK_OF(X509)> roots_stack(CertsToStack(roots));
++  bssl::UniquePtr<STACK_OF(X509)> intermediates_stack(
++      CertsToStack(intermediates));
++  bssl::UniquePtr<STACK_OF(X509_CRL)> crls_stack(CRLsToStack(crls));
++
++  if (!roots_stack ||
++      !intermediates_stack ||
++      !crls_stack) {
++    return X509_V_ERR_UNSPECIFIED;
++  }
++
++  bssl::UniquePtr<X509_STORE_CTX> ctx(X509_STORE_CTX_new());
++  bssl::UniquePtr<X509_STORE> store(X509_STORE_new());
++  if (!ctx ||
++      !store) {
++    return X509_V_ERR_UNSPECIFIED;
++  }
++
++  if (!X509_STORE_CTX_init(ctx.get(), store.get(), leaf,
++                           intermediates_stack.get())) {
++    return X509_V_ERR_UNSPECIFIED;
++  }
++
++  X509_STORE_CTX_trusted_stack(ctx.get(), roots_stack.get());
++  X509_STORE_CTX_set0_crls(ctx.get(), crls_stack.get());
++
++  X509_VERIFY_PARAM *param = X509_STORE_CTX_get0_param(ctx.get());
++  X509_VERIFY_PARAM_set_time(param, kReferenceTime);
++  if (configure_callback) {
++    configure_callback(param);
++  }
++  if (flags) {
++    X509_VERIFY_PARAM_set_flags(param, flags);
++  }
++
++  ERR_clear_error();
++  if (X509_verify_cert(ctx.get()) != 1) {
++    return X509_STORE_CTX_get_error(ctx.get());
++  }
++
++  return X509_V_OK;
++}
++
++TEST(X509Test, TestVerify) {
++  //  cross_signing_root
++  //         |
++  //   root_cross_signed    root
++  //              \         /
++  //             intermediate
++  //                |     |
++  //              leaf  leaf_no_key_usage
++  //                      |
++  //                    forgery
++  bssl::UniquePtr<X509> cross_signing_root(CertFromPEM(kCrossSigningRootPEM));
++  bssl::UniquePtr<X509> root(CertFromPEM(kRootCAPEM));
++  bssl::UniquePtr<X509> root_cross_signed(CertFromPEM(kRootCrossSignedPEM));
++  bssl::UniquePtr<X509> intermediate(CertFromPEM(kIntermediatePEM));
++  bssl::UniquePtr<X509> intermediate_self_signed(
++      CertFromPEM(kIntermediateSelfSignedPEM));
++  bssl::UniquePtr<X509> leaf(CertFromPEM(kLeafPEM));
++  bssl::UniquePtr<X509> leaf_no_key_usage(CertFromPEM(kLeafNoKeyUsagePEM));
++  bssl::UniquePtr<X509> forgery(CertFromPEM(kForgeryPEM));
++
++  ASSERT_TRUE(cross_signing_root);
++  ASSERT_TRUE(root);
++  ASSERT_TRUE(root_cross_signed);
++  ASSERT_TRUE(intermediate);
++  ASSERT_TRUE(intermediate_self_signed);
++  ASSERT_TRUE(leaf);
++  ASSERT_TRUE(forgery);
++  ASSERT_TRUE(leaf_no_key_usage);
++
++  // Most of these tests work with or without |X509_V_FLAG_TRUSTED_FIRST|,
++  // though in different ways.
++  for (bool trusted_first : {true, false}) {
++    SCOPED_TRACE(trusted_first);
++    std::function<void(X509_VERIFY_PARAM *)> configure_callback;
++    if (!trusted_first) {
++      // Note we need the callback to clear the flag. Setting |flags| to zero
++      // only skips setting new flags.
++      configure_callback = [&](X509_VERIFY_PARAM *param) {
++        X509_VERIFY_PARAM_clear_flags(param, X509_V_FLAG_TRUSTED_FIRST);
++      };
++    }
++
++    // No trust anchors configured.
++    ASSERT_EQ(X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY,
++              Verify(leaf.get(), /*roots=*/{}, /*intermediates=*/{},
++                     /*crls=*/{}, /*flags=*/0, configure_callback));
++    ASSERT_EQ(
++        X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY,
++        Verify(leaf.get(), /*roots=*/{}, {intermediate.get()}, /*crls=*/{},
++               /*flags=*/0, configure_callback));
++
++    // Each chain works individually.
++    ASSERT_EQ(X509_V_OK, Verify(leaf.get(), {root.get()}, {intermediate.get()},
++                                /*crls=*/{}, /*flags=*/0, configure_callback));
++    ASSERT_EQ(X509_V_OK, Verify(leaf.get(), {cross_signing_root.get()},
++                                {intermediate.get(), root_cross_signed.get()},
++                                /*crls=*/{}, /*flags=*/0, configure_callback));
++
++    // When both roots are available, we pick one or the other.
++    ASSERT_EQ(X509_V_OK,
++              Verify(leaf.get(), {cross_signing_root.get(), root.get()},
++                     {intermediate.get(), root_cross_signed.get()}, /*crls=*/{},
++                     /*flags=*/0, configure_callback));
++
++    // This is the “altchains” test – we remove the cross-signing CA but include
++    // the cross-sign in the intermediates. With |trusted_first|, we
++    // preferentially stop path-building at |intermediate|. Without
++    // |trusted_first|, the "altchains" logic repairs it.
++    ASSERT_EQ(X509_V_OK, Verify(leaf.get(), {root.get()},
++                                {intermediate.get(), root_cross_signed.get()},
++                                /*crls=*/{}, /*flags=*/0, configure_callback));
++
++    // If |X509_V_FLAG_NO_ALT_CHAINS| is set and |trusted_first| is disabled, we
++    // get stuck on |root_cross_signed|. If either feature is enabled, we can
++    // build the path.
++    //
++    // This test exists to confirm our current behavior, but these modes are
++    // just workarounds for not having an actual path-building verifier. If we
++    // fix it, this test can be removed.
++    ASSERT_EQ(trusted_first ? X509_V_OK
++                            : X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY,
++              Verify(leaf.get(), {root.get()},
++                     {intermediate.get(), root_cross_signed.get()}, /*crls=*/{},
++                     /*flags=*/X509_V_FLAG_NO_ALT_CHAINS, configure_callback));
++
++    // |forgery| is signed by |leaf_no_key_usage|, but is rejected because the
++    // leaf is not a CA.
++    ASSERT_EQ(X509_V_ERR_INVALID_CA,
++              Verify(forgery.get(), {intermediate_self_signed.get()},
++                     {leaf_no_key_usage.get()}, /*crls=*/{}, /*flags=*/0,
++                     configure_callback));
++
++    // Test that one cannot skip Basic Constraints checking with a contorted set
++    // of roots and intermediates. This is a regression test for CVE-2015-1793.
++    ASSERT_EQ(X509_V_ERR_INVALID_CA,
++              Verify(forgery.get(),
++                     {intermediate_self_signed.get(), root_cross_signed.get()},
++                     {leaf_no_key_usage.get(), intermediate.get()}, /*crls=*/{},
++                     /*flags=*/0, configure_callback));
++  }
++}
+ 
+ // static const char kHostname[] = "example.com";
+ // static const char kWrongHostname[] = "example2.com";

@@ -99,6 +99,7 @@ source/crypto/test/file_test_gtest.cc
 source/crypto/test/file_test.h
 source/crypto/test/test_util.cc
 source/crypto/test/test_util.h
+source/crypto/x509/x509_test.cc
 source/ossl.c
 source/ssl/
 source/ssl/internal.h
