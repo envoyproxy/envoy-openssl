@@ -55,7 +55,7 @@
  
  
  // Legacy X.509 library.
-@@ -116,7 +116,7 @@
+@@ -116,14 +116,14 @@
  // Instead, mutation functions should only be used when issuing new
  // certificates, as described in a later section.
  
@@ -64,6 +64,14 @@
  
  // X509 is an |ASN1_ITEM| whose ASN.1 type is X.509 Certificate (RFC 5280) and C
  // type is |X509*|.
+ // DECLARE_ASN1_ITEM(X509)
+ 
+ // X509_up_ref adds one to the reference count of |x509| and returns one.
+-// OPENSSL_EXPORT int X509_up_ref(X509 *x509);
++OPENSSL_EXPORT int X509_up_ref(X509 *x509);
+ 
+ // X509_chain_up_ref returns a newly-allocated |STACK_OF(X509)| containing a
+ // shallow copy of |chain|, or NULL on error. That is, the return value has the
 @@ -143,7 +143,7 @@
  
  // X509_free decrements |x509|'s reference count and, if zero, releases memory
