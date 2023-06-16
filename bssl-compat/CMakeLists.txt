@@ -224,6 +224,7 @@ add_library(bssl-compat STATIC
   source/X509_up_ref.cc
   source/X509_verify_cert.cc
   source/X509_verify_cert_error_string.cc
+  source/X509_VERIFY_PARAM_set1.cc
 )
 
 target_add_bssl_source(bssl-compat
