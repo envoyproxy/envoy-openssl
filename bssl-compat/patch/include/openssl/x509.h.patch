@@ -188,6 +188,15 @@
  // typedef int (*X509_STORE_CTX_verify_fn)(X509_STORE_CTX *);
  // typedef int (*X509_STORE_CTX_get_issuer_fn)(X509 **issuer, X509_STORE_CTX *ctx,
  //                                             X509 *x);
+@@ -2772,7 +2772,7 @@
+ //                                                      X509_NAME *nm);
+ // OPENSSL_EXPORT STACK_OF(X509_CRL) *X509_STORE_get1_crls(X509_STORE_CTX *st,
+ //                                                         X509_NAME *nm);
+-// OPENSSL_EXPORT int X509_STORE_set_flags(X509_STORE *ctx, unsigned long flags);
++OPENSSL_EXPORT int X509_STORE_set_flags(X509_STORE *ctx, unsigned long flags);
+ // OPENSSL_EXPORT int X509_STORE_set_purpose(X509_STORE *ctx, int purpose);
+ // OPENSSL_EXPORT int X509_STORE_set_trust(X509_STORE *ctx, int trust);
+ // OPENSSL_EXPORT int X509_STORE_set1_param(X509_STORE *ctx,
 @@ -2786,8 +2786,8 @@
  // OPENSSL_EXPORT void X509_STORE_CTX_set_verify(X509_STORE_CTX *ctx,
  //                                               X509_STORE_CTX_verify_fn verify);
