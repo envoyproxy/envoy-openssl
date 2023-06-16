@@ -133,6 +133,15 @@
  
  // X509_NAME_get0_der sets |*out_der| and |*out_der_len|
  //
+@@ -1756,7 +1756,7 @@
+ // X509_verify_cert_error_string returns |err| as a human-readable string, where
+ // |err| should be one of the |X509_V_*| values. If |err| is unknown, it returns
+ // a default description.
+-// OPENSSL_EXPORT const char *X509_verify_cert_error_string(long err);
++OPENSSL_EXPORT const char *X509_verify_cert_error_string(long err);
+ 
+ // X509_verify checks that |x509| has a valid signature by |pkey|. It returns
+ // one if the signature is valid and zero otherwise. Note this function only
 @@ -2054,8 +2054,8 @@
  // OPENSSL_EXPORT unsigned long X509_issuer_name_hash_old(X509 *a);
  // OPENSSL_EXPORT unsigned long X509_subject_name_hash_old(X509 *x);
@@ -162,7 +171,7 @@
  // SSL_CTX -> X509_STORE
  //                 -> X509_LOOKUP
  //                         ->X509_LOOKUP_METHOD
-@@ -2828,18 +2828,18 @@
+@@ -2988,18 +2988,18 @@
  // OPENSSL_EXPORT void X509_VERIFY_PARAM_table_cleanup(void);
  
  
@@ -188,7 +197,7 @@
  // BORINGSSL_MAKE_UP_REF(X509, X509_up_ref)
  // BORINGSSL_MAKE_DELETER(X509_ALGOR, X509_ALGOR_free)
  // BORINGSSL_MAKE_DELETER(X509_ATTRIBUTE, X509_ATTRIBUTE_free)
-@@ -2848,7 +2848,7 @@
+@@ -3008,7 +3008,7 @@
  // BORINGSSL_MAKE_DELETER(X509_EXTENSION, X509_EXTENSION_free)
  // BORINGSSL_MAKE_DELETER(X509_INFO, X509_INFO_free)
  // BORINGSSL_MAKE_DELETER(X509_LOOKUP, X509_LOOKUP_free)
@@ -197,7 +206,7 @@
  // BORINGSSL_MAKE_DELETER(X509_NAME_ENTRY, X509_NAME_ENTRY_free)
  // BORINGSSL_MAKE_DELETER(X509_PKEY, X509_PKEY_free)
  // BORINGSSL_MAKE_DELETER(X509_PUBKEY, X509_PUBKEY_free)
-@@ -2860,10 +2860,10 @@
+@@ -3020,10 +3020,10 @@
  // BORINGSSL_MAKE_DELETER(X509_STORE_CTX, X509_STORE_CTX_free)
  // BORINGSSL_MAKE_DELETER(X509_VERIFY_PARAM, X509_VERIFY_PARAM_free)
  
@@ -211,7 +220,7 @@
  
  #ifdef ossl_X509_R_AKID_MISMATCH
  #define X509_R_AKID_MISMATCH ossl_X509_R_AKID_MISMATCH
-@@ -2998,4 +2998,4 @@
+@@ -3158,4 +3158,4 @@
  #define X509_R_NO_CRL_FOUND ossl_X509_R_NO_CRL_FOUND
  #endif
  
