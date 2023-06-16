@@ -236,6 +236,17 @@
  // OPENSSL_EXPORT void X509_STORE_CTX_trusted_stack(X509_STORE_CTX *ctx,
  //                                                  STACK_OF(X509) *sk);
  // OPENSSL_EXPORT void X509_STORE_CTX_cleanup(X509_STORE_CTX *ctx);
+@@ -2922,8 +2922,8 @@
+ // OPENSSL_EXPORT void X509_STORE_CTX_set_verify_cb(
+ //     X509_STORE_CTX *ctx, int (*verify_cb)(int, X509_STORE_CTX *));
+ 
+-// OPENSSL_EXPORT X509_VERIFY_PARAM *X509_STORE_CTX_get0_param(
+-//     X509_STORE_CTX *ctx);
++OPENSSL_EXPORT X509_VERIFY_PARAM *X509_STORE_CTX_get0_param(
++    X509_STORE_CTX *ctx);
+ // OPENSSL_EXPORT void X509_STORE_CTX_set0_param(X509_STORE_CTX *ctx,
+ //                                               X509_VERIFY_PARAM *param);
+ // OPENSSL_EXPORT int X509_STORE_CTX_set_default(X509_STORE_CTX *ctx,
 @@ -2935,8 +2935,8 @@
  // OPENSSL_EXPORT void X509_VERIFY_PARAM_free(X509_VERIFY_PARAM *param);
  // OPENSSL_EXPORT int X509_VERIFY_PARAM_inherit(X509_VERIFY_PARAM *to,

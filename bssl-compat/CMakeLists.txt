@@ -220,6 +220,7 @@ add_library(bssl-compat STATIC
   source/X509_NAME_dup.cc
   source/X509_NAME_free.cc
   source/X509_NAME_new.cc
+  source/X509_STORE_CTX_get0_param.cc
   source/X509_STORE_CTX_init.cc
   source/X509_STORE_CTX_new.cc
   source/X509_STORE_new.cc
