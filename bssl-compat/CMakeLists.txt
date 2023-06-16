@@ -71,6 +71,7 @@ add_library(bssl-compat STATIC
   source/evp.c
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
+  source/GENERAL_NAME_set0_value.cc
   source/HMAC.cc
   source/HMAC_CTX_free.cc
   source/HMAC_CTX_new.cc

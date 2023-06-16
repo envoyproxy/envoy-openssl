@@ -1,0 +1,118 @@
+--- a/include/openssl/x509v3.h
++++ b/include/openssl/x509v3.h
+@@ -52,17 +52,17 @@
+  * (eay@cryptsoft.com).  This product includes software written by Tim
+  * Hudson (tjh@cryptsoft.com). */
+ 
+-// #ifndef HEADER_X509V3_H
+-// #define HEADER_X509V3_H
++#ifndef HEADER_X509V3_H
++#define HEADER_X509V3_H
+ 
+-// #include <openssl/bio.h>
+-// #include <openssl/conf.h>
+-// #include <openssl/lhash.h>
+-// #include <openssl/x509.h>
+-
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#include <openssl/bio.h>
++#include <openssl/conf.h>
++#include <openssl/lhash.h>
++#include <openssl/x509.h>
++
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // Legacy X.509 library.
+@@ -169,38 +169,7 @@
+ //   ASN1_STRING *partyName;
+ // } EDIPARTYNAME;
+ 
+-// typedef struct GENERAL_NAME_st {
+-// #define GEN_OTHERNAME 0
+-// #define GEN_EMAIL 1
+-// #define GEN_DNS 2
+-// #define GEN_X400 3
+-// #define GEN_DIRNAME 4
+-// #define GEN_EDIPARTY 5
+-// #define GEN_URI 6
+-// #define GEN_IPADD 7
+-// #define GEN_RID 8
+-
+-//   int type;
+-//   union {
+-//     char *ptr;
+-//     OTHERNAME *otherName;  // otherName
+-//     ASN1_IA5STRING *rfc822Name;
+-//     ASN1_IA5STRING *dNSName;
+-//     ASN1_TYPE *x400Address;
+-//     X509_NAME *directoryName;
+-//     EDIPARTYNAME *ediPartyName;
+-//     ASN1_IA5STRING *uniformResourceIdentifier;
+-//     ASN1_OCTET_STRING *iPAddress;
+-//     ASN1_OBJECT *registeredID;
+-
+-//     // Old names
+-//     ASN1_OCTET_STRING *ip;  // iPAddress
+-//     X509_NAME *dirn;        // dirn
+-//     ASN1_IA5STRING *ia5;    // rfc822Name, dNSName, uniformResourceIdentifier
+-//     ASN1_OBJECT *rid;       // registeredID
+-//     ASN1_TYPE *other;       // x400Address
+-//   } d;
+-// } GENERAL_NAME;
++typedef struct ossl_GENERAL_NAME_st GENERAL_NAME;
+ 
+ // DEFINE_STACK_OF(GENERAL_NAME)
+ 
+@@ -497,8 +466,8 @@
+ // DECLARE_ASN1_FUNCTIONS_const(OTHERNAME)
+ // DECLARE_ASN1_FUNCTIONS_const(EDIPARTYNAME)
+ // OPENSSL_EXPORT int OTHERNAME_cmp(OTHERNAME *a, OTHERNAME *b);
+-// OPENSSL_EXPORT void GENERAL_NAME_set0_value(GENERAL_NAME *a, int type,
+-//                                             void *value);
++OPENSSL_EXPORT void GENERAL_NAME_set0_value(GENERAL_NAME *a, int type,
++                                            void *value);
+ // OPENSSL_EXPORT void *GENERAL_NAME_get0_value(const GENERAL_NAME *a, int *ptype);
+ // OPENSSL_EXPORT int GENERAL_NAME_set0_othername(GENERAL_NAME *gen,
+ //                                                ASN1_OBJECT *oid,
+@@ -912,12 +881,12 @@
+ // made after this point may be overwritten when the script is next run.
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
++#if defined(__cplusplus)
++}  // extern C
+ 
+-// extern "C++" {
++extern "C++" {
+ 
+-// BSSL_NAMESPACE_BEGIN
++BSSL_NAMESPACE_BEGIN
+ 
+ // BORINGSSL_MAKE_DELETER(ACCESS_DESCRIPTION, ACCESS_DESCRIPTION_free)
+ // BORINGSSL_MAKE_DELETER(AUTHORITY_KEYID, AUTHORITY_KEYID_free)
+@@ -931,10 +900,10 @@
+ // BORINGSSL_MAKE_DELETER(POLICY_MAPPING, POLICY_MAPPING_free)
+ // BORINGSSL_MAKE_DELETER(POLICYINFO, POLICYINFO_free)
+ 
+-// BSSL_NAMESPACE_END
++BSSL_NAMESPACE_END
+ 
+-// }  // extern C++
+-// #endif
++}  // extern C++
++#endif
+ 
+ #ifdef ossl_X509V3_R_BAD_IP_ADDRESS
+ #define X509V3_R_BAD_IP_ADDRESS ossl_X509V3_R_BAD_IP_ADDRESS
+@@ -1132,4 +1101,4 @@
+ #define X509V3_R_TRAILING_DATA_IN_EXTENSION ossl_X509V3_R_TRAILING_DATA_IN_EXTENSION
+ #endif
+ 
+-// #endif
++#endif
