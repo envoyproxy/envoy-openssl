@@ -220,6 +220,7 @@ add_library(bssl-compat STATIC
   source/X509_NAME_free.cc
   source/X509_NAME_new.cc
   source/X509_verify_cert.cc
+  source/X509_verify_cert_error_string.cc
 )
 
 target_add_bssl_source(bssl-compat
