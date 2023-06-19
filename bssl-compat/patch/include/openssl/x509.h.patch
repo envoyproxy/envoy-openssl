@@ -167,7 +167,25 @@
  
  // X509_NAME_get0_der sets |*out_der| and |*out_der_len|
  //
-@@ -1756,7 +1756,7 @@
+@@ -1717,7 +1717,7 @@
+ 
+ // } /* X509_INFO */;
+ 
+-// DEFINE_STACK_OF(X509_INFO)
++DEFINE_STACK_OF(X509_INFO)
+ 
+ // The next 2 structures and their 8 routines were sent to me by
+ // Pat Richard <patr@x509.com> and are used to manipulate
+@@ -1740,7 +1740,7 @@
+ // Note that decoding an |X509| object will not check for invalid extensions. To
+ // detect the error case, call |X509_get_extensions_flags| and check the
+ // |EXFLAG_INVALID| bit.
+-// OPENSSL_EXPORT long X509_get_pathlen(X509 *x509);
++OPENSSL_EXPORT long X509_get_pathlen(X509 *x509);
+ 
+ // X509_SIG_get0 sets |*out_alg| and |*out_digest| to non-owning pointers to
+ // |sig|'s algorithm and digest fields, respectively. Either |out_alg| and
+@@ -1756,13 +1756,13 @@
  // X509_verify_cert_error_string returns |err| as a human-readable string, where
  // |err| should be one of the |X509_V_*| values. If |err| is unknown, it returns
  // a default description.
@@ -176,7 +194,23 @@
  
  // X509_verify checks that |x509| has a valid signature by |pkey|. It returns
  // one if the signature is valid and zero otherwise. Note this function only
-@@ -2054,8 +2054,8 @@
+ // checks the signature itself and does not perform a full certificate
+ // validation.
+-// OPENSSL_EXPORT int X509_verify(X509 *x509, EVP_PKEY *pkey);
++OPENSSL_EXPORT int X509_verify(X509 *x509, EVP_PKEY *pkey);
+ 
+ // X509_REQ_verify checks that |req| has a valid signature by |pkey|. It returns
+ // one if the signature is valid and zero otherwise.
+@@ -1897,7 +1897,7 @@
+ // DECLARE_ASN1_FUNCTIONS_const(NETSCAPE_SPKAC)
+ 
+ // OPENSSL_EXPORT X509_INFO *X509_INFO_new(void);
+-// OPENSSL_EXPORT void X509_INFO_free(X509_INFO *a);
++OPENSSL_EXPORT void X509_INFO_free(X509_INFO *a);
+ // OPENSSL_EXPORT char *X509_NAME_oneline(const X509_NAME *a, char *buf, int size);
+ 
+ // OPENSSL_EXPORT int ASN1_digest(i2d_of_void *i2d, const EVP_MD *type, char *data,
+@@ -2054,12 +2054,12 @@
  // OPENSSL_EXPORT unsigned long X509_issuer_name_hash_old(X509 *a);
  // OPENSSL_EXPORT unsigned long X509_subject_name_hash_old(X509 *x);
  
@@ -187,6 +221,11 @@
  // OPENSSL_EXPORT unsigned long X509_NAME_hash(X509_NAME *x);
  // OPENSSL_EXPORT unsigned long X509_NAME_hash_old(X509_NAME *x);
  
+-// OPENSSL_EXPORT int X509_CRL_cmp(const X509_CRL *a, const X509_CRL *b);
++OPENSSL_EXPORT int X509_CRL_cmp(const X509_CRL *a, const X509_CRL *b);
+ // OPENSSL_EXPORT int X509_CRL_match(const X509_CRL *a, const X509_CRL *b);
+ // OPENSSL_EXPORT int X509_print_ex_fp(FILE *bp, X509 *x, unsigned long nmflag,
+ //                                     unsigned long cflag);
 @@ -2321,7 +2321,7 @@
  // OPENSSL_EXPORT ASN1_TYPE *X509_ATTRIBUTE_get0_type(X509_ATTRIBUTE *attr,
  //                                                    int idx);
@@ -364,7 +403,8 @@
 +BORINGSSL_MAKE_DELETER(X509_CRL, X509_CRL_free)
 +BORINGSSL_MAKE_UP_REF(X509_CRL, X509_CRL_up_ref)
  // BORINGSSL_MAKE_DELETER(X509_EXTENSION, X509_EXTENSION_free)
- // BORINGSSL_MAKE_DELETER(X509_INFO, X509_INFO_free)
+-// BORINGSSL_MAKE_DELETER(X509_INFO, X509_INFO_free)
++BORINGSSL_MAKE_DELETER(X509_INFO, X509_INFO_free)
  // BORINGSSL_MAKE_DELETER(X509_LOOKUP, X509_LOOKUP_free)
 -// BORINGSSL_MAKE_DELETER(X509_NAME, X509_NAME_free)
 +BORINGSSL_MAKE_DELETER(X509_NAME, X509_NAME_free)

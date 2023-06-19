@@ -71,6 +71,7 @@ add_library(bssl-compat STATIC
   source/evp.c
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
+  source/EVP_PKEY_cmp.cc
   source/GENERAL_NAME_set0_value.cc
   source/HMAC.cc
   source/HMAC_CTX_free.cc
@@ -90,6 +91,7 @@ add_library(bssl-compat STATIC
   source/PEM_bytes_read_bio.c
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
+  source/PEM_read_bio_X509_CRL.cc
   source/PEM_X509_INFO_read_bio.cc
   source/PKCS12_free.cc
   source/PKCS12_get_key_and_certs.cc
@@ -215,9 +217,13 @@ add_library(bssl-compat STATIC
   source/TLS_method.cc
   source/TLS_VERSION_to_string.cc
   source/X509_alias_get0.cc
+  source/X509_CRL_cmp.cc
   source/X509_CRL_free.cc
   source/X509_CRL_up_ref.cc
+  source/X509_get_extension_flags.cc
+  source/X509_get_pathlen.cc
   source/X509_get_pubkey.cc
+  source/X509_INFO_free.cc
   source/X509_NAME_cmp.cc
   source/X509_NAME_dup.cc
   source/X509_NAME_free.cc
@@ -234,6 +240,7 @@ add_library(bssl-compat STATIC
   source/X509_STORE_set_flags.cc
   source/X509_STORE_set_verify_cb.cc
   source/X509_up_ref.cc
+  source/X509_verify.cc
   source/X509_verify_cert.cc
   source/X509_verify_cert_error_string.cc
   source/X509_VERIFY_PARAM_clear_flags.cc
@@ -372,6 +379,7 @@ set(utests-bssl-source-list
   source/crypto/test/test_util.cc
   source/crypto/test/test_util.h
   source/crypto/x509/x509_test.cc
+  source/crypto/x509v3/internal.h
   source/ssl/ssl_c_test.c
   source/ssl/ssl_test.cc
 )

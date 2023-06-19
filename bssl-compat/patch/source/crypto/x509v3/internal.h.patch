@@ -1,0 +1,48 @@
+--- a/source/crypto/x509v3/internal.h
++++ b/source/crypto/x509v3/internal.h
+@@ -56,23 +56,23 @@
+  *
+  */
+ 
+-// #ifndef OPENSSL_HEADER_X509V3_INTERNAL_H
+-// #define OPENSSL_HEADER_X509V3_INTERNAL_H
++#ifndef OPENSSL_HEADER_X509V3_INTERNAL_H
++#define OPENSSL_HEADER_X509V3_INTERNAL_H
+ 
+-// #include <openssl/base.h>
++#include <openssl/base.h>
+ 
+-// #include <openssl/conf.h>
+-// #include <openssl/stack.h>
+-// #include <openssl/x509v3.h>
++#include <openssl/conf.h>
++#include <openssl/stack.h>
++#include <openssl/x509v3.h>
+ 
+ // TODO(davidben): Merge x509 and x509v3. This include is needed because some
+ // internal typedefs are shared between the two, but the two modules depend on
+ // each other circularly.
+ // #include "../x509/internal.h"
+ 
+-// #if defined(__cplusplus)
+-// extern "C" {
+-// #endif
++#if defined(__cplusplus)
++extern "C" {
++#endif
+ 
+ 
+ // x509v3_bytes_to_hex encodes |len| bytes from |in| to hex and returns a
+@@ -285,8 +285,8 @@
+ // const X509_POLICY_CACHE *policy_cache_set(X509 *x);
+ 
+ 
+-// #if defined(__cplusplus)
+-// }  // extern C
+-// #endif
++#if defined(__cplusplus)
++}  // extern C
++#endif
+ 
+-// #endif  // OPENSSL_HEADER_X509V3_INTERNAL_H
++#endif  // OPENSSL_HEADER_X509V3_INTERNAL_H

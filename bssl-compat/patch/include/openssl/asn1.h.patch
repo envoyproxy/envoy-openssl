@@ -31,6 +31,24 @@
  
  
  // Legacy ASN.1 library.
+@@ -296,7 +296,7 @@
+ // DECLARE_ASN1_ITEM declares an |ASN1_ITEM| with name |name|. The |ASN1_ITEM|
+ // may be referenced with |ASN1_ITEM_rptr|. Uses of this macro should document
+ // the corresponding ASN.1 and C types.
+-// #define DECLARE_ASN1_ITEM(name) extern OPENSSL_EXPORT const ASN1_ITEM name##_it;
++#define DECLARE_ASN1_ITEM(name) extern OPENSSL_EXPORT const ASN1_ITEM name##_it;
+ 
+ // ASN1_ITEM_rptr returns the |const ASN1_ITEM *| named |name|.
+ // #define ASN1_ITEM_rptr(name) (&(name##_it))
+@@ -563,7 +563,7 @@
+ // OPENSSL_EXPORT ASN1_STRING *ASN1_STRING_new(void);
+ 
+ // ASN1_STRING_free releases memory associated with |str|.
+-// OPENSSL_EXPORT void ASN1_STRING_free(ASN1_STRING *str);
++OPENSSL_EXPORT void ASN1_STRING_free(ASN1_STRING *str);
+ 
+ // ASN1_STRING_copy sets |dst| to a copy of |str|. It returns one on success and
+ // zero on error.
 @@ -579,18 +579,18 @@
  // ASN1_STRING_get0_data returns a pointer to |str|'s contents. Callers should
  // use |ASN1_STRING_length| to determine the length of the string. The string
@@ -147,6 +165,53 @@
  
  // ASN1_TIME_adj adds |offset_day| days and |offset_sec| seconds to
  // |t| and writes the result to |s|. As in RFC 5280, section 4.1.2.5, it uses
+@@ -1805,24 +1805,24 @@
+ // prototypes directly. Particularly when |type|, |itname|, or |name| differ,
+ // the macros can be difficult to understand.
+ 
+-// #define DECLARE_ASN1_FUNCTIONS(type) DECLARE_ASN1_FUNCTIONS_name(type, type)
++#define DECLARE_ASN1_FUNCTIONS(type) DECLARE_ASN1_FUNCTIONS_name(type, type)
+ 
+ // #define DECLARE_ASN1_ALLOC_FUNCTIONS(type) \
+ //   DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, type)
+ 
+-// #define DECLARE_ASN1_FUNCTIONS_name(type, name) \
+-//   DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, name) \
+-//   DECLARE_ASN1_ENCODE_FUNCTIONS(type, name, name)
++#define DECLARE_ASN1_FUNCTIONS_name(type, name) \
++  DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, name) \
++  DECLARE_ASN1_ENCODE_FUNCTIONS(type, name, name)
+ 
+ // #define DECLARE_ASN1_FUNCTIONS_fname(type, itname, name) \
+ //   DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, name)          \
+ //   DECLARE_ASN1_ENCODE_FUNCTIONS(type, itname, name)
+ 
+-// #define DECLARE_ASN1_ENCODE_FUNCTIONS(type, itname, name)             \
+-//   OPENSSL_EXPORT type *d2i_##name(type **a, const unsigned char **in, \
+-//                                   long len);                          \
+-//   OPENSSL_EXPORT int i2d_##name(type *a, unsigned char **out);        \
+-//   DECLARE_ASN1_ITEM(itname)
++#define DECLARE_ASN1_ENCODE_FUNCTIONS(type, itname, name)             \
++  OPENSSL_EXPORT type *d2i_##name(type **a, const unsigned char **in, \
++                                  long len);                          \
++  OPENSSL_EXPORT int i2d_##name(type *a, unsigned char **out);        \
++  DECLARE_ASN1_ITEM(itname)
+ 
+ // #define DECLARE_ASN1_ENCODE_FUNCTIONS_const(type, name)               \
+ //   OPENSSL_EXPORT type *d2i_##name(type **a, const unsigned char **in, \
+@@ -1834,9 +1834,9 @@
+ //   DECLARE_ASN1_ALLOC_FUNCTIONS(name)       \
+ //   DECLARE_ASN1_ENCODE_FUNCTIONS_const(name, name)
+ 
+-// #define DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, name) \
+-//   OPENSSL_EXPORT type *name##_new(void);              \
+-//   OPENSSL_EXPORT void name##_free(type *a);
++#define DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, name) \
++  OPENSSL_EXPORT type *name##_new(void);              \
++  OPENSSL_EXPORT void name##_free(type *a);
+ 
+ 
+ // Deprecated functions.
 @@ -1955,22 +1955,22 @@
  // DECLARE_ASN1_ITEM(ASN1_PRINTABLE)
  
@@ -163,7 +228,8 @@
 +BSSL_NAMESPACE_BEGIN
  
  // BORINGSSL_MAKE_DELETER(ASN1_OBJECT, ASN1_OBJECT_free)
- // BORINGSSL_MAKE_DELETER(ASN1_STRING, ASN1_STRING_free)
+-// BORINGSSL_MAKE_DELETER(ASN1_STRING, ASN1_STRING_free)
++BORINGSSL_MAKE_DELETER(ASN1_STRING, ASN1_STRING_free)
  // BORINGSSL_MAKE_DELETER(ASN1_TYPE, ASN1_TYPE_free)
  
 -// BSSL_NAMESPACE_END
