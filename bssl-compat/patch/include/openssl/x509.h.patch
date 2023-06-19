@@ -81,7 +81,7 @@
  
  // d2i_X509 parses up to |len| bytes from |*inp| as a DER-encoded X.509
  // Certificate (RFC 5280), as described in |d2i_SAMPLE_with_reuse|.
-@@ -161,7 +161,7 @@
+@@ -161,13 +161,13 @@
  // TODO(https://crbug.com/boringssl/407): This function should be const and
  // thread-safe but is currently neither in some cases, notably if |x509| was
  // mutated.
@@ -90,6 +90,28 @@
  
  // X509_VERSION_* are X.509 version numbers. Note the numerical values of all
  // defined X.509 versions are one less than the named version.
+-// #define X509_VERSION_1 0
+-// #define X509_VERSION_2 1
+-// #define X509_VERSION_3 2
++#define X509_VERSION_1 ossl_X509_VERSION_1
++#define X509_VERSION_2 ossl_X509_VERSION_2
++#define X509_VERSION_3 ossl_X509_VERSION_3
+ 
+ // X509_get_version returns the numerical value of |x509|'s version, which will
+ // be one of the |X509_VERSION_*| constants.
+@@ -183,10 +183,10 @@
+ // OPENSSL_EXPORT const ASN1_TIME *X509_get0_notAfter(const X509 *x509);
+ 
+ // X509_get_issuer_name returns |x509|'s issuer.
+-// OPENSSL_EXPORT X509_NAME *X509_get_issuer_name(const X509 *x509);
++OPENSSL_EXPORT X509_NAME *X509_get_issuer_name(const X509 *x509);
+ 
+ // X509_get_subject_name returns |x509|'s subject.
+-// OPENSSL_EXPORT X509_NAME *X509_get_subject_name(const X509 *x509);
++OPENSSL_EXPORT X509_NAME *X509_get_subject_name(const X509 *x509);
+ 
+ // X509_get_X509_PUBKEY returns the public key of |x509|. Note this function is
+ // not const-correct for legacy reasons. Callers should not modify the returned
 @@ -197,7 +197,7 @@
  // public key was unsupported or could not be decoded. This function returns a
  // reference to the |EVP_PKEY|. The caller must release the result with
@@ -99,6 +121,53 @@
  
  // X509_get0_pubkey_bitstr returns the BIT STRING portion of |x509|'s public
  // key. Note this does not contain the AlgorithmIdentifier portion.
+@@ -287,13 +287,13 @@
+ // X509_new returns a newly-allocated, empty |X509| object, or NULL on error.
+ // This produces an incomplete certificate which may be filled in to issue a new
+ // certificate.
+-// OPENSSL_EXPORT X509 *X509_new(void);
++OPENSSL_EXPORT X509 *X509_new(void);
+ 
+ // X509_set_version sets |x509|'s version to |version|, which should be one of
+ // the |X509V_VERSION_*| constants. It returns one on success and zero on error.
+ //
+ // If unsure, use |X509_VERSION_3|.
+-// OPENSSL_EXPORT int X509_set_version(X509 *x509, long version);
++OPENSSL_EXPORT int X509_set_version(X509 *x509, long version);
+ 
+ // X509_set_serialNumber sets |x509|'s serial number to |serial|. It returns one
+ // on success and zero on error.
+@@ -309,10 +309,10 @@
+ // OPENSSL_EXPORT int X509_set1_notAfter(X509 *x509, const ASN1_TIME *tm);
+ 
+ // X509_getm_notBefore returns a mutable pointer to |x509|'s notBefore time.
+-// OPENSSL_EXPORT ASN1_TIME *X509_getm_notBefore(X509 *x509);
++OPENSSL_EXPORT ASN1_TIME *X509_getm_notBefore(X509 *x509);
+ 
+ // X509_getm_notAfter returns a mutable pointer to |x509|'s notAfter time.
+-// OPENSSL_EXPORT ASN1_TIME *X509_getm_notAfter(X509 *x);
++OPENSSL_EXPORT ASN1_TIME *X509_getm_notAfter(X509 *x);
+ 
+ // X509_set_issuer_name sets |x509|'s issuer to a copy of |name|. It returns one
+ // on success and zero on error.
+@@ -325,7 +325,7 @@
+ // X509_set_pubkey sets |x509|'s public key to |pkey|. It returns one on success
+ // and zero on error. This function does not take ownership of |pkey| and
+ // internally copies and updates reference counts as needed.
+-// OPENSSL_EXPORT int X509_set_pubkey(X509 *x509, EVP_PKEY *pkey);
++OPENSSL_EXPORT int X509_set_pubkey(X509 *x509, EVP_PKEY *pkey);
+ 
+ // X509_delete_ext removes the extension in |x| at index |loc| and returns the
+ // removed extension, or NULL if |loc| was out of bounds. If non-NULL, the
+@@ -345,7 +345,7 @@
+ // signature fields. It returns one on success and zero on error. This function
+ // uses digest algorithm |md|, or |pkey|'s default if NULL. Other signing
+ // parameters use |pkey|'s defaults. To customize them, use |X509_sign_ctx|.
+-// OPENSSL_EXPORT int X509_sign(X509 *x509, EVP_PKEY *pkey, const EVP_MD *md);
++OPENSSL_EXPORT int X509_sign(X509 *x509, EVP_PKEY *pkey, const EVP_MD *md);
+ 
+ // X509_sign_ctx signs |x509| with |ctx| and replaces the signature algorithm
+ // and signature fields. It returns one on success and zero on error. The
 @@ -434,7 +434,7 @@
  // WARNING: In OpenSSL, this function did not set |*out_len| when the alias was
  // missing. Callers that target both OpenSSL and BoringSSL should set the value
@@ -167,6 +236,21 @@
  
  // X509_NAME_get0_der sets |*out_der| and |*out_der_len|
  //
+@@ -953,10 +953,10 @@
+ 
+ // X509_NAME_add_entry_by_txt behaves like |X509_NAME_add_entry_by_OBJ| but sets
+ // the entry's attribute type to |field|, which is passed to |OBJ_txt2obj|.
+-// OPENSSL_EXPORT int X509_NAME_add_entry_by_txt(X509_NAME *name,
+-//                                               const char *field, int type,
+-//                                               const uint8_t *bytes, int len,
+-//                                               int loc, int set);
++OPENSSL_EXPORT int X509_NAME_add_entry_by_txt(X509_NAME *name,
++                                              const char *field, int type,
++                                              const uint8_t *bytes, int len,
++                                              int loc, int set);
+ 
+ // X509_NAME_ENTRY is an |ASN1_ITEM| whose ASN.1 type is AttributeTypeAndValue
+ // (RFC 5280) and C type is |X509_NAME_ENTRY*|.
 @@ -1717,7 +1717,7 @@
  
  // } /* X509_INFO */;
@@ -226,6 +310,17 @@
  // OPENSSL_EXPORT int X509_CRL_match(const X509_CRL *a, const X509_CRL *b);
  // OPENSSL_EXPORT int X509_print_ex_fp(FILE *bp, X509 *x, unsigned long nmflag,
  //                                     unsigned long cflag);
+@@ -2094,8 +2094,8 @@
+ // WARNING: This function may return zero or -1 on error. The caller must also
+ // ensure |value|'s type matches |nid|. See the documentation for
+ // |X509V3_add1_i2d| for details.
+-// OPENSSL_EXPORT int X509_add1_ext_i2d(X509 *x, int nid, void *value, int crit,
+-//                                      unsigned long flags);
++OPENSSL_EXPORT int X509_add1_ext_i2d(X509 *x, int nid, void *value, int crit,
++                                     unsigned long flags);
+ 
+ // X509_CRL_get_ext_d2i behaves like |X509V3_get_d2i| but looks for the
+ // extension in |crl|'s extension list.
 @@ -2321,7 +2321,7 @@
  // OPENSSL_EXPORT ASN1_TYPE *X509_ATTRIBUTE_get0_type(X509_ATTRIBUTE *attr,
  //                                                    int idx);

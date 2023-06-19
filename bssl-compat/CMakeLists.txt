@@ -45,6 +45,9 @@ add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h)
 
 add_library(bssl-compat STATIC
   source/asn1.c
+  source/ASN1_TIME_adj.cc
+  source/BASIC_CONSTRAINTS_free.cc
+  source/BASIC_CONSTRAINTS_new.cc
   source/bio.cpp
   source/BIO_up_ref.cc
   source/bn.c
@@ -55,6 +58,7 @@ add_library(bssl-compat STATIC
   source/CRYPTO_BUFFER.h
   source/CRYPTO_BUFFER_new.c
   source/crypto.c
+  source/d2i_GENERAL_NAME.cc
   source/d2i_PKCS12_bio.cc
   source/d2i_SSL_SESSION.c
   source/digest.c
@@ -72,6 +76,8 @@ add_library(bssl-compat STATIC
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
   source/EVP_PKEY_cmp.cc
+  source/GENERAL_NAME_cmp.cc
+  source/GENERAL_NAME_free.cc
   source/GENERAL_NAME_set0_value.cc
   source/HMAC.cc
   source/HMAC_CTX_free.cc
@@ -216,18 +222,28 @@ add_library(bssl-compat STATIC
   source/stack.c
   source/TLS_method.cc
   source/TLS_VERSION_to_string.cc
+  source/X509_add1_ext_i2d.cc
   source/X509_alias_get0.cc
   source/X509_CRL_cmp.cc
   source/X509_CRL_free.cc
   source/X509_CRL_up_ref.cc
   source/X509_get_extension_flags.cc
+  source/X509_get_issuer_name.cc
+  source/X509_getm_notAfter.cc
+  source/X509_getm_notBefore.cc
   source/X509_get_pathlen.cc
   source/X509_get_pubkey.cc
+  source/X509_get_subject_name.cc
   source/X509_INFO_free.cc
+  source/X509_NAME_add_entry_by_txt.cc
   source/X509_NAME_cmp.cc
   source/X509_NAME_dup.cc
   source/X509_NAME_free.cc
   source/X509_NAME_new.cc
+  source/X509_new.cc
+  source/X509_set_pubkey.cc
+  source/X509_set_version.cc
+  source/X509_sign.cc
   source/X509_STORE_CTX_free.cc
   source/X509_STORE_CTX_get0_param.cc
   source/X509_STORE_CTX_get_error.cc

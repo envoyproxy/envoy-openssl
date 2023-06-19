@@ -1,6 +1,6 @@
 --- a/include/openssl/base.h
 +++ b/include/openssl/base.h
-@@ -50,123 +50,127 @@
+@@ -50,123 +50,128 @@
   * (eay@cryptsoft.com).  This product includes software written by Tim
   * Hudson (tjh@cryptsoft.com). */
  
@@ -95,6 +95,7 @@
 +#define BSSL_COMPAT
 +#include <ossl/openssl/types.h>
 +#include <ossl/openssl/ssl.h>
++#include <ossl/openssl/x509v3.h>
 +
 +#if defined(__cplusplus)
 +extern "C" {
@@ -222,7 +223,7 @@
  
  // BoringSSL requires platform's locking APIs to make internal global state
  // thread-safe, including the PRNG. On some single-threaded embedded platforms,
-@@ -181,13 +185,13 @@
+@@ -181,13 +186,13 @@
  // Do not set this flag on any platform where threads are possible. BoringSSL
  // maintainers will not provide support for any consumers that do so. Changes
  // which break such unsupported configurations will not be reverted.
@@ -243,7 +244,7 @@
  
  // BORINGSSL_API_VERSION is a positive integer that increments as BoringSSL
  // changes over time. The value itself is not meaningful. It will be incremented
-@@ -197,63 +201,63 @@
+@@ -197,63 +202,63 @@
  // A consumer may use this symbol in the preprocessor to temporarily build
  // against multiple revisions of BoringSSL at the same time. It is not
  // recommended to do so for longer than is necessary.
@@ -348,7 +349,7 @@
  
  // C and C++ handle inline functions differently. In C++, an inline function is
  // defined in just the header file, potentially emitted in multiple compilation
-@@ -275,81 +279,81 @@
+@@ -275,88 +280,88 @@
  // not used much in practice, extern inline is tedious, and there are conflicts
  // with the old gnu89 model:
  // https://stackoverflow.com/questions/216510/extern-inline
@@ -479,7 +480,15 @@
  // typedef struct asn1_string_st ASN1_UNIVERSALSTRING;
  // typedef struct asn1_string_st ASN1_UTCTIME;
  // typedef struct asn1_string_st ASN1_UTF8STRING;
-@@ -364,45 +368,45 @@
+ // typedef struct asn1_string_st ASN1_VISIBLESTRING;
+ // typedef struct asn1_type_st ASN1_TYPE;
+ // typedef struct AUTHORITY_KEYID_st AUTHORITY_KEYID;
+-// typedef struct BASIC_CONSTRAINTS_st BASIC_CONSTRAINTS;
++typedef ossl_BASIC_CONSTRAINTS BASIC_CONSTRAINTS;
+ // typedef struct DIST_POINT_st DIST_POINT;
+ // typedef struct DSA_SIG_st DSA_SIG;
+ // typedef struct ISSUING_DIST_POINT_st ISSUING_DIST_POINT;
+@@ -364,45 +369,45 @@
  // typedef struct Netscape_spkac_st NETSCAPE_SPKAC;
  // typedef struct Netscape_spki_st NETSCAPE_SPKI;
  // typedef struct RIPEMD160state_st RIPEMD160_CTX;
@@ -545,7 +554,7 @@
  // typedef struct evp_encode_ctx_st EVP_ENCODE_CTX;
  // typedef struct evp_hpke_aead_st EVP_HPKE_AEAD;
  // typedef struct evp_hpke_ctx_st EVP_HPKE_CTX;
-@@ -410,35 +414,35 @@
+@@ -410,35 +415,35 @@
  // typedef struct evp_hpke_kem_st EVP_HPKE_KEM;
  // typedef struct evp_hpke_key_st EVP_HPKE_KEY;
  // typedef struct evp_pkey_asn1_method_st EVP_PKEY_ASN1_METHOD;
@@ -593,7 +602,7 @@
  // typedef struct ssl_ticket_aead_method_st SSL_TICKET_AEAD_METHOD;
  // typedef struct st_ERR_FNS ERR_FNS;
  // typedef struct trust_token_st TRUST_TOKEN;
-@@ -451,110 +455,110 @@
+@@ -451,110 +456,110 @@
  // typedef struct x509_lookup_method_st X509_LOOKUP_METHOD;
  // typedef struct x509_object_st X509_OBJECT;
  // typedef struct x509_revoked_st X509_REVOKED;
@@ -783,7 +792,7 @@
  
  // template <typename T, typename CleanupRet, void (*init)(T *),
  //           CleanupRet (*cleanup)(T *), void (*move)(T *, T *)>
-@@ -587,38 +591,38 @@
+@@ -587,38 +592,38 @@
  //   T ctx_;
  // };
  

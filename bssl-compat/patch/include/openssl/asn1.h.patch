@@ -99,7 +99,7 @@
  // OPENSSL_EXPORT void ASN1_OCTET_STRING_free(ASN1_OCTET_STRING *str);
  // OPENSSL_EXPORT void ASN1_PRINTABLESTRING_free(ASN1_PRINTABLESTRING *str);
  // OPENSSL_EXPORT void ASN1_T61STRING_free(ASN1_T61STRING *str);
-@@ -1030,7 +1030,7 @@
+@@ -1040,7 +1040,7 @@
  // OPENSSL_EXPORT ASN1_INTEGER *ASN1_INTEGER_new(void);
  
  // ASN1_INTEGER_free calls |ASN1_STRING_free|.
@@ -108,7 +108,7 @@
  
  // ASN1_INTEGER_dup calls |ASN1_STRING_dup|.
  // OPENSSL_EXPORT ASN1_INTEGER *ASN1_INTEGER_dup(const ASN1_INTEGER *x);
-@@ -1051,11 +1051,11 @@
+@@ -1061,11 +1061,11 @@
  // DER-encoded INTEGER, excluding the tag and length. It behaves like
  // |d2i_SAMPLE_with_reuse| except, on success, it always consumes all |len|
  // bytes.
@@ -123,7 +123,7 @@
  
  // i2c_ASN1_INTEGER encodes |in| as the contents of a DER-encoded INTEGER,
  // excluding the tag and length. If |outp| is non-NULL, it writes the result to
-@@ -1107,7 +1107,7 @@
+@@ -1117,7 +1117,7 @@
  // ASN1_INTEGER_to_BN sets |bn| to the value of |ai| and returns |bn| on success
  // or NULL or error. If |bn| is NULL, it returns a newly-allocated |BIGNUM| on
  // success instead, which the caller must release with |BN_free|.
@@ -132,7 +132,7 @@
  
  // ASN1_INTEGER_cmp compares the values of |x| and |y|. It returns an integer
  // equal to, less than, or greater than zero if |x| is equal to, less than, or
-@@ -1308,10 +1308,10 @@
+@@ -1318,10 +1318,10 @@
  // ASN1_TIME_new returns a newly-allocated |ASN1_TIME| with type -1, or NULL on
  // error. The resulting |ASN1_TIME| is not a valid X.509 Time until initialized
  // with a value.
@@ -145,7 +145,7 @@
  
  // d2i_ASN1_TIME parses up to |len| bytes from |*inp| as a DER-encoded X.509
  // Time (RFC 5280), as described in |d2i_SAMPLE_with_reuse|.
-@@ -1339,8 +1339,8 @@
+@@ -1349,8 +1349,8 @@
  //
  // Note this function may fail on overflow, or if |from| or |to| cannot be
  // decoded.
@@ -156,7 +156,7 @@
  
  // ASN1_TIME_set represents |t| as a GeneralizedTime or UTCTime and writes
  // the result to |s|. As in RFC 5280, section 4.1.2.5, it uses UTCTime when the
-@@ -1348,7 +1348,7 @@
+@@ -1358,7 +1358,7 @@
  // on error. If |s| is NULL, it returns a newly-allocated |ASN1_TIME| instead.
  //
  // Note this function may fail if the time is out of range for GeneralizedTime.
@@ -165,15 +165,28 @@
  
  // ASN1_TIME_adj adds |offset_day| days and |offset_sec| seconds to
  // |t| and writes the result to |s|. As in RFC 5280, section 4.1.2.5, it uses
-@@ -1805,24 +1805,24 @@
+@@ -1368,8 +1368,8 @@
+ //
+ // Note this function may fail if the time overflows or is out of range for
+ // GeneralizedTime.
+-// OPENSSL_EXPORT ASN1_TIME *ASN1_TIME_adj(ASN1_TIME *s, time_t t, int offset_day,
+-//                                         long offset_sec);
++OPENSSL_EXPORT ASN1_TIME *ASN1_TIME_adj(ASN1_TIME *s, time_t t, int offset_day,
++                                        long offset_sec);
+ 
+ // ASN1_TIME_check returns one if |t| is a valid UTCTime or GeneralizedTime, and
+ // zero otherwise. |t|'s type determines which check is performed. This
+@@ -1815,38 +1815,38 @@
  // prototypes directly. Particularly when |type|, |itname|, or |name| differ,
  // the macros can be difficult to understand.
  
 -// #define DECLARE_ASN1_FUNCTIONS(type) DECLARE_ASN1_FUNCTIONS_name(type, type)
 +#define DECLARE_ASN1_FUNCTIONS(type) DECLARE_ASN1_FUNCTIONS_name(type, type)
  
- // #define DECLARE_ASN1_ALLOC_FUNCTIONS(type) \
- //   DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, type)
+-// #define DECLARE_ASN1_ALLOC_FUNCTIONS(type) \
+-//   DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, type)
++#define DECLARE_ASN1_ALLOC_FUNCTIONS(type) \
++  DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, type)
  
 -// #define DECLARE_ASN1_FUNCTIONS_name(type, name) \
 -//   DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, name) \
@@ -191,28 +204,43 @@
 -//                                   long len);                          \
 -//   OPENSSL_EXPORT int i2d_##name(type *a, unsigned char **out);        \
 -//   DECLARE_ASN1_ITEM(itname)
+-
+-// #define DECLARE_ASN1_ENCODE_FUNCTIONS_const(type, name)               \
+-//   OPENSSL_EXPORT type *d2i_##name(type **a, const unsigned char **in, \
+-//                                   long len);                          \
+-//   OPENSSL_EXPORT int i2d_##name(const type *a, unsigned char **out);  \
+-//   DECLARE_ASN1_ITEM(name)
+-
+-// #define DECLARE_ASN1_FUNCTIONS_const(name) \
+-//   DECLARE_ASN1_ALLOC_FUNCTIONS(name)       \
+-//   DECLARE_ASN1_ENCODE_FUNCTIONS_const(name, name)
+-
+-// #define DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, name) \
+-//   OPENSSL_EXPORT type *name##_new(void);              \
+-//   OPENSSL_EXPORT void name##_free(type *a);
 +#define DECLARE_ASN1_ENCODE_FUNCTIONS(type, itname, name)             \
 +  OPENSSL_EXPORT type *d2i_##name(type **a, const unsigned char **in, \
 +                                  long len);                          \
 +  OPENSSL_EXPORT int i2d_##name(type *a, unsigned char **out);        \
 +  DECLARE_ASN1_ITEM(itname)
- 
- // #define DECLARE_ASN1_ENCODE_FUNCTIONS_const(type, name)               \
- //   OPENSSL_EXPORT type *d2i_##name(type **a, const unsigned char **in, \
-@@ -1834,9 +1834,9 @@
- //   DECLARE_ASN1_ALLOC_FUNCTIONS(name)       \
- //   DECLARE_ASN1_ENCODE_FUNCTIONS_const(name, name)
- 
--// #define DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, name) \
--//   OPENSSL_EXPORT type *name##_new(void);              \
--//   OPENSSL_EXPORT void name##_free(type *a);
++
++#define DECLARE_ASN1_ENCODE_FUNCTIONS_const(type, name)               \
++  OPENSSL_EXPORT type *d2i_##name(type **a, const unsigned char **in, \
++                                  long len);                          \
++  OPENSSL_EXPORT int i2d_##name(const type *a, unsigned char **out);  \
++  DECLARE_ASN1_ITEM(name)
++
++#define DECLARE_ASN1_FUNCTIONS_const(name) \
++  DECLARE_ASN1_ALLOC_FUNCTIONS(name)       \
++  DECLARE_ASN1_ENCODE_FUNCTIONS_const(name, name)
++
 +#define DECLARE_ASN1_ALLOC_FUNCTIONS_name(type, name) \
 +  OPENSSL_EXPORT type *name##_new(void);              \
 +  OPENSSL_EXPORT void name##_free(type *a);
  
  
  // Deprecated functions.
-@@ -1955,22 +1955,22 @@
+@@ -1965,22 +1965,22 @@
  // DECLARE_ASN1_ITEM(ASN1_PRINTABLE)
  
  
@@ -243,7 +271,7 @@
  
  #ifdef ossl_ASN1_R_ASN1_LENGTH_MISMATCH
  #define ASN1_R_ASN1_LENGTH_MISMATCH ossl_ASN1_R_ASN1_LENGTH_MISMATCH
-@@ -2264,4 +2264,4 @@
+@@ -2274,4 +2274,4 @@
  #define ASN1_R_INVALID_INTEGER ossl_ASN1_R_INVALID_INTEGER
  #endif
  
