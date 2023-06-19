@@ -348,7 +348,7 @@
  
  // C and C++ handle inline functions differently. In C++, an inline function is
  // defined in just the header file, potentially emitted in multiple compilation
-@@ -275,60 +279,60 @@
+@@ -275,81 +279,81 @@
  // not used much in practice, extern inline is tedious, and there are conflicts
  // with the old gnu89 model:
  // https://stackoverflow.com/questions/216510/extern-inline
@@ -452,11 +452,12 @@
  
  // An |ASN1_NULL| is an opaque type. asn1.h represents the ASN.1 NULL value as
  // an opaque, non-NULL |ASN1_NULL*| pointer.
-@@ -336,20 +340,20 @@
+ // typedef struct asn1_null_st ASN1_NULL;
  
  // typedef int ASN1_BOOLEAN;
- // typedef struct ASN1_ITEM_st ASN1_ITEM;
+-// typedef struct ASN1_ITEM_st ASN1_ITEM;
 -// typedef struct asn1_object_st ASN1_OBJECT;
++typedef struct ossl_ASN1_ITEM_st ASN1_ITEM;
 +typedef ossl_ASN1_OBJECT ASN1_OBJECT;
  // typedef struct asn1_pctx_st ASN1_PCTX;
  // typedef struct asn1_string_st ASN1_BIT_STRING;
@@ -488,9 +489,10 @@
 -// typedef struct X509_crl_st X509_CRL;
 +typedef ossl_X509_CRL X509_CRL;
  // typedef struct X509_extension_st X509_EXTENSION;
- // typedef struct X509_info_st X509_INFO;
+-// typedef struct X509_info_st X509_INFO;
 -// typedef struct X509_name_entry_st X509_NAME_ENTRY;
 -// typedef struct X509_name_st X509_NAME;
++typedef ossl_X509_INFO X509_INFO;
 +typedef ossl_X509_NAME_ENTRY X509_NAME_ENTRY;
 +typedef ossl_X509_NAME X509_NAME;
  // typedef struct X509_pubkey_st X509_PUBKEY;

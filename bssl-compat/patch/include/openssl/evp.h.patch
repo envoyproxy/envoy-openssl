@@ -55,6 +55,15 @@
  
  // EVP_PKEY_up_ref increments the reference count of |pkey| and returns one. It
  // does not mutate |pkey| for thread-safety purposes and may be used
+@@ -111,7 +111,7 @@
+ //
+ // WARNING: this differs from the traditional return value of a "cmp"
+ // function.
+-// OPENSSL_EXPORT int EVP_PKEY_cmp(const EVP_PKEY *a, const EVP_PKEY *b);
++OPENSSL_EXPORT int EVP_PKEY_cmp(const EVP_PKEY *a, const EVP_PKEY *b);
+ 
+ // EVP_PKEY_copy_parameters sets the parameters of |to| to equal the parameters
+ // of |from|. It returns one on success and zero on error.
 @@ -134,7 +134,7 @@
  
  // EVP_PKEY_id returns the type of |pkey|, which is one of the |EVP_PKEY_*|

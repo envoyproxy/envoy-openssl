@@ -1,0 +1,37 @@
+--- a/include/openssl/asn1t.h
++++ b/include/openssl/asn1t.h
+@@ -54,15 +54,15 @@
+  * Hudson (tjh@cryptsoft.com).
+  *
+  */
+-// #ifndef HEADER_ASN1T_H
+-// #define HEADER_ASN1T_H
++#ifndef HEADER_ASN1T_H
++#define HEADER_ASN1T_H
+ 
+-// #include <openssl/base.h>
+-// #include <openssl/asn1.h>
++#include <openssl/base.h>
++#include <openssl/asn1.h>
+ 
+-// #ifdef  __cplusplus
+-// extern "C" {
+-// #endif
++#ifdef  __cplusplus
++extern "C" {
++#endif
+ 
+ 
+ /* Legacy ASN.1 library template definitions.
+@@ -702,7 +702,7 @@
+ 
+ // DEFINE_STACK_OF(ASN1_VALUE)
+ 
+-// #ifdef  __cplusplus
+-// }
+-// #endif
+-// #endif
++#ifdef  __cplusplus
++}
++#endif
++#endif
