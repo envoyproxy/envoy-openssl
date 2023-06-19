@@ -38,7 +38,16 @@
  
  // DEFINE_STACK_OF(GENERAL_NAME)
  
-@@ -497,7 +500,7 @@
+@@ -489,7 +492,7 @@
+ 
+ // DEFINE_STACK_OF(X509_PURPOSE)
+ 
+-// DECLARE_ASN1_FUNCTIONS_const(BASIC_CONSTRAINTS)
++DECLARE_ASN1_FUNCTIONS_const(BASIC_CONSTRAINTS)
+ 
+ // TODO(https://crbug.com/boringssl/407): This is not const because it contains
+ // an |X509_NAME|.
+@@ -497,14 +500,14 @@
  
  // TODO(https://crbug.com/boringssl/407): This is not const because it contains
  // an |X509_NAME|.
@@ -47,6 +56,15 @@
  // OPENSSL_EXPORT GENERAL_NAME *GENERAL_NAME_dup(GENERAL_NAME *a);
  
  // GENERAL_NAME_cmp returns zero if |a| and |b| are equal and a non-zero
+ // value otherwise. Note this function does not provide a comparison suitable
+ // for sorting.
+-// OPENSSL_EXPORT int GENERAL_NAME_cmp(const GENERAL_NAME *a,
+-//                                     const GENERAL_NAME *b);
++OPENSSL_EXPORT int GENERAL_NAME_cmp(const GENERAL_NAME *a,
++                                    const GENERAL_NAME *b);
+ 
+ // i2v_GENERAL_NAME serializes |gen| as a |CONF_VALUE|. If |ret| is non-NULL, it
+ // appends the value to |ret| and returns |ret| on success or NULL on error. If
 @@ -857,7 +860,7 @@
  // OPENSSL_EXPORT int X509_check_issued(X509 *issuer, X509 *subject);
  // OPENSSL_EXPORT int X509_check_akid(X509 *issuer, AUTHORITY_KEYID *akid);
@@ -56,7 +74,7 @@
  // OPENSSL_EXPORT uint32_t X509_get_key_usage(X509 *x);
  // OPENSSL_EXPORT uint32_t X509_get_extended_key_usage(X509 *x);
  
-@@ -958,12 +961,12 @@
+@@ -958,29 +961,29 @@
  // made after this point may be overwritten when the script is next run.
  
  
@@ -73,7 +91,8 @@
  
  // BORINGSSL_MAKE_DELETER(ACCESS_DESCRIPTION, ACCESS_DESCRIPTION_free)
  // BORINGSSL_MAKE_DELETER(AUTHORITY_KEYID, AUTHORITY_KEYID_free)
-@@ -971,16 +974,16 @@
+-// BORINGSSL_MAKE_DELETER(BASIC_CONSTRAINTS, BASIC_CONSTRAINTS_free)
++BORINGSSL_MAKE_DELETER(BASIC_CONSTRAINTS, BASIC_CONSTRAINTS_free)
  // TODO(davidben): Move this to conf.h and rename to CONF_VALUE_free.
  // BORINGSSL_MAKE_DELETER(CONF_VALUE, X509V3_conf_free)
  // BORINGSSL_MAKE_DELETER(DIST_POINT, DIST_POINT_free)
