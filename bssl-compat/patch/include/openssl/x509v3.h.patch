@@ -30,15 +30,35 @@
  
  
  // Legacy X.509 library.
-@@ -219,6 +221,7 @@
+@@ -219,12 +221,13 @@
  //     ASN1_TYPE *other;       // x400Address
  //   } d;
  // } GENERAL_NAME;
 +typedef struct ossl_GENERAL_NAME_st GENERAL_NAME;
  
- // DEFINE_STACK_OF(GENERAL_NAME)
+-// DEFINE_STACK_OF(GENERAL_NAME)
++DEFINE_STACK_OF(GENERAL_NAME)
  
-@@ -489,7 +492,7 @@
+-// typedef STACK_OF(GENERAL_NAME) GENERAL_NAMES;
++typedef STACK_OF(GENERAL_NAME) GENERAL_NAMES;
+ 
+-// DEFINE_STACK_OF(GENERAL_NAMES)
++DEFINE_STACK_OF(GENERAL_NAMES)
+ 
+ // typedef struct ACCESS_DESCRIPTION_st {
+ //   ASN1_OBJECT *method;
+@@ -322,8 +325,9 @@
+ //   ASN1_INTEGER *minimum;
+ //   ASN1_INTEGER *maximum;
+ // } GENERAL_SUBTREE;
++typedef ossl_GENERAL_SUBTREE GENERAL_SUBTREE;
+ 
+-// DEFINE_STACK_OF(GENERAL_SUBTREE)
++DEFINE_STACK_OF(GENERAL_SUBTREE)
+ 
+ // struct NAME_CONSTRAINTS_st {
+ //   STACK_OF(GENERAL_SUBTREE) *permittedSubtrees;
+@@ -489,7 +493,7 @@
  
  // DEFINE_STACK_OF(X509_PURPOSE)
  
@@ -47,7 +67,7 @@
  
  // TODO(https://crbug.com/boringssl/407): This is not const because it contains
  // an |X509_NAME|.
-@@ -497,14 +500,14 @@
+@@ -497,14 +501,14 @@
  
  // TODO(https://crbug.com/boringssl/407): This is not const because it contains
  // an |X509_NAME|.
@@ -65,7 +85,29 @@
  
  // i2v_GENERAL_NAME serializes |gen| as a |CONF_VALUE|. If |ret| is non-NULL, it
  // appends the value to |ret| and returns |ret| on success or NULL on error. If
-@@ -857,7 +860,7 @@
+@@ -522,7 +526,7 @@
+ 
+ // TODO(https://crbug.com/boringssl/407): This is not const because it contains
+ // an |X509_NAME|.
+-// DECLARE_ASN1_FUNCTIONS(GENERAL_NAMES)
++DECLARE_ASN1_FUNCTIONS(GENERAL_NAMES)
+ 
+ // i2v_GENERAL_NAMES serializes |gen| as a list of |CONF_VALUE|s. If |ret| is
+ // non-NULL, it appends the values to |ret| and returns |ret| on success or NULL
+@@ -597,10 +601,10 @@
+ // DECLARE_ASN1_ITEM(POLICY_MAPPINGS)
+ 
+ // DECLARE_ASN1_ITEM(GENERAL_SUBTREE)
+-// DECLARE_ASN1_ALLOC_FUNCTIONS(GENERAL_SUBTREE)
++DECLARE_ASN1_ALLOC_FUNCTIONS(GENERAL_SUBTREE)
+ 
+ // DECLARE_ASN1_ITEM(NAME_CONSTRAINTS)
+-// DECLARE_ASN1_ALLOC_FUNCTIONS(NAME_CONSTRAINTS)
++DECLARE_ASN1_ALLOC_FUNCTIONS(NAME_CONSTRAINTS)
+ 
+ // DECLARE_ASN1_ALLOC_FUNCTIONS(POLICY_CONSTRAINTS)
+ // DECLARE_ASN1_ITEM(POLICY_CONSTRAINTS)
+@@ -857,7 +861,7 @@
  // OPENSSL_EXPORT int X509_check_issued(X509 *issuer, X509 *subject);
  // OPENSSL_EXPORT int X509_check_akid(X509 *issuer, AUTHORITY_KEYID *akid);
  
@@ -74,7 +116,7 @@
  // OPENSSL_EXPORT uint32_t X509_get_key_usage(X509 *x);
  // OPENSSL_EXPORT uint32_t X509_get_extended_key_usage(X509 *x);
  
-@@ -958,29 +961,29 @@
+@@ -958,29 +962,29 @@
  // made after this point may be overwritten when the script is next run.
  
  
@@ -97,9 +139,11 @@
  // BORINGSSL_MAKE_DELETER(CONF_VALUE, X509V3_conf_free)
  // BORINGSSL_MAKE_DELETER(DIST_POINT, DIST_POINT_free)
 -// BORINGSSL_MAKE_DELETER(GENERAL_NAME, GENERAL_NAME_free)
+-// BORINGSSL_MAKE_DELETER(GENERAL_SUBTREE, GENERAL_SUBTREE_free)
+-// BORINGSSL_MAKE_DELETER(NAME_CONSTRAINTS, NAME_CONSTRAINTS_free)
 +BORINGSSL_MAKE_DELETER(GENERAL_NAME, GENERAL_NAME_free)
- // BORINGSSL_MAKE_DELETER(GENERAL_SUBTREE, GENERAL_SUBTREE_free)
- // BORINGSSL_MAKE_DELETER(NAME_CONSTRAINTS, NAME_CONSTRAINTS_free)
++BORINGSSL_MAKE_DELETER(GENERAL_SUBTREE, GENERAL_SUBTREE_free)
++BORINGSSL_MAKE_DELETER(NAME_CONSTRAINTS, NAME_CONSTRAINTS_free)
  // BORINGSSL_MAKE_DELETER(POLICY_MAPPING, POLICY_MAPPING_free)
  // BORINGSSL_MAKE_DELETER(POLICYINFO, POLICYINFO_free)
  
@@ -113,7 +157,7 @@
  
  #ifdef ossl_X509V3_R_BAD_IP_ADDRESS
  #define X509V3_R_BAD_IP_ADDRESS ossl_X509V3_R_BAD_IP_ADDRESS
-@@ -1178,4 +1181,4 @@
+@@ -1178,4 +1182,4 @@
  #define X509V3_R_TRAILING_DATA_IN_EXTENSION ossl_X509V3_R_TRAILING_DATA_IN_EXTENSION
  #endif
  
