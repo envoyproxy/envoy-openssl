@@ -78,7 +78,11 @@ add_library(bssl-compat STATIC
   source/EVP_PKEY_cmp.cc
   source/GENERAL_NAME_cmp.cc
   source/GENERAL_NAME_free.cc
+  source/GENERAL_NAME_new.cc
   source/GENERAL_NAME_set0_value.cc
+  source/GENERAL_NAMES_new.cc
+  source/GENERAL_SUBTREE_free.cc
+  source/GENERAL_SUBTREE_new.cc
   source/HMAC.cc
   source/HMAC_CTX_free.cc
   source/HMAC_CTX_new.cc
@@ -91,6 +95,8 @@ add_library(bssl-compat STATIC
   source/log.h
   source/MD5.cc
   source/mem.c
+  source/NAME_CONSTRAINTS_free.cc
+  source/NAME_CONSTRAINTS_new.cc
   source/OBJ_txt2obj.cc
   source/ossl.c
   source/ossl_ERR_set_error.c

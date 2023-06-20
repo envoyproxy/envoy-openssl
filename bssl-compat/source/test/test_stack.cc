@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <openssl/stack.h>
 #include <openssl/mem.h>
+#include <openssl/x509v3.h>
 
 #ifdef BSSL_COMPAT
 #include <ossl/openssl/x509.h>
@@ -28,7 +29,7 @@ static bssl::UniquePtr<FOO> FOO_new(int x) {
 DEFINE_STACK_OF(FOO)
 
 
-TEST(StackTests, test1) {
+TEST(StackTest, test1) {
   STACK_OF(FOO) *s = sk_FOO_new_null();
   ASSERT_TRUE(s);
 
@@ -38,7 +39,7 @@ TEST(StackTests, test1) {
   sk_FOO_free(s);
 }
 
-TEST(StackTests, test2) {
+TEST(StackTest, test2) {
   {
     bssl::UniquePtr<STACK_OF(FOO)> s {sk_FOO_new_null()};
     ASSERT_TRUE(s.get());
@@ -51,6 +52,22 @@ TEST(StackTests, test2) {
     auto seven = FOO_new(7);
     sk_FOO_push(s.get(), seven.release());
   }
+}
+
+TEST(StackTest, test3) {
+  bssl::UniquePtr<STACK_OF(FOO)> sk {sk_FOO_new_null()};
+  bssl::UniquePtr<FOO> f1 {FOO_new(1)};
+  ASSERT_TRUE(bssl::PushToStack(sk.get(), std::move(f1)));
+  ASSERT_TRUE(bssl::PushToStack(sk.get(), FOO_new(2)));
+}
+
+TEST(StackTest, test4) {
+#ifdef BSSL_COMPAT
+  GTEST_SKIP(); // TODO: Make this work on bssl-compat
+#else
+  bssl::UniquePtr<NAME_CONSTRAINTS> nc(NAME_CONSTRAINTS_new());
+  nc->permittedSubtrees = sk_GENERAL_SUBTREE_new_null();
+#endif
 }
 
 #ifdef BSSL_COMPAT
@@ -77,7 +94,7 @@ ossl_STACK_OF(ossl_FOO) *ossl_FOO_new_stack(std::vector<int> values) {
  * pointer to the equivalent BorisngSSL STACK_OF(FOO) (provided that the
  * pointer to ossl_FOO and pointer to FOO types are also castable).
  */
-TEST(StackTests, FOO) {
+TEST(StackTest, FOO) {
   std::vector<int> values { 0, 1, 2, 3, 4 };
   ossl_STACK_OF(ossl_FOO) *ostack {ossl_FOO_new_stack(values)};
 

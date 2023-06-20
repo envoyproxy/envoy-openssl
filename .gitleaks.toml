@@ -1,0 +1,9 @@
+[allowlist]
+  description = "Global Allowlist"
+
+  # Ignore based on any subset of the file path
+  paths = [
+    '''ssl_test.cc.patch''',
+    '''x509_test.cc.patch''',
+  ]
+

@@ -349,7 +349,7 @@
  
  // C and C++ handle inline functions differently. In C++, an inline function is
  // defined in just the header file, potentially emitted in multiple compilation
-@@ -275,88 +280,88 @@
+@@ -275,134 +280,134 @@
  // not used much in practice, extern inline is tedious, and there are conflicts
  // with the old gnu89 model:
  // https://stackoverflow.com/questions/216510/extern-inline
@@ -488,7 +488,8 @@
  // typedef struct DIST_POINT_st DIST_POINT;
  // typedef struct DSA_SIG_st DSA_SIG;
  // typedef struct ISSUING_DIST_POINT_st ISSUING_DIST_POINT;
-@@ -364,45 +369,45 @@
+-// typedef struct NAME_CONSTRAINTS_st NAME_CONSTRAINTS;
++typedef ossl_NAME_CONSTRAINTS NAME_CONSTRAINTS;
  // typedef struct Netscape_spkac_st NETSCAPE_SPKAC;
  // typedef struct Netscape_spki_st NETSCAPE_SPKI;
  // typedef struct RIPEMD160state_st RIPEMD160_CTX;
