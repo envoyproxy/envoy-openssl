@@ -423,9 +423,14 @@
  // OPENSSL_EXPORT int X509_STORE_CTX_set_purpose(X509_STORE_CTX *ctx, int purpose);
  // OPENSSL_EXPORT int X509_STORE_CTX_set_trust(X509_STORE_CTX *ctx, int trust);
  // OPENSSL_EXPORT int X509_STORE_CTX_purpose_inherit(X509_STORE_CTX *ctx,
-@@ -2922,8 +2922,8 @@
- // OPENSSL_EXPORT void X509_STORE_CTX_set_verify_cb(
- //     X509_STORE_CTX *ctx, int (*verify_cb)(int, X509_STORE_CTX *));
+@@ -2919,11 +2919,11 @@
+ //                                              unsigned long flags);
+ // OPENSSL_EXPORT void X509_STORE_CTX_set_time(X509_STORE_CTX *ctx,
+ //                                             unsigned long flags, time_t t);
+-// OPENSSL_EXPORT void X509_STORE_CTX_set_verify_cb(
+-//     X509_STORE_CTX *ctx, int (*verify_cb)(int, X509_STORE_CTX *));
++OPENSSL_EXPORT void X509_STORE_CTX_set_verify_cb(
++    X509_STORE_CTX *ctx, int (*verify_cb)(int, X509_STORE_CTX *));
  
 -// OPENSSL_EXPORT X509_VERIFY_PARAM *X509_STORE_CTX_get0_param(
 -//     X509_STORE_CTX *ctx);

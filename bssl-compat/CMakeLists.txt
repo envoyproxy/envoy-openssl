@@ -256,6 +256,7 @@ add_library(bssl-compat STATIC
   source/X509_STORE_CTX_init.cc
   source/X509_STORE_CTX_new.cc
   source/X509_STORE_CTX_set0_crls.cc
+  source/X509_STORE_CTX_set_verify_cb.cc
   source/X509_STORE_CTX_trusted_stack.cc
   source/X509_STORE_free.cc
   source/X509_STORE_new.cc
