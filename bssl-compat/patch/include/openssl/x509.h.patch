@@ -236,6 +236,15 @@
  
  // X509_NAME_get0_der sets |*out_der| and |*out_der_len|
  //
+@@ -887,7 +887,7 @@
+ // OPENSSL_EXPORT int X509_NAME_set(X509_NAME **xn, X509_NAME *name);
+ 
+ // X509_NAME_entry_count returns the number of entries in |name|.
+-// OPENSSL_EXPORT int X509_NAME_entry_count(const X509_NAME *name);
++OPENSSL_EXPORT int X509_NAME_entry_count(const X509_NAME *name);
+ 
+ // X509_NAME_get_index_by_NID returns the zero-based index of the first
+ // attribute in |name| with type |nid|, or -1 if there is none. |nid| should be
 @@ -895,8 +895,8 @@
  // searching at |lastpos+1|. To search all attributes, pass in -1, not zero.
  //
@@ -247,6 +256,17 @@
  
  // X509_NAME_get_index_by_OBJ behaves like |X509_NAME_get_index_by_NID| but
  // looks for attributes with type |obj|.
+@@ -909,8 +909,8 @@
+ // representation. This function returns a non-const pointer for OpenSSL
+ // compatibility, but callers should not mutate the result. Doing so will break
+ // internal invariants in the library.
+-// OPENSSL_EXPORT X509_NAME_ENTRY *X509_NAME_get_entry(const X509_NAME *name,
+-//                                                     int loc);
++OPENSSL_EXPORT X509_NAME_ENTRY *X509_NAME_get_entry(const X509_NAME *name,
++                                                    int loc);
+ 
+ // X509_NAME_delete_entry removes and returns the attribute in |name| at index
+ // |loc|, or NULL if |loc| is out of range. |loc| is interpreted using
 @@ -953,10 +953,10 @@
  
  // X509_NAME_add_entry_by_txt behaves like |X509_NAME_add_entry_by_OBJ| but sets
@@ -262,6 +282,15 @@
  
  // X509_NAME_ENTRY is an |ASN1_ITEM| whose ASN.1 type is AttributeTypeAndValue
  // (RFC 5280) and C type is |X509_NAME_ENTRY*|.
+@@ -1026,7 +1026,7 @@
+ 
+ // X509_NAME_ENTRY_set returns the zero-based index of the RDN which contains
+ // |entry|. Consecutive entries with the same index are part of the same RDN.
+-// OPENSSL_EXPORT int X509_NAME_ENTRY_set(const X509_NAME_ENTRY *entry);
++OPENSSL_EXPORT int X509_NAME_ENTRY_set(const X509_NAME_ENTRY *entry);
+ 
+ // X509_NAME_ENTRY_create_by_OBJ creates a new |X509_NAME_ENTRY| with attribute
+ // type |obj|. The attribute value is determined from |type|, |bytes|, and |len|
 @@ -1462,7 +1462,7 @@
  //                                                    CRYPTO_EX_free *free_func);
  // OPENSSL_EXPORT int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *ctx, int idx,
