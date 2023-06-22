@@ -412,17 +412,19 @@
  // OPENSSL_EXPORT void X509_STORE_CTX_cleanup(X509_STORE_CTX *ctx);
  
  // OPENSSL_EXPORT X509_STORE *X509_STORE_CTX_get0_store(X509_STORE_CTX *ctx);
-@@ -2892,8 +2892,8 @@
+@@ -2892,9 +2892,9 @@
  //                                              const char *dir);
  // OPENSSL_EXPORT int X509_STORE_set_default_paths(X509_STORE *ctx);
  // #endif
 -// OPENSSL_EXPORT int X509_STORE_CTX_get_error(X509_STORE_CTX *ctx);
 -// OPENSSL_EXPORT void X509_STORE_CTX_set_error(X509_STORE_CTX *ctx, int s);
+-// OPENSSL_EXPORT int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *ctx);
 +OPENSSL_EXPORT int X509_STORE_CTX_get_error(X509_STORE_CTX *ctx);
 +OPENSSL_EXPORT void X509_STORE_CTX_set_error(X509_STORE_CTX *ctx, int s);
- // OPENSSL_EXPORT int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *ctx);
++OPENSSL_EXPORT int X509_STORE_CTX_get_error_depth(X509_STORE_CTX *ctx);
  // OPENSSL_EXPORT X509 *X509_STORE_CTX_get_current_cert(X509_STORE_CTX *ctx);
  // OPENSSL_EXPORT X509 *X509_STORE_CTX_get0_current_issuer(X509_STORE_CTX *ctx);
+ // OPENSSL_EXPORT X509_CRL *X509_STORE_CTX_get0_current_crl(X509_STORE_CTX *ctx);
 @@ -2906,10 +2906,10 @@
  // OPENSSL_EXPORT void X509_STORE_CTX_set_cert(X509_STORE_CTX *c, X509 *x);
  // OPENSSL_EXPORT void X509_STORE_CTX_set_chain(X509_STORE_CTX *c,
