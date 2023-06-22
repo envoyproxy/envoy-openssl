@@ -276,6 +276,7 @@ add_library(bssl-compat STATIC
 )
 
 target_add_bssl_function(bssl-compat
+  X509_NAME_print_ex
   X509_STORE_add_cert
   X509_STORE_add_crl
   X509_STORE_CTX_get_error_depth
