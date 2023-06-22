@@ -236,6 +236,17 @@
  
  // X509_NAME_get0_der sets |*out_der| and |*out_der_len|
  //
+@@ -895,8 +895,8 @@
+ // searching at |lastpos+1|. To search all attributes, pass in -1, not zero.
+ //
+ // Indices from this function refer to |X509_NAME|'s flattened representation.
+-// OPENSSL_EXPORT int X509_NAME_get_index_by_NID(const X509_NAME *name, int nid,
+-//                                               int lastpos);
++OPENSSL_EXPORT int X509_NAME_get_index_by_NID(const X509_NAME *name, int nid,
++                                              int lastpos);
+ 
+ // X509_NAME_get_index_by_OBJ behaves like |X509_NAME_get_index_by_NID| but
+ // looks for attributes with type |obj|.
 @@ -953,10 +953,10 @@
  
  // X509_NAME_add_entry_by_txt behaves like |X509_NAME_add_entry_by_OBJ| but sets
