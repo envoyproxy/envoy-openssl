@@ -276,12 +276,16 @@ add_library(bssl-compat STATIC
 )
 
 target_add_bssl_function(bssl-compat
+  X509_get_X509_PUBKEY
+  X509_get0_notAfter
+  X509_get0_notBefore
   X509_NAME_digest
   X509_NAME_entry_count
   X509_NAME_ENTRY_set
   X509_NAME_get_entry
   X509_NAME_get_index_by_NID
   X509_NAME_print_ex
+  X509_PUBKEY_get
   X509_STORE_add_cert
   X509_STORE_add_crl
   X509_STORE_CTX_get_error_depth
