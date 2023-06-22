@@ -274,6 +274,10 @@ add_library(bssl-compat STATIC
   source/X509_VERIFY_PARAM_set_time.cc
 )
 
+target_add_bssl_function(bssl-compat
+  X509_STORE_CTX_get_ex_data
+)
+
 target_add_bssl_source(bssl-compat
   source/crypto/internal.h
   source/crypto/bytestring/cbs.c

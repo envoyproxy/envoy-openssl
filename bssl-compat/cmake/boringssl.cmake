@@ -22,7 +22,7 @@ add_dependencies(BoringSSL::Crypto BoringSSL)
 
 
 function(_target_add_bssl_file target src-file dst-file)
-  set(generate-cmd "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.sh"
+  set(generate-cmd "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.h.sh"
                       "${CMAKE_CURRENT_SOURCE_DIR}"
                       "${CMAKE_CURRENT_BINARY_DIR}"
                       "${src-file}" "${dst-file}")
@@ -43,6 +43,16 @@ function(target_add_bssl_source target)
   foreach(dst-file ${ARGN})
     cmake_path(RELATIVE_PATH dst-file BASE_DIRECTORY "source" OUTPUT_VARIABLE src-file)
     _target_add_bssl_file(${target} "${src-file}" "${dst-file}")
+  endforeach()
+endfunction()
+
+function(target_add_bssl_function target)
+  set(gen-cc-sh ${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.cc.sh)
+  foreach(function ${ARGN})
+    set(gen-file ${CMAKE_CURRENT_BINARY_DIR}/${function}.cc)
+    set(gen-cmd ${gen-cc-sh} ${function} ${gen-file})
+    target_sources(${target} PRIVATE ${gen-file})
+    add_custom_command(OUTPUT ${gen-file} COMMAND ${gen-cmd} DEPENDS ${gen-cc-sh})
   endforeach()
 endfunction()
 

@@ -251,6 +251,15 @@
  
  // X509_NAME_ENTRY is an |ASN1_ITEM| whose ASN.1 type is AttributeTypeAndValue
  // (RFC 5280) and C type is |X509_NAME_ENTRY*|.
+@@ -1462,7 +1462,7 @@
+ //                                                    CRYPTO_EX_free *free_func);
+ // OPENSSL_EXPORT int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *ctx, int idx,
+ //                                               void *data);
+-// OPENSSL_EXPORT void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *ctx, int idx);
++OPENSSL_EXPORT void *X509_STORE_CTX_get_ex_data(X509_STORE_CTX *ctx, int idx);
+ 
+ 
+ // Deprecated functions.
 @@ -1717,7 +1717,7 @@
  
  // } /* X509_INFO */;
