@@ -99,8 +99,16 @@
  
  // X509_get_version returns the numerical value of |x509|'s version, which will
  // be one of the |X509_VERSION_*| constants.
-@@ -183,10 +183,10 @@
- // OPENSSL_EXPORT const ASN1_TIME *X509_get0_notAfter(const X509 *x509);
+@@ -177,27 +177,27 @@
+ // OPENSSL_EXPORT const ASN1_INTEGER *X509_get0_serialNumber(const X509 *x509);
+ 
+ // X509_get0_notBefore returns |x509|'s notBefore time.
+-// OPENSSL_EXPORT const ASN1_TIME *X509_get0_notBefore(const X509 *x509);
++OPENSSL_EXPORT const ASN1_TIME *X509_get0_notBefore(const X509 *x509);
+ 
+ // X509_get0_notAfter returns |x509|'s notAfter time.
+-// OPENSSL_EXPORT const ASN1_TIME *X509_get0_notAfter(const X509 *x509);
++OPENSSL_EXPORT const ASN1_TIME *X509_get0_notAfter(const X509 *x509);
  
  // X509_get_issuer_name returns |x509|'s issuer.
 -// OPENSSL_EXPORT X509_NAME *X509_get_issuer_name(const X509 *x509);
@@ -112,7 +120,11 @@
  
  // X509_get_X509_PUBKEY returns the public key of |x509|. Note this function is
  // not const-correct for legacy reasons. Callers should not modify the returned
-@@ -197,7 +197,7 @@
+ // object.
+-// OPENSSL_EXPORT X509_PUBKEY *X509_get_X509_PUBKEY(const X509 *x509);
++OPENSSL_EXPORT X509_PUBKEY *X509_get_X509_PUBKEY(const X509 *x509);
+ 
+ // X509_get_pubkey returns |x509|'s public key as an |EVP_PKEY|, or NULL if the
  // public key was unsupported or could not be decoded. This function returns a
  // reference to the |EVP_PKEY|. The caller must release the result with
  // |EVP_PKEY_free| when done.
@@ -345,6 +357,15 @@
  
  // X509_REQ_verify checks that |req| has a valid signature by |pkey|. It returns
  // one if the signature is valid and zero otherwise.
+@@ -1897,7 +1897,7 @@
+ // success, or NULL on error. The caller must release the result with
+ // |EVP_PKEY_free| when done. The |EVP_PKEY| is cached in |key|, so callers must
+ // not mutate the result.
+-// OPENSSL_EXPORT EVP_PKEY *X509_PUBKEY_get(X509_PUBKEY *key);
++OPENSSL_EXPORT EVP_PKEY *X509_PUBKEY_get(X509_PUBKEY *key);
+ 
+ // DECLARE_ASN1_FUNCTIONS_const(X509_SIG)
+ 
 @@ -1933,7 +1933,7 @@
  // DECLARE_ASN1_FUNCTIONS_const(NETSCAPE_SPKAC)
  
