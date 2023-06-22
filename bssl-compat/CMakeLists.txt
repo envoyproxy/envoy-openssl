@@ -276,6 +276,7 @@ add_library(bssl-compat STATIC
 )
 
 target_add_bssl_function(bssl-compat
+  X509_NAME_digest
   X509_NAME_entry_count
   X509_NAME_ENTRY_set
   X509_NAME_get_entry
@@ -434,6 +435,7 @@ set(utests-source-list
   source/test/test_rsa.cc
   source/test/test_ssl.cc
   source/test/test_stack.cc
+  source/test/test_x509.cc
 )
 
 ################################################################################

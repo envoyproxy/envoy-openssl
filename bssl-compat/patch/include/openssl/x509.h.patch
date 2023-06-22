@@ -291,6 +291,17 @@
  
  // X509_NAME_ENTRY_create_by_OBJ creates a new |X509_NAME_ENTRY| with attribute
  // type |obj|. The attribute value is determined from |type|, |bytes|, and |len|
+@@ -1354,8 +1354,8 @@
+ // to |out|. |EVP_MD_CTX_size| bytes are written, which is at most
+ // |EVP_MAX_MD_SIZE|. If |out_len| is not NULL, |*out_len| is set to the number
+ // of bytes written. This function returns one on success and zero on error.
+-// OPENSSL_EXPORT int X509_NAME_digest(const X509_NAME *name, const EVP_MD *md,
+-//                                     uint8_t *out, unsigned *out_len);
++OPENSSL_EXPORT int X509_NAME_digest(const X509_NAME *name, const EVP_MD *md,
++                                    uint8_t *out, unsigned *out_len);
+ 
+ // The following functions behave like the corresponding unsuffixed |d2i_*|
+ // functions, but read the result from |bp| instead. Callers using these
 @@ -1462,7 +1462,7 @@
  //                                                    CRYPTO_EX_free *free_func);
  // OPENSSL_EXPORT int X509_STORE_CTX_set_ex_data(X509_STORE_CTX *ctx, int idx,
