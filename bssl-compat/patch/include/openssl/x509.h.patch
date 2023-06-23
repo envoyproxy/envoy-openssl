@@ -323,6 +323,15 @@
  
  
  // Deprecated functions.
+@@ -1512,7 +1512,7 @@
+ 
+ // X509_get_serialNumber returns a mutable pointer to |x509|'s serial number.
+ // Prefer |X509_get0_serialNumber|.
+-// OPENSSL_EXPORT ASN1_INTEGER *X509_get_serialNumber(X509 *x509);
++OPENSSL_EXPORT ASN1_INTEGER *X509_get_serialNumber(X509 *x509);
+ 
+ // X509_NAME_get_text_by_OBJ finds the first attribute with type |obj| in
+ // |name|. If found, it ignores the value's ASN.1 type, writes the raw
 @@ -1753,7 +1753,7 @@
  
  // } /* X509_INFO */;
