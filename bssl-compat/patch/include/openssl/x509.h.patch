@@ -420,6 +420,17 @@
  // OPENSSL_EXPORT int X509_print_ex(BIO *bp, X509 *x, unsigned long nmflag,
  //                                  unsigned long cflag);
  // OPENSSL_EXPORT int X509_print(BIO *bp, X509 *x);
+@@ -2121,8 +2121,8 @@
+ //
+ // WARNING: This function is difficult to use correctly. See the documentation
+ // for |X509V3_get_d2i| for details.
+-// OPENSSL_EXPORT void *X509_get_ext_d2i(const X509 *x509, int nid,
+-//                                       int *out_critical, int *out_idx);
++OPENSSL_EXPORT void *X509_get_ext_d2i(const X509 *x509, int nid,
++                                      int *out_critical, int *out_idx);
+ 
+ // X509_add1_ext_i2d behaves like |X509V3_add1_i2d| but adds the extension to
+ // |x|'s extension list.
 @@ -2130,8 +2130,8 @@
  // WARNING: This function may return zero or -1 on error. The caller must also
  // ensure |value|'s type matches |nid|. See the documentation for
