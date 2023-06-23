@@ -233,6 +233,7 @@ add_library(bssl-compat STATIC
   source/X509_CRL_cmp.cc
   source/X509_CRL_free.cc
   source/X509_CRL_up_ref.cc
+  source/X509_EXTENSION_get_data.cc
   source/X509_get_extension_flags.cc
   source/X509_get_issuer_name.cc
   source/X509_getm_notAfter.cc

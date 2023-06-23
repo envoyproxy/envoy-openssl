@@ -323,6 +323,17 @@
  
  // X509_NAME_ENTRY_create_by_OBJ creates a new |X509_NAME_ENTRY| with attribute
  // type |obj|. The attribute value is determined from |type|, |bytes|, and |len|
+@@ -1113,8 +1113,8 @@
+ // X509_EXTENSION_get_data returns |ne|'s extension value. This function returns
+ // a non-const pointer for OpenSSL compatibility, but callers should not mutate
+ // the result.
+-// OPENSSL_EXPORT ASN1_OCTET_STRING *X509_EXTENSION_get_data(
+-//     const X509_EXTENSION *ne);
++OPENSSL_EXPORT ASN1_OCTET_STRING *X509_EXTENSION_get_data(
++    const X509_EXTENSION *ne);
+ 
+ // X509_EXTENSION_get_critical returns one if |ex| is critical and zero
+ // otherwise.
 @@ -1354,8 +1354,8 @@
  // to |out|. |EVP_MD_CTX_size| bytes are written, which is at most
  // |EVP_MAX_MD_SIZE|. If |out_len| is not NULL, |*out_len| is set to the number

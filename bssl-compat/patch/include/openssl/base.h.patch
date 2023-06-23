@@ -468,9 +468,10 @@
  // typedef struct asn1_string_st ASN1_GENERALSTRING;
 -// typedef struct asn1_string_st ASN1_IA5STRING;
 -// typedef struct asn1_string_st ASN1_INTEGER;
+-// typedef struct asn1_string_st ASN1_OCTET_STRING;
 +typedef ossl_ASN1_IA5STRING ASN1_IA5STRING;
 +typedef ossl_ASN1_INTEGER ASN1_INTEGER;
- // typedef struct asn1_string_st ASN1_OCTET_STRING;
++typedef ossl_ASN1_OCTET_STRING ASN1_OCTET_STRING;
  // typedef struct asn1_string_st ASN1_PRINTABLESTRING;
 -// typedef struct asn1_string_st ASN1_STRING;
 +typedef ossl_ASN1_STRING ASN1_STRING;
