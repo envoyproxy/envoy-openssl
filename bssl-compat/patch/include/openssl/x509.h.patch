@@ -334,6 +334,17 @@
  
  // X509_EXTENSION_get_critical returns one if |ex| is critical and zero
  // otherwise.
+@@ -1330,8 +1330,8 @@
+ // |EVP_MAX_MD_SIZE|. If |out_len| is not NULL, |*out_len| is set to the number
+ // of bytes written. This function returns one on success and zero on error.
+ // Note this digest covers the entire certificate, not just the signed portion.
+-// OPENSSL_EXPORT int X509_digest(const X509 *x509, const EVP_MD *md, uint8_t *out,
+-//                                unsigned *out_len);
++OPENSSL_EXPORT int X509_digest(const X509 *x509, const EVP_MD *md, uint8_t *out,
++                               unsigned *out_len);
+ 
+ // X509_CRL_digest hashes |crl|'s DER encoding with |md| and writes the result
+ // to |out|. |EVP_MD_CTX_size| bytes are written, which is at most
 @@ -1354,8 +1354,8 @@
  // to |out|. |EVP_MD_CTX_size| bytes are written, which is at most
  // |EVP_MAX_MD_SIZE|. If |out_len| is not NULL, |*out_len| is set to the number

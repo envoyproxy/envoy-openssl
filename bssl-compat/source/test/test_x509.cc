@@ -37,3 +37,20 @@ TEST(X509Test, test_X509_get_X509_PUBKEY) {
   ASSERT_TRUE(pkey);
   ASSERT_EQ(EVP_PKEY_RSA, EVP_PKEY_id(pkey.get()));
 }
+
+TEST(X509Test, test_X509_digest) {
+  bssl::UniquePtr<BIO> bio {BIO_new_mem_buf(server_1_cert_pem_str, strlen(server_1_cert_pem_str))};
+  ASSERT_TRUE(bio);
+  bssl::UniquePtr<X509> cert {PEM_read_bio_X509(bio.get(), nullptr, nullptr, nullptr)};
+  ASSERT_TRUE(cert);
+
+  uint8_t buf[EVP_MAX_MD_SIZE];
+  unsigned len;
+
+  ASSERT_EQ(1, X509_digest(cert.get(), EVP_sha256(), buf, &len));
+  ASSERT_EQ(32, len);
+
+  uint8_t expected[] {0xf9,0xcb,0x2a,0x96,0xee,0xe5,0x8d,0x07,0xb5,0xe2,0xb1,0xda,0x67,0x77,0x77,0x03,0x27,0xee,0xb1,0xc0,0x5d,0x4f,0x78,0x2c,0xcd,0xc4,0x11,0x35,0x9c,0xc8,0xc2,0xed};
+
+  ASSERT_EQ(Bytes(expected), Bytes(buf, len));
+}
