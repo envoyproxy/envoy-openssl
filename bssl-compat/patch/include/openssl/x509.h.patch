@@ -133,6 +133,17 @@
  
  // X509_get0_pubkey_bitstr returns the BIT STRING portion of |x509|'s public
  // key. Note this does not contain the AlgorithmIdentifier portion.
+@@ -231,8 +231,8 @@
+ 
+ // X509_get_ext_by_OBJ behaves like |X509v3_get_ext_by_OBJ| but searches for
+ // extensions in |x|.
+-// OPENSSL_EXPORT int X509_get_ext_by_OBJ(const X509 *x, const ASN1_OBJECT *obj,
+-//                                        int lastpos);
++OPENSSL_EXPORT int X509_get_ext_by_OBJ(const X509 *x, const ASN1_OBJECT *obj,
++                                       int lastpos);
+ 
+ // X509_get_ext_by_critical behaves like |X509v3_get_ext_by_critical| but
+ // searches for extensions in |x|.
 @@ -242,7 +242,7 @@
  // X509_get_ext returns the extension in |x| at index |loc|, or NULL if |loc| is
  // out of bounds. This function returns a non-const pointer for OpenSSL
