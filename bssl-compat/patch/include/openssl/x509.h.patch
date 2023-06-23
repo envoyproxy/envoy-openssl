@@ -133,6 +133,15 @@
  
  // X509_get0_pubkey_bitstr returns the BIT STRING portion of |x509|'s public
  // key. Note this does not contain the AlgorithmIdentifier portion.
+@@ -242,7 +242,7 @@
+ // X509_get_ext returns the extension in |x| at index |loc|, or NULL if |loc| is
+ // out of bounds. This function returns a non-const pointer for OpenSSL
+ // compatibility, but callers should not mutate the result.
+-// OPENSSL_EXPORT X509_EXTENSION *X509_get_ext(const X509 *x, int loc);
++OPENSSL_EXPORT X509_EXTENSION *X509_get_ext(const X509 *x, int loc);
+ 
+ // X509_get0_tbs_sigalg returns the signature algorithm in |x509|'s
+ // TBSCertificate. For the outer signature algorithm, see |X509_get0_signature|.
 @@ -287,13 +287,13 @@
  // X509_new returns a newly-allocated, empty |X509| object, or NULL on error.
  // This produces an incomplete certificate which may be filled in to issue a new
