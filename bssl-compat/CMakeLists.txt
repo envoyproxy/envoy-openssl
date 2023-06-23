@@ -277,6 +277,7 @@ add_library(bssl-compat STATIC
 
 target_add_bssl_function(bssl-compat
   X509_get_ext
+  X509_get_ext_by_OBJ
   X509_get_ext_d2i
   X509_get_serialNumber
   X509_get_X509_PUBKEY
