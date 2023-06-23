@@ -107,15 +107,17 @@
  
  // DECLARE_ASN1_ALLOC_FUNCTIONS(POLICY_CONSTRAINTS)
  // DECLARE_ASN1_ITEM(POLICY_CONSTRAINTS)
-@@ -857,7 +861,7 @@
+@@ -857,8 +861,8 @@
  // OPENSSL_EXPORT int X509_check_issued(X509 *issuer, X509 *subject);
  // OPENSSL_EXPORT int X509_check_akid(X509 *issuer, AUTHORITY_KEYID *akid);
  
 -// OPENSSL_EXPORT uint32_t X509_get_extension_flags(X509 *x);
+-// OPENSSL_EXPORT uint32_t X509_get_key_usage(X509 *x);
 +OPENSSL_EXPORT uint32_t X509_get_extension_flags(X509 *x);
- // OPENSSL_EXPORT uint32_t X509_get_key_usage(X509 *x);
++OPENSSL_EXPORT uint32_t X509_get_key_usage(X509 *x);
  // OPENSSL_EXPORT uint32_t X509_get_extended_key_usage(X509 *x);
  
+ // X509_get0_subject_key_id returns |x509|'s subject key identifier, if present.
 @@ -958,29 +962,29 @@
  // made after this point may be overwritten when the script is next run.
  
