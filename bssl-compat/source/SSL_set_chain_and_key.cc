@@ -1,5 +1,6 @@
 #include <openssl/ssl.h>
 #include "CRYPTO_BUFFER.h"
+#include <ossl.h>
 #include "log.h"
 
 
@@ -7,7 +8,7 @@
  * https://github.com/google/boringssl/blob/098695591f3a2665fccef83a3732ecfc99acdcdd/src/include/openssl/ssl.h#L1133
  * https://www.openssl.org/docs/man3.0/man3/SSL_use_cert_and_key.html
  */
-int SSL_set_chain_and_key(SSL *ssl, CRYPTO_BUFFER *const *certs, size_t num_certs, EVP_PKEY *privkey, const SSL_PRIVATE_KEY_METHOD *privkey_method) {
+extern "C" int SSL_set_chain_and_key(SSL *ssl, CRYPTO_BUFFER *const *certs, size_t num_certs, EVP_PKEY *privkey, const SSL_PRIVATE_KEY_METHOD *privkey_method) {
   if(privkey_method) {
     bssl_compat_fatal("%s() : privkey_method parameter is not supported");
   }
@@ -21,7 +22,7 @@ int SSL_set_chain_and_key(SSL *ssl, CRYPTO_BUFFER *const *certs, size_t num_cert
       return 0;
     }
 
-    bssl::UniquePtr<X509> cert {ossl_d2i_X509_bio(bio.get(), nullptr)};
+    bssl::UniquePtr<X509> cert {ossl.ossl_d2i_X509_bio(bio.get(), nullptr)};
     if (!cert) {
       return 0;
     }
@@ -38,7 +39,7 @@ int SSL_set_chain_and_key(SSL *ssl, CRYPTO_BUFFER *const *certs, size_t num_cert
     cert.release();
   }
 
-  if (!ossl_SSL_use_cert_and_key(ssl, leaf.get(), privkey, reinterpret_cast<ossl_STACK_OF(ossl_X509)*>(chain.get()), 1)) {
+  if (!ossl.ossl_SSL_use_cert_and_key(ssl, leaf.get(), privkey, reinterpret_cast<ossl_STACK_OF(ossl_X509)*>(chain.get()), 1)) {
     return 0;
   }
 

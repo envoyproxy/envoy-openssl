@@ -8,5 +8,5 @@
  */
 extern "C" char *SSL_CIPHER_get_rfc_name(const SSL_CIPHER *cipher) {
   const char *ostr {ossl.ossl_SSL_CIPHER_standard_name(cipher)};
-  return (ostr == nullptr) ? nullptr : ossl_OPENSSL_strdup(ostr);
+  return (ostr == nullptr) ? nullptr : ossl.ossl_OPENSSL_strdup(ostr);
 }

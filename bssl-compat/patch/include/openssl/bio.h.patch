@@ -80,6 +80,15 @@
  
  // BIO_write_all writes |len| bytes from |data| to |bio|, looping as necessary.
  // It returns one if all bytes were successfully written and zero on error.
+@@ -127,7 +127,7 @@
+ 
+ // BIO_puts writes a NUL terminated string from |buf| to |bio|. It returns the
+ // number of bytes written or a negative number on error.
+-// OPENSSL_EXPORT int BIO_puts(BIO *bio, const char *buf);
++OPENSSL_EXPORT int BIO_puts(BIO *bio, const char *buf);
+ 
+ // BIO_flush flushes any buffered output. It returns one on success and zero
+ // otherwise.
 @@ -155,7 +155,7 @@
  // BIO_reset resets |bio| to its initial state, the precise meaning of which
  // depends on the concrete type of |bio|. It returns one on success and zero
@@ -104,6 +113,29 @@
  
  // BIO_should_retry returns non-zero if the reason that caused a failed I/O
  // operation is temporary and thus the operation should be retried. Otherwise,
+@@ -208,11 +208,11 @@
+ 
+ // BIO_set_retry_read sets the |BIO_FLAGS_READ| and |BIO_FLAGS_SHOULD_RETRY|
+ // flags on |bio|.
+-// OPENSSL_EXPORT void BIO_set_retry_read(BIO *bio);
++OPENSSL_EXPORT void BIO_set_retry_read(BIO *bio);
+ 
+ // BIO_set_retry_write sets the |BIO_FLAGS_WRITE| and |BIO_FLAGS_SHOULD_RETRY|
+ // flags on |bio|.
+-// OPENSSL_EXPORT void BIO_set_retry_write(BIO *bio);
++OPENSSL_EXPORT void BIO_set_retry_write(BIO *bio);
+ 
+ // BIO_get_retry_flags gets the |BIO_FLAGS_READ|, |BIO_FLAGS_WRITE|,
+ // |BIO_FLAGS_IO_SPECIAL| and |BIO_FLAGS_SHOULD_RETRY| flags from |bio|.
+@@ -220,7 +220,7 @@
+ 
+ // BIO_clear_retry_flags clears the |BIO_FLAGS_READ|, |BIO_FLAGS_WRITE|,
+ // |BIO_FLAGS_IO_SPECIAL| and |BIO_FLAGS_SHOULD_RETRY| flags from |bio|.
+-// OPENSSL_EXPORT void BIO_clear_retry_flags(BIO *bio);
++OPENSSL_EXPORT void BIO_clear_retry_flags(BIO *bio);
+ 
+ // BIO_method_type returns the type of |bio|, which is one of the |BIO_TYPE_*|
+ // values.
 @@ -243,8 +243,8 @@
  // with |BIO_CB_RETURN| if the callback is being made after the operation in
  // question. In that case, |return_value| will contain the return value from
@@ -165,6 +197,15 @@
  
  // BIO_get_mem_data sets |*contents| to point to the current contents of |bio|
  // and returns the length of the data.
+@@ -419,7 +419,7 @@
+ //
+ // For a read-only BIO, the default is zero (EOF). For a writable BIO, the
+ // default is -1 so that additional data can be written once exhausted.
+-// OPENSSL_EXPORT int BIO_set_mem_eof_return(BIO *bio, int eof_value);
++OPENSSL_EXPORT int BIO_set_mem_eof_return(BIO *bio, int eof_value);
+ 
+ 
+ // File descriptor BIOs.
 @@ -561,7 +561,7 @@
  // be provided with |BIO_set_conn_port|.
  //

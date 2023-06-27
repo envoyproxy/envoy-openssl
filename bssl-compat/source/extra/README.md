@@ -1,1 +1,0 @@
-This directory contains the implementations of BoringSSL functions that are required to support the BoringSSL unit tests, but not required in the main bssl-compat library, to support Envoy. As such, they may not have had the same amount of time spent on them to ensure they exactly match the BoringSSL behaviour.

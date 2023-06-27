@@ -1,5 +1,5 @@
 #include <openssl/ssl.h>
-#include <ossl/openssl/ssl.h>
+#include <ossl.h>
 #include "log.h"
 
 
@@ -13,11 +13,11 @@ uint16_t SSL_get_peer_signature_algorithm(const SSL *ssl) {
   int peer_sig_dgst_nid;
   int peer_sig_pkey_nid;
 
-  if(!ossl_SSL_get_peer_signature_nid((SSL*)ssl, &peer_sig_dgst_nid)) {
+  if(!ossl.ossl_SSL_get_peer_signature_nid((SSL*)ssl, &peer_sig_dgst_nid)) {
     return 0;
   }
 
-  if(!ossl_SSL_get_peer_signature_type_nid((SSL*)ssl, &peer_sig_pkey_nid)) {
+  if(!ossl.ossl_SSL_get_peer_signature_type_nid((SSL*)ssl, &peer_sig_pkey_nid)) {
     return 0;
   }
 

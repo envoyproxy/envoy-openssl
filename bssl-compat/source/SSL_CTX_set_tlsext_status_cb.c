@@ -1,5 +1,5 @@
 #include <openssl/ssl.h>
-#include <ossl/openssl/ssl.h>
+#include <ossl.h>
 
 
 /*
@@ -7,5 +7,5 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_CTX_set_tlsext_status_cb.html
  */
 int SSL_CTX_set_tlsext_status_cb(SSL_CTX *ctx, int (*callback)(SSL *ssl, void *arg)) {
-  return ossl_SSL_CTX_set_tlsext_status_cb(ctx, callback);
+  return ossl.ossl_SSL_CTX_set_tlsext_status_cb(ctx, callback);
 }

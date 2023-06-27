@@ -1,4 +1,5 @@
 #include <openssl/ssl.h>
+#include <ossl.h>
 
 
 /*
@@ -6,5 +7,5 @@
  * https://www.openssl.org/docs/man3.0/man3/d2i_SSL_SESSION.html
  */
 SSL_SESSION *SSL_SESSION_from_bytes(const uint8_t *in, size_t in_len, const SSL_CTX *ctx) {
-  return ossl_d2i_SSL_SESSION(NULL, &in, in_len);
+  return ossl.ossl_d2i_SSL_SESSION(NULL, &in, in_len);
 }

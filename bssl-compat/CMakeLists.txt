@@ -11,11 +11,11 @@ set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openss
 set(OPENSSL_URL_HASH 6933e2f1da6f23a50ea226eec6e91b543d277d2098025763b5931cf6a7e099c7)
 
 SET (CMAKE_C_COMPILER             "clang")
-SET (CMAKE_C_FLAGS                "-Wall")
+SET (CMAKE_C_FLAGS                "-Wall -Werror")
 SET (CMAKE_C_FLAGS_DEBUG          "-g")
 
 SET (CMAKE_CXX_COMPILER           "clang++")
-SET (CMAKE_CXX_FLAGS              "-Wall")
+SET (CMAKE_CXX_FLAGS              "-Wall -Werror")
 SET (CMAKE_CXX_FLAGS_DEBUG        "-g")
 
 set(CMAKE_C_STANDARD 11)
@@ -44,259 +44,407 @@ add_custom_command(DEPENDS prefixer
 add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h)
 
 add_library(bssl-compat STATIC
-  source/asn1.c
-  source/ASN1_TIME_adj.cc
+  source/ASN1_TIME_free.cc
   source/BASIC_CONSTRAINTS_free.cc
   source/BASIC_CONSTRAINTS_new.cc
   source/bio.cpp
-  source/BIO_up_ref.cc
-  source/bn.c
-  source/BN_hex2bn.cc
-  source/BN_set_word.cc
-  source/cipher.c
+  source/BIO_free.cc
+  source/BIO_mem_contents.cc
+  source/BIO_new_bio_pair.cc
+  source/BIO_printf.cc
+  source/BIO_read_asn1.c
+  source/BIO_snprintf.cc
+  source/BIO_vfree.cc
+  source/BN_bn2hex.cc
+  source/c2i_ASN1_INTEGER.cc
   source/CRYPTO_BUFFER_free.c
   source/CRYPTO_BUFFER.h
   source/CRYPTO_BUFFER_new.c
-  source/crypto.c
   source/d2i_GENERAL_NAME.cc
-  source/d2i_PKCS12_bio.cc
-  source/d2i_SSL_SESSION.c
-  source/digest.c
-  source/DTLS_method.cc
   source/ECDSA_sign.cc
-  source/ECDSA_size.cc
-  source/EC_GROUP_get0_order.cc
-  source/EC_GROUP_get_curve_name.cc
-  source/EC_GROUP_get_degree.cc
-  source/EC_KEY_free.cc
-  source/EC_KEY_get0_group.cc
   source/EC_KEY_parse_private_key.cc
-  source/err.c
-  source/evp.c
+  source/ERR_error_string_n.cc
+  source/ERR_func_error_string.cc
+  source/ERR_lib_error_string.cc
+  source/ERR_put_error.cc
+  source/ERR_reason_error_string.cc
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
-  source/EVP_PKEY_cmp.cc
+  source/EVP_MD_CTX_move.cc
+  source/EVP_parse_public_key.cc
+  source/EVP_PKEY_get0_EC_KEY.cc
+  source/EVP_PKEY_get0_RSA.cc
+  source/EVP_PKEY_get1_EC_KEY.cc
+  source/EVP_PKEY_get1_RSA.cc
+  source/EVP_PKEY_id.cc
+  source/ext_SSL_get_all_async_fds.c
+  source/FIPS_mode.cc
   source/GENERAL_NAME_cmp.cc
   source/GENERAL_NAME_free.cc
   source/GENERAL_NAME_new.cc
-  source/GENERAL_NAME_set0_value.cc
   source/GENERAL_NAMES_new.cc
   source/GENERAL_SUBTREE_free.cc
   source/GENERAL_SUBTREE_new.cc
-  source/HMAC.cc
-  source/HMAC_CTX_free.cc
-  source/HMAC_CTX_new.cc
-  source/HMAC_Final.cc
   source/HMAC_Init_ex.cc
-  source/HMAC_Update.cc
-  source/i2d_SSL_SESSION.c
+  source/i2d_X509.c
   source/internal.h
   source/log.c
   source/log.h
-  source/MD5.cc
-  source/mem.c
   source/NAME_CONSTRAINTS_free.cc
   source/NAME_CONSTRAINTS_new.cc
-  source/OBJ_txt2obj.cc
   source/ossl.c
   source/ossl_ERR_set_error.c
-  source/PEM_bytes_read_bio.c
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
+  source/PEM_read_bio_X509.cc
   source/PEM_read_bio_X509_CRL.cc
   source/PEM_X509_INFO_read_bio.cc
-  source/PKCS12_free.cc
   source/PKCS12_get_key_and_certs.cc
   source/PKCS12_parse.cc
   source/PKCS12_verify_mac.cc
-  source/rand.c
-  source/RSA_bits.cc
-  source/RSA_check_key.cc
+  source/RAND_bytes.cc
   source/RSA_decrypt.cc
   source/RSA_encrypt.cc
-  source/RSA_free.c
   source/RSA_generate_key_ex.cc
-  source/RSA_get0_crt_params.cc
-  source/RSA_get0_factors.cc
-  source/RSA_get0_key.cc
-  source/RSA_new.cc
   source/RSA_private_key_from_bytes.cc
   source/RSA_public_key_from_bytes.cc
-  source/RSA_set0_crt_params.cc
-  source/RSA_set0_factors.cc
-  source/RSA_set0_key.cc
-  source/RSA_sign.cc
-  source/RSA_size.cc
-  source/RSA_verify.cc
-  source/ssl.c
-  source/ssl_cipher.c
-  source/SSL_CIPHER_get_auth_nid.cc
-  source/SSL_CIPHER_get_cipher_nid.cc
-  source/SSL_CIPHER_get_digest_nid.cc
-  source/SSL_CIPHER_get_id.cc
+  source/SSL_add_file_cert_subjects_to_stack.cc
   source/SSL_CIPHER_get_kx_nid.cc
+  source/SSL_CIPHER_get_min_version.cc
   source/SSL_CIPHER_get_prf_nid.cc
   source/SSL_CIPHER_get_rfc_name.cc
-  source/SSL_CIPHER_standard_name.cc
-  source/SSL_CTX_add_extra_chain_cert.cc
-  source/ssl_ctx.c
-  source/ssl_ctx.cc
-  source/SSL_CTX_free.cc
-  source/SSL_CTX_get0_param.cc
-  source/SSL_CTX_get_cert_store.cc
+  source/SSL_CTX_get_ciphers.cc
   source/SSL_CTX_get_client_CA_list.cc
   source/SSL_CTX_get_max_proto_version.cc
   source/SSL_CTX_get_min_proto_version.cc
-  source/SSL_CTX_get_options.cc
-  source/SSL_CTX_get_verify_mode.cc
-  source/SSL_CTX_new.cc
   source/SSL_CTX_sess_set_new_cb.cc
-  source/SSL_CTX_set1_curves_list.c
-  source/SSL_CTX_set1_sigalgs_list.c
-  source/SSL_CTX_set_alpn_protos.cc
   source/SSL_CTX_set_alpn_select_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
-  source/SSL_CTX_set_max_proto_version.cc
-  source/SSL_CTX_set_options.cc
-  source/SSL_CTX_set_session_cache_mode.cc
-  source/SSL_CTX_set_session_id_context.cc
-  source/SSL_CTX_set_timeout.cc
-  source/SSL_CTX_set_tlsext_servername_arg.cc
+  source/SSL_CTX_set_client_CA_list.cc
+  source/SSL_CTX_set_select_certificate_cb.c
+  source/SSL_CTX_set_strict_cipher_list.cc
   source/SSL_CTX_set_tlsext_servername_callback.cc
   source/SSL_CTX_set_tlsext_status_cb.c
   source/SSL_CTX_set_tlsext_ticket_key_cb.cc
   source/SSL_CTX_set_tlsext_ticket_keys.cc
-  source/SSL_CTX_set_verify_depth.cc
-  source/SSL_CTX_use_certificate_file.cc
+  source/SSL_CTX_set_verify_algorithm_prefs.cc
+  source/SSL_CTX_set_verify.cc
+  source/SSL_CTX_use_certificate.cc
   source/SSL_CTX_use_PrivateKey.cc
-  source/SSL_CTX_use_PrivateKey_file.cc
   source/SSL_early_callback_ctx_extension_get.c
-  source/ssl_ext.c
-  source/SSL_get0_alpn_selected.cc
+  source/SSL_enable_ocsp_stapling.cc
+  source/SSL_error_description.cc
   source/SSL_get0_ocsp_response.c
-  source/SSL_get1_session.c
   source/SSL_get_cipher_by_value.c
   source/SSL_get_client_CA_list.cc
-  source/SSL_get_current_cipher.cc
+  source/SSL_get_ciphers.cc
   source/SSL_get_curve_id.c
   source/SSL_get_curve_name.c
-  source/SSL_get_ex_data.cc
-  source/SSL_get_ex_data_X509_STORE_CTX_idx.cc
   source/SSL_get_ex_new_index.cc
   source/SSL_get_peer_cert_chain.cc
-  source/SSL_get_peer_certificate.cc
+  source/SSL_get_peer_full_cert_chain.cc
   source/SSL_get_peer_signature_algorithm.c
-  source/SSL_get_servername.cc
-  source/SSL_get_session.cc
   source/SSL_get_signature_algorithm_digest.cc
   source/SSL_get_signature_algorithm_key_type.cc
   source/SSL_get_signature_algorithm_name.c
-  source/SSL_get_SSL_CTX.cc
-  source/SSL_get_version.cc
-  source/SSL_get_wbio.cc
   source/SSL_is_signature_algorithm_rsa_pss.cc
-  source/SSL_new.cc
-  source/SSL_read.cc
-  source/SSL_select_next_proto.cc
-  source/SSL_SESSION_free.cc
   source/SSL_SESSION_from_bytes.c
-  source/SSL_SESSION_get_id.c
   source/SSL_SESSION_get_ticket_lifetime_hint.cc
   source/SSL_SESSION_get_version.cc
-  source/SSL_SESSION_is_resumable.c
-  source/SSL_session_reused.cc
+  source/SSL_SESSION_new.cc
+  source/SSL_SESSION_should_be_single_use.cc
   source/SSL_SESSION_to_bytes.c
-  source/SSL_set1_curves_list.cc
-  source/SSL_set_accept_state.cc
-  source/SSL_set_alpn_protos.cc
-  source/SSL_set_bio.cc
   source/SSL_set_cert_cb.cc
   source/SSL_set_chain_and_key.cc
-  source/SSL_set_cipher_list.cc
   source/SSL_set_client_CA_list.cc
-  source/SSL_set_connect_state.cc
-  source/SSL_set_ex_data.cc
-  source/SSL_set_fd.cc
-  source/SSL_set_quiet_shutdown.cc
-  source/SSL_set_session.cc
-  source/SSL_set_session_id_context.cc
-  source/SSL_set_tlsext_host_name.c
+  source/SSL_set_ocsp_response.cc
+  source/SSL_set_renegotiate_mode.cc
   source/SSL_set_verify.cc
-  source/SSL_shutdown.cc
-  source/SSL_version.cc
-  source/SSL_write.cc
   source/stack.c
-  source/TLS_method.cc
   source/TLS_VERSION_to_string.cc
-  source/X509_add1_ext_i2d.cc
-  source/X509_alias_get0.cc
-  source/X509_CRL_cmp.cc
-  source/X509_CRL_free.cc
-  source/X509_CRL_up_ref.cc
+  source/TLS_with_buffers_method.cc
   source/X509_EXTENSION_get_data.cc
-  source/X509_get_extension_flags.cc
-  source/X509_get_issuer_name.cc
-  source/X509_getm_notAfter.cc
-  source/X509_getm_notBefore.cc
-  source/X509_get_pathlen.cc
-  source/X509_get_pubkey.cc
-  source/X509_get_subject_name.cc
-  source/X509_INFO_free.cc
-  source/X509_NAME_add_entry_by_txt.cc
-  source/X509_NAME_cmp.cc
-  source/X509_NAME_dup.cc
-  source/X509_NAME_free.cc
-  source/X509_NAME_new.cc
-  source/X509_new.cc
-  source/X509_set_pubkey.cc
-  source/X509_set_version.cc
   source/X509_sign.cc
-  source/X509_STORE_CTX_free.cc
-  source/X509_STORE_CTX_get0_param.cc
   source/X509_STORE_CTX_get0_untrusted.cc
-  source/X509_STORE_CTX_get_error.cc
   source/X509_STORE_CTX_init.cc
-  source/X509_STORE_CTX_new.cc
   source/X509_STORE_CTX_set0_crls.cc
-  source/X509_STORE_CTX_set_default.cc
-  source/X509_STORE_CTX_set_error.cc
   source/X509_STORE_CTX_set_verify_cb.cc
   source/X509_STORE_CTX_trusted_stack.cc
-  source/X509_STORE_free.cc
-  source/X509_STORE_new.cc
-  source/X509_STORE_set_flags.cc
-  source/X509_STORE_set_verify_cb.cc
-  source/X509_up_ref.cc
-  source/X509_verify.cc
-  source/X509_verify_cert.cc
-  source/X509_verify_cert_error_string.cc
-  source/X509_VERIFY_PARAM_clear_flags.cc
-  source/X509_VERIFY_PARAM_set1.cc
-  source/X509_VERIFY_PARAM_set_flags.cc
-  source/X509_VERIFY_PARAM_set_time.cc
 )
 
 target_add_bssl_function(bssl-compat
+  ASN1_IA5STRING_free
+  ASN1_IA5STRING_new
+  ASN1_IA5STRING_new
+  ASN1_IA5STRING_new
+  ASN1_INTEGER_free
+  ASN1_INTEGER_new
+  ASN1_INTEGER_to_BN
+  ASN1_INTEGER_to_BN
+  ASN1_STRING_data
+  ASN1_STRING_free
+  ASN1_STRING_get0_data
+  ASN1_STRING_length
+  ASN1_STRING_set
+  ASN1_TIME_adj
+  ASN1_TIME_diff
+  ASN1_TIME_new
+  ASN1_TIME_set
+  BIO_clear_retry_flags
+  BIO_ctrl_get_read_request
+  BIO_ctrl_get_write_guarantee
+  BIO_new_connect
+  BIO_new_mem_buf
+  BIO_puts
+  BIO_read
+  BIO_reset
+  BIO_set_mem_eof_return
+  BIO_set_retry_read
+  BIO_set_retry_write
+  BIO_should_read
+  BIO_should_write
+  BIO_shutdown_wr
+  BIO_up_ref
+  BIO_write
+  BN_add_word
+  BN_add_word
+  BN_add_word
+  BN_dup
+  BN_free
+  BN_hex2bn
+  BN_new
+  BN_num_bits
+  BN_set_word
+  BN_ucmp
+  CRYPTO_memcmp
+  d2i_PKCS12_bio
+  d2i_SSL_SESSION
+  DTLS_method
+  EC_GROUP_get_curve_name
+  EC_GROUP_get_degree
+  EC_GROUP_get0_order
+  EC_KEY_free
+  EC_KEY_get0_group
+  ECDSA_size
+  ERR_clear_error
+  ERR_error_string
+  ERR_get_error
+  ERR_peek_error
+  ERR_peek_error_line_data
+  ERR_peek_last_error
+  ERR_print_errors_fp
+  EVP_aes_256_cbc
+  EVP_CIPHER_CTX_free
+  EVP_CIPHER_CTX_new
+  EVP_CIPHER_iv_length
+  EVP_CIPHER_key_length
+  EVP_DecryptFinal_ex
+  EVP_DecryptInit_ex
+  EVP_DecryptUpdate
+  EVP_DigestFinal
+  EVP_DigestFinal_ex
+  EVP_DigestInit
+  EVP_DigestInit_ex
+  EVP_DigestUpdate
+  EVP_DigestVerify
+  EVP_DigestVerifyInit
+  EVP_EncryptFinal_ex
+  EVP_EncryptInit_ex
+  EVP_EncryptUpdate
+  EVP_MD_CTX_copy_ex
+  EVP_MD_CTX_free
+  EVP_MD_CTX_new
+  EVP_MD_size
+  EVP_MD_type
+  EVP_md4
+  EVP_md5
+  EVP_md5_sha1
+  EVP_PKEY_assign_EC_KEY
+  EVP_PKEY_assign_RSA
+  EVP_PKEY_cmp
+  EVP_PKEY_free
+  EVP_PKEY_new
+  EVP_sha1
+  EVP_sha224
+  EVP_sha256
+  EVP_sha384
+  EVP_sha512
+  GENERAL_NAME_set0_value
+  HMAC
+  HMAC_CTX_free
+  HMAC_CTX_new
+  HMAC_Final
+  HMAC_Update
+  i2d_SSL_SESSION
+  MD5
+  OBJ_txt2obj
+  OPENSSL_free
+  OPENSSL_malloc
+  OPENSSL_memdup
+  OPENSSL_realloc
+  PEM_bytes_read_bio
+  PKCS12_free
+  RSA_bits
+  RSA_check_key
+  RSA_free
+  RSA_get0_crt_params
+  RSA_get0_factors
+  RSA_get0_key
+  RSA_new
+  RSA_set0_crt_params
+  RSA_set0_factors
+  RSA_set0_key
+  RSA_sign
+  RSA_size
+  RSA_verify
+  SHA1
+  SHA224
+  SHA256
+  SHA384
+  SHA512
+  SSL_accept
+  SSL_accept
+  SSL_CIPHER_get_auth_nid
+  SSL_CIPHER_get_cipher_nid
+  SSL_CIPHER_get_digest_nid
+  SSL_CIPHER_get_id
+  SSL_CIPHER_get_name
+  SSL_CIPHER_standard_name
+  SSL_connect
+  SSL_CTX_add_extra_chain_cert
+  SSL_CTX_free
+  SSL_CTX_get_cert_store
+  SSL_CTX_get_ex_data
+  SSL_CTX_get_options
+  SSL_CTX_get_verify_mode
+  SSL_CTX_get0_certificate
+  SSL_CTX_get0_param
+  SSL_CTX_load_verify_locations
+  SSL_CTX_new
+  SSL_CTX_set_alpn_protos
+  SSL_CTX_set_cipher_list
+  SSL_CTX_set_ex_data
+  SSL_CTX_set_max_proto_version
+  SSL_CTX_set_min_proto_version
+  SSL_CTX_set_options
+  SSL_CTX_set_session_cache_mode
+  SSL_CTX_set_session_id_context
+  SSL_CTX_set_timeout
+  SSL_CTX_set_tlsext_servername_arg
+  SSL_CTX_set_verify_depth
+  SSL_CTX_set1_curves_list
+  SSL_CTX_set1_sigalgs_list
+  SSL_CTX_use_certificate_chain_file
+  SSL_CTX_use_certificate_file
+  SSL_CTX_use_PrivateKey_file
+  SSL_do_handshake
+  SSL_free
+  SSL_get_certificate
+  SSL_get_current_cipher
+  SSL_get_error
+  SSL_get_ex_data
+  SSL_get_ex_data_X509_STORE_CTX_idx
+  SSL_get_peer_certificate
+  SSL_get_servername
+  SSL_get_session
+  SSL_get_SSL_CTX
+  SSL_get_version
+  SSL_get_wbio
+  SSL_get0_alpn_selected
+  SSL_get1_session
+  SSL_is_server
+  SSL_new
+  SSL_read
+  SSL_select_next_proto
+  SSL_SESSION_free
+  SSL_SESSION_get_id
+  SSL_SESSION_is_resumable
+  SSL_session_reused
+  SSL_SESSION_set_protocol_version
+  SSL_set_accept_state
+  SSL_set_alpn_protos
+  SSL_set_bio
+  SSL_set_cipher_list
+  SSL_set_connect_state
+  SSL_set_ex_data
+  SSL_set_fd
+  SSL_set_quiet_shutdown
+  SSL_set_session
+  SSL_set_session_id_context
+  SSL_set_SSL_CTX
+  SSL_set_tlsext_host_name
+  SSL_set0_rbio
+  SSL_set0_rbio
+  SSL_set0_wbio
+  SSL_set0_wbio
+  SSL_set1_curves_list
+  SSL_shutdown
+  SSL_version
+  SSL_write
+  TLS_client_method
+  TLS_method
+  TLS_server_method
+  X509_add1_ext_i2d
+  X509_alias_get0
+  X509_cmp
+  X509_CRL_cmp
+  X509_CRL_free
+  X509_CRL_up_ref
   X509_digest
+  X509_free
   X509_get_ext
   X509_get_ext_by_OBJ
   X509_get_ext_d2i
+  X509_get_extension_flags
+  X509_get_issuer_name
   X509_get_key_usage
+  X509_get_pathlen
+  X509_get_pubkey
   X509_get_serialNumber
+  X509_get_subject_name
   X509_get_X509_PUBKEY
   X509_get0_notAfter
   X509_get0_notBefore
+  X509_getm_notAfter
+  X509_getm_notBefore
+  X509_INFO_free
+  X509_NAME_add_entry_by_txt
+  X509_NAME_cmp
   X509_NAME_digest
+  X509_NAME_dup
   X509_NAME_entry_count
   X509_NAME_ENTRY_set
+  X509_NAME_free
   X509_NAME_get_entry
   X509_NAME_get_index_by_NID
+  X509_NAME_new
   X509_NAME_print_ex
+  X509_new
   X509_PUBKEY_get
+  X509_set_pubkey
+  X509_set_version
   X509_STORE_add_cert
   X509_STORE_add_crl
+  X509_STORE_CTX_free
+  X509_STORE_CTX_get_error
   X509_STORE_CTX_get_error_depth
   X509_STORE_CTX_get_ex_data
+  X509_STORE_CTX_get0_param
+  X509_STORE_CTX_new
+  X509_STORE_CTX_set_default
+  X509_STORE_CTX_set_error
+  X509_STORE_free
+  X509_STORE_new
+  X509_STORE_set_flags
+  X509_STORE_set_verify_cb
+  X509_up_ref
+  X509_verify
+  X509_verify_cert
+  X509_verify_cert_error_string
+  X509_VERIFY_PARAM_clear_flags
+  X509_VERIFY_PARAM_set_flags
+  X509_VERIFY_PARAM_set_time
+  X509_VERIFY_PARAM_set1
 )
 
 target_add_bssl_source(bssl-compat
@@ -388,9 +536,7 @@ target_add_bssl_include(bssl-compat
   include/openssl/x509v3.h
   include/openssl/x509_vfy.h
 )
-set_source_files_properties(source/evp.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
-set_source_files_properties(source/RSA_free.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
-set_source_files_properties(source/PEM_read_bio_RSAPrivateKey.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
+target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
 target_include_directories(bssl-compat PUBLIC include)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 
@@ -447,39 +593,23 @@ set(utests-source-list
   source/test/test_ssl.cc
   source/test/test_stack.cc
   source/test/test_x509.cc
+  # Test data copied from BoringSSL
+  source/crypto/test/crypto_test_data.cc
 )
 
 ################################################################################
 # Unit Tests built on bssl-compat
 ################################################################################
-add_executable(utests-bssl-compat
-  ${utests-source-list}
-  source/crypto/test/crypto_test_data.cc
-  source/extra/asn1_extra.c
-  source/extra/bio_extra.c
-  source/extra/err_extra.c
-  source/extra/mem_extra.c
-  source/extra/pem_extra.c
-  source/extra/ssl_extra.c
-)
+add_executable(utests-bssl-compat ${utests-source-list})
 target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
-target_link_options(utests-bssl-compat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/digest_extra.ld)
-target_link_options(utests-bssl-compat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/cipher_extra.ld)
-target_link_options(utests-bssl-compat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/ssl_extra.ld)
-target_link_options(utests-bssl-compat PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source/extra/x509_extra.ld)
 gtest_discover_tests(utests-bssl-compat)
 
 ################################################################################
 # Unit Tests built on BoringSSL
 ################################################################################
-add_executable(utests-boring
-  ${utests-source-list}
-  ${utests-bssl-source-list}
-  source/crypto/test/crypto_test_data.cc
-)
-add_dependencies(utests-boring BoringSSL)
+add_executable(utests-boring ${utests-source-list} ${utests-bssl-source-list})
 target_link_libraries(utests-boring PRIVATE BoringSSL::SSL BoringSSL::Crypto)
 target_link_libraries(utests-boring PRIVATE GTest::gtest_main)
 gtest_discover_tests(utests-boring)

@@ -278,6 +278,15 @@
  
  
  // Options.
+@@ -802,7 +803,7 @@
+ // SSL_CTX_set_options enables all options set in |options| (which should be one
+ // or more of the |SSL_OP_*| values, ORed together) in |ctx|. It returns a
+ // bitmask representing the resulting enabled options.
+-// OPENSSL_EXPORT uint32_t SSL_CTX_set_options(SSL_CTX *ctx, uint32_t options);
++OPENSSL_EXPORT uint32_t SSL_CTX_set_options(SSL_CTX *ctx, uint32_t options);
+ 
+ // SSL_CTX_clear_options disables all options set in |options| (which should be
+ // one or more of the |SSL_OP_*| values, ORed together) in |ctx|. It returns a
 @@ -811,7 +812,7 @@
  
  // SSL_CTX_get_options returns a bitmask of |SSL_OP_*| values that represent all

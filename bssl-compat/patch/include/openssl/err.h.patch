@@ -46,6 +46,25 @@
  
  // ERR_get_error_line acts like |ERR_get_error|, except that the file and line
  // number of the call that added the error are also returned.
+@@ -199,14 +200,14 @@
+ 
+ // The "peek" functions act like the |ERR_get_error| functions, above, but they
+ // do not remove the error from the queue.
+-// OPENSSL_EXPORT uint32_t ERR_peek_error(void);
++OPENSSL_EXPORT uint32_t ERR_peek_error(void);
+ // OPENSSL_EXPORT uint32_t ERR_peek_error_line(const char **file, int *line);
+-// OPENSSL_EXPORT uint32_t ERR_peek_error_line_data(const char **file, int *line,
+-//                                                  const char **data, int *flags);
++OPENSSL_EXPORT uint32_t ERR_peek_error_line_data(const char **file, int *line,
++                                                 const char **data, int *flags);
+ 
+ // The "peek last" functions act like the "peek" functions, above, except that
+ // they return the most recent error.
+-// OPENSSL_EXPORT uint32_t ERR_peek_last_error(void);
++OPENSSL_EXPORT uint32_t ERR_peek_last_error(void);
+ // OPENSSL_EXPORT uint32_t ERR_peek_last_error_line(const char **file, int *line);
+ // OPENSSL_EXPORT uint32_t ERR_peek_last_error_line_data(const char **file,
+ //                                                       int *line,
 @@ -224,17 +225,17 @@
  //
  // error code is an 8 digit hexadecimal number; library name and reason string
