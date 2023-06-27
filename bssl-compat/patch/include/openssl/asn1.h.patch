@@ -99,8 +99,12 @@
  // OPENSSL_EXPORT void ASN1_OCTET_STRING_free(ASN1_OCTET_STRING *str);
  // OPENSSL_EXPORT void ASN1_PRINTABLESTRING_free(ASN1_PRINTABLESTRING *str);
  // OPENSSL_EXPORT void ASN1_T61STRING_free(ASN1_T61STRING *str);
-@@ -1040,7 +1040,7 @@
- // OPENSSL_EXPORT ASN1_INTEGER *ASN1_INTEGER_new(void);
+@@ -1037,10 +1037,10 @@
+ 
+ // ASN1_INTEGER_new calls |ASN1_STRING_type_new| with |V_ASN1_INTEGER|. The
+ // resulting object has value zero.
+-// OPENSSL_EXPORT ASN1_INTEGER *ASN1_INTEGER_new(void);
++OPENSSL_EXPORT ASN1_INTEGER *ASN1_INTEGER_new(void);
  
  // ASN1_INTEGER_free calls |ASN1_STRING_free|.
 -// OPENSSL_EXPORT void ASN1_INTEGER_free(ASN1_INTEGER *str);
@@ -176,7 +180,7 @@
  
  // ASN1_TIME_check returns one if |t| is a valid UTCTime or GeneralizedTime, and
  // zero otherwise. |t|'s type determines which check is performed. This
-@@ -1815,38 +1815,38 @@
+@@ -1837,38 +1837,38 @@
  // prototypes directly. Particularly when |type|, |itname|, or |name| differ,
  // the macros can be difficult to understand.
  
@@ -240,7 +244,7 @@
  
  
  // Deprecated functions.
-@@ -1965,22 +1965,22 @@
+@@ -1987,22 +1987,22 @@
  // DECLARE_ASN1_ITEM(ASN1_PRINTABLE)
  
  
@@ -271,7 +275,7 @@
  
  #ifdef ossl_ASN1_R_ASN1_LENGTH_MISMATCH
  #define ASN1_R_ASN1_LENGTH_MISMATCH ossl_ASN1_R_ASN1_LENGTH_MISMATCH
-@@ -2274,4 +2274,4 @@
+@@ -2296,4 +2296,4 @@
  #define ASN1_R_INVALID_INTEGER ossl_ASN1_R_INVALID_INTEGER
  #endif
  

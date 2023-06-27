@@ -1,5 +1,5 @@
 #include <openssl/ssl.h>
-#include <ossl/openssl/ssl.h>
+#include <ossl.h>
 #include "log.h"
 
 
@@ -8,7 +8,7 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_get_negotiated_group.html
  */
 uint16_t SSL_get_curve_id(const SSL *ssl) {
-  int nid = ossl_SSL_get_negotiated_group((SSL*)ssl);
+  int nid = ossl.ossl_SSL_get_negotiated_group((SSL*)ssl);
   
   switch(nid) {
     case ossl_NID_secp224r1:        return SSL_CURVE_SECP224R1;

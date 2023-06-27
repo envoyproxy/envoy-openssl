@@ -58,7 +58,7 @@
  
  // struct NAME_CONSTRAINTS_st {
  //   STACK_OF(GENERAL_SUBTREE) *permittedSubtrees;
-@@ -489,7 +493,7 @@
+@@ -507,7 +511,7 @@
  
  // DEFINE_STACK_OF(X509_PURPOSE)
  
@@ -67,7 +67,7 @@
  
  // TODO(https://crbug.com/boringssl/407): This is not const because it contains
  // an |X509_NAME|.
-@@ -497,14 +501,14 @@
+@@ -515,14 +519,14 @@
  
  // TODO(https://crbug.com/boringssl/407): This is not const because it contains
  // an |X509_NAME|.
@@ -85,7 +85,7 @@
  
  // i2v_GENERAL_NAME serializes |gen| as a |CONF_VALUE|. If |ret| is non-NULL, it
  // appends the value to |ret| and returns |ret| on success or NULL on error. If
-@@ -522,7 +526,7 @@
+@@ -540,7 +544,7 @@
  
  // TODO(https://crbug.com/boringssl/407): This is not const because it contains
  // an |X509_NAME|.
@@ -94,7 +94,18 @@
  
  // i2v_GENERAL_NAMES serializes |gen| as a list of |CONF_VALUE|s. If |ret| is
  // non-NULL, it appends the values to |ret| and returns |ret| on success or NULL
-@@ -597,10 +601,10 @@
+@@ -561,8 +565,8 @@
+ // DECLARE_ASN1_FUNCTIONS_const(OTHERNAME)
+ // DECLARE_ASN1_FUNCTIONS_const(EDIPARTYNAME)
+ // OPENSSL_EXPORT int OTHERNAME_cmp(OTHERNAME *a, OTHERNAME *b);
+-// OPENSSL_EXPORT void GENERAL_NAME_set0_value(GENERAL_NAME *a, int type,
+-//                                             void *value);
++OPENSSL_EXPORT void GENERAL_NAME_set0_value(GENERAL_NAME *a, int type,
++                                            void *value);
+ // OPENSSL_EXPORT void *GENERAL_NAME_get0_value(const GENERAL_NAME *a, int *ptype);
+ // OPENSSL_EXPORT int GENERAL_NAME_set0_othername(GENERAL_NAME *gen,
+ //                                                ASN1_OBJECT *oid,
+@@ -615,10 +619,10 @@
  // DECLARE_ASN1_ITEM(POLICY_MAPPINGS)
  
  // DECLARE_ASN1_ITEM(GENERAL_SUBTREE)
@@ -107,7 +118,7 @@
  
  // DECLARE_ASN1_ALLOC_FUNCTIONS(POLICY_CONSTRAINTS)
  // DECLARE_ASN1_ITEM(POLICY_CONSTRAINTS)
-@@ -857,8 +861,8 @@
+@@ -875,8 +879,8 @@
  // OPENSSL_EXPORT int X509_check_issued(X509 *issuer, X509 *subject);
  // OPENSSL_EXPORT int X509_check_akid(X509 *issuer, AUTHORITY_KEYID *akid);
  
@@ -118,7 +129,7 @@
  // OPENSSL_EXPORT uint32_t X509_get_extended_key_usage(X509 *x);
  
  // X509_get0_subject_key_id returns |x509|'s subject key identifier, if present.
-@@ -958,29 +962,29 @@
+@@ -976,29 +980,29 @@
  // made after this point may be overwritten when the script is next run.
  
  
@@ -159,7 +170,7 @@
  
  #ifdef ossl_X509V3_R_BAD_IP_ADDRESS
  #define X509V3_R_BAD_IP_ADDRESS ossl_X509V3_R_BAD_IP_ADDRESS
-@@ -1178,4 +1182,4 @@
+@@ -1196,4 +1200,4 @@
  #define X509V3_R_TRAILING_DATA_IN_EXTENSION ossl_X509V3_R_TRAILING_DATA_IN_EXTENSION
  #endif
  

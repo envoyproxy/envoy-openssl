@@ -83,7 +83,7 @@
  
  
  // Digest operations.
-@@ -145,8 +145,8 @@
+@@ -145,22 +145,22 @@
  // EVP_DigestInit_ex configures |ctx|, which must already have been
  // initialised, for a fresh hashing operation using |type|. It returns one on
  // success and zero on allocation failure.
@@ -94,7 +94,8 @@
  
  // EVP_DigestInit acts like |EVP_DigestInit_ex| except that |ctx| is
  // initialised before use.
-@@ -154,13 +154,13 @@
+-// OPENSSL_EXPORT int EVP_DigestInit(EVP_MD_CTX *ctx, const EVP_MD *type);
++OPENSSL_EXPORT int EVP_DigestInit(EVP_MD_CTX *ctx, const EVP_MD *type);
  
  // EVP_DigestUpdate hashes |len| bytes from |data| into the hashing operation
  // in |ctx|. It returns one.
@@ -111,7 +112,7 @@
  
  // EVP_MAX_MD_BLOCK_SIZE is the largest digest block size supported, in
  // bytes.
-@@ -172,8 +172,8 @@
+@@ -172,13 +172,13 @@
  // number of bytes written. It returns one. After this call, the hash cannot be
  // updated or finished again until |EVP_DigestInit_ex| is called to start
  // another hashing operation.
@@ -122,7 +123,22 @@
  
  // EVP_DigestFinal acts like |EVP_DigestFinal_ex| except that
  // |EVP_MD_CTX_cleanup| is called on |ctx| before returning.
-@@ -203,7 +203,7 @@
+-// OPENSSL_EXPORT int EVP_DigestFinal(EVP_MD_CTX *ctx, uint8_t *md_out,
+-//                                    unsigned int *out_size);
++OPENSSL_EXPORT int EVP_DigestFinal(EVP_MD_CTX *ctx, uint8_t *md_out,
++                                   unsigned int *out_size);
+ 
+ // EVP_Digest performs a complete hashing operation in one call. It hashes |len|
+ // bytes from |data| and writes the digest to |md_out|. |EVP_MD_CTX_size| bytes
+@@ -196,14 +196,14 @@
+ // function.
+ 
+ // EVP_MD_type returns a NID identifying |md|. (For example, |NID_sha256|.)
+-// OPENSSL_EXPORT int EVP_MD_type(const EVP_MD *md);
++OPENSSL_EXPORT int EVP_MD_type(const EVP_MD *md);
+ 
+ // EVP_MD_flags returns the flags for |md|, which is a set of |EVP_MD_FLAG_*|
+ // values, ORed together.
  // OPENSSL_EXPORT uint32_t EVP_MD_flags(const EVP_MD *md);
  
  // EVP_MD_size returns the digest size of |md|, in bytes.

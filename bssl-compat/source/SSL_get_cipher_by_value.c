@@ -1,5 +1,5 @@
 #include <openssl/ssl.h>
-#include <ossl/openssl/ssl.h>
+#include <ossl.h>
 #include <arpa/inet.h>
 
 
@@ -10,7 +10,7 @@ const SSL_CIPHER *SSL_get_cipher_by_value(uint16_t value) {
     SSL *ssl = SSL_new(ctx);
     if(ssl) {
       uint16_t nvalue = htons(value);
-      result = ossl_SSL_CIPHER_find(ssl, (const unsigned char*)&nvalue);
+      result = ossl.ossl_SSL_CIPHER_find(ssl, (const unsigned char*)&nvalue);
       SSL_free(ssl);
     }
     SSL_CTX_free(ctx);

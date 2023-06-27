@@ -1,5 +1,5 @@
 #include <openssl/base64.h>
-#include <ossl/openssl/evp.h>
+#include <ossl.h>
 
 
 /*
@@ -10,7 +10,7 @@ int EVP_DecodeBase64(uint8_t *out, size_t *out_len, size_t max_out, const uint8_
 
   if(EVP_DecodedLength(&decoded_len, in_len)) {
     if(decoded_len <= max_out) {
-      decoded_len = ossl_EVP_DecodeBlock(out, in, in_len);
+      decoded_len = ossl.ossl_EVP_DecodeBlock(out, in, in_len);
       if(decoded_len >= 0) {
         *out_len = decoded_len;
         return 1;

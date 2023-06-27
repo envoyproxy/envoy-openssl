@@ -108,6 +108,32 @@
  
  // EVP_marshal_public_key marshals |key| as a DER-encoded SubjectPublicKeyInfo
  // structure (RFC 5280) and appends the result to |cbb|. It returns one on
+@@ -366,9 +366,9 @@
+ // used concurrently with other non-mutating functions on |pkey|.
+ //
+ // It returns one on success, or zero on error.
+-// OPENSSL_EXPORT int EVP_DigestVerifyInit(EVP_MD_CTX *ctx, EVP_PKEY_CTX **pctx,
+-//                                         const EVP_MD *type, ENGINE *e,
+-//                                         EVP_PKEY *pkey);
++OPENSSL_EXPORT int EVP_DigestVerifyInit(EVP_MD_CTX *ctx, EVP_PKEY_CTX **pctx,
++                                        const EVP_MD *type, ENGINE *e,
++                                        EVP_PKEY *pkey);
+ 
+ // EVP_DigestVerifyUpdate appends |len| bytes from |data| to the data which
+ // will be verified by |EVP_DigestVerifyFinal|. It returns one.
+@@ -391,9 +391,9 @@
+ 
+ // EVP_DigestVerify verifies that |sig_len| bytes from |sig| are a valid
+ // signature for |data|. It returns one on success or zero on error.
+-// OPENSSL_EXPORT int EVP_DigestVerify(EVP_MD_CTX *ctx, const uint8_t *sig,
+-//                                     size_t sig_len, const uint8_t *data,
+-//                                     size_t len);
++OPENSSL_EXPORT int EVP_DigestVerify(EVP_MD_CTX *ctx, const uint8_t *sig,
++                                    size_t sig_len, const uint8_t *data,
++                                    size_t len);
+ 
+ 
+ // Signing (old functions)
 @@ -1089,20 +1089,20 @@
  // } /* EVP_PKEY */;
  

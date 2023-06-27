@@ -1,5 +1,5 @@
 #include <openssl/ssl.h>
-#include <ossl/openssl/ssl.h>
+#include <ossl.h>
 
 
 /*
@@ -8,7 +8,7 @@
  */
 void SSL_get0_ocsp_response(const SSL *ssl, const uint8_t **out, size_t *out_len) {
   unsigned char *data;
-  long len = ossl_SSL_get_tlsext_status_ocsp_resp((SSL*)ssl, &data);
+  long len = ossl.ossl_SSL_get_tlsext_status_ocsp_resp((SSL*)ssl, &data);
 
   if(len == -1) {
     *out = NULL;

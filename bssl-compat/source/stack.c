@@ -1,5 +1,5 @@
 #include <openssl/stack.h>
-#include <ossl/openssl/stack.h>
+#include <ossl.h>
 
 /*
  * In OpenSSL the stack type is ossl_OPENSSL_STACK*, and in BoringSSL the stack
@@ -31,7 +31,7 @@ OPENSSL_EXPORT _STACK *sk_deep_copy(const _STACK *sk,
                                     stack_copy_func copy_func,
                                     stack_call_free_func call_free_func,
                                     stack_free_func free_func) {
-  return ossl_OPENSSL_sk_deep_copy(sk, (ossl_OPENSSL_sk_copyfunc)copy_func, free_func);
+  return ossl.ossl_OPENSSL_sk_deep_copy(sk, (ossl_OPENSSL_sk_copyfunc)copy_func, free_func);
 }
 
 /*
@@ -50,7 +50,7 @@ OPENSSL_EXPORT _STACK *sk_deep_copy(const _STACK *sk,
  * sk_TYPE_delete() returns pointer to the deleted element or NULL on error.
  */
 void *sk_delete(_STACK *sk, size_t where) {
-  return ossl_OPENSSL_sk_delete(sk, where);
+  return ossl.ossl_OPENSSL_sk_delete(sk, where);
 }
 
 /*
@@ -66,7 +66,7 @@ void *sk_delete(_STACK *sk, size_t where) {
  * deleted element or NULL if no element matching ptr was found.
  */
 void *sk_delete_ptr(_STACK *sk, const void *p) {
-  return ossl_OPENSSL_sk_delete_ptr(sk, p);
+  return ossl.ossl_OPENSSL_sk_delete_ptr(sk, p);
 }
 
 /*
@@ -81,7 +81,7 @@ void *sk_delete_ptr(_STACK *sk, const void *p) {
  * stack is NULL. Note the pointers in the copy are identical to the original.
  */
 _STACK *sk_dup(const _STACK *sk) {
-  return ossl_OPENSSL_sk_dup(sk);
+  return ossl.ossl_OPENSSL_sk_dup(sk);
 }
 
 /*
@@ -118,30 +118,30 @@ int sk_find(const _STACK *sk, size_t *out_index, const void *p, stack_call_cmp_f
   // Find out if the stack is sorted. We have to do this before setting the
   // compare function to NULL, because doing so makes the set not sorted, even
   // if it was already sorted, and the elements are actually in sorted order.
-  int sorted = ossl_OPENSSL_sk_is_sorted(sk);
+  int sorted = ossl.ossl_OPENSSL_sk_is_sorted(sk);
 
   if (sorted) {
     // If the stack says it's sorted then it must have a compare function. In
     // this case the OpenSSL call does the same as the BoringSSL call, so we
     // just call it.
-    idx = ossl_OPENSSL_sk_find((_STACK*)sk, p);
+    idx = ossl.ossl_OPENSSL_sk_find((_STACK*)sk, p);
   }
   else {
     // The stack says that it's not sorted, in which case it may or may not have
     // a compare function.
-    ossl_OPENSSL_sk_compfunc compfunc = ossl_OPENSSL_sk_set_cmp_func((_STACK*)sk, NULL);
+    ossl_OPENSSL_sk_compfunc compfunc = ossl.ossl_OPENSSL_sk_set_cmp_func((_STACK*)sk, NULL);
 
     if (compfunc) {
       // The stack is not sorted but it does have a compare function, in which
-      // case, OpenSSLs ossl_OPENSSL_sk_sort() call will first sort the stack
+      // case, OpenSSLs ossl.ossl_OPENSSL_sk_sort() call will first sort the stack
       // and then perform the search. This is NOT the behaviour we want because
       // BoringSSL never does a sort before find. Instead, if the stack is not
       // sorted, BoringSSL does a linear search instead, leaving the order
       // unchanged, so we must also do our own linear search, using the compare
       // function that we've temporarily removed from the stack.
-      const int num = ossl_OPENSSL_sk_num(sk);
+      const int num = ossl.ossl_OPENSSL_sk_num(sk);
       for (int i = 0; i < num; i++) {
-        void *value = ossl_OPENSSL_sk_value(sk, i);
+        void *value = ossl.ossl_OPENSSL_sk_value(sk, i);
         if (compfunc(&value, &p) == 0) {
           idx = i;
           break;
@@ -149,20 +149,20 @@ int sk_find(const _STACK *sk, size_t *out_index, const void *p, stack_call_cmp_f
       }
 
       // Restore the compare function
-      ossl_OPENSSL_sk_set_cmp_func((_STACK*)sk, compfunc);
+      ossl.ossl_OPENSSL_sk_set_cmp_func((_STACK*)sk, compfunc);
 
       // Unfortunately, restoring the compare function makes the stack not
       // sorted, even if the elements are actually in sorted order. Therefore,
-      // if the stack was initially, we have to call ossl_OPENSSL_sk_sort() to
+      // if the stack was initially, we have to call ossl.ossl_OPENSSL_sk_sort() to
       // "sort" it again.
       if (sorted) {
-        ossl_OPENSSL_sk_sort((_STACK*)sk);
+        ossl.ossl_OPENSSL_sk_sort((_STACK*)sk);
       }
     }
     else {
       // The stack is not sorted and has no compare function, in which case we
-      // can just call OpenSSL's ossl_OPENSSL_sk_find().
-      idx = ossl_OPENSSL_sk_find((_STACK*)sk, p);
+      // can just call OpenSSL's ossl.ossl_OPENSSL_sk_find().
+      idx = ossl.ossl_OPENSSL_sk_find((_STACK*)sk, p);
     }
   }
 
@@ -189,7 +189,7 @@ int sk_find(const _STACK *sk, size_t *out_index, const void *p, stack_call_cmp_f
  * of sk. After this call sk is no longer valid.
  */
 void sk_free(_STACK *sk) {
-  ossl_OPENSSL_sk_free(sk);
+  ossl.ossl_OPENSSL_sk_free(sk);
 }
 
 
@@ -209,7 +209,7 @@ void sk_free(_STACK *sk) {
  * allocation failure) occurred.
  */
 size_t sk_insert(_STACK *sk, void *p, size_t where) {
-  return ossl_OPENSSL_sk_insert(sk, p, where);
+  return ossl.ossl_OPENSSL_sk_insert(sk, p, where);
 }
 
 /*
@@ -222,7 +222,7 @@ size_t sk_insert(_STACK *sk, void *p, size_t where) {
  * sk_TYPE_is_sorted() returns 1 if sk is sorted and 0 otherwise
  */
 int sk_is_sorted(const _STACK *sk) {
-  return ossl_OPENSSL_sk_is_sorted(sk);
+  return ossl.ossl_OPENSSL_sk_is_sorted(sk);
 }
 
 /*
@@ -235,7 +235,7 @@ int sk_is_sorted(const _STACK *sk) {
  * sk_TYPE_num() returns the number of elements in sk or -1 if sk is NULL.
  */
 size_t sk_num(const _STACK *sk) {
-  int ret = ossl_OPENSSL_sk_num(sk);
+  int ret = ossl.ossl_OPENSSL_sk_num(sk);
   return (ret == -1) ? 0 : ret;
 }
 
@@ -253,7 +253,7 @@ size_t sk_num(const _STACK *sk) {
  * empty stack or NULL if an error occurs.
  */
 _STACK *sk_new(stack_cmp_func comp) {
-  return ossl_OPENSSL_sk_new((ossl_OPENSSL_sk_compfunc)comp);
+  return ossl.ossl_OPENSSL_sk_new((ossl_OPENSSL_sk_compfunc)comp);
 }
 
 /*
@@ -268,7 +268,7 @@ _STACK *sk_new(stack_cmp_func comp) {
  * This function is equivalent to sk_TYPE_new_reserve(NULL, 0).
  */
 _STACK *sk_new_null(void) {
-  return ossl_OPENSSL_sk_new_null();
+  return ossl.ossl_OPENSSL_sk_new_null();
 }
 
 /*
@@ -282,7 +282,7 @@ _STACK *sk_new_null(void) {
  * sk_TYPE_pop() returns and removes the last element from sk.
  */
 void *sk_pop(_STACK *sk) {
-  return ossl_OPENSSL_sk_pop(sk);
+  return ossl.ossl_OPENSSL_sk_pop(sk);
 }
 
 /*
@@ -302,7 +302,7 @@ OPENSSL_EXPORT void sk_pop_free_ex(_STACK *sk,
                                    stack_call_free_func call_free_func,
                                    stack_free_func free_func) {
   (void)call_free_func;
-  ossl_OPENSSL_sk_pop_free(sk, free_func);
+  ossl.ossl_OPENSSL_sk_pop_free(sk, free_func);
 }
 
 /*
@@ -317,7 +317,7 @@ OPENSSL_EXPORT void sk_pop_free_ex(_STACK *sk,
  * sk_TYPE_push() further returns -1 if sk is NULL.
  */
 size_t sk_push(_STACK *sk, void *p) {
-  int ret = ossl_OPENSSL_sk_push(sk, p);
+  int ret = ossl.ossl_OPENSSL_sk_push(sk, p);
   return (ret == -1) ? 0 : ret;
 }
 
@@ -334,7 +334,7 @@ size_t sk_push(_STACK *sk, void *p) {
  * comparison function.
  */
 stack_cmp_func sk_set_cmp_func(_STACK *sk, stack_cmp_func comp) {
-  return (stack_cmp_func)ossl_OPENSSL_sk_set_cmp_func(sk, (ossl_OPENSSL_sk_compfunc)comp);
+  return (stack_cmp_func)ossl.ossl_OPENSSL_sk_set_cmp_func(sk, (ossl_OPENSSL_sk_compfunc)comp);
 }
 
 /*
@@ -351,7 +351,7 @@ stack_cmp_func sk_set_cmp_func(_STACK *sk, stack_cmp_func comp) {
  * sk_TYPE_shift() return a pointer to the deleted element or NULL on error.
  */
 void *sk_shift(_STACK *sk) {
-  return ossl_OPENSSL_sk_shift(sk);
+  return ossl.ossl_OPENSSL_sk_shift(sk);
 }
 
 /*
@@ -367,7 +367,7 @@ void *sk_shift(_STACK *sk) {
  */
 void sk_sort(_STACK *sk, stack_call_cmp_func call_cmp_func) {
   (void)call_cmp_func;
-  ossl_OPENSSL_sk_sort(sk);
+  ossl.ossl_OPENSSL_sk_sort(sk);
 }
 
 /*
@@ -384,7 +384,7 @@ void sk_sort(_STACK *sk, stack_call_cmp_func call_cmp_func) {
  * to a stack element or NULL if the index is out of range.
  */
 void *sk_value(const _STACK *sk, size_t i) {
-  return ossl_OPENSSL_sk_value(sk, i);
+  return ossl.ossl_OPENSSL_sk_value(sk, i);
 }
 
 /*
@@ -401,5 +401,5 @@ void *sk_value(const _STACK *sk, size_t i) {
  * error is not raised in these conditions.
  */
 void sk_zero(_STACK *sk) {
-  ossl_OPENSSL_sk_zero(sk);
+  ossl.ossl_OPENSSL_sk_zero(sk);
 }

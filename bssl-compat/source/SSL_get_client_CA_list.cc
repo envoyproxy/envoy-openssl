@@ -7,5 +7,5 @@
  * https://www.openssl.org/docs/man3.0/man3/SSL_get_client_CA_list.html
  */
 extern "C" STACK_OF(X509_NAME) *SSL_get_client_CA_list(const SSL *ssl) {
-  return reinterpret_cast<STACK_OF(X509_NAME)*>(ossl_SSL_get_client_CA_list(ssl));
+  return reinterpret_cast<STACK_OF(X509_NAME)*>(ossl.ossl_SSL_get_client_CA_list(ssl));
 }

@@ -1,4 +1,5 @@
 #include <openssl/ssl.h>
+#include <ossl.h>
 
 
 /*
@@ -10,7 +11,7 @@ int SSL_SESSION_to_bytes(const SSL_SESSION *in, uint8_t **out_data, size_t *out_
     return 0;
   }
 
-  int buflen = ossl_i2d_SSL_SESSION(in, NULL);
+  int buflen = ossl.ossl_i2d_SSL_SESSION(in, NULL);
   if(buflen == 0) {
     return 0;
   }
@@ -20,7 +21,7 @@ int SSL_SESSION_to_bytes(const SSL_SESSION *in, uint8_t **out_data, size_t *out_
     return 0;
   }
 
-  buflen = ossl_i2d_SSL_SESSION(in, &buf);
+  buflen = ossl.ossl_i2d_SSL_SESSION(in, &buf);
   if(buflen == 0) {
     return 0;
   }
