@@ -236,6 +236,7 @@ target_add_bssl_function(bssl-compat
   EVP_aes_256_cbc
   EVP_CIPHER_CTX_free
   EVP_CIPHER_CTX_new
+  EVP_CIPHER_block_size
   EVP_CIPHER_iv_length
   EVP_CIPHER_key_length
   EVP_DecryptFinal_ex
