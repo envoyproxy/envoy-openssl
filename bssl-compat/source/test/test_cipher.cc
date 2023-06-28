@@ -2,14 +2,21 @@
 #include <openssl/cipher.h>
 
 TEST(CipherTest, cipher1) {
-  uint8_t key[] = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00";
-  uint8_t iv[] = "\x9c\x2d\x88\x42\xe5\xf4\x8f\x57\x64\x82\x05\xd3\x9a\x23\x9a\xf1";
-  uint8_t plaintext1[] = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f0";
+  uint8_t key[EVP_MAX_KEY_LENGTH] = {0};
+  uint8_t iv[EVP_MAX_IV_LENGTH] = {1};
+
+  uint8_t plaintext1[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+                           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+                           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+                           1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
   int plainlen1 = sizeof(plaintext1);
-  uint8_t plaintext2[256];
+
+  uint8_t plaintext2[sizeof(plaintext1)];
   int plainlen2;
+
   uint8_t ciphertext[1024];
   int cipherlen;
+
   int tmplen;
 
 
