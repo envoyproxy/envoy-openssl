@@ -1,4 +1,3 @@
-include/openssl/
 include/openssl/aead.h
 include/openssl/aes.h
 include/openssl/arm_arch.h
@@ -90,6 +89,7 @@ source/crypto/digest_extra/digest_test.cc
 source/crypto/err/err_test.cc
 source/crypto/hmac_extra/hmac_test.cc
 source/crypto/internal.h
+source/crypto/mem.c
 source/crypto/pkcs8/pkcs12_test.cc
 source/crypto/rand_extra/rand_test.cc
 source/crypto/rsa_extra/rsa_test.cc

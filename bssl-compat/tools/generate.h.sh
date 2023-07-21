@@ -7,6 +7,10 @@ function status {
     cmake -E cmake_echo_color --blue "$1"
 }
 
+function warn {
+    cmake -E cmake_echo_color --yellow "$1"
+}
+
 function error {
     cmake -E cmake_echo_color --red "$1"
     exit 1
@@ -35,33 +39,22 @@ mkdir -p "$(dirname "$GEN_DIR/$DST_FILE")"
 
 
 #
-# Phase 1 - Comment everything out by default
-# ===========================================
-#
-# Attempts to comment out everything in the specified file, without unecessarily
-# commenting out blank lines, existing line comments, or existing block comments
-#
-GEN_APPLIED_COMMENTS="$GEN_DIR/$DST_FILE.0.applied.comments"
-sed -e 's|^|// |' -e 's|^// $||' -e 's|^// //|//|' -e 's|^// /\*|/*|' \
-    -e 's|^//  \*$| *|' -e 's|^//  \* | * |' -e 's|^//  \*/$| */|' \
-    "$SRC_DIR/$SRC_FILE" > "$GEN_APPLIED_COMMENTS"
-
-
-#
-# Phase 2 - Apply script file from $PATCH_DIR
-# ===========================================
+# Apply script file from $PATCH_DIR
+# =================================
 #
 PATCH_SCRIPT="$PATCH_DIR/$DST_FILE.sh"
 GEN_APPLIED_SCRIPT="$GEN_DIR/$DST_FILE.1.applied.script"
-cp "$GEN_APPLIED_COMMENTS" "$GEN_APPLIED_SCRIPT"
+cp "$SRC_DIR/$SRC_FILE" "$GEN_APPLIED_SCRIPT"
 if [ -f "$PATCH_SCRIPT" ]; then
-    "$PATCH_SCRIPT" "$GEN_APPLIED_SCRIPT"
+    PATH="$(dirname "$0"):$PATH" "$PATCH_SCRIPT" "$GEN_APPLIED_SCRIPT"
+else # Comment out the whole file contents
+    "$(dirname "$0")/uncomment.sh" "$GEN_APPLIED_SCRIPT" --comment
 fi
 
 
 #
-# Phase 3 - Apply patch file from $PATCH_DIR
-# ==========================================
+# Apply patch file from $PATCH_DIR
+# ================================
 #
 PATCH_FILE="$PATCH_DIR/$DST_FILE.patch"
 GEN_APPLIED_PATCH="$GEN_DIR/$DST_FILE.2.applied.patch"
@@ -73,39 +66,18 @@ fi
 
 
 #
-# Phase 4 - Copy result to the destination or create/update the patch file
-# ========================================================================
-#
-# If the destination file doesn't exist, just copy the last scratch file to it.
-#
-# Otherwise, check if the previous content matches the new content that we just
-# generated. If it doesn't match, then we assume that that the destination file
-# has been hand edited. Therefore, create or update the corresponding patch file
-# so that the generated content does match the destination content (or at least
-# it will next time we run).
-#
-# The most important thing is never to modify the destination content because
-# doing so may cause hand edits to be discarded.
+# Copy result to the destination
+# ==============================
 #
 if [ ! -f "$CMAKE_CURRENT_SOURCE_DIR/$DST_FILE" ]; then
     mkdir -p "$(dirname "$CMAKE_CURRENT_SOURCE_DIR/$DST_FILE")"
-    cp "$GEN_APPLIED_PATCH" "$CMAKE_CURRENT_SOURCE_DIR/$DST_FILE"
-    status "Created $DST_FILE"
-else # "$CMAKE_CURRENT_SOURCE_DIR/$DST_FILE" exists
-    if ! cmp -s "$GEN_APPLIED_PATCH" "$CMAKE_CURRENT_SOURCE_DIR/$DST_FILE"; then
-        [[ -f "$PATCH_FILE" ]] || mkdir -p "$(dirname "$PATCH_FILE")"
-        if diff -au --label "a/$DST_FILE" "$GEN_APPLIED_SCRIPT" --label "b/$DST_FILE" "$CMAKE_CURRENT_SOURCE_DIR/$DST_FILE" > "$PATCH_FILE"; then
-            rm -f "$PATCH_FILE"
-            status "Deleted patch/$(realpath -m --relative-to="$PATCH_DIR" "$PATCH_FILE")"
-        else
-            status "Updated patch/$(realpath -m --relative-to="$PATCH_DIR" "$PATCH_FILE")"
-        fi
-    fi
 fi
+cp "$GEN_APPLIED_PATCH" "$CMAKE_CURRENT_SOURCE_DIR/$DST_FILE"
 
 
 #
-# Add the  generated file to .gitignore file so it doesn't get checked into git
+# Add the generated file to .gitignore file
+# =========================================
 #
 GITIGNORE="$CMAKE_CURRENT_SOURCE_DIR/.gitignore"
 if ! grep "^$DST_FILE$" "$GITIGNORE" > /dev/null; then

@@ -1,4 +1,6 @@
 #!/bin/bash
 
-sed -i -e 's|^// \(#[ \t]*define[ \t]*\)\(PKCS7_R_[a-zA-Z0-9_]*\)[^a-zA-Z0-9_].*$|#ifdef ossl_\2\n\1\2 ossl_\2\n#endif|g' "$1"
+set -euo pipefail
 
+uncomment.sh "$1" --comment \
+  --uncomment-macro-redef 'PKCS7_R_[a-zA-Z0-9_]*'
