@@ -79,7 +79,6 @@ add_library(bssl-compat STATIC
   source/EVP_PKEY_id.cc
   source/ext_SSL_get_all_async_fds.c
   source/FIPS_mode.cc
-  source/GENERAL_NAME_cmp.cc
   source/GENERAL_NAME_free.cc
   source/GENERAL_NAME_new.cc
   source/GENERAL_NAMES_new.cc
@@ -168,8 +167,93 @@ add_library(bssl-compat STATIC
   source/X509_STORE_CTX_get0_untrusted.cc
   source/X509_STORE_CTX_init.cc
   source/X509_STORE_CTX_set0_crls.cc
+  source/X509_STORE_CTX_set0_trusted_stack.cc
   source/X509_STORE_CTX_set_verify_cb.cc
-  source/X509_STORE_CTX_trusted_stack.cc
+  source/X509_VERIFY_PARAM_set_time_posix.cc
+)
+
+target_add_bssl_include(bssl-compat
+  include/openssl/aead.h
+  include/openssl/aes.h
+  include/openssl/arm_arch.h
+  include/openssl/asn1.h
+  include/openssl/asn1_mac.h
+  include/openssl/asn1t.h
+  include/openssl/base64.h
+  include/openssl/base.h
+  include/openssl/bio.h
+  include/openssl/blake2.h
+  include/openssl/blowfish.h
+  include/openssl/bn.h
+  include/openssl/buffer.h
+  include/openssl/buf.h
+  include/openssl/bytestring.h
+  include/openssl/cast.h
+  include/openssl/chacha.h
+  include/openssl/cipher.h
+  include/openssl/cmac.h
+  include/openssl/conf.h
+  include/openssl/cpu.h
+  include/openssl/crypto.h
+  include/openssl/curve25519.h
+  include/openssl/des.h
+  include/openssl/dh.h
+  include/openssl/digest.h
+  include/openssl/dsa.h
+  include/openssl/dtls1.h
+  include/openssl/ecdh.h
+  include/openssl/ecdsa.h
+  include/openssl/ec.h
+  include/openssl/ec_key.h
+  include/openssl/engine.h
+  include/openssl/e_os2.h
+  include/openssl/err.h
+  include/openssl/evp_errors.h
+  include/openssl/evp.h
+  include/openssl/ex_data.h
+  include/openssl/hkdf.h
+  include/openssl/hmac.h
+  include/openssl/hpke.h
+  include/openssl/hrss.h
+  include/openssl/is_boringssl.h
+  include/openssl/kdf.h
+  include/openssl/lhash.h
+  include/openssl/md4.h
+  include/openssl/md5.h
+  include/openssl/mem.h
+  include/openssl/nid.h
+  include/openssl/objects.h
+  include/openssl/obj.h
+  include/openssl/obj_mac.h
+  include/openssl/opensslconf.h
+  include/openssl/opensslv.h
+  include/openssl/ossl_typ.h
+  include/openssl/pem.h
+  include/openssl/pkcs12.h
+  include/openssl/pkcs7.h
+  include/openssl/pkcs8.h
+  include/openssl/poly1305.h
+  include/openssl/pool.h
+  include/openssl/rand.h
+  include/openssl/rc4.h
+  include/openssl/ripemd.h
+  include/openssl/rsa.h
+  include/openssl/safestack.h
+  include/openssl/service_indicator.h
+  include/openssl/sha.h
+  include/openssl/siphash.h
+  include/openssl/span.h
+  include/openssl/srtp.h
+  include/openssl/ssl3.h
+  include/openssl/ssl.h
+  include/openssl/stack.h
+  include/openssl/thread.h
+  include/openssl/tls1.h
+  include/openssl/trust_token.h
+  include/openssl/type_check.h
+  include/openssl/x509.h
+  include/openssl/x509v3.h
+  include/openssl/x509_vfy.h
 )
 
 target_add_bssl_function(bssl-compat
@@ -444,98 +528,14 @@ target_add_bssl_function(bssl-compat
   X509_verify_cert_error_string
   X509_VERIFY_PARAM_clear_flags
   X509_VERIFY_PARAM_set_flags
-  X509_VERIFY_PARAM_set_time
   X509_VERIFY_PARAM_set1
 )
 
 target_add_bssl_source(bssl-compat
   source/crypto/internal.h
+  source/crypto/mem.c
   source/crypto/bytestring/cbs.c
   source/crypto/bytestring/cbb.c
-)
-
-target_add_bssl_include(bssl-compat
-  include/openssl/aead.h
-  include/openssl/aes.h
-  include/openssl/arm_arch.h
-  include/openssl/asn1.h
-  include/openssl/asn1_mac.h
-  include/openssl/asn1t.h
-  include/openssl/base64.h
-  include/openssl/base.h
-  include/openssl/bio.h
-  include/openssl/blake2.h
-  include/openssl/blowfish.h
-  include/openssl/bn.h
-  include/openssl/buffer.h
-  include/openssl/buf.h
-  include/openssl/bytestring.h
-  include/openssl/cast.h
-  include/openssl/chacha.h
-  include/openssl/cipher.h
-  include/openssl/cmac.h
-  include/openssl/conf.h
-  include/openssl/cpu.h
-  include/openssl/crypto.h
-  include/openssl/curve25519.h
-  include/openssl/des.h
-  include/openssl/dh.h
-  include/openssl/digest.h
-  include/openssl/dsa.h
-  include/openssl/dtls1.h
-  include/openssl/ecdh.h
-  include/openssl/ecdsa.h
-  include/openssl/ec.h
-  include/openssl/ec_key.h
-  include/openssl/engine.h
-  include/openssl/e_os2.h
-  include/openssl/err.h
-  include/openssl/evp_errors.h
-  include/openssl/evp.h
-  include/openssl/ex_data.h
-  include/openssl/hkdf.h
-  include/openssl/hmac.h
-  include/openssl/hpke.h
-  include/openssl/hrss.h
-  include/openssl/is_boringssl.h
-  include/openssl/kdf.h
-  include/openssl/lhash.h
-  include/openssl/md4.h
-  include/openssl/md5.h
-  include/openssl/mem.h
-  include/openssl/nid.h
-  include/openssl/objects.h
-  include/openssl/obj.h
-  include/openssl/obj_mac.h
-  include/openssl/opensslconf.h
-  include/openssl/opensslv.h
-  include/openssl/ossl_typ.h
-  include/openssl/pem.h
-  include/openssl/pkcs12.h
-  include/openssl/pkcs7.h
-  include/openssl/pkcs8.h
-  include/openssl/poly1305.h
-  include/openssl/pool.h
-  include/openssl/rand.h
-  include/openssl/rc4.h
-  include/openssl/ripemd.h
-  include/openssl/rsa.h
-  include/openssl/safestack.h
-  include/openssl/service_indicator.h
-  include/openssl/sha.h
-  include/openssl/siphash.h
-  include/openssl/span.h
-  include/openssl/srtp.h
-  include/openssl/ssl3.h
-  include/openssl/ssl.h
-  include/openssl/stack.h
-  include/openssl/thread.h
-  include/openssl/tls1.h
-  include/openssl/trust_token.h
-  include/openssl/type_check.h
-  include/openssl/x509.h
-  include/openssl/x509v3.h
-  include/openssl/x509_vfy.h
 )
 target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
 target_include_directories(bssl-compat PUBLIC include)

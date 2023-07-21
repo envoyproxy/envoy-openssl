@@ -22,15 +22,16 @@ add_dependencies(BoringSSL::Crypto BoringSSL)
 
 
 function(_target_add_bssl_file target src-file dst-file)
-  set(generate-cmd "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.h.sh"
-                      "${CMAKE_CURRENT_SOURCE_DIR}"
-                      "${CMAKE_CURRENT_BINARY_DIR}"
-                      "${src-file}" "${dst-file}")
-  execute_process(COMMAND ${generate-cmd})
   target_sources(${target} PRIVATE ${dst-file})
-  string(MAKE_C_IDENTIFIER ${dst-file} dst-file-target)
-  add_custom_target(${dst-file-target} COMMAND ${generate-cmd})
-  add_dependencies(${target} ${dst-file-target})
+  set(generate-cmd "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.h.sh" "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" "${src-file}" "${dst-file}")
+  foreach(dependency "external/boringssl/${src-file}" "patch/${dst-file}.sh" "patch/${dst-file}.patch")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${dependency}")
+      set(dependencies ${dependencies} "${CMAKE_CURRENT_SOURCE_DIR}/${dependency}")
+    endif()
+  endforeach()
+  set(dependencies ${dependencies} "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.h.sh")
+  set(dependencies ${dependencies} "${CMAKE_CURRENT_SOURCE_DIR}/tools/uncomment.sh")
+  add_custom_command(COMMAND ${generate-cmd} DEPENDS ${dependencies} OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/${dst-file}")
 endfunction()
 
 function(target_add_bssl_include target)

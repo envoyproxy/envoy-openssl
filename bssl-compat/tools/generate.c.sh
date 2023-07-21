@@ -25,7 +25,7 @@ function error {
     exit 1
 }
 
-INCLUDE_DIR="$TOP_DIR/include"
+INCLUDE_DIR="$TOP_DIR/external/boringssl/include"
 [[ -d "$INCLUDE_DIR" ]] || error "INCLUDE_DIR $INCLUDE_DIR does not exist"
 
 ################################################################################
@@ -76,8 +76,3 @@ $FUNC_SIG_ONE_LINE {
 #endif
 }
 EOF
-
-################################################################################
-# Uncomment the signature in the header file
-################################################################################
-sed -i "${FUNC_SIG_LINE_FROM},${FUNC_SIG_LINE_TO}s|^// ||g" "$HDR_FILE"

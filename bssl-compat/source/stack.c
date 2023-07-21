@@ -26,11 +26,11 @@
  * supplied copyfunc() and freeing by freefunc(). The function freefunc() is
  * only called if an error occurs.
  */
-OPENSSL_EXPORT _STACK *sk_deep_copy(const _STACK *sk,
-                                    stack_call_copy_func call_copy_func,
-                                    stack_copy_func copy_func,
-                                    stack_call_free_func call_free_func,
-                                    stack_free_func free_func) {
+_STACK *sk_deep_copy(const _STACK *sk,
+                                    OPENSSL_sk_call_copy_func call_copy_func,
+                                    OPENSSL_sk_copy_func copy_func,
+                                    OPENSSL_sk_call_free_func call_free_func,
+                                    OPENSSL_sk_free_func free_func) {
   return ossl.ossl_OPENSSL_sk_deep_copy(sk, (ossl_OPENSSL_sk_copyfunc)copy_func, free_func);
 }
 
@@ -110,7 +110,7 @@ _STACK *sk_dup(const _STACK *sk) {
  * rather than the pointers themselves and the order of elements in sk can
  * change.
  */
-int sk_find(const _STACK *sk, size_t *out_index, const void *p, stack_call_cmp_func call_cmp_func) {
+int sk_find(const _STACK *sk, size_t *out_index, const void *p, OPENSSL_sk_call_cmp_func call_cmp_func) {
   (void)call_cmp_func;
 
   int idx = -1;
@@ -222,7 +222,19 @@ size_t sk_insert(_STACK *sk, void *p, size_t where) {
  * sk_TYPE_is_sorted() returns 1 if sk is sorted and 0 otherwise
  */
 int sk_is_sorted(const _STACK *sk) {
-  return ossl.ossl_OPENSSL_sk_is_sorted(sk);
+  int sorted = ossl.ossl_OPENSSL_sk_is_sorted(sk);
+
+  if (!sorted) {
+    // BoringSSL also considers a stack to be sorted if
+    // it has a comparison function and a size of 0 or 1
+    ossl_OPENSSL_sk_compfunc compfunc = ossl.ossl_OPENSSL_sk_set_cmp_func((_STACK*)sk, NULL);
+    if (compfunc) {
+      sorted = (sk_num(sk) < 2);
+      ossl.ossl_OPENSSL_sk_set_cmp_func((_STACK*)sk, compfunc);
+    }
+  }
+
+  return sorted;
 }
 
 /*
@@ -252,7 +264,7 @@ size_t sk_num(const _STACK *sk) {
  * equivalent to sk_TYPE_new_reserve(compare, 0).  sk_TYPE_new() return an
  * empty stack or NULL if an error occurs.
  */
-_STACK *sk_new(stack_cmp_func comp) {
+_STACK *sk_new(OPENSSL_sk_cmp_func comp) {
   return ossl.ossl_OPENSSL_sk_new((ossl_OPENSSL_sk_compfunc)comp);
 }
 
@@ -299,8 +311,8 @@ void *sk_pop(_STACK *sk) {
  * function freefunc() is called on each element to free it.
  */
 OPENSSL_EXPORT void sk_pop_free_ex(_STACK *sk,
-                                   stack_call_free_func call_free_func,
-                                   stack_free_func free_func) {
+                                   OPENSSL_sk_call_free_func call_free_func,
+                                   OPENSSL_sk_free_func free_func) {
   (void)call_free_func;
   ossl.ossl_OPENSSL_sk_pop_free(sk, free_func);
 }
@@ -333,8 +345,8 @@ size_t sk_push(_STACK *sk, void *p) {
  * previous comparison function is returned or NULL if there was no previous
  * comparison function.
  */
-stack_cmp_func sk_set_cmp_func(_STACK *sk, stack_cmp_func comp) {
-  return (stack_cmp_func)ossl.ossl_OPENSSL_sk_set_cmp_func(sk, (ossl_OPENSSL_sk_compfunc)comp);
+OPENSSL_sk_cmp_func sk_set_cmp_func(_STACK *sk, OPENSSL_sk_cmp_func comp) {
+  return (OPENSSL_sk_cmp_func)ossl.ossl_OPENSSL_sk_set_cmp_func(sk, (ossl_OPENSSL_sk_compfunc)comp);
 }
 
 /*
@@ -365,7 +377,7 @@ void *sk_shift(_STACK *sk) {
  * =======
  * sk_TYPE_sort() sorts sk using the supplied comparison function.
  */
-void sk_sort(_STACK *sk, stack_call_cmp_func call_cmp_func) {
+void sk_sort(_STACK *sk, OPENSSL_sk_call_cmp_func call_cmp_func) {
   (void)call_cmp_func;
   ossl.ossl_OPENSSL_sk_sort(sk);
 }
