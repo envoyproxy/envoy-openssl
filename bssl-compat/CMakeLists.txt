@@ -605,6 +605,7 @@ add_executable(utests-bssl-compat ${utests-source-list})
 target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
+set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_INSTALL_DIR}/lib")
 gtest_discover_tests(utests-bssl-compat)
 
 ################################################################################
