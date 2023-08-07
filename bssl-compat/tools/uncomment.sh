@@ -72,7 +72,7 @@ uncomment_line_range() {
 uncomment_regex_range() {
   [[ $# == 2 ]] || error "uncomment_regex_range(): Two regexes required"
   L1=$(grep -n "^// $1" "$HDR_FILE" | head -1 | cut -d: -f1)
-  L2=$(awk '(NR == '$L1'),/^\/\/ '$2'/{print NR}' "$HDR_FILE" | tail -1)
+  L2=$(gawk '(NR == '$L1'),/^\/\/ '$2'/{print NR}' "$HDR_FILE" | tail -1)
   [ -z "$L1" ] && error "Failed to locate first pattern in -R $1 $2"
   [ -z "$L2" ] && error "Failed to locate second pattern in -R $1 $2"
   uncomment_line_range $L1 $L2
@@ -81,7 +81,7 @@ uncomment_regex_range() {
 uncomment_preproc_directive() {
   [[ $# == 1 ]] || error "uncomment_preproc_directive(): One regex required"
   for L1 in $(grep -n "^// #\s*$1" "$HDR_FILE" | cut -d: -f1); do
-    L2=$(awk '(NR == '$L1'),/[^\\]$/{print NR}' "$HDR_FILE" | tail -1)
+    L2=$(gawk '(NR == '$L1'),/[^\\]$/{print NR}' "$HDR_FILE" | tail -1)
     uncomment_line_range $L1 $L2
   done
 }
@@ -94,7 +94,7 @@ comment_line_range() {
 comment_regex_range() {
   [[ $# == 2 ]] || error "comment_regex_range(): Two regexes required"
   L1=$(grep -n "$1" "$HDR_FILE" | head -1 | cut -d: -f1)
-  L2=$(awk '(NR == '$L1'),/'$2'/{print NR}' "$HDR_FILE" | tail -1)
+  L2=$(gawk '(NR == '$L1'),/'$2'/{print NR}' "$HDR_FILE" | tail -1)
   [ -z "$L1" ] && error "comment_regex_range(): Failed to locate first pattern"
   [ -z "$L2" ] && error "comment_regex_range(): Failed to locate second pattern"
   comment_line_range $L1 $L2
@@ -151,7 +151,7 @@ while [ $# -ne 0 ]; do
           [[ $i == 0 ]] && AWK="$AWK {l1=NR}" || AWK="$AWK && NR==(l1+$i) {}"
         done
         AWK="${AWK::-2} {printf \"%d %d\n\", l1, NR; exit 0}"
-        RANGE=$(awk "$AWK" "$HDR_FILE")
+        RANGE=$(gawk "$AWK" "$HDR_FILE")
         [ -z "$RANGE" ] && error "Failed to locate --uncomment-regex ${PATTERNS[@]}"
         uncomment_line_range $RANGE
       fi
@@ -172,7 +172,7 @@ while [ $# -ne 0 ]; do
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
       for L1 in $(grep -n "^// #\s*define\s*$2\>" "$HDR_FILE" | cut -d: -f1); do
-        L2=$(awk '(NR == '$L1'),/[^\\]$/{print NR}' "$HDR_FILE" | tail -1)
+        L2=$(gawk '(NR == '$L1'),/[^\\]$/{print NR}' "$HDR_FILE" | tail -1)
         uncomment_line_range $L1 $L2
       done
       shift
@@ -226,7 +226,7 @@ while [ $# -ne 0 ]; do
       LINE=$(grep -n "^// \s*\<typedef\>.*\<$2\>.*" "$HDR_FILE" | head -1)
       L1=$(echo "$LINE" | cut -d: -f1) && L2=$L1
       if [[ ! "$LINE" =~ \;$ ]]; then # multi-line
-        L2=$(awk '(NR == '$L1'),/^\/\/ .*;$/{print NR}' "$HDR_FILE" | tail -1)
+        L2=$(gawk '(NR == '$L1'),/^\/\/ .*;$/{print NR}' "$HDR_FILE" | tail -1)
       fi
       uncomment_line_range $L1 $L2
       shift
@@ -243,7 +243,7 @@ while [ $# -ne 0 ]; do
       LINE=$(grep -n "^// static\s*.*\b$2\b\s*(" "$HDR_FILE" | head -1)
       L1=$(echo "$LINE" | cut -d: -f1) && L2=$L1
       if [[ ! "$LINE" =~ }$ ]]; then # multi-line
-        L2=$(awk '(NR == '$L1'),/^\/\/ }$/{print NR}' "$HDR_FILE" | tail -1)
+        L2=$(gawk '(NR == '$L1'),/^\/\/ }$/{print NR}' "$HDR_FILE" | tail -1)
       fi
       uncomment_line_range $L1 $L2
       shift

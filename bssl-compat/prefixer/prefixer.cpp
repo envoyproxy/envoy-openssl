@@ -403,7 +403,7 @@ class CompilationDatabase : public clang::tooling::CompilationDatabase
       std::vector<std::string> cmdline = {
           "dummy",
           std::string("-I") + opt::incdir().string(),
-          "-I/usr/lib64/clang/" LLVM_VERSION_STRING "/include/",
+          "-I" LLVM_LIBRARY_DIR "/clang/" LLVM_VERSION_STRING "/include/",
           file.str()
       };
       return { clang::tooling::CompileCommand(".", file, cmdline, "") };

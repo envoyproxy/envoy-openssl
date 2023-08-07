@@ -40,11 +40,12 @@ else (OS_OPENSSL_HEADERS AND  OS_SSL_LIBRARY AND OS_CRYPTO_LIBRARY)
         CONFIGURE_COMMAND ${OPENSSL_SOURCE_DIR}/config
         --prefix=${OPENSSL_INSTALL_DIR}
         --openssldir=${OPENSSL_INSTALL_DIR}
+        --libdir=lib
         BUILD_COMMAND make
         LOG ${OPENSSL_BUILD_LOG_DIR}
         LOG_BUILD TRUE
         TEST_COMMAND ""
-        INSTALL_COMMAND make install
+        INSTALL_COMMAND make install_sw
         INSTALL_DIR ${OPENSSL_INSTALL_DIR}
     )
     file(MAKE_DIRECTORY ${OPENSSL_INCLUDE_DIR})
