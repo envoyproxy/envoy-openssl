@@ -1,1 +1,3 @@
 import %workspace%/envoy/.bazelrc
+build --@envoy//bazel:http3=False
+try-import %workspace%/user.bazelrc

@@ -5,6 +5,8 @@ ExternalProject_Add(BoringSSL
   SOURCE_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/external/boringssl"
   CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
               -DCMAKE_INSTALL_LIBDIR=lib
+              -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+              -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
 )
 
 ExternalProject_Get_Property(BoringSSL INSTALL_DIR)
