@@ -62,6 +62,47 @@ If you want to force the re-build:
 make clean && make
 ```
 
+To launch LLVM lint tool clang-tidy, go to the build directory and launch:
+```
+.../bssl-compat/tools/do-clang-tidy.sh
+```
+At the end of build, compilation data base will be available in the file:
+```
+compile_commands.json
+```
+This make possible to run clang-tidy on a single files:
+```
+clang-tidy -p build/ <glob or files>
+```
+
+After clang-tidy has finished, before starting a build without clang-tidy, remove build directory and start from scratch for "normal" compilation.
+
+To build and run with Address Sanitiser, go to the build directory and launch:
+```
+.../bssl-compat/tools/do-asan.sh 
+ctest
+```
+Then, if errors are present, output will be available in the file:
+```
+envoy-openssl/bssl-compat/build/Testing/Temporary/LastTest.log
+```
+
+To build and run with Memory Sanitiser, go to the build directory and launch:
+```
+.../bssl-compat/tools/do-msan.sh 
+```
+
+To build and run with Thread Sanitiser, go to the build directory and launch:
+```
+.../bssl-compat/tools/do-tsan.sh 
+ctest
+```
+Then, if errors are present, output will be available in the file:
+```
+envoy-openssl/bssl-compat/build/Testing/Temporary/LastTest.log
+```
+
+
 # Structure
 
 The overall goal of the `bssl-compat` library is to provide an implementation of the BoringSSL API, sufficient enough that Envoy can be built against it. To provide that implementation, the `bssl-compat` library makes use of OpenSSL. Given this, it's clear that most code in the library will have to include headers from BoringSSL, to provide the API, and from OpenSSL, to provided the implementation. However, since the two sets of headers look extremely similar, they clash horribly when included in the same compilation unit. This leads to the `prefixer` tool, which gets built and run quite early in the build.
