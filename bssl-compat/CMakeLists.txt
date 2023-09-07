@@ -545,6 +545,7 @@ target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/includ
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/source)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
+target_compile_options(bssl-compat  PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 
 ################################################################################
 # Intallation
@@ -609,7 +610,8 @@ set(utests-source-list
 add_executable(utests-bssl-compat ${utests-source-list})
 target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
-# Add env variable SANITIZE_OPTIONS for optional sanitizers
+# Add env variable SANITIZE_OPTIONS to enable sanitizers
+target_compile_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
 set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_INSTALL_DIR}/lib")
@@ -620,7 +622,8 @@ gtest_discover_tests(utests-bssl-compat)
 ################################################################################
 add_executable(utests-boring ${utests-source-list} ${utests-bssl-source-list})
 target_include_directories(utests-boring PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/source)
-# Add env variable SANITIZE_OPTIONS for optional sanitizers
+# Add env variable SANITIZE_OPTIONS to enable sanitizers
+target_compile_options(utests-boring PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_options(utests-boring PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_libraries(utests-boring PRIVATE BoringSSL::SSL BoringSSL::Crypto)
 target_link_libraries(utests-boring PRIVATE GTest::gtest_main)
