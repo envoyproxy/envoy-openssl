@@ -3,6 +3,7 @@
 #include <openssl/bytestring.h>
 #include <openssl/nid.h>
 #include <openssl/bn.h>
+#include <openssl/obj_mac.h>
 
 
 // Copied from: boringssl/crypto/fipsmodule/ec/ec_test.cc
@@ -32,4 +33,38 @@ TEST(EC_KEYTest, test_EC_KEY_parse_private_key) {
   ASSERT_EQ(256, EC_GROUP_get_degree(group));
 
   EC_KEY_free(key);
+}
+
+TEST(EC_KEYTest, test_EC_KEY_new_by_curve_name) {
+    EC_KEY            *myecc  = nullptr;
+
+    /* ---------------------------------------------------------- *
+     * Create a EC key sructure, setting the group type from NID  *
+     * ---------------------------------------------------------- */
+    myecc = EC_KEY_new_by_curve_name(NID_secp224r1);
+    EXPECT_NE(myecc, nullptr);
+
+    EC_KEY_free(myecc);
+}
+
+TEST(EC_KEYtest, test_EC_KEY_set_public_key_affine_coordinates) {
+    CBS cbs;
+    CBS_init(&cbs, kECKeyWithoutPublic, sizeof(kECKeyWithoutPublic));
+
+    EC_KEY *key = EC_KEY_parse_private_key(&cbs, nullptr);
+    ASSERT_TRUE(key);
+
+    const EC_GROUP *group = EC_KEY_get0_group(key);
+    ASSERT_TRUE(group);
+
+    const BIGNUM *x {EC_GROUP_get0_order(group)};
+    const BIGNUM *y {EC_GROUP_get0_order(group)};
+
+    // TODO run the openssl test
+    // check_ec_key_field_public_range_test
+    // in test/ectest.c
+    // at this point just test compiles
+    EC_KEY_set_public_key_affine_coordinates(key, x, y);
+
+    EC_KEY_free(key);
 }

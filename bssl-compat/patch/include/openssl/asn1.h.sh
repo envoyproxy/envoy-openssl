@@ -8,6 +8,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro-redef 'ASN1_STRFLGS_[A-Z0-9_]*' \
   --uncomment-macro 'DECLARE_ASN1_ITEM' \
   --uncomment-func-decl ASN1_STRING_free \
+  --uncomment-func-decl ASN1_STRING_to_UTF8 \
   --uncomment-func-decl ASN1_STRING_get0_data \
   --uncomment-func-decl ASN1_STRING_data \
   --uncomment-func-decl ASN1_STRING_length \

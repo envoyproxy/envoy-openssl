@@ -4,6 +4,7 @@ set -euo pipefail
 
 uncomment.sh "$1" --comment -h \
   --uncomment-func-decl TLS_method \
+  --uncomment-func-decl OPENSSL_init_ssl \
 	--uncomment-func-decl DTLS_method \
   --uncomment-func-decl SSL_write \
   --uncomment-func-decl SSL_version \
@@ -29,6 +30,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_SESSION_get_ticket_lifetime_hint \
   --uncomment-func-decl SSL_SESSION_get_id \
   --uncomment-func-decl SSL_SESSION_free \
+  --uncomment-func-decl SSL_SESSION_up_ref \
   --uncomment-func-decl SSL_select_next_proto \
   --uncomment-func-decl SSL_read \
   --uncomment-func-decl SSL_new \
@@ -49,6 +51,9 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_get_certificate \
   --uncomment-macro SSL_get_app_data \
   --uncomment-func-decl SSL_do_handshake \
+  --uncomment-func-decl SSL_CTX_check_private_key \
+  --uncomment-func-decl SSL_CTX_set_tmp_ecdh \
+  --uncomment-func-decl SSL_get0_next_proto_negotiated \
   --uncomment-func-decl SSL_CTX_use_PrivateKey \
   --uncomment-func-decl SSL_CTX_use_PrivateKey_file \
   --uncomment-func-decl SSL_CTX_use_certificate \
@@ -78,6 +83,8 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_CTX_get_client_CA_list \
   --uncomment-func-decl SSL_CTX_get_ciphers \
   --uncomment-func-decl SSL_CTX_get_cert_store \
+  --uncomment-func-decl SSL_CTX_set_cert_store \
+  --uncomment-macro SSL_CTX_get_ex_new_index \
   --uncomment-macro SSL_CTX_get_app_data \
   --uncomment-func-decl SSL_CTX_free \
   --uncomment-func-decl SSL_CTX_add_extra_chain_cert \
@@ -85,6 +92,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_CIPHER_get_id \
   --uncomment-func-decl SSL_CIPHER_get_auth_nid \
   --uncomment-func-decl SSL_CTX_set_select_certificate_cb \
+  --uncomment-func-decl SSL_CTX_set_keylog_callback \
   --uncomment-func-decl SSL_CIPHER_get_min_version \
   --uncomment-func-decl SSL_get_peer_full_cert_chain \
   --uncomment-func-decl SSL_set_ocsp_response \
@@ -94,12 +102,17 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_error_description \
   --uncomment-func-decl SSL_SESSION_should_be_single_use \
   --uncomment-func-decl SSL_set_SSL_CTX \
+  --uncomment-func-decl SSL_set_info_callback \
+  --uncomment-func-decl SSL_state_string_long \
+  --uncomment-func-decl SSL_state_string \
   --uncomment-func-decl TLS_with_buffers_method \
   --uncomment-func-decl SSL_get_signature_algorithm_digest \
   --uncomment-func-decl SSL_get_signature_algorithm_key_type \
   --uncomment-func-decl SSL_is_signature_algorithm_rsa_pss \
+  --uncomment-func-decl SSL_CTX_set_next_proto_select_cb \
   --uncomment-func-decl SSL_CTX_set_strict_cipher_list \
   --uncomment-func-decl SSL_CTX_set_verify_algorithm_prefs \
+  --uncomment-func-decl SSL_CTX_set_next_protos_advertised_cb \
   --uncomment-func-decl SSL_early_callback_ctx_extension_get \
   --uncomment-func-decl SSL_get_cipher_by_value \
   --uncomment-func-decl SSL_get_curve_id \
@@ -110,7 +123,9 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_set_chain_and_key \
   --uncomment-func-decl SSL_SESSION_from_bytes \
   --uncomment-func-decl SSL_is_server \
+  --uncomment-func-decl SSL_is_init_finished \
   --uncomment-func-decl SSL_get_wbio \
+  --uncomment-func-decl SSL_get_rbio \
   --uncomment-func-decl SSL_connect \
   --uncomment-func-decl SSL_accept \
 	--uncomment-func-decl SSL_free \
@@ -168,4 +183,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(SSL,' \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(SSL_CTX,' \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(SSL_SESSION,' \
-  
+  --uncomment-macro-redef SSL_CB_LOOP \
+  --uncomment-macro-redef SSL_CB_HANDSHAKE_START \
+  --uncomment-macro-redef SSL_CB_HANDSHAKE_DONE \

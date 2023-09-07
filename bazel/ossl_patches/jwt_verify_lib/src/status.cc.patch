@@ -1,0 +1,10 @@
+--- a/src/status.cc	2023-09-05 23:03:52.783122389 +1000
++++ b/src/status.cc	2023-09-08 22:20:26.653222188 +1000
+@@ -179,6 +179,7 @@
+     case Status::JwksBioAllocError:
+       return "Failed to create BIO due to memory allocation failure";
+   };
++  return "";
+ }
+ 
+ }  // namespace jwt_verify

@@ -43,6 +43,7 @@ add_custom_command(DEPENDS prefixer
 
 add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h)
 
+# custom mappings
 add_library(bssl-compat STATIC
   source/ASN1_TIME_free.cc
   source/BASIC_CONSTRAINTS_free.cc
@@ -51,11 +52,13 @@ add_library(bssl-compat STATIC
   source/BIO_free.cc
   source/BIO_mem_contents.cc
   source/BIO_new_bio_pair.cc
+  source/BIO_pending.cc
   source/BIO_printf.cc
   source/BIO_read_asn1.c
   source/BIO_snprintf.cc
   source/BIO_vfree.cc
   source/BN_bn2hex.cc
+  source/BN_bin2bn.cc
   source/c2i_ASN1_INTEGER.cc
   source/CRYPTO_BUFFER_free.c
   source/CRYPTO_BUFFER.h
@@ -63,6 +66,8 @@ add_library(bssl-compat STATIC
   source/d2i_GENERAL_NAME.cc
   source/ECDSA_sign.cc
   source/EC_KEY_parse_private_key.cc
+  source/EC_KEY_set_public_key_affine_coordinate.cc
+  source/ED25519_verify.cc
   source/ERR_error_string_n.cc
   source/ERR_func_error_string.cc
   source/ERR_lib_error_string.cc
@@ -70,6 +75,8 @@ add_library(bssl-compat STATIC
   source/ERR_reason_error_string.cc
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
+  source/EVP_DigestVerifyFinal.cc
+  source/EVP_DigestSignFinal.cc
   source/EVP_MD_CTX_move.cc
   source/EVP_parse_public_key.cc
   source/EVP_PKEY_get0_EC_KEY.cc
@@ -97,6 +104,7 @@ add_library(bssl-compat STATIC
   source/PEM_read_bio_RSAPrivateKey.c
   source/PEM_read_bio_X509.cc
   source/PEM_read_bio_X509_CRL.cc
+  source/PEM_read_bio_PUBKEY.cc
   source/PEM_X509_INFO_read_bio.cc
   source/PKCS12_get_key_and_certs.cc
   source/PKCS12_parse.cc
@@ -107,6 +115,7 @@ add_library(bssl-compat STATIC
   source/RSA_generate_key_ex.cc
   source/RSA_private_key_from_bytes.cc
   source/RSA_public_key_from_bytes.cc
+  source/SHA256.cc
   source/SSL_add_file_cert_subjects_to_stack.cc
   source/SSL_CIPHER_get_kx_nid.cc
   source/SSL_CIPHER_get_min_version.cc
@@ -116,10 +125,12 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_get_client_CA_list.cc
   source/SSL_CTX_get_max_proto_version.cc
   source/SSL_CTX_get_min_proto_version.cc
+  source/SSL_CTX_get_ex_new_index.cc
   source/SSL_CTX_sess_set_new_cb.cc
   source/SSL_CTX_set_alpn_select_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
   source/SSL_CTX_set_client_CA_list.cc
+  source/SSL_CTX_set_next_protos_advertised_cb.cc
   source/SSL_CTX_set_select_certificate_cb.c
   source/SSL_CTX_set_strict_cipher_list.cc
   source/SSL_CTX_set_tlsext_servername_callback.cc
@@ -127,6 +138,8 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_tlsext_ticket_key_cb.cc
   source/SSL_CTX_set_tlsext_ticket_keys.cc
   source/SSL_CTX_set_verify_algorithm_prefs.cc
+  source/SSL_CTX_set_keylog_callback.cc
+  source/SSL_CTX_set_next_proto_select_cb.cc
   source/SSL_CTX_set_verify.cc
   source/SSL_CTX_use_certificate.cc
   source/SSL_CTX_use_PrivateKey.cc
@@ -158,6 +171,7 @@ add_library(bssl-compat STATIC
   source/SSL_set_client_CA_list.cc
   source/SSL_set_ocsp_response.cc
   source/SSL_set_renegotiate_mode.cc
+  source/SSL_set_info_callback.cc
   source/SSL_set_verify.cc
   source/stack.c
   source/TLS_VERSION_to_string.cc
@@ -256,6 +270,7 @@ target_add_bssl_include(bssl-compat
   include/openssl/x509_vfy.h
 )
 
+# Case where simple mapping exists
 target_add_bssl_function(bssl-compat
   ASN1_IA5STRING_free
   ASN1_IA5STRING_new
@@ -270,6 +285,7 @@ target_add_bssl_function(bssl-compat
   ASN1_STRING_get0_data
   ASN1_STRING_length
   ASN1_STRING_set
+  ASN1_STRING_to_UTF8
   ASN1_TIME_adj
   ASN1_TIME_diff
   ASN1_TIME_new
@@ -282,13 +298,16 @@ target_add_bssl_function(bssl-compat
   BIO_puts
   BIO_read
   BIO_reset
+  BIO_get_mem_data
   BIO_set_mem_eof_return
   BIO_set_retry_read
   BIO_set_retry_write
   BIO_should_read
+  BIO_should_retry
   BIO_should_write
   BIO_shutdown_wr
   BIO_up_ref
+  BIO_free_all
   BIO_write
   BN_add_word
   BN_add_word
@@ -307,19 +326,25 @@ target_add_bssl_function(bssl-compat
   EC_GROUP_get_curve_name
   EC_GROUP_get_degree
   EC_GROUP_get0_order
+  EC_KEY_new_by_curve_name
   EC_KEY_free
   EC_KEY_get0_group
   ECDSA_size
+  ECDSA_SIG_new
   ERR_clear_error
   ERR_error_string
   ERR_get_error
   ERR_peek_error
   ERR_peek_error_line_data
   ERR_peek_last_error
+  ERR_print_errors
   ERR_print_errors_fp
   EVP_aes_256_cbc
+  EVP_aes_128_gcm
+  EVP_aes_256_gcm
   EVP_CIPHER_CTX_free
   EVP_CIPHER_CTX_new
+  EVP_CIPHER_CTX_ctrl
   EVP_CIPHER_block_size
   EVP_CIPHER_iv_length
   EVP_CIPHER_key_length
@@ -330,15 +355,20 @@ target_add_bssl_function(bssl-compat
   EVP_DigestFinal_ex
   EVP_DigestInit
   EVP_DigestInit_ex
+  EVP_DigestSignInit
+  EVP_DigestSignUpdate
   EVP_DigestUpdate
   EVP_DigestVerify
+  EVP_DigestVerifyUpdate
   EVP_DigestVerifyInit
   EVP_EncryptFinal_ex
   EVP_EncryptInit_ex
   EVP_EncryptUpdate
   EVP_MD_CTX_copy_ex
+  EVP_MD_CTX_create
   EVP_MD_CTX_free
   EVP_MD_CTX_new
+  EVP_MD_CTX_destroy
   EVP_MD_size
   EVP_MD_type
   EVP_md4
@@ -347,8 +377,11 @@ target_add_bssl_function(bssl-compat
   EVP_PKEY_assign_EC_KEY
   EVP_PKEY_assign_RSA
   EVP_PKEY_cmp
+  EVP_PKEY_CTX_set_rsa_mgf1_md
+  EVP_PKEY_CTX_set_rsa_padding
   EVP_PKEY_free
   EVP_PKEY_new
+  EVP_PKEY_set1_RSA
   EVP_sha1
   EVP_sha224
   EVP_sha256
@@ -367,6 +400,7 @@ target_add_bssl_function(bssl-compat
   OPENSSL_malloc
   OPENSSL_memdup
   OPENSSL_realloc
+  OPENSSL_init_ssl
   PEM_bytes_read_bio
   PKCS12_free
   RSA_bits
@@ -397,8 +431,12 @@ target_add_bssl_function(bssl-compat
   SSL_CIPHER_standard_name
   SSL_connect
   SSL_CTX_add_extra_chain_cert
+  SSL_CTX_check_private_key
+  SSL_CTX_set_tmp_ecdh
+  SSL_get0_next_proto_negotiated
   SSL_CTX_free
   SSL_CTX_get_cert_store
+  SSL_CTX_set_cert_store
   SSL_CTX_get_ex_data
   SSL_CTX_get_options
   SSL_CTX_get_verify_mode
@@ -435,9 +473,11 @@ target_add_bssl_function(bssl-compat
   SSL_get_SSL_CTX
   SSL_get_version
   SSL_get_wbio
+  SSL_get_rbio
   SSL_get0_alpn_selected
   SSL_get1_session
   SSL_is_server
+  SSL_is_init_finished
   SSL_new
   SSL_read
   SSL_select_next_proto
@@ -446,6 +486,7 @@ target_add_bssl_function(bssl-compat
   SSL_SESSION_is_resumable
   SSL_session_reused
   SSL_SESSION_set_protocol_version
+  SSL_SESSION_up_ref
   SSL_set_accept_state
   SSL_set_alpn_protos
   SSL_set_bio
@@ -463,6 +504,8 @@ target_add_bssl_function(bssl-compat
   SSL_set0_wbio
   SSL_set0_wbio
   SSL_set1_curves_list
+  SSL_state_string_long
+  SSL_state_string
   SSL_shutdown
   SSL_version
   SSL_write
@@ -498,6 +541,7 @@ target_add_bssl_function(bssl-compat
   X509_NAME_digest
   X509_NAME_dup
   X509_NAME_entry_count
+  X509_NAME_ENTRY_get_data
   X509_NAME_ENTRY_set
   X509_NAME_free
   X509_NAME_get_entry
@@ -519,7 +563,10 @@ target_add_bssl_function(bssl-compat
   X509_STORE_CTX_set_default
   X509_STORE_CTX_set_error
   X509_STORE_free
+  X509_STORE_get0_param
+  X509_STORE_load_locations
   X509_STORE_new
+  X509_STORE_up_ref
   X509_STORE_set_flags
   X509_STORE_set_verify_cb
   X509_up_ref
@@ -595,6 +642,8 @@ set(utests-source-list
   source/test/test_ssl.cc
   source/test/test_stack.cc
   source/test/test_x509.cc
+  source/test/test_pem.cc
+  source/test/test_sha256.cc
   # Test data copied from BoringSSL
   source/crypto/test/crypto_test_data.cc
 )

@@ -17,5 +17,13 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl EVP_parse_public_key \
   --uncomment-func-decl EVP_DigestVerifyInit \
   --uncomment-func-decl EVP_DigestVerify \
+  --uncomment-func-decl EVP_PKEY_set1_RSA \
+  --uncomment-func-decl  EVP_DigestSignInit \
+  --uncomment-func-decl  EVP_DigestSignUpdate \
+  --uncomment-func-decl  EVP_DigestSignFinal \
+  --uncomment-func-decl EVP_DigestVerifyUpdate \
+  --uncomment-func-decl EVP_DigestVerifyFinal \
+  --uncomment-func-decl EVP_PKEY_CTX_set_rsa_padding \
+  --uncomment-func-decl EVP_PKEY_CTX_set_rsa_mgf1_md \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(EVP_PKEY,'
 

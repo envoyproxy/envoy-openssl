@@ -4,9 +4,9 @@ set -euo pipefail
 # set -x # Echo commands
 
 #
-# For a specified funtion, this script will find the signature in the relevant
+# For a specified function, this script will find the signature in the relevant
 # BoringSSL header, and generate an implementation for it which calls directly
-# onto the equivalet OpenSSL function (via the dynamically loded
+# onto the equivalent OpenSSL function (via the dynamically loaded
 # ossl.ossl<function> pointer)
 #
 # This is a super naive implementation that doesn't work for all functions

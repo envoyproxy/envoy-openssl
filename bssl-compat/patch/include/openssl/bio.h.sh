@@ -8,10 +8,13 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef bio_info_cb \
   --uncomment-func-decl BIO_new \
   --uncomment-func-decl BIO_free \
+  --uncomment-func-decl BIO_free_all \
+  --uncomment-func-decl BIO_get_mem_data \
   --uncomment-func-decl BIO_up_ref \
   --uncomment-func-decl BIO_read \
   --uncomment-func-decl BIO_write \
   --uncomment-func-decl BIO_puts \
+  --uncomment-func-decl BIO_pending \
   --uncomment-func-decl BIO_reset \
   --uncomment-func-decl BIO_should_read \
   --uncomment-func-decl BIO_should_write \
@@ -26,11 +29,15 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_set_mem_eof_return \
   --uncomment-func-decl BIO_new_connect \
   --uncomment-func-decl BIO_new_bio_pair \
+  --uncomment-func-decl ERR_print_errors \
+  --uncomment-func-decl BIO_ctrl \
   --uncomment-func-decl BIO_ctrl_get_read_request \
   --uncomment-func-decl BIO_ctrl_get_write_guarantee \
   --uncomment-func-decl BIO_shutdown_wr \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(BIO,' \
   --uncomment-regex 'BORINGSSL_MAKE_UP_REF(BIO,' \
   --uncomment-macro BIO_TYPE_MEM \
-  --uncomment-macro BIO_TYPE_SOCKET
+  --uncomment-macro BIO_TYPE_SOCKET \
+  --uncomment-func-decl BIO_should_retry \
+
 
