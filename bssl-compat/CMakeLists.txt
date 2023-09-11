@@ -31,7 +31,7 @@ include(cmake/boringssl.cmake)
 include(cmake/openssl.cmake)
 
 add_subdirectory(prefixer)
-add_custom_command(DEPENDS prefixer
+add_custom_command(DEPENDS prefixer OpenSSL::Crypto OpenSSL::SSL
                    COMMENT "Prefixing OpenSSL files"
                    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h
