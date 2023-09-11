@@ -33,15 +33,15 @@ include(cmake/openssl.cmake)
 add_subdirectory(prefixer)
 add_custom_command(DEPENDS prefixer
                    COMMENT "Prefixing OpenSSL files"
-                   OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/source/ossl.c
-                          ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h
-                          ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl/openssl/err.h
+                   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c
+                          ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h
+                          ${CMAKE_CURRENT_BINARY_DIR}/include/ossl/openssl/err.h
                    COMMAND prefixer --src-path "${SRC_OPENSSL_HEADERS1}"
                                     --src-path "${SRC_OPENSSL_HEADERS2}"
                                     --src-incl "openssl/*.h"
                                     --src-skip "openssl/asn1_mac.h"
                                     --src-skip "openssl/opensslconf-*.h"
-                                    --output "${CMAKE_CURRENT_SOURCE_DIR}"
+                                    --output "${CMAKE_CURRENT_BINARY_DIR}"
                                     --prefix ossl)
 
 add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h)
@@ -541,7 +541,9 @@ target_add_bssl_source(bssl-compat
   source/crypto/bytestring/cbb.c
 )
 target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
-target_include_directories(bssl-compat PUBLIC include)
+target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/include)
+target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/source)
 target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 
 ################################################################################
@@ -551,9 +553,9 @@ target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 install(TARGETS bssl-compat LIBRARY DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ext DESTINATION include)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl DESTINATION include)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/openssl DESTINATION include)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h DESTINATION include)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ossl DESTINATION include)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/openssl DESTINATION include)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h DESTINATION include)
 
 ################################################################################
 # Unit Tests
@@ -617,6 +619,7 @@ gtest_discover_tests(utests-bssl-compat)
 # Unit Tests built on BoringSSL
 ################################################################################
 add_executable(utests-boring ${utests-source-list} ${utests-bssl-source-list})
+target_include_directories(utests-boring PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/source)
 # Add env variable SANITIZE_OPTIONS for optional sanitizers
 target_link_options(utests-boring PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_libraries(utests-boring PRIVATE BoringSSL::SSL BoringSSL::Crypto)
