@@ -27,7 +27,6 @@ DST_FILE="${4?"DST_FILE not specified"}" # e.g. source/crypto/err/internal.h
 
 SRC_DIR="$CMAKE_CURRENT_SOURCE_DIR/external/boringssl"
 PATCH_DIR="$CMAKE_CURRENT_SOURCE_DIR/patch"
-GEN_DIR="$CMAKE_CURRENT_BINARY_DIR/generate"
 
 #
 # Check/Ensure the inputs and outputs exist
@@ -35,7 +34,7 @@ GEN_DIR="$CMAKE_CURRENT_BINARY_DIR/generate"
 [[ -d "$SRC_DIR" ]] || error "SRC_DIR $SRC_DIR does not exist"
 [[ -f "$SRC_DIR/$SRC_FILE" ]] || error "SRC_FILE $SRC_FILE does not exist in $SRC_DIR"
 [[ -d "$PATCH_DIR" ]] || error "PATCH_DIR $PATCH_DIR does not exist"
-mkdir -p "$(dirname "$GEN_DIR/$DST_FILE")"
+mkdir -p "$(dirname "$CMAKE_CURRENT_BINARY_DIR/$DST_FILE")"
 
 
 #
@@ -43,7 +42,7 @@ mkdir -p "$(dirname "$GEN_DIR/$DST_FILE")"
 # =================================
 #
 PATCH_SCRIPT="$PATCH_DIR/$DST_FILE.sh"
-GEN_APPLIED_SCRIPT="$GEN_DIR/$DST_FILE.1.applied.script"
+GEN_APPLIED_SCRIPT="$CMAKE_CURRENT_BINARY_DIR/$DST_FILE.1.applied.script"
 cp "$SRC_DIR/$SRC_FILE" "$GEN_APPLIED_SCRIPT"
 if [ -f "$PATCH_SCRIPT" ]; then
     PATH="$(dirname "$0"):$PATH" "$PATCH_SCRIPT" "$GEN_APPLIED_SCRIPT"
@@ -57,7 +56,7 @@ fi
 # ================================
 #
 PATCH_FILE="$PATCH_DIR/$DST_FILE.patch"
-GEN_APPLIED_PATCH="$GEN_DIR/$DST_FILE.2.applied.patch"
+GEN_APPLIED_PATCH="$CMAKE_CURRENT_BINARY_DIR/$DST_FILE.2.applied.patch"
 if [ -f "$PATCH_FILE" ]; then
     patch -s -f "$GEN_APPLIED_SCRIPT" "$PATCH_FILE" -o "$GEN_APPLIED_PATCH"
 else
@@ -69,24 +68,4 @@ fi
 # Copy result to the destination
 # ==============================
 #
-if [ ! -f "$CMAKE_CURRENT_SOURCE_DIR/$DST_FILE" ]; then
-    mkdir -p "$(dirname "$CMAKE_CURRENT_SOURCE_DIR/$DST_FILE")"
-fi
-cp "$GEN_APPLIED_PATCH" "$CMAKE_CURRENT_SOURCE_DIR/$DST_FILE"
-
-
-#
-# Add the generated file to .gitignore file
-# =========================================
-#
-GITIGNORE="$CMAKE_CURRENT_SOURCE_DIR/.gitignore"
-if ! grep "^$DST_FILE$" "$GITIGNORE" > /dev/null; then
-    if true; then
-        status "Added $DST_FILE to .gitignore"
-        echo "$DST_FILE" | sort -u -o "$GITIGNORE" - "$GITIGNORE"
-    else
-        echo "Please add $DST_FILE to $GITIGNORE"
-    fi
-fi
-
-
+cp "$GEN_APPLIED_PATCH" "$CMAKE_CURRENT_BINARY_DIR/$DST_FILE"

@@ -1,6 +1,6 @@
 /bazel-*
 BROWSE
-/build
+/build*
 /build_*
 build
 *.bzlc
@@ -35,3 +35,4 @@ cscope.*
 *~
 .cproject
 user.bazelrc
+log*

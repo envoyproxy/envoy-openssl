@@ -4,7 +4,7 @@
 #include <openssl/evp.h>
 
 #include "certs/server_1_cert.pem.h"
-#include "../crypto/test/test_util.h"
+#include "crypto/test/test_util.h"
 
 
 TEST(X509Test, test_X509_NAME_digest) {
