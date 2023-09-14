@@ -26,6 +26,17 @@ local_repository(
     },
 )
 
+# http_archive(
+#     name = "envoy",
+#     url = "https://github.com/envoyproxy/envoy/archive/refs/tags/v1.26.3.zip",
+#     strip_prefix = "envoy-1.26.3",
+#     patches = [ "//:bazel/envoy.patch" ],
+#     patch_args = [ "-p1" ],
+#     repo_mapping = {
+#         "@boringssl": "@bssl-compat",
+#     },
+# )
+
 load("@envoy//bazel:api_binding.bzl", "envoy_api_binding")
 
 envoy_api_binding()

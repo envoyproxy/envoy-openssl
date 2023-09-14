@@ -234,7 +234,12 @@ while [ $# -ne 0 ]; do
     --uncomment-func-impl)
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
-      uncomment_regex_range "[^!]*\<$2\s*(.*) {" "}"
+      LINE=$(grep -n "^// [^ !].*\b$2\s*(.*[^;]$" "$HDR_FILE" | head -1)
+      L1=$(echo "$LINE" | cut -d: -f1) && L2=$L1
+      if [[ ! "$LINE" =~ }$ ]]; then # multi-line
+        L2=$(gawk '(NR == '$L1'),/^\/\/ }$/{print NR}' "$HDR_FILE" | tail -1)
+      fi
+      uncomment_line_range $L1 $L2
       shift
     ;;
     --uncomment-static-func-impl)
