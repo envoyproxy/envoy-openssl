@@ -1158,15 +1158,23 @@ TEST(SSLTest, test_SSL_set_fd) {
 }
 
 TEST(SSLTest, test_SSL_ex_data) {
-  int free_func_calls = 0;
+  // A counter of the number of times that our free_func has been called. Since
+  // we cannot uninstall our new index, nor the free_func that's associated with
+  // it, we need to avoid side effects that may be caused by free_func
+  // invocations that will occur during subsequent tests. This is why this
+  // counter is static; if it was stack based, the free_func would corrupt the
+  // contents of stack at the same address when it's called from other tests.
+  static int free_func_calls = 0;
 
-  int my_int_index = SSL_get_ex_new_index(0, &free_func_calls, nullptr, nullptr, [](void *parent, void *ptr, CRYPTO_EX_DATA *ad, int index, long argl, void *argp) {
+  auto free_func = [](void *parent, void *ptr, CRYPTO_EX_DATA *ad, int index, long argl, void *argp) {
     (*reinterpret_cast<int*>(argp))++;
     if (ptr) {
       ASSERT_EQ(42, *reinterpret_cast<int*>(ptr));
       delete reinterpret_cast<int*>(ptr);
     }
-  });
+  };
+
+  int my_int_index = SSL_get_ex_new_index(0, &free_func_calls, nullptr, nullptr, free_func);
 
   ASSERT_EQ(0, free_func_calls);
   ASSERT_NE(-1, my_int_index);
