@@ -283,6 +283,7 @@ target_add_bssl_function(bssl-compat
   ASN1_INTEGER_new
   ASN1_INTEGER_to_BN
   ASN1_INTEGER_to_BN
+  ASN1_OBJECT_free
   ASN1_STRING_data
   ASN1_STRING_free
   ASN1_STRING_get0_data
@@ -644,6 +645,7 @@ set(utests-source-list
   source/test/test_ec_key.cc
   source/test/test_evp.cc
   source/test/test_hmac.cc
+  source/test/test_misc.cc
   source/test/test_rsa.cc
   source/test/test_ssl.cc
   source/test/test_stack.cc
