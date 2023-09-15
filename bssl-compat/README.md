@@ -101,6 +101,8 @@ Note: Google Test filter = SSLTest.test_SSL_SESSION_from_bytes
 Mapping functions can be tested with BoringSSL tests by adding the required BoringSSL test source file to 
 [`utests-bssl-source-list`](https://github.com/envoyproxy/envoy-openssl/blob/e4520c2015ece283bbcb3adc25256ed9cdb34acc/bssl-compat/CMakeLists.txt#L569) and then [create/modify](https://github.com/envoyproxy/envoy-openssl/blob/main/bssl-compat/patch/source/crypto/digest_extra/digest_test.cc.sh) a patch script.
 
+### Lint tool
+
 To launch LLVM lint tool clang-tidy, go to the build directory and launch:
 ```
 .../bssl-compat/tools/do-clang-tidy.sh
@@ -109,16 +111,19 @@ At the end of build, compilation data base will be available in the file:
 ```
 compile_commands.json
 ```
-This make possible to run clang-tidy on a single files:
+This makes it possible to run clang-tidy on a single file:
 ```
 clang-tidy -p build/ <glob or files>
 ```
 
 After clang-tidy has finished, before starting a build without clang-tidy, remove build directory and start from scratch for "normal" compilation.
 
+### Sanitisers
+
 To build and run with Address Sanitiser, go to the build directory and launch:
 ```
-.../bssl-compat/tools/do-asan.sh 
+cmake -DSANITIZE_ADDRESS=On ..
+make 
 ctest
 ```
 Then, if errors are present, output will be available in the file:
@@ -128,12 +133,13 @@ envoy-openssl/bssl-compat/build/Testing/Temporary/LastTest.log
 
 To build and run with Memory Sanitiser, go to the build directory and launch:
 ```
-.../bssl-compat/tools/do-msan.sh 
+cmake -DSANITIZE_MEMORY=On ..
+make
 ```
 
 To build and run with Thread Sanitiser, go to the build directory and launch:
 ```
-.../bssl-compat/tools/do-tsan.sh 
+cmake -DSANITIZE_THREAD=On .. 
 ctest
 ```
 Then, if errors are present, output will be available in the file:
