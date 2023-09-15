@@ -294,19 +294,26 @@ target_add_bssl_function(bssl-compat
   ASN1_TIME_diff
   ASN1_TIME_new
   ASN1_TIME_set
+  BIO_clear_flags
   BIO_clear_retry_flags
   BIO_clear_flags
   BIO_ctrl_get_read_request
   BIO_ctrl_get_write_guarantee
+  BIO_get_data
+  BIO_get_init
+  BIO_get_shutdown
   BIO_new_connect
   BIO_new_mem_buf
   BIO_puts
   BIO_read
   BIO_reset
   BIO_get_mem_data
+  BIO_set_data
+  BIO_set_init
   BIO_set_mem_eof_return
   BIO_set_retry_read
   BIO_set_retry_write
+  BIO_set_shutdown
   BIO_should_read
   BIO_should_retry
   BIO_should_write
