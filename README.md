@@ -32,8 +32,7 @@ OpenSSL is supported by providing a compatiblity library and a set of TLS relate
 After initial checkout, initialize and update submodules for Envoy and
 BoringSSL:
 ```
-git submodule init
-git submodule update
+git submodule update --init --depth=1
 ```
 
 For a standalone build of the library, see
@@ -47,7 +46,7 @@ platform. Clang is strongly recommended for a successful build.
 
 After installing clang and Bazelisk/Bazel, build Envoy handshaker with:
 ```
-patch envoy/bazel/repositories.bzl -i bazel/envoy.patch
+find patch/envoy/ -name "*.patch" -exec patch -d envoy -p1 -i ../{} \;
 CC=clang CXX=clang++ bazel build --config=clang --define crypto=system :envoy
 ```
 
