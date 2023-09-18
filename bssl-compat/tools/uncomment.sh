@@ -7,7 +7,7 @@ HDR_FILE="${1?"HDR_FILE not specified"}"
 shift
 
 function info {
-  false || cmake -E cmake_echo_color --cyan "$1"
+  true || cmake -E cmake_echo_color --cyan "$1"
 }
 
 function warn {
