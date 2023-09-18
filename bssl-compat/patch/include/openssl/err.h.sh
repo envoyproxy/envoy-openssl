@@ -21,6 +21,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro 'ERR_R_[A-Z0-9_]*_LIB' \
   --uncomment-macro-redef 'ERR_R_[[:alnum:]_]*' \
   --sed 's|ossl_ERR_R_OVERFLOW|ossl_ERR_R_INTERNAL_ERROR|' \
+  --uncomment-func-decl ERR_func_error_string \
   --uncomment-func-decl ERR_error_string \
   --uncomment-macro ERR_ERROR_STRING_BUF_LEN \
   --sed '/OPENSSL_INLINE int ERR_GET_FUNC/i#define ERR_GET_FUNC(packed_error) ossl_ERR_GET_FUNC(packed_error)' \

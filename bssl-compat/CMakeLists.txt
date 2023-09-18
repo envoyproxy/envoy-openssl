@@ -650,6 +650,7 @@ set(utests-source-list
   source/test/test_cipher.cc
   source/test/test_crypto.cc
   source/test/test_ec_key.cc
+  source/test/test_err.cc
   source/test/test_evp.cc
   source/test/test_hmac.cc
   source/test/test_misc.cc
