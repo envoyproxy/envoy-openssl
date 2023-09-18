@@ -60,6 +60,7 @@ add_library(bssl-compat STATIC
   source/BIO_read_asn1.c
   source/BIO_snprintf.cc
   source/BIO_vfree.cc
+  source/BN_cmp_word.cc
   source/BN_bn2hex.cc
   source/BN_bin2bn.cc
   source/c2i_ASN1_INTEGER.cc

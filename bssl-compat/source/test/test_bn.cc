@@ -50,3 +50,25 @@ TEST(BNTest, BN) {
   BN_free(b1);
   BN_free(b2);
 }
+
+TEST(BNTest, test_BN_cmp_word) {
+  bssl::UniquePtr<BIGNUM> zero {BN_new()};
+  bssl::UniquePtr<BIGNUM> one {BN_new()};
+  bssl::UniquePtr<BIGNUM> two {BN_new()};
+  
+  ASSERT_TRUE(BN_set_word (zero.get(), 0));
+  ASSERT_TRUE(BN_set_word (one.get(), 1));
+  ASSERT_TRUE(BN_set_word (two.get(), 2));
+
+  ASSERT_EQ(0, BN_cmp_word (zero.get(), 0));
+  ASSERT_EQ(0, BN_cmp_word (one.get(), 1));
+  ASSERT_EQ(0, BN_cmp_word (two.get(), 2));
+
+  ASSERT_EQ(-1, BN_cmp_word (zero.get(), 1));
+  ASSERT_EQ(-1, BN_cmp_word (zero.get(), 2));
+  ASSERT_EQ(-1, BN_cmp_word (one.get(), 2));
+
+  ASSERT_EQ(1, BN_cmp_word (one.get(), 0));
+  ASSERT_EQ(1, BN_cmp_word (two.get(), 0));
+  ASSERT_EQ(1, BN_cmp_word (two.get(), 1));
+}
