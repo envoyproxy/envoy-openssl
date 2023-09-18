@@ -43,6 +43,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_get_peer_certificate \
   --uncomment-func-decl SSL_get_ex_new_index \
   --uncomment-func-decl SSL_get_ex_data \
+  --uncomment-func-decl SSL_alert_from_verify_result \
   --uncomment-func-decl SSL_get_ex_data_X509_STORE_CTX_idx \
   --uncomment-func-decl SSL_get_error \
   --uncomment-func-decl SSL_get_current_cipher \

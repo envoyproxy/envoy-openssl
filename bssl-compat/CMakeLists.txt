@@ -596,6 +596,7 @@ target_add_bssl_source(bssl-compat
   source/crypto/mem.c
   source/crypto/bytestring/cbs.c
   source/crypto/bytestring/cbb.c
+  source/ssl/ssl_x509.cc
 )
 target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

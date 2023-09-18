@@ -1367,3 +1367,11 @@ TEST(SSLTest, test_SSL_is_signature_algorithm_rsa_pss) {
     EXPECT_EQ(sigalgs[i].is_rsa_pss, SSL_is_signature_algorithm_rsa_pss(sigalgs[i].sigalg)) << "sigalgs[" << i << "]";
   }
 }
+
+TEST(SSLTest, test_SSL_alert_from_verify_result) {
+  ASSERT_EQ(SSL_AD_UNKNOWN_CA, SSL_alert_from_verify_result(X509_V_ERR_INVALID_CA));
+  ASSERT_EQ(SSL_AD_UNKNOWN_CA, SSL_alert_from_verify_result(X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT));
+
+  ASSERT_EQ(SSL_AD_CERTIFICATE_EXPIRED, SSL_alert_from_verify_result(X509_V_ERR_CERT_HAS_EXPIRED));
+  ASSERT_EQ(SSL_AD_CERTIFICATE_EXPIRED, SSL_alert_from_verify_result(X509_V_ERR_CRL_HAS_EXPIRED));
+}
