@@ -20,7 +20,9 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl PEM_X509_INFO_read_bio \
   --uncomment-regex 'DECLARE_PEM_rw(X509,' \
   --uncomment-regex 'DECLARE_PEM_rw(X509_CRL,' \
+  --uncomment-regex 'DECLARE_PEM_rw(X509_AUX,' \
   --uncomment-regex 'DECLARE_PEM_rw_cb(RSAPrivateKey,' \
   --uncomment-regex 'DECLARE_PEM_rw_cb(PrivateKey,' \
+  --uncomment-regex 'DECLARE_PEM_rw(PUBKEY,' \
   --uncomment-regex '}$' \
   --uncomment-macro-redef 'PEM_R_[[:alnum:]_]*'

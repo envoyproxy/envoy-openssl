@@ -11,6 +11,7 @@ cat > "$MYTMPDIR/extraincs" <<EOF
 #include <ossl/openssl/types.h>
 #include <ossl/openssl/ssl.h>
 #include <ossl/openssl/x509v3.h>
+#include <ossl/openssl/sha.h>
 EOF
 
 uncomment.sh "$1" --comment -h \
@@ -33,6 +34,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef ASN1_STRING \
   --uncomment-typedef-redef BASIC_CONSTRAINTS \
   --uncomment-typedef-redef NAME_CONSTRAINTS \
+  --uncomment-typedef-redef OPENSSL_INIT_SETTINGS \
   --uncomment-typedef-redef X509_VERIFY_PARAM \
   --uncomment-typedef-redef X509_CRL \
   --uncomment-typedef-redef X509_EXTENSION \
@@ -41,6 +43,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef X509_NAME \
   --uncomment-typedef-redef X509_PUBKEY \
   --uncomment-typedef-redef BIGNUM \
+  --uncomment-typedef-redef BUF_MEM \
   --uncomment-typedef-redef BIO \
   --uncomment-typedef-redef BN_GENCB \
   --uncomment-typedef-redef EC_GROUP \
@@ -55,6 +58,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef HMAC_CTX \
   --uncomment-typedef-redef RSA \
   --uncomment-typedef-redef PKCS12 --sed 's/ossl_pkcs12_st/ossl_PKCS12_st/' \
+  --uncomment-typedef-redef SHA256_CTX --sed 's/struct ossl_sha256_state_st/struct ossl_SHA256state_st/' \
   --uncomment-typedef-redef SSL_CIPHER \
   --uncomment-typedef-redef SSL_CTX \
   --uncomment-typedef-redef SSL_METHOD \
@@ -63,6 +67,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef X509 \
   --uncomment-typedef-redef X509_STORE_CTX \
   --uncomment-typedef-redef X509_STORE \
+  --uncomment-typedef-redef ECDSA_SIG --sed 's/ossl_ecdsa_sig_st/ossl_ECDSA_SIG_st/' \
   --uncomment-typedef BIO_METHOD \
   --uncomment-macro BORINGSSL_UNSAFE_DETERMINISTIC_MODE \
   --uncomment-macro BORINGSSL_API_VERSION \

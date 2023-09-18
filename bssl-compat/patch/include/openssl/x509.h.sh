@@ -52,6 +52,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_NAME_cmp \
   --uncomment-func-decl X509_CRL_cmp \
   --uncomment-func-decl X509_NAME_print_ex \
+  --uncomment-func-decl X509_NAME_ENTRY_get_data \
   --uncomment-func-decl X509_get_ext_d2i \
   --uncomment-func-decl X509_add1_ext_i2d \
   --uncomment-func-decl X509_verify_cert \
@@ -59,8 +60,11 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro-redef 'X509_V_[[:alnum:]_]*' \
   --uncomment-func-decl X509_STORE_new \
   --uncomment-func-decl X509_STORE_free \
+  --uncomment-func-decl X509_STORE_get0_param \
   --uncomment-func-decl X509_STORE_set_flags \
   --uncomment-func-decl X509_STORE_set_verify_cb \
+  --uncomment-func-decl X509_STORE_load_locations \
+  --uncomment-func-decl X509_STORE_up_ref \
   --uncomment-func-decl X509_STORE_CTX_new \
   --uncomment-func-decl X509_STORE_CTX_free \
   --uncomment-func-decl X509_STORE_CTX_init \

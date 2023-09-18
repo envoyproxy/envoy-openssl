@@ -48,6 +48,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl EVP_MD_CTX_copy_ex \
   --uncomment-func-decl EVP_MD_CTX_move \
   --uncomment-func-decl EVP_MD_CTX_reset \
+  --uncomment-func-decl EVP_MD_CTX_destroy \
   --uncomment-func-decl EVP_DigestInit_ex \
   --uncomment-func-decl EVP_DigestInit \
   --uncomment-func-decl EVP_DigestUpdate \
@@ -56,5 +57,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl EVP_DigestFinal \
   --uncomment-func-decl EVP_MD_type \
   --uncomment-func-decl EVP_MD_size \
+  --uncomment-func-decl EVP_MD_CTX_create \
   --uncomment-macro-redef 'DIGEST_R_[[:alnum:]_]*' \
   --sed "/^\/\/ using ScopedEVP_MD_CTX/ e cat $MYTMPDIR/ScopedEVP_MD_CTX.h"
