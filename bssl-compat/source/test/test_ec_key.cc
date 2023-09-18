@@ -47,7 +47,7 @@ TEST(EC_KEYTest, test_EC_KEY_new_by_curve_name) {
     EC_KEY_free(myecc);
 }
 
-TEST(EC_KEYtest, test_EC_KEY_set_public_key_affine_coordinates) {
+TEST(EC_KEYTest, test_EC_KEY_set_public_key_affine_coordinates) {
     CBS cbs;
     CBS_init(&cbs, kECKeyWithoutPublic, sizeof(kECKeyWithoutPublic));
 
