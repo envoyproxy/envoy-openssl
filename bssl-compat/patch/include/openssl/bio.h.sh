@@ -37,7 +37,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_ctrl \
   --uncomment-func-decl BIO_ctrl_get_read_request \
   --uncomment-func-decl BIO_ctrl_get_write_guarantee \
-  --uncomment-func-decl BIO_clear_flags \
   --uncomment-func-decl BIO_shutdown_wr \
   --uncomment-func-decl BIO_set_data \
   --uncomment-func-decl BIO_get_data \
