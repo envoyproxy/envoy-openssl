@@ -47,26 +47,21 @@ option_end() {
 }
 
 run_sed_expression() {
-  [[ $# == 2 ]] || error "run_sed_expression(): Two arguments required"
-  local EXPECT_CHANGE="$1" # 0 or 1
-  local SED_EXPRESSION="$2"
-  if [[ $EXPECT_CHANGE == 0 ]]; then
-    sed -i -e "$SED_EXPRESSION" "$HDR_FILE"
-  else # $EXPECT_CHANGE == 1
-    sed -i.bak -e "$SED_EXPRESSION" "$HDR_FILE"
-    if cmp -s "$HDR_FILE" "$HDR_FILE.bak"; then
-      rm -f "$HDR_FILE.bak"
-      error "The sed expression \"$SED_EXPRESSION\" made no changes"
-    elif [[ -v MELD ]]; then
+  [[ $# == 1 ]] || error "run_sed_expression(): One argument required"
+  local SED_EXPRESSION="$1"
+  sed -i.bak -e "$SED_EXPRESSION" "$HDR_FILE"
+  if ! cmp -s "$HDR_FILE" "$HDR_FILE.bak"; then
+    ((CHANGES += 1))
+    if [[ -v MELD ]]; then
       meld "$HDR_FILE.bak" "$HDR_FILE"
     fi
-    rm -f "$HDR_FILE.bak"
   fi
+  rm -f "$HDR_FILE.bak"
 }
 
 uncomment_line_range() {
   [[ $# == 2 ]] || error "uncomment_line_range(): Two line numbers required"
-  run_sed_expression 1 "${1},${2}s%^// %%g"
+  run_sed_expression "${1},${2}s%^// %%g"
 }
 
 uncomment_regex_range() {
@@ -88,7 +83,7 @@ uncomment_preproc_directive() {
 
 comment_line_range() {
   [[ $# == 2 ]] || error "comment_line_range(): Two line numbers required"
-  run_sed_expression 1 "${1},${2}s%^%//%g"
+  run_sed_expression "${1},${2}s%^%//%g"
 }
 
 comment_regex_range() {
@@ -103,16 +98,17 @@ comment_regex_range() {
 
 while [ $# -ne 0 ]; do
   option_start "$1"
+  CHANGES=0
   case "$1" in
     --comment) # Comment everything out
       option_end
-      run_sed_expression 1 's|^|// |'
-      run_sed_expression 0 's|^// $||'
-      run_sed_expression 0 's|^// //|//|'
-      run_sed_expression 0 's|^// /\*|/*|'
-      run_sed_expression 0 's|^//  \*$| *|'
-      run_sed_expression 0 's|^//  \* | * |'
-      run_sed_expression 0 's|^//  \*/$| */|'
+      run_sed_expression 's|^|// |'
+      run_sed_expression 's|^// $||'
+      run_sed_expression 's|^// //|//|'
+      run_sed_expression 's|^// /\*|/*|'
+      run_sed_expression 's|^//  \*$| *|'
+      run_sed_expression 's|^//  \* | * |'
+      run_sed_expression 's|^//  \*/$| */|'
     ;;
     "-h") # Set of general stuff like include guards, extern, and #if/else/end
       option_end
@@ -120,9 +116,9 @@ while [ $# -ne 0 ]; do
         uncomment_preproc_directive "\<$DIRECTIVE\>"
       done
       uncomment_preproc_directive "define\s*OPENSSL_HEADER_.*"
-      run_sed_expression 0 "s%^// \(extern\s*\"C+\?+\?\".*\)$%\1%g"
-      run_sed_expression 0 "s%^// \(}\s*/[/\*]\s*extern\s*\"\?C+\?+\?\"\?.*\)$%\1%g"
-      run_sed_expression 0 "s%^// \(BSSL_NAMESPACE_\(BEGIN\|END\)\)$%\1%g"
+      run_sed_expression "s%^// \(extern\s*\"C+\?+\?\".*\)$%\1%g"
+      run_sed_expression "s%^// \(}\s*/[/\*]\s*extern\s*\"\?C+\?+\?\"\?.*\)$%\1%g"
+      run_sed_expression "s%^// \(BSSL_NAMESPACE_\(BEGIN\|END\)\)$%\1%g"
     ;;
     --uncomment-func-decl) # Function name
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
@@ -143,7 +139,7 @@ while [ $# -ne 0 ]; do
       done
       option_end
       if [[ ${#PATTERNS[@]} == 1 ]]; then
-        run_sed_expression 1 "s%^// \(${PATTERNS[0]}\)%\1%"
+        run_sed_expression "s%^// \(${PATTERNS[0]}\)%\1%"
       else
         AWK=
         for ((i=0; i < ${#PATTERNS[@]} ; i++)); do
@@ -159,13 +155,13 @@ while [ $# -ne 0 ]; do
     --uncomment-macro-redef) # -d Redefine macro <X> to be ossl_<x>
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
-      run_sed_expression 1 "s%^//\(\s\)#\s*define\s*\<\($2\)\>.*$%#ifdef\1ossl_\2\n#define\1\2\1ossl_\2\n#endif%"
+      run_sed_expression "s%^//\(\s\)#\s*define\s*\<\($2\)\>.*$%#ifdef\1ossl_\2\n#define\1\2\1ossl_\2\n#endif%"
       shift
     ;;
     --uncomment-typedef-redef) # -t Redefine "typedef struct <Y> <X>" to be "typedef struct ossl_<Y> <X>"
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
-      run_sed_expression 1 "s%^//\(\s*\)typedef\s*struct\s*\([[:alnum:]_]*\)\s*\(\<$2\>\);%typedef\1struct\1ossl_\2\1\3;%"
+      run_sed_expression "s%^//\(\s*\)typedef\s*struct\s*\([[:alnum:]_]*\)\s*\(\<$2\>\);%typedef\1struct\1ossl_\2\1\3;%"
       shift
     ;;
     --uncomment-macro) # Uncomment #define <X>.... (including continuation lines)
@@ -193,7 +189,7 @@ while [ $# -ne 0 ]; do
       [[ $3 ]] && [[ $2 != -* ]] && [[ $3 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2" "$3"
       uncomment_regex_range "\(TEST\|TEST_P\)\s*($2\s*,\s*$3\s*)\s*{" "}"
-      run_sed_expression 1 '/^\(TEST\|TEST_P\)\s*(\s*'$2'\s*,\s*'$3'\s*)\s*{/a #ifdef BSSL_COMPAT\nGTEST_SKIP() << "TODO: Investigate failure on BSSL_COMPAT";\n#endif'
+      run_sed_expression '/^\(TEST\|TEST_P\)\s*(\s*'$2'\s*,\s*'$3'\s*)\s*{/a #ifdef BSSL_COMPAT\nGTEST_SKIP() << "TODO: Investigate failure on BSSL_COMPAT";\n#endif'
       shift 2
     ;;
     --uncomment-struct) # Uncomment struct
@@ -205,7 +201,7 @@ while [ $# -ne 0 ]; do
     --uncomment-class-fwd) # Uncomment class forward decl
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
-      run_sed_expression 1 "s%^// \(class\s*$2\s*;\s*\)$%\1%"
+      run_sed_expression "s%^// \(class\s*$2\s*;\s*\)$%\1%"
       shift
     ;;
     --uncomment-class) # Uncomment class
@@ -274,13 +270,13 @@ while [ $# -ne 0 ]; do
     --comment-regex)
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end $2
-      run_sed_expression 1 "s%\($2\)%// \1%"
+      run_sed_expression "s%\($2\)%// \1%"
       shift
     ;;
     "--sed") # sed expression
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
-      run_sed_expression 1 "$2"
+      run_sed_expression "$2"
       shift
     ;;
     --echo-on)
@@ -299,6 +295,9 @@ while [ $# -ne 0 ]; do
       error "Unknown option $1"
     ;;
   esac
+  if (( $CHANGES == 0 )); then
+    error "No changes were made"
+  fi
   shift
 done
 

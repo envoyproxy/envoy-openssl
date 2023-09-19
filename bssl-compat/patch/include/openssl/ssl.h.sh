@@ -85,7 +85,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_CTX_get_ciphers \
   --uncomment-func-decl SSL_CTX_get_cert_store \
   --uncomment-func-decl SSL_CTX_set_cert_store \
-  --uncomment-macro SSL_CTX_get_ex_new_index \
+  --uncomment-func-decl SSL_CTX_get_ex_new_index \
   --uncomment-macro SSL_CTX_get_app_data \
   --uncomment-func-decl SSL_CTX_free \
   --uncomment-func-decl SSL_CTX_add_extra_chain_cert \
