@@ -303,6 +303,7 @@ target_add_bssl_function(bssl-compat
   BIO_ctrl_get_write_guarantee
   BIO_get_data
   BIO_get_init
+  BIO_get_mem_ptr
   BIO_get_shutdown
   BIO_new_connect
   BIO_new_mem_buf
@@ -653,6 +654,7 @@ set(utests-bssl-source-list
 set(utests-source-list
   # Our hand written bssl-compat tests
   source/test/test_asn1.cc
+  source/test/test_bio.cc
   source/test/test_bn.cc
   source/test/test_cipher.cc
   source/test/test_crypto.cc

@@ -12,6 +12,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_free \
   --uncomment-func-decl BIO_free_all \
   --uncomment-func-decl BIO_get_mem_data \
+  --uncomment-func-decl BIO_get_mem_ptr \
   --uncomment-func-decl BIO_up_ref \
   --uncomment-func-decl BIO_read \
   --uncomment-func-decl BIO_write \
