@@ -39,6 +39,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_EXTENSION_get_data \
   --uncomment-func-decl X509_digest \
   --uncomment-func-decl X509_NAME_digest \
+  --uncomment-func-decl X509_STORE_CTX_set_flags \
   --uncomment-func-decl X509_STORE_CTX_get_ex_data \
   --uncomment-func-decl X509_get_serialNumber \
   --uncomment-macro-redef 'XN_FLAG_[[:alnum:]_]*' \
