@@ -188,5 +188,5 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro-redef SSL_CB_HANDSHAKE_START \
   --uncomment-macro-redef SSL_CB_HANDSHAKE_DONE \
   --uncomment-macro-redef SSL_MAX_SSL_SESSION_ID_LENGTH \
-  --uncomment-macro-redef SSL_TICKET_KEY_NAME_LEN \
+  --uncomment-macro SSL_TICKET_KEY_NAME_LEN \
 
