@@ -14,6 +14,7 @@ uncomment.sh "$1" --comment \
   --uncomment-func-impl CBS_get_u16 \
   --uncomment-func-impl CBS_get_bytes \
   --uncomment-func-impl cbs_get_length_prefixed \
+  --uncomment-func-impl CBS_get_u8_length_prefixed \
   --uncomment-func-impl CBS_get_u16_length_prefixed \
   --uncomment-func-impl parse_base128_integer \
   --uncomment-func-impl parse_asn1_tag \

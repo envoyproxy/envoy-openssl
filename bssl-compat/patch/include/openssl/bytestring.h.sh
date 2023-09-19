@@ -10,6 +10,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl CBS_len \
   --uncomment-func-decl CBS_get_u8 \
   --uncomment-func-decl CBS_get_u16 \
+  --uncomment-func-decl CBS_get_u8_length_prefixed \
   --uncomment-func-decl CBS_get_u16_length_prefixed \
   --uncomment-macro CBS_ASN1_TAG_SHIFT \
   --uncomment-macro CBS_ASN1_CONSTRUCTED \
