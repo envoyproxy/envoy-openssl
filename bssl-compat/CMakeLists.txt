@@ -394,6 +394,7 @@ target_add_bssl_function(bssl-compat
   EVP_PKEY_CTX_set_rsa_mgf1_md
   EVP_PKEY_CTX_set_rsa_padding
   EVP_PKEY_free
+  EVP_PKEY_get_raw_public_key
   EVP_PKEY_new
   EVP_PKEY_set1_RSA
   EVP_sha1
