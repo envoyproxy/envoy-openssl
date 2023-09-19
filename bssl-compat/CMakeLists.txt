@@ -68,6 +68,7 @@ add_library(bssl-compat STATIC
   source/CRYPTO_BUFFER.h
   source/CRYPTO_BUFFER_new.c
   source/d2i_GENERAL_NAME.cc
+  source/ECDSA_do_verify.cc
   source/ECDSA_sign.cc
   source/EC_KEY_parse_private_key.cc
   source/EC_KEY_set_public_key_affine_coordinate.cc
