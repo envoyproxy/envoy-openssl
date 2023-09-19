@@ -9,6 +9,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl EVP_CIPHER_CTX_new \
   --uncomment-func-decl EVP_CIPHER_CTX_free \
   --uncomment-macro-redef EVP_CTRL_AEAD_GET_TAG \
+  --uncomment-macro-redef EVP_CTRL_GCM_SET_IVLEN \
   --uncomment-macro-redef EVP_CTRL_GCM_GET_TAG \
   --uncomment-macro-redef EVP_CTRL_GCM_SET_TAG \
   --uncomment-func-decl EVP_EncryptInit_ex \
