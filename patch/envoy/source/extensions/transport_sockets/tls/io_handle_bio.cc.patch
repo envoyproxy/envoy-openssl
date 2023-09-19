@@ -16,7 +16,7 @@
 -  bio->flags = 0;
 +  BIO_set_init(bio, 0);
 +  BIO_set_data(bio, nullptr);
-+  BIO_clear_flags(bio);
++  BIO_clear_flags(bio, ~0);
    return 1;
  }
  
@@ -33,7 +33,7 @@
 -    bio->init = 0;
 -    bio->flags = 0;
 +    BIO_set_init(bio, 0);
-+    BIO_clear_flags(bio);
++    BIO_clear_flags(bio, ~0);
    }
    return 1;
  }
