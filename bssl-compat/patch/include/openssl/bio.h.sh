@@ -33,6 +33,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_ctrl \
   --uncomment-func-decl BIO_ctrl_get_read_request \
   --uncomment-func-decl BIO_ctrl_get_write_guarantee \
+  --uncomment-func-decl BIO_clear_flags \
   --uncomment-func-decl BIO_shutdown_wr \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(BIO,' \
   --uncomment-regex 'BORINGSSL_MAKE_UP_REF(BIO,' \

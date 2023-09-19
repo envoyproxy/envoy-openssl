@@ -294,6 +294,7 @@ target_add_bssl_function(bssl-compat
   ASN1_TIME_new
   ASN1_TIME_set
   BIO_clear_retry_flags
+  BIO_clear_flags
   BIO_ctrl_get_read_request
   BIO_ctrl_get_write_guarantee
   BIO_new_connect
@@ -565,6 +566,7 @@ target_add_bssl_function(bssl-compat
   X509_STORE_CTX_new
   X509_STORE_CTX_set_default
   X509_STORE_CTX_set_error
+  X509_STORE_CTX_set_flags
   X509_STORE_free
   X509_STORE_get0_param
   X509_STORE_load_locations
