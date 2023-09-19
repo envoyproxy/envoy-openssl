@@ -347,6 +347,7 @@ target_add_bssl_function(bssl-compat
   ECDSA_SIG_free
   ECDSA_SIG_get0
   ECDSA_SIG_new
+  ECDSA_SIG_set0
   ERR_clear_error
   ERR_error_string
   ERR_get_error
