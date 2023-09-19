@@ -343,6 +343,7 @@ target_add_bssl_function(bssl-compat
   EC_KEY_free
   EC_KEY_get0_group
   ECDSA_size
+  ECDSA_SIG_free
   ECDSA_SIG_new
   ERR_clear_error
   ERR_error_string
