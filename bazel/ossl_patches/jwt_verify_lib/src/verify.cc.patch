@@ -1,0 +1,18 @@
+--- a/src/verify.cc
++++ b/src/verify.cc
+@@ -132,9 +132,14 @@ bool verifySignatureEC(EC_KEY* key, const EVP_MD* md, const uint8_t* signature,
+     return false;
+   }
+ 
+-  if (BN_bin2bn(signature, signature_len / 2, ecdsa_sig->r) == nullptr ||
++  const BIGNUM *ecdsa_sig_r;
++  const BIGNUM *ecdsa_sig_s;
++
++  ECDSA_SIG_get0(ecdsa_sig.get(), &ecdsa_sig_r, &ecdsa_sig_s);
++
++  if (BN_bin2bn(signature, signature_len / 2, ecdsa_sig_r) == nullptr ||
+       BN_bin2bn(signature + (signature_len / 2), signature_len / 2,
+-                ecdsa_sig->s) == nullptr) {
++                ecdsa_sig_s) == nullptr) {
+     return false;
+   }
