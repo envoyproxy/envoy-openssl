@@ -45,21 +45,8 @@ For a full build of envoy on the `bssl-compat` library, start by running the `ru
 
 This script pulls the upstream envoy builder image (which may take some time) and then runs an interactive bash prompt.
 
-Before building envoy in the container, there are a small number of patches that need to be applied with the following command:
-```
-find patch/envoy/ -name "*.patch" -exec patch -d envoy -p1 -i ../{} \;
-```
-You should see something like the following output from the patching process:
-```
-patching file bazel/repositories_extra.bzl
-patching file bazel/repositories.bzl
-patching file source/common/quic/BUILD
-patching file source/extensions/extensions_build_config.bzl
-patching file source/extensions/transport_sockets/tls/io_handle_bio.cc
-... etc
-```
+Then, to build envoy simply run the following:
 
-Once the envoy source is patched, you can start the build:
 ```
 bazel build @envoy//:envoy
 ```
