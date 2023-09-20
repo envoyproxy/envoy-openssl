@@ -10,6 +10,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl OPENSSL_isdigit \
   --uncomment-func-decl OPENSSL_fromxdigit \
   --uncomment-func-decl OPENSSL_isspace \
+  --uncomment-macro DECIMAL_SIZE \
   --uncomment-func-decl BIO_snprintf \
   --uncomment-func-decl OPENSSL_memdup \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(char,' \

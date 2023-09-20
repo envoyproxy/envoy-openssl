@@ -32,23 +32,36 @@ OpenSSL is supported by providing a compatiblity library and a set of TLS relate
 After initial checkout, initialize and update submodules for Envoy and
 BoringSSL:
 ```
-git submodule init
-git submodule update
+git submodule update --init --depth=1
 ```
 
-For a standalone build of the library, see
+For a standalone build of the `bssl-compat` library, see
 [bssl-compat README](bssl-compat/README.md).
 
-In order to start building the Envoy handshaker extension, first install
-Bazel. [Bazelisk](https://github.com/bazelbuild/bazelisk/blob/master/README.md)
-is a user-friendly launcher for Bazel, install a suitable
-[release](https://github.com/bazelbuild/bazelisk/releases) for the desired
-platform. Clang is strongly recommended for a successful build.
-
-After installing clang and Bazelisk/Bazel, build Envoy handshaker with:
+For a full build of envoy on the `bssl-compat` library, start by running the `run-build-container.sh` script:
 ```
-patch envoy/bazel/repositories.bzl -i bazel/envoy.patch
-CC=clang CXX=clang++ bazel build --config=clang --define crypto=system :envoy
+./run-build-container.sh
+```
+
+This script pulls the upstream envoy builder image (which may take some time) and then runs an interactive bash prompt.
+
+Before building envoy in the container, there are a small number of patches that need to be applied with the following command:
+```
+find patch/envoy/ -name "*.patch" -exec patch -d envoy -p1 -i ../{} \;
+```
+You should see something like the following output from the patching process:
+```
+patching file bazel/repositories_extra.bzl
+patching file bazel/repositories.bzl
+patching file source/common/quic/BUILD
+patching file source/extensions/extensions_build_config.bzl
+patching file source/extensions/transport_sockets/tls/io_handle_bio.cc
+... etc
+```
+
+Once the envoy source is patched, you can start the build:
+```
+bazel build @envoy//:envoy
 ```
 
 ## Testing

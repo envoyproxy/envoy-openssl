@@ -43,6 +43,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_get_peer_certificate \
   --uncomment-func-decl SSL_get_ex_new_index \
   --uncomment-func-decl SSL_get_ex_data \
+  --uncomment-func-decl SSL_alert_from_verify_result \
   --uncomment-func-decl SSL_get_ex_data_X509_STORE_CTX_idx \
   --uncomment-func-decl SSL_get_error \
   --uncomment-func-decl SSL_get_current_cipher \
@@ -84,7 +85,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_CTX_get_ciphers \
   --uncomment-func-decl SSL_CTX_get_cert_store \
   --uncomment-func-decl SSL_CTX_set_cert_store \
-  --uncomment-macro SSL_CTX_get_ex_new_index \
+  --uncomment-func-decl SSL_CTX_get_ex_new_index \
   --uncomment-macro SSL_CTX_get_app_data \
   --uncomment-func-decl SSL_CTX_free \
   --uncomment-func-decl SSL_CTX_add_extra_chain_cert \
@@ -187,5 +188,5 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro-redef SSL_CB_HANDSHAKE_START \
   --uncomment-macro-redef SSL_CB_HANDSHAKE_DONE \
   --uncomment-macro-redef SSL_MAX_SSL_SESSION_ID_LENGTH \
-  --uncomment-macro-redef SSL_TICKET_KEY_NAME_LEN \
+  --uncomment-macro SSL_TICKET_KEY_NAME_LEN \
 

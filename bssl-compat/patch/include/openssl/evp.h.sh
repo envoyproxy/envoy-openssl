@@ -18,6 +18,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl EVP_DigestVerifyInit \
   --uncomment-func-decl EVP_DigestVerify \
   --uncomment-func-decl EVP_PKEY_set1_RSA \
+  --uncomment-func-decl EVP_PKEY_get_raw_public_key \
   --uncomment-func-decl  EVP_DigestSignInit \
   --uncomment-func-decl  EVP_DigestSignUpdate \
   --uncomment-func-decl  EVP_DigestSignFinal \

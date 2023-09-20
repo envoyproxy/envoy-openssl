@@ -31,7 +31,7 @@ include(cmake/boringssl.cmake)
 include(cmake/openssl.cmake)
 
 add_subdirectory(prefixer)
-add_custom_command(DEPENDS prefixer
+add_custom_command(DEPENDS prefixer OpenSSL::Crypto OpenSSL::SSL
                    COMMENT "Prefixing OpenSSL files"
                    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h
@@ -60,6 +60,7 @@ add_library(bssl-compat STATIC
   source/BIO_read_asn1.c
   source/BIO_snprintf.cc
   source/BIO_vfree.cc
+  source/BN_cmp_word.cc
   source/BN_bn2hex.cc
   source/BN_bin2bn.cc
   source/c2i_ASN1_INTEGER.cc
@@ -67,6 +68,7 @@ add_library(bssl-compat STATIC
   source/CRYPTO_BUFFER.h
   source/CRYPTO_BUFFER_new.c
   source/d2i_GENERAL_NAME.cc
+  source/ECDSA_do_verify.cc
   source/ECDSA_sign.cc
   source/EC_KEY_parse_private_key.cc
   source/EC_KEY_set_public_key_affine_coordinate.cc
@@ -283,6 +285,7 @@ target_add_bssl_function(bssl-compat
   ASN1_INTEGER_new
   ASN1_INTEGER_to_BN
   ASN1_INTEGER_to_BN
+  ASN1_OBJECT_free
   ASN1_STRING_data
   ASN1_STRING_free
   ASN1_STRING_get0_data
@@ -293,19 +296,27 @@ target_add_bssl_function(bssl-compat
   ASN1_TIME_diff
   ASN1_TIME_new
   ASN1_TIME_set
+  BIO_clear_flags
   BIO_clear_retry_flags
   BIO_clear_flags
   BIO_ctrl_get_read_request
   BIO_ctrl_get_write_guarantee
+  BIO_get_data
+  BIO_get_init
+  BIO_get_mem_ptr
+  BIO_get_shutdown
   BIO_new_connect
   BIO_new_mem_buf
   BIO_puts
   BIO_read
   BIO_reset
   BIO_get_mem_data
+  BIO_set_data
+  BIO_set_init
   BIO_set_mem_eof_return
   BIO_set_retry_read
   BIO_set_retry_write
+  BIO_set_shutdown
   BIO_should_read
   BIO_should_retry
   BIO_should_write
@@ -334,7 +345,10 @@ target_add_bssl_function(bssl-compat
   EC_KEY_free
   EC_KEY_get0_group
   ECDSA_size
+  ECDSA_SIG_free
+  ECDSA_SIG_get0
   ECDSA_SIG_new
+  ECDSA_SIG_set0
   ERR_clear_error
   ERR_error_string
   ERR_get_error
@@ -384,6 +398,7 @@ target_add_bssl_function(bssl-compat
   EVP_PKEY_CTX_set_rsa_mgf1_md
   EVP_PKEY_CTX_set_rsa_padding
   EVP_PKEY_free
+  EVP_PKEY_get_raw_public_key
   EVP_PKEY_new
   EVP_PKEY_set1_RSA
   EVP_sha1
@@ -588,6 +603,7 @@ target_add_bssl_source(bssl-compat
   source/crypto/mem.c
   source/crypto/bytestring/cbs.c
   source/crypto/bytestring/cbb.c
+  source/ssl/ssl_x509.cc
 )
 target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
 target_include_directories(bssl-compat PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -638,12 +654,15 @@ set(utests-bssl-source-list
 set(utests-source-list
   # Our hand written bssl-compat tests
   source/test/test_asn1.cc
+  source/test/test_bio.cc
   source/test/test_bn.cc
   source/test/test_cipher.cc
   source/test/test_crypto.cc
   source/test/test_ec_key.cc
+  source/test/test_err.cc
   source/test/test_evp.cc
   source/test/test_hmac.cc
+  source/test/test_misc.cc
   source/test/test_rsa.cc
   source/test/test_ssl.cc
   source/test/test_stack.cc

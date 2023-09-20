@@ -26,7 +26,6 @@ else (OS_OPENSSL_HEADERS AND  OS_SSL_LIBRARY AND OS_CRYPTO_LIBRARY)
 
     #  Load OpenSSL as an external project and set up properties to enable build.
     set(OPENSSL_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl-src) # default path by CMake
-    set(OPENSSL_BUILD_LOG_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl-build-log})
     set(OPENSSL_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/openssl)
     set(OPENSSL_INCLUDE_DIR ${OPENSSL_INSTALL_DIR}/include)
     set(OPENSSL_CONFIGURE_COMMAND ${OPENSSL_SOURCE_DIR}/config)
@@ -41,9 +40,6 @@ else (OS_OPENSSL_HEADERS AND  OS_SSL_LIBRARY AND OS_CRYPTO_LIBRARY)
         --prefix=${OPENSSL_INSTALL_DIR}
         --openssldir=${OPENSSL_INSTALL_DIR}
         --libdir=lib
-        BUILD_COMMAND make
-        LOG ${OPENSSL_BUILD_LOG_DIR}
-        LOG_BUILD TRUE
         TEST_COMMAND ""
         INSTALL_COMMAND make install_sw
         INSTALL_DIR ${OPENSSL_INSTALL_DIR}

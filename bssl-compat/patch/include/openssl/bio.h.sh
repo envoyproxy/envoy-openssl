@@ -5,11 +5,14 @@ set -euo pipefail
 uncomment.sh "$1" --comment -h \
   --uncomment-macro-redef 'BIO_R_[[:alnum:]_]*' \
   --uncomment-struct bio_method_st \
+  --uncomment-macro BIO_C_SET_FD \
+  --uncomment-macro BIO_C_GET_FD \
   --uncomment-typedef bio_info_cb \
   --uncomment-func-decl BIO_new \
   --uncomment-func-decl BIO_free \
   --uncomment-func-decl BIO_free_all \
   --uncomment-func-decl BIO_get_mem_data \
+  --uncomment-func-decl BIO_get_mem_ptr \
   --uncomment-func-decl BIO_up_ref \
   --uncomment-func-decl BIO_read \
   --uncomment-func-decl BIO_write \
@@ -18,6 +21,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_reset \
   --uncomment-func-decl BIO_should_read \
   --uncomment-func-decl BIO_should_write \
+  --uncomment-func-decl BIO_clear_flags \
   --uncomment-func-decl BIO_set_retry_read \
   --uncomment-func-decl BIO_set_retry_write \
   --uncomment-func-decl BIO_clear_retry_flags \
@@ -33,8 +37,16 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_ctrl \
   --uncomment-func-decl BIO_ctrl_get_read_request \
   --uncomment-func-decl BIO_ctrl_get_write_guarantee \
-  --uncomment-func-decl BIO_clear_flags \
   --uncomment-func-decl BIO_shutdown_wr \
+  --uncomment-func-decl BIO_set_data \
+  --uncomment-func-decl BIO_get_data \
+  --uncomment-func-decl BIO_set_init \
+  --uncomment-func-decl BIO_get_init \
+  --uncomment-macro BIO_CTRL_GET_CLOSE \
+  --uncomment-macro BIO_CTRL_SET_CLOSE \
+  --uncomment-macro BIO_CTRL_FLUSH \
+  --uncomment-func-decl BIO_set_shutdown \
+  --uncomment-func-decl BIO_get_shutdown \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(BIO,' \
   --uncomment-regex 'BORINGSSL_MAKE_UP_REF(BIO,' \
   --uncomment-macro BIO_TYPE_MEM \
