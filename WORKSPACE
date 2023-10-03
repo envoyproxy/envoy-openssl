@@ -10,7 +10,6 @@ http_archive(
 )
 
 load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
-
 rules_foreign_cc_dependencies(register_default_tools = False, register_built_tools = False)
 
 local_repository(
@@ -20,20 +19,25 @@ local_repository(
 
 # NOTE: Whenever the version of envoy is changed here, the files under the top
 # level envoy directory must also be re-copied from the new envoy version.
-http_archive(
+load("//:bazel/http_archive_with_overwrites.bzl", "http_archive_with_overwrites")
+http_archive_with_overwrites(
     name = "envoy",
     url = "https://github.com/envoyproxy/envoy/archive/refs/tags/v1.26.3.zip",
     sha256 = "8d4c99886ae0698c52fdf64b30603354010d2ca991e85fbef5082010ef6110ad",
     strip_prefix = "envoy-1.26.3",
     patch_args = [ "-p1" ],
     patches = [
-        "//:patch/envoy/bazel/repositories_extra.bzl.patch",
-        "//:patch/envoy/bazel/repositories.bzl.patch",
-        "//:patch/envoy/source/common/quic/BUILD.patch",
-        "//:patch/envoy/source/extensions/extensions_build_config.bzl.patch",
-        "//:patch/envoy/source/extensions/transport_sockets/tls/io_handle_bio.cc.patch",
-        "//:patch/envoy/source/extensions/transport_sockets/tls/ocsp/asn1_utility.cc.patch",
-        "//:patch/envoy/source/extensions/transport_sockets/tls/utility.cc.patch",
+        "//patch/envoy:bazel/repositories_extra.bzl.patch",
+        "//patch/envoy:bazel/repositories.bzl.patch",
+        "//patch/envoy:source/common/quic/BUILD.patch",
+        "//patch/envoy:source/extensions/extensions_build_config.bzl.patch",
+        "//patch/envoy:source/extensions/transport_sockets/tls/io_handle_bio.cc.patch",
+        "//patch/envoy:source/extensions/transport_sockets/tls/ocsp/asn1_utility.cc.patch",
+        "//patch/envoy:source/extensions/transport_sockets/tls/utility.cc.patch",
+    ],
+    overwrites = [
+        # "//patch/envoy:source/extensions/transport_sockets/tls/context_impl.cc",
+        # "//patch/envoy:source/extensions/transport_sockets/tls/context_impl.h",
     ],
     repo_mapping = {
         "@boringssl": "@bssl-compat",
