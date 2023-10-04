@@ -4,3 +4,6 @@
 [submodule "bssl-compat/external/boringssl"]
 	path = bssl-compat/external/boringssl
 	url = https://github.com/google/boringssl.git
+[submodule "bssl-compat/external/sanitizers-cmake"]
+	path = bssl-compat/external/sanitizers-cmake
+	url = https://github.com/arsenm/sanitizers-cmake.git

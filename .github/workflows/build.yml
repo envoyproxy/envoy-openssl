@@ -19,6 +19,9 @@ jobs:
     - name: Checkout BoringSSL (submodule)
       run: git submodule update --init --depth=1 bssl-compat/external/boringssl
 
+    - name: Checkout sanitizers-cmake (submodule)
+      run: git submodule update --init --depth=1 bssl-compat/external/sanitizers-cmake
+
     - name: Remove packages
       run: sudo apt autoremove --purge -y clang-12 clang-13
 

@@ -25,10 +25,14 @@ set(CMAKE_BUILD_TYPE Debug)
 # Produce a compilation database in json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/external/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
+
 project(bssl-compat VERSION 0.1 LANGUAGES C CXX)
 
 include(cmake/boringssl.cmake)
 include(cmake/openssl.cmake)
+
+find_package(Sanitizers)
 
 add_subdirectory(prefixer)
 add_custom_command(DEPENDS prefixer OpenSSL::Crypto OpenSSL::SSL
@@ -190,6 +194,8 @@ add_library(bssl-compat STATIC
   source/X509_STORE_CTX_set_verify_cb.cc
   source/X509_VERIFY_PARAM_set_time_posix.cc
 )
+
+add_sanitizers(bssl-compat)
 
 target_add_bssl_include(bssl-compat
   include/openssl/aead.h
@@ -677,10 +683,9 @@ set(utests-source-list
 # Unit Tests built on bssl-compat
 ################################################################################
 add_executable(utests-bssl-compat ${utests-source-list})
+add_sanitizers(utests-bssl-compat)
 target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
-# Add env variable SANITIZE_OPTIONS for optional sanitizers
-target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
 set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_INSTALL_DIR}/lib")
 gtest_discover_tests(utests-bssl-compat)
@@ -689,9 +694,8 @@ gtest_discover_tests(utests-bssl-compat)
 # Unit Tests built on BoringSSL
 ################################################################################
 add_executable(utests-boring ${utests-source-list} ${utests-bssl-source-list})
+add_sanitizers(utests-boring)
 target_include_directories(utests-boring PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/source)
-# Add env variable SANITIZE_OPTIONS for optional sanitizers
-target_link_options(utests-boring PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_libraries(utests-boring PRIVATE BoringSSL::SSL BoringSSL::Crypto)
 target_link_libraries(utests-boring PRIVATE GTest::gtest_main)
 gtest_discover_tests(utests-boring)
