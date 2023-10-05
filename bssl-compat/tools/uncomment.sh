@@ -125,7 +125,7 @@ while [ $# -ne 0 ]; do
       option_end $2
       FUNC_SIG_MULTI_LINE="$(grep -Pzob "OPENSSL_EXPORT\s*[^;]*[^A-Za-z0-9_]$2\s*\([^;]*\)" "$HDR_FILE" | sed -e 's/OPENSSL_EXPORT\s*//g' -e 's%^// %%' -e 's/\x0//g')"
       FUNC_SIG_LINE_COUNT="$(echo "$FUNC_SIG_MULTI_LINE" | wc -l)"
-      FUNC_SIG_OFFSET="$(echo "$FUNC_SIG_MULTI_LINE" | head -1 | cut -d: -f1)"
+      FUNC_SIG_OFFSET="$(echo "$FUNC_SIG_MULTI_LINE" | grep -o '^[0-9]*:' | cut -d: -f1)"
       FUNC_SIG_LINE_FROM=$(echo $(head -c+$FUNC_SIG_OFFSET "$HDR_FILE" | wc -l) + 1 | bc -q)
       FUNC_SIG_LINE_TO="$(echo $FUNC_SIG_LINE_FROM + $FUNC_SIG_LINE_COUNT - 1 | bc -q)"
       uncomment_line_range ${FUNC_SIG_LINE_FROM} ${FUNC_SIG_LINE_TO}

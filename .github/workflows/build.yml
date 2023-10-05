@@ -19,11 +19,8 @@ jobs:
     - name: Checkout BoringSSL (submodule)
       run: git submodule update --init --depth=1 bssl-compat/external/boringssl
 
-    - name: Remove packages
-      run: sudo apt autoremove --purge -y clang-12 clang-13
-
     - name: Install packages
-      run: sudo apt install -y libclang-cpp14-dev libclang-14-dev
+      run: sudo apt install -y libclang-13-dev
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -S ${{github.workspace}}/bssl-compat -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
