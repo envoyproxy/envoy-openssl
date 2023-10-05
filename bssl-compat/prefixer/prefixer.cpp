@@ -501,8 +501,24 @@ void MyFrontendAction::EndSourceFileAction() {
          << "    fprintf(stderr, \"dlopen(%s) : %s\\n\", LIBCRYPTO_SO, dlerror());" << std::endl
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
+         << std::endl
          << "  if((libssl = dlopen(LIBSSL_SO, RTLD_NOW | RTLD_LOCAL)) == NULL) {" << std::endl
          << "    fprintf(stderr, \"dlopen(%s) : %s\\n\", LIBSSL_SO, dlerror());" << std::endl
+         << "    exit(ELIBACC);" << std::endl
+         << "  }" << std::endl
+         << std::endl
+         << "  ossl.ossl_OPENSSL_version_major = (ossl_OPENSSL_version_major_t)lookup(\"ossl_OPENSSL_version_major\");" << std::endl
+         << "  ossl.ossl_OPENSSL_version_minor = (ossl_OPENSSL_version_minor_t)lookup(\"ossl_OPENSSL_version_minor\");" << std::endl
+         << "  ossl.ossl_OPENSSL_version_patch = (ossl_OPENSSL_version_patch_t)lookup(\"ossl_OPENSSL_version_patch\");" << std::endl
+         << std::endl
+         << "  if ((ossl.ossl_OPENSSL_version_major() != ossl_OPENSSL_VERSION_MAJOR) ||" << std::endl
+         << "      (ossl.ossl_OPENSSL_version_minor() != ossl_OPENSSL_VERSION_MINOR)) {" << std::endl
+         << "    fprintf(stderr, \"Expecting to load OpenSSL version %d.%d.x but got %d.%d.%d\\n\"," << std::endl
+         << "                      ossl_OPENSSL_VERSION_MAJOR," << std::endl
+         << "                      ossl_OPENSSL_VERSION_MINOR," << std::endl
+         << "                      ossl.ossl_OPENSSL_version_major()," << std::endl
+         << "                      ossl.ossl_OPENSSL_version_minor()," << std::endl
+         << "                      ossl.ossl_OPENSSL_version_patch());" << std::endl
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
          << std::endl;
