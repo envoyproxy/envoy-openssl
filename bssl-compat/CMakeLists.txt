@@ -51,13 +51,16 @@ add_library(bssl-compat STATIC
   source/ASN1_TIME_free.cc
   source/BASIC_CONSTRAINTS_free.cc
   source/BASIC_CONSTRAINTS_new.cc
-  source/bio.cpp
+  source/bio_meth_map.cpp
   source/BIO_free.cc
   source/BIO_mem_contents.cc
   source/BIO_new_bio_pair.cc
+  source/BIO_new.cc
   source/BIO_pending.cc
   source/BIO_printf.cc
   source/BIO_read_asn1.c
+  source/BIO_s_mem.cc
+  source/BIO_s_socket.cc
   source/BIO_snprintf.cc
   source/BIO_vfree.cc
   source/BN_cmp_word.cc
