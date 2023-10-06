@@ -60,6 +60,13 @@ add_library(bssl-compat STATIC
   source/BIO_read_asn1.c
   source/BIO_snprintf.cc
   source/BIO_vfree.cc
+  source/BIO_meth_free.cc
+  source/BIO_meth_new.cc
+  source/BIO_meth_set_create.cc
+  source/BIO_meth_set_ctrl.cc
+  source/BIO_meth_set_write.cc
+  source/BIO_meth_set_read.cc
+  source/BIO_meth_set_destroy.cc
   source/BN_cmp_word.cc
   source/BN_bn2hex.cc
   source/BN_bin2bn.cc
@@ -189,6 +196,7 @@ add_library(bssl-compat STATIC
   source/X509_STORE_CTX_set0_trusted_stack.cc
   source/X509_STORE_CTX_set_verify_cb.cc
   source/X509_VERIFY_PARAM_set_time_posix.cc
+  source/BIO_extra_fns.cc
 )
 
 target_add_bssl_include(bssl-compat
@@ -305,6 +313,7 @@ target_add_bssl_function(bssl-compat
   BIO_get_init
   BIO_get_mem_ptr
   BIO_get_shutdown
+  BIO_get_new_index
   BIO_new_connect
   BIO_new_mem_buf
   BIO_puts
@@ -596,6 +605,8 @@ target_add_bssl_function(bssl-compat
   X509_VERIFY_PARAM_clear_flags
   X509_VERIFY_PARAM_set_flags
   X509_VERIFY_PARAM_set1
+  X509_STORE_CTX_get_current_cert
+  X509_STORE_CTX_get0_cert
 )
 
 target_add_bssl_source(bssl-compat

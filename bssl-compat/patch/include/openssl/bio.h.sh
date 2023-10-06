@@ -2,7 +2,20 @@
 
 set -euo pipefail
 
+MYTMPDIR="$(mktemp -d)"
+trap 'rm -rf -- "$MYTMPDIR"' EXIT
+
+# OpenSSL Functions not implemented in BoringSSL
+cat > "$MYTMPDIR/extraincs" << EOF
+// OpenSSL Functions not implemented by BoringSSL
+
+void  BIO_set_app_data(BIO *bio, void *data);
+void *BIO_get_app_data(BIO *bio);
+
+EOF
+
 uncomment.sh "$1" --comment -h \
+  --sed "/\sCustom BIOs\./ e cat $MYTMPDIR/extraincs" \
   --uncomment-macro-redef 'BIO_R_[[:alnum:]_]*' \
   --uncomment-struct bio_method_st \
   --uncomment-macro BIO_C_SET_FD \
@@ -42,6 +55,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_get_data \
   --uncomment-func-decl BIO_set_init \
   --uncomment-func-decl BIO_get_init \
+  --uncomment-func-decl BIO_meth_free \
   --uncomment-macro BIO_CTRL_GET_CLOSE \
   --uncomment-macro BIO_CTRL_SET_CLOSE \
   --uncomment-macro BIO_CTRL_FLUSH \
@@ -52,5 +66,13 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro BIO_TYPE_MEM \
   --uncomment-macro BIO_TYPE_SOCKET \
   --uncomment-func-decl BIO_should_retry \
+  --uncomment-func-decl BIO_get_new_index \
+  --uncomment-func-decl BIO_meth_new \
+  --uncomment-func-decl BIO_meth_set_write \
+  --uncomment-func-decl BIO_meth_set_read \
+  --uncomment-func-decl BIO_meth_set_ctrl \
+  --uncomment-func-decl BIO_meth_set_create \
+  --uncomment-func-decl BIO_meth_set_destroy \
+
 
 

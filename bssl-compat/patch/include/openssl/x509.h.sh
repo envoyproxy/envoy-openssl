@@ -94,3 +94,5 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(X509_STORE_CTX,' \
   --uncomment-macro-redef 'X509_R_[[:alnum:]_]*' \
   --uncomment-regex 'DECLARE_ASN1_FUNCTIONS_const(X509_PUBKEY)' \
+  --uncomment-func-decl X509_STORE_CTX_get_current_cert \
+  --uncomment-func-decl X509_STORE_CTX_get0_cert \
