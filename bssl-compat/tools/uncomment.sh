@@ -66,7 +66,7 @@ uncomment_line_range() {
 
 uncomment_regex_range() {
   [[ $# == 2 ]] || error "uncomment_regex_range(): Two regexes required"
-  L1=$(grep -n "^// $1" "$HDR_FILE" | head -1 | cut -d: -f1)
+  L1=$(grep -n "^// $1" "$HDR_FILE" | sed -n 1p | cut -d: -f1)
   L2=$(gawk '(NR == '$L1'),/^\/\/ '$2'/{print NR}' "$HDR_FILE" | tail -1)
   [ -z "$L1" ] && error "Failed to locate first pattern in -R $1 $2"
   [ -z "$L2" ] && error "Failed to locate second pattern in -R $1 $2"
@@ -88,7 +88,7 @@ comment_line_range() {
 
 comment_regex_range() {
   [[ $# == 2 ]] || error "comment_regex_range(): Two regexes required"
-  L1=$(grep -n "$1" "$HDR_FILE" | head -1 | cut -d: -f1)
+  L1=$(grep -n "$1" "$HDR_FILE" | sed -n 1p | cut -d: -f1)
   L2=$(gawk '(NR == '$L1'),/'$2'/{print NR}' "$HDR_FILE" | tail -1)
   [ -z "$L1" ] && error "comment_regex_range(): Failed to locate first pattern"
   [ -z "$L2" ] && error "comment_regex_range(): Failed to locate second pattern"
@@ -219,7 +219,7 @@ while [ $# -ne 0 ]; do
     --uncomment-typedef) # Uncomment typedef
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
-      LINE=$(grep -n "^// \s*\<typedef\>.*\<$2\>.*" "$HDR_FILE" | head -1)
+      LINE=$(grep -n "^// \s*\<typedef\>.*\<$2\>.*" "$HDR_FILE" | sed -n 1p)
       L1=$(echo "$LINE" | cut -d: -f1) && L2=$L1
       if [[ ! "$LINE" =~ \;$ ]]; then # multi-line
         L2=$(gawk '(NR == '$L1'),/^\/\/ .*;$/{print NR}' "$HDR_FILE" | tail -1)
@@ -230,7 +230,7 @@ while [ $# -ne 0 ]; do
     --uncomment-func-impl)
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
-      LINE=$(grep -n "^// [^ !].*\b$2\s*(.*[^;]$" "$HDR_FILE" | head -1)
+      LINE=$(grep -n "^// [^ !].*\b$2\s*(.*[^;]$" "$HDR_FILE" | sed -n 1p)
       L1=$(echo "$LINE" | cut -d: -f1) && L2=$L1
       if [[ ! "$LINE" =~ }$ ]]; then # multi-line
         L2=$(gawk '(NR == '$L1'),/^\/\/ }$/{print NR}' "$HDR_FILE" | tail -1)
@@ -241,7 +241,7 @@ while [ $# -ne 0 ]; do
     --uncomment-static-func-impl)
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
-      LINE=$(grep -n "^// static\s*.*\b$2\b\s*(" "$HDR_FILE" | head -1)
+      LINE=$(grep -n "^// static\s*.*\b$2\b\s*(" "$HDR_FILE" | sed -n 1p)
       L1=$(echo "$LINE" | cut -d: -f1) && L2=$L1
       if [[ ! "$LINE" =~ }$ ]]; then # multi-line
         L2=$(gawk '(NR == '$L1'),/^\/\/ }$/{print NR}' "$HDR_FILE" | tail -1)

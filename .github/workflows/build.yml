@@ -6,36 +6,45 @@ on:
   pull_request:
     branches: [ "main" ]
 
-env:
-  BUILD_TYPE: Release
-
 jobs:
+
   build:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v3
 
-    - name: Checkout BoringSSL (submodule)
-      run: git submodule update --init --depth=1 bssl-compat/external/boringssl
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: 'true'
 
-    - name: Install packages
-      run: sudo apt install -y libclang-13-dev
+    - name: Prerequisites
+      run: sudo apt install -y libclang-13-dev kcov
 
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -S ${{github.workspace}}/bssl-compat -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+    - name: Configure
+      run: cmake -B ${{github.workspace}}/build -S ${{github.workspace}}/bssl-compat -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{github.workspace}}/build --config RelWithDebInfo
 
     - name: Test
       env:
         OPENSSL_CONF: ${{github.workspace}}/bssl-compat/source/test/openssl.cnf
       run: ctest --test-dir ${{github.workspace}}/build --output-junit ${{github.workspace}}/build/results.xml
 
-    - name: Results
+    - name: Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: always()
       with:
         junit_files: "${{github.workspace}}/build/results.xml"
 
+    - name: Test Coverage
+      env:
+        OPENSSL_CONF: ${{github.workspace}}/bssl-compat/source/test/openssl.cnf
+      run: kcov --exclude-pattern=/usr/include/,/_deps/,_test.,/test_,_test_ ${{github.workspace}}/build/kcov ${{github.workspace}}/build/utests-bssl-compat --gtest_output=xml:${{github.workspace}}/build/results.xml
+
+    - name: Coverage Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-results
+        path: ${{github.workspace}}/build/kcov/**

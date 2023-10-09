@@ -41,7 +41,7 @@ fi
 ################################################################################
 FUNC_SIG_MULTI_LINE="$(grep -Pzob "OPENSSL_EXPORT\s.*[^A-Za-z0-9_]$FUNC_NAME\s*\([^;]*\)" "$HDR_FILE" | sed -e 's/OPENSSL_EXPORT\s*//g' -e 's|^// ||' -e 's/\x0//g')"
 FUNC_SIG_LINE_COUNT="$(echo "$FUNC_SIG_MULTI_LINE" | wc -l)"
-FUNC_SIG_OFFSET="$(echo "$FUNC_SIG_MULTI_LINE" | head -1 | cut -d: -f1)"
+FUNC_SIG_OFFSET="$(echo "$FUNC_SIG_MULTI_LINE" | grep -o '^[0-9]*:' | cut -d: -f1)"
 FUNC_SIG_ONE_LINE="$(echo "$FUNC_SIG_MULTI_LINE" | tr '\n' ' ' | sed -e 's/\s\s*/ /g' -e 's/\s*$//g' | cut -d: -f2)"
 FUNC_SIG_LINE_FROM=$(echo $(head -c+$FUNC_SIG_OFFSET "$HDR_FILE" | wc -l) + 1 | bc -q)
 FUNC_SIG_LINE_TO="$(echo $FUNC_SIG_LINE_FROM + $FUNC_SIG_LINE_COUNT - 1 | bc -q)"
