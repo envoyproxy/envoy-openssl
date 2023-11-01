@@ -646,6 +646,7 @@ set(utests-bssl-source-list
   source/crypto/test/file_test_gtest.cc
   source/crypto/test/file_test.cc
   source/crypto/test/file_test.h
+  source/crypto/internal.h
   source/crypto/test/test_util.cc
   source/crypto/test/test_util.h
   source/crypto/x509/x509_test.cc
@@ -691,7 +692,8 @@ gtest_discover_tests(utests-bssl-compat)
 ################################################################################
 # Unit Tests built on BoringSSL
 ################################################################################
-add_executable(utests-boring ${utests-source-list} ${utests-bssl-source-list})
+add_executable(utests-boring ${utests-source-list})
+target_add_bssl_source(utests-boring ${utests-bssl-source-list})
 target_include_directories(utests-boring PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/source)
 # Add env variable SANITIZE_OPTIONS for optional sanitizers
 target_link_options(utests-boring PRIVATE "$ENV{SANITIZE_OPTIONS}" )
