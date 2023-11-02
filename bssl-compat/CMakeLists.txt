@@ -43,8 +43,8 @@ add_custom_command(DEPENDS prefixer OpenSSL::Crypto OpenSSL::SSL
                                     --src-skip "openssl/opensslconf-*.h"
                                     --output "${CMAKE_CURRENT_BINARY_DIR}"
                                     --prefix ossl)
-
-add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h)
+add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h)
+add_dependencies(bssl-gen ossl-gen) # generate ossl headers before bssl headers
 
 # custom mappings
 add_library(bssl-compat STATIC

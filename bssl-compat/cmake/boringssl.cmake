@@ -22,6 +22,7 @@ set_property(TARGET BoringSSL::Crypto PROPERTY IMPORTED_LOCATION ${INSTALL_DIR}/
 set_property(TARGET BoringSSL::Crypto PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${INSTALL_DIR}/include)
 add_dependencies(BoringSSL::Crypto BoringSSL)
 
+add_custom_target(bssl-gen)
 
 function(_target_add_bssl_file target src-file dst-file)
   target_sources(${target} PRIVATE ${dst-file})
@@ -34,6 +35,11 @@ function(_target_add_bssl_file target src-file dst-file)
   set(dependencies ${dependencies} "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate.h.sh")
   set(dependencies ${dependencies} "${CMAKE_CURRENT_SOURCE_DIR}/tools/uncomment.sh")
   add_custom_command(COMMAND ${generate-cmd} DEPENDS ${dependencies} OUTPUT "${dst-file}")
+  string(MAKE_C_IDENTIFIER "${dst-file}" dst-file-target)
+  if(NOT TARGET ${dst-file-target})
+    add_custom_target(${dst-file-target} DEPENDS "${dst-file}")
+    add_dependencies(bssl-gen ${dst-file-target})
+  endif()
 endfunction()
 
 function(target_add_bssl_include target)
@@ -60,7 +66,7 @@ function(target_add_bssl_function target)
 endfunction()
 
 add_custom_command(OUTPUT source/crypto/test/crypto_test_data.cc
-                   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/external/boringssl/src/BoringSSL-build/crypto_test_data.cc
+                   DEPENDS BoringSSL ${CMAKE_CURRENT_BINARY_DIR}/external/boringssl/src/BoringSSL-build/crypto_test_data.cc
                    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_BINARY_DIR}/external/boringssl/src/BoringSSL-build/crypto_test_data.cc
                                                     source/crypto/test/crypto_test_data.cc
 )
