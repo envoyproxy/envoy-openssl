@@ -618,7 +618,7 @@ target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 # Intallation
 ################################################################################
 
-install(TARGETS bssl-compat LIBRARY DESTINATION lib)
+install(TARGETS bssl-compat ARCHIVE DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ext DESTINATION include)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ossl DESTINATION include)
