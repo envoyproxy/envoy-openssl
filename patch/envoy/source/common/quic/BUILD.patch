@@ -1,5 +1,5 @@
---- a/source/common/quic/BUILD	2023-10-17 19:15:11.000000000 +1000
-+++ b/source/common/quic/BUILD	2023-11-17 21:29:32.332465002 +1000
+--- envoy-1.26.6/source/common/quic/BUILD	2023-10-17 19:15:11.000000000 +1000
++++ envoy-1.26.6-p/source/common/quic/BUILD	2023-11-17 22:05:31.620408141 +1000
 @@ -7,6 +7,7 @@
      "envoy_cc_library",
      "envoy_package",
@@ -8,20 +8,18 @@
  )
  
  licenses(["notice"])  # Apache 2
-@@ -73,10 +74,12 @@
+@@ -73,11 +74,12 @@
      hdrs = ["quic_stat_names.h"],
      tags = ["nofips"],
      deps = [
 -        "//envoy/stats:stats_interface",
--        "//source/common/stats:symbol_table_lib",
--        "@com_github_google_quiche//:quic_core_error_codes_lib",
--        "@com_github_google_quiche//:quic_core_types_lib",
-+            "//source/common/stats:symbol_table_lib",
-+           ] + envoy_select_enable_http3([
-+            "//envoy/stats:stats_interface",
-+            "@com_github_google_quiche//:quic_core_error_codes_lib",
-+            "@com_github_google_quiche//:quic_core_types_lib",
-+           ]),
-     ],
+         "//source/common/stats:symbol_table_lib",
++    ] + envoy_select_enable_http3([
++        "//envoy/stats:stats_interface",
+         "@com_github_google_quiche//:quic_core_error_codes_lib",
+         "@com_github_google_quiche//:quic_core_types_lib",
+-    ],
++    ]),
  )
  
+ envoy_cc_library(

@@ -29,7 +29,7 @@ http_archive_with_overwrites(
     patches = [
         "//patch/envoy:bazel/repositories_extra.bzl.patch",
         "//patch/envoy:bazel/repositories.bzl.patch",
-    #    "//patch/envoy:source/common/quic/BUILD.patch",
+        "//patch/envoy:source/common/quic/BUILD.patch",
         "//patch/envoy:source/extensions/extensions_build_config.bzl.patch",
         "//patch/envoy:source/extensions/transport_sockets/tls/io_handle_bio.cc.patch",
         "//patch/envoy:source/extensions/transport_sockets/tls/ocsp/asn1_utility.cc.patch",
