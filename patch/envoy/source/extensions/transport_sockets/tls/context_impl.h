@@ -19,7 +19,6 @@
 #include "source/extensions/transport_sockets/tls/cert_validator/cert_validator.h"
 #include "source/extensions/transport_sockets/tls/context_manager_impl.h"
 #include "source/extensions/transport_sockets/tls/ocsp/ocsp.h"
-#include "source/extensions/transport_sockets/tls/openssl_impl.h"
 #include "source/extensions/transport_sockets/tls/stats.h"
 
 #include "absl/container/flat_hash_map.h"
