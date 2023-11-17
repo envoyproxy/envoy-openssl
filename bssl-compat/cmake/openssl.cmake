@@ -1,7 +1,7 @@
 include(CheckIncludeFile)
 include(ExternalProject)
 
-check_include_file ("openssl/ssl.h" OS_OPENSSL_HEADERS)
+check_include_file ("openssl/types.h" OS_OPENSSL_HEADERS)
 find_library (OS_SSL_LIBRARY ssl)
 find_library (OS_CRYPTO_LIBRARY crypto)
 

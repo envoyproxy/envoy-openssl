@@ -22,14 +22,14 @@ local_repository(
 load("//:bazel/http_archive_with_overwrites.bzl", "http_archive_with_overwrites")
 http_archive_with_overwrites(
     name = "envoy",
-    url = "https://github.com/envoyproxy/envoy/archive/refs/tags/v1.26.3.zip",
-    sha256 = "8d4c99886ae0698c52fdf64b30603354010d2ca991e85fbef5082010ef6110ad",
-    strip_prefix = "envoy-1.26.3",
+    url = "https://github.com/envoyproxy/envoy/archive/refs/tags/v1.26.6.zip",
+    sha256 = "031f7ba8a99b4b6d1a7098698c749015dca48308281bca0e0683271934e95c20",
+    strip_prefix = "envoy-1.26.6",
     patch_args = [ "-p1" ],
     patches = [
         "//patch/envoy:bazel/repositories_extra.bzl.patch",
         "//patch/envoy:bazel/repositories.bzl.patch",
-        "//patch/envoy:source/common/quic/BUILD.patch",
+    #    "//patch/envoy:source/common/quic/BUILD.patch",
         "//patch/envoy:source/extensions/extensions_build_config.bzl.patch",
         "//patch/envoy:source/extensions/transport_sockets/tls/io_handle_bio.cc.patch",
         "//patch/envoy:source/extensions/transport_sockets/tls/ocsp/asn1_utility.cc.patch",
