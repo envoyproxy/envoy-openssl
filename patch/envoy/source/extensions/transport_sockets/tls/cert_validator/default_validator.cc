@@ -448,7 +448,7 @@ void DefaultCertValidator::addClientValidationContext(SSL_CTX* ctx, bool require
   RELEASE_ASSERT(bio != nullptr, "");
   // Based on BoringSSL's SSL_add_file_cert_subjects_to_stack().
   bssl::UniquePtr<STACK_OF(X509_NAME)> list(
-      sk_X509_NAME_new([](const X509_NAME* const* a, const X509_NAME* const* b) -> int {
+      sk_X509_NAME_new([](const X509_NAME** a, const X509_NAME** b) -> int {
         return X509_NAME_cmp(*a, *b);
       }));
   RELEASE_ASSERT(list != nullptr, "");

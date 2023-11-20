@@ -51,6 +51,8 @@ http_archive_with_overwrites(
         "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/san_matcher.cc",
         "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/spiffe/spiffe_validator.cc",
         "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/spiffe/spiffe_validator.h",
+        "//patch/envoy:source/extensions/filters/listener/tls_inspector/tls_inspector.h",
+        "//patch/envoy:source/extensions/filters/listener/tls_inspector/tls_inspector.cc",
     ],
     repo_mapping = {
         "@boringssl": "@bssl-compat",

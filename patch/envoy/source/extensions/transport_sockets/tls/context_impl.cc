@@ -23,7 +23,6 @@
 #include "source/common/runtime/runtime_features.h"
 #include "source/common/stats/utility.h"
 #include "source/extensions/transport_sockets/tls/cert_validator/factory.h"
-#include "source/extensions/transport_sockets/tls/openssl_impl.h"
 #include "source/extensions/transport_sockets/tls/stats.h"
 #include "source/extensions/transport_sockets/tls/utility.h"
 
@@ -111,7 +110,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
   RELEASE_ASSERT(rc == 1, Utility::getLastCryptoError().value_or(""));
 
   if (!capabilities_.provides_ciphers_and_curves &&
-      !Envoy::Extensions::TransportSockets::Tls::set_strict_cipher_list(
+      !Envoy::Extensions::TransportSockets::Tls::SSL_CTX_set_strict_cipher_list(
           tls_context_.ssl_ctx_.get(), config.cipherSuites().c_str())) {
     // Break up a set of ciphers into each individual cipher and try them each individually in
     // order to attempt to log which specific one failed. Example of config.cipherSuites():
@@ -131,7 +130,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
         cipher_str.erase(cipher_str.begin());
       }
 
-      if (!Envoy::Extensions::TransportSockets::Tls::set_strict_cipher_list(
+      if (!Envoy::Extensions::TransportSockets::Tls::SSL_CTX_set_strict_cipher_list(
               tls_context_.ssl_ctx_.get(), cipher_str.c_str())) {
         bad_ciphers.push_back(cipher_str);
       }

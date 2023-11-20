@@ -10,9 +10,9 @@
 #include "source/common/common/logger.h"
 
 #include "openssl/ssl.h"
-#include "ssl/ssl_locl.h"
+#include "openssl/base.h"
 
-#define SSL_CLIENT_HELLO  CLIENTHELLO_MSG
+//#define SSL_CLIENT_HELLO  CLIENTHELLO_MSG
 
 namespace Envoy {
 namespace Extensions {
