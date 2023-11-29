@@ -19,7 +19,7 @@ jobs:
         submodules: 'true'
 
     - name: Prerequisites
-      run: sudo apt install -y libclang-13-dev kcov
+      run: sudo apt install -y libclang-14-dev kcov
 
     - name: Configure
       run: cmake -B ${{github.workspace}}/build -S ${{github.workspace}}/bssl-compat -DCMAKE_BUILD_TYPE=RelWithDebInfo

@@ -1,1 +1,1 @@
-../envoy/bazel/get_workspace_status
+../vendor/envoy/bazel/get_workspace_status

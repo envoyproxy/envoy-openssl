@@ -2,7 +2,6 @@
 BROWSE
 /build*
 /build_*
-build
 *.bzlc
 .cache
 .classpath
@@ -35,4 +34,5 @@ cscope.*
 *~
 .cproject
 user.bazelrc
-log*
+log
+log.*

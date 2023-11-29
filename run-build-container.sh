@@ -7,7 +7,7 @@ ENVOY_OPENSSL_DIR="$(cd "$(dirname "$0")" && pwd)"
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf -- "$TMP_DIR"' EXIT
 
-DOCKER_IMAGE=$(sed -n 's/^build:docker-sandbox --experimental_docker_image=//p' "${ENVOY_OPENSSL_DIR}/envoy/.bazelrc")
+DOCKER_IMAGE=$(sed -n 's/^build:docker-sandbox --experimental_docker_image=//p' "${ENVOY_OPENSSL_DIR}/vendor/envoy/.bazelrc")
 if [[ -z "${DOCKER_IMAGE}" ]]; then
 	echo "Failed to determine builder docker image"
 	exit 1
@@ -20,7 +20,7 @@ cat << 'EOF' > "${TMP_DIR}/entrypoint.sh"
     sudo chown -R "$(id -u):$(id -g)" $HOME
     export BAZELRC_FILE=$HOME/.bazelrc
 
-    /source/envoy/bazel/setup_clang.sh /opt/llvm # Writes to $BAZELRC_FILE
+    /source/vendor/envoy/bazel/setup_clang.sh /opt/llvm # Writes to $BAZELRC_FILE
 
     # See https://github.com/envoyproxy/envoy/blob/main/bazel/README.md#config-flag-choices
     echo "build --config=clang" >> $BAZELRC_FILE
@@ -55,6 +55,9 @@ cat << EOF > "${TMP_DIR}/Dockerfile"
     RUN tar -C /usr/local -xzf /tmp/go1.19.11.linux-amd64.tar.gz && rm /tmp/go1.19.11.linux-amd64.tar.gz
     ENV PATH=/usr/local/go/bin:\$PATH
 
+    ADD entrypoint.sh /entrypoint.sh
+    RUN chmod 755 /entrypoint.sh
+
     ENV HOME=/build
     RUN groupadd --gid $(id -g) $(id -u -n)
     RUN useradd -s /bin/bash --uid $(id -u) --gid $(id -g) -m $(id -u -n) -G pcap -d ${HOME}
@@ -67,11 +70,10 @@ cat << EOF > "${TMP_DIR}/Dockerfile"
     VOLUME /build
     VOLUME /source
 
-    ADD --chmod=755 entrypoint.sh /entrypoint.sh
     ENTRYPOINT /entrypoint.sh
 EOF
 
-DOCKER_BUILDKIT=1 docker build --pull --iidfile "${TMP_DIR}/iid" "${TMP_DIR}"
+docker build --pull --iidfile "${TMP_DIR}/iid" "${TMP_DIR}"
 
 mkdir -p "${ENVOY_OPENSSL_DIR}/build-volume"
 

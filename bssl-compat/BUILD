@@ -15,7 +15,8 @@ cmake(
     visibility = ["//visibility:public"],
     generate_crosstool_file = False,
     tags = ["requires-network"],
-    env = { "GOCACHE" : "/tmp" }
+    env = { "GOCACHE" : "/tmp" },
+    build_args = [ "-j" ]
 )
 
 alias(
