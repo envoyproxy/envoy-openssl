@@ -11,11 +11,11 @@ set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openss
 set(OPENSSL_URL_HASH 6933e2f1da6f23a50ea226eec6e91b543d277d2098025763b5931cf6a7e099c7)
 
 SET (CMAKE_C_COMPILER             "clang")
-SET (CMAKE_C_FLAGS                "-Wall -Werror")
+SET (CMAKE_C_FLAGS                "-fPIC -Wall -Werror")
 SET (CMAKE_C_FLAGS_DEBUG          "-g")
 
 SET (CMAKE_CXX_COMPILER           "clang++")
-SET (CMAKE_CXX_FLAGS              "-Wall -Werror")
+SET (CMAKE_CXX_FLAGS              "-fPIC -Wall -Werror")
 SET (CMAKE_CXX_FLAGS_DEBUG        "-g")
 
 set(CMAKE_C_STANDARD 11)
@@ -113,6 +113,7 @@ add_library(bssl-compat STATIC
   source/PEM_read_bio_X509.cc
   source/PEM_read_bio_X509_CRL.cc
   source/PEM_read_bio_PUBKEY.cc
+  source/PEM_write_bio_X509.cc
   source/PEM_X509_INFO_read_bio.cc
   source/PKCS12_get_key_and_certs.cc
   source/PKCS12_parse.cc
