@@ -111,6 +111,7 @@ add_library(bssl-compat STATIC
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
   source/PEM_read_bio_X509.cc
+  source/PEM_read_bio_X509_AUX.cc
   source/PEM_read_bio_X509_CRL.cc
   source/PEM_read_bio_PUBKEY.cc
   source/PEM_write_bio_X509.cc
