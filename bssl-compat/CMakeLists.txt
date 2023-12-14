@@ -101,6 +101,7 @@ add_library(bssl-compat STATIC
   source/GENERAL_SUBTREE_new.cc
   source/HMAC_Init_ex.cc
   source/i2d_X509.c
+  source/i2d_X509_PUBKEY.cc
   source/internal.h
   source/log.c
   source/log.h

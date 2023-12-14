@@ -54,3 +54,21 @@ TEST(X509Test, test_X509_digest) {
 
   ASSERT_EQ(Bytes(expected), Bytes(buf, len));
 }
+
+TEST(X509Test, test_i2d_X509_PUBKEY) {
+  bssl::UniquePtr<BIO> bio {BIO_new_mem_buf(server_1_cert_pem_str, strlen(server_1_cert_pem_str))};
+  ASSERT_TRUE(bio);
+
+  bssl::UniquePtr<X509> cert {PEM_read_bio_X509(bio.get(), nullptr, nullptr, nullptr)};
+  ASSERT_TRUE(cert);
+
+  X509_PUBKEY *pubkey {X509_get_X509_PUBKEY(cert.get())};
+  ASSERT_TRUE(pubkey);
+
+  uint8_t* bytes {nullptr};
+  const int len = i2d_X509_PUBKEY(pubkey, &bytes);
+  ASSERT_TRUE(bytes);
+  ASSERT_EQ(len, 294);
+
+  OPENSSL_free(bytes);
+}
