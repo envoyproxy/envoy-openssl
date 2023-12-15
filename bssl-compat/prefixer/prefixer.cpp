@@ -507,18 +507,22 @@ void MyFrontendAction::EndSourceFileAction() {
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
          << std::endl
-         << "  ossl.ossl_OPENSSL_version_major = (ossl_OPENSSL_version_major_t)lookup(\"ossl_OPENSSL_version_major\");" << std::endl
-         << "  ossl.ossl_OPENSSL_version_minor = (ossl_OPENSSL_version_minor_t)lookup(\"ossl_OPENSSL_version_minor\");" << std::endl
-         << "  ossl.ossl_OPENSSL_version_patch = (ossl_OPENSSL_version_patch_t)lookup(\"ossl_OPENSSL_version_patch\");" << std::endl
+         << "  ossl.ossl_OpenSSL_version_num = (ossl_OpenSSL_version_num_t)lookup(\"ossl_OpenSSL_version_num\");" << std::endl
+         << "  if (ossl.ossl_OpenSSL_version_num == NULL) {" << std::endl
+         << "    fprintf(stderr, \"Failed to load OpenSSL_version_num()\\n\");" << std::endl
+         << "    exit(ELIBACC);" << std::endl
+         << "  }" << std::endl
          << std::endl
-         << "  if ((ossl.ossl_OPENSSL_version_major() != ossl_OPENSSL_VERSION_MAJOR) ||" << std::endl
-         << "      (ossl.ossl_OPENSSL_version_minor() != ossl_OPENSSL_VERSION_MINOR)) {" << std::endl
+         << "  int version = ossl.ossl_OpenSSL_version_num(); // 0xMNN00PP0L" << std::endl
+         << "  int major = (version & 0xF0000000) >> 28;" << std::endl
+         << "  int minor = (version & 0x0FF00000) >> 20;" << std::endl
+         << "  int patch = (version & 0x00000FF0) >> 4;" << std::endl
+         << std::endl
+         << "  if ((major != ossl_OPENSSL_VERSION_MAJOR) || (minor != ossl_OPENSSL_VERSION_MINOR)) {" << std::endl
          << "    fprintf(stderr, \"Expecting to load OpenSSL version %d.%d.x but got %d.%d.%d\\n\"," << std::endl
          << "                      ossl_OPENSSL_VERSION_MAJOR," << std::endl
          << "                      ossl_OPENSSL_VERSION_MINOR," << std::endl
-         << "                      ossl.ossl_OPENSSL_version_major()," << std::endl
-         << "                      ossl.ossl_OPENSSL_version_minor()," << std::endl
-         << "                      ossl.ossl_OPENSSL_version_patch());" << std::endl
+         << "                      major, minor, patch);" << std::endl
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
          << std::endl;
