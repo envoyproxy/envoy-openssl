@@ -66,6 +66,11 @@ def envoy_openssl_repositories(download = False):
                 "//patch/envoy:source/extensions/transport_sockets/tls/io_handle_bio.cc.patch",
                 "//patch/envoy:source/extensions/transport_sockets/tls/ocsp/asn1_utility.cc.patch",
                 "//patch/envoy:source/extensions/transport_sockets/tls/utility.cc.patch",
+                # These next 3 patches are temporary, just to get the envoy exe
+                # to link while the full set of correct patches are being developed.
+                "//patch/envoy:source/extensions/transport_sockets/tls/context_impl.cc.patch",
+                "//patch/envoy:source/extensions/transport_sockets/tls/context_impl.h.patch",
+                "//patch/envoy:source/extensions/transport_sockets/tls/ssl_handshaker.cc.patch",
             ],
             overwrites = [
                 # "//patch/envoy:source/extensions/transport_sockets/tls/context_impl.cc",
