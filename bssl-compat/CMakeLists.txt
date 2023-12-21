@@ -31,13 +31,12 @@ include(cmake/boringssl.cmake)
 include(cmake/openssl.cmake)
 
 add_subdirectory(prefixer)
-add_custom_command(DEPENDS prefixer OpenSSL::Crypto OpenSSL::SSL
+add_custom_command(DEPENDS prefixer OpenSSL
                    COMMENT "Prefixing OpenSSL files"
                    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl/openssl/err.h
-                   COMMAND prefixer --src-path "${SRC_OPENSSL_HEADERS1}"
-                                    --src-path "${SRC_OPENSSL_HEADERS2}"
+                   COMMAND prefixer --src-path "${OPENSSL_INCLUDE_DIR}"
                                     --src-incl "openssl/*.h"
                                     --src-skip "openssl/asn1_mac.h"
                                     --src-skip "openssl/opensslconf-*.h"
@@ -621,11 +620,11 @@ target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 # Intallation
 ################################################################################
 
+set(INSTALL_GTEST OFF)
 install(TARGETS bssl-compat ARCHIVE DESTINATION lib)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION include)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ext DESTINATION include)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ossl DESTINATION include)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/openssl DESTINATION include)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION . FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ossl DESTINATION include FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/openssl DESTINATION include FILES_MATCHING PATTERN "*.h")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h DESTINATION include)
 
 ################################################################################
@@ -689,7 +688,7 @@ set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -W
 # Add env variable SANITIZE_OPTIONS for optional sanitizers
 target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
-set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_INSTALL_DIR}/lib")
+set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_LIBRARY_DIR}")
 gtest_discover_tests(utests-bssl-compat)
 
 ################################################################################
