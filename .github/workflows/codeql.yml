@@ -1,0 +1,51 @@
+name: "CodeQL"
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '41 21 * * 0'
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'c-cpp' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      with:
+        submodules: 'true'
+
+    - name: Prerequisites
+      run: sudo apt install -y libclang-13-dev kcov
+
+    - name: Configure
+      run: cmake -B ${{github.workspace}}/build -S ${{github.workspace}}/bssl-compat -DCMAKE_BUILD_TYPE=RelWithDebInfo
+
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@012739e5082ff0c22ca6d6ab32e07c36df03c4a4 # v3.22.12
+      with:
+        languages: ${{ matrix.language }}
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config RelWithDebInfo
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@012739e5082ff0c22ca6d6ab32e07c36df03c4a4 # v3.22.12
+      with:
+        category: "/language:${{matrix.language}}"
