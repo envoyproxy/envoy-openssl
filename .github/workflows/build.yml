@@ -9,7 +9,7 @@ on:
 jobs:
 
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
 
     steps:
 
@@ -18,8 +18,11 @@ jobs:
       with:
         submodules: 'true'
 
+    - name: SSH
+      uses: lhotari/action-upterm@v1
+
     - name: Prerequisites
-      run: sudo apt install -y libclang-14-dev kcov
+      run: sudo apt update -y && sudo apt install -y libclang-11-dev kcov
 
     - name: Configure
       run: cmake -B ${{github.workspace}}/build -S ${{github.workspace}}/bssl-compat -DCMAKE_BUILD_TYPE=RelWithDebInfo
@@ -41,6 +44,7 @@ jobs:
     - name: Test Coverage
       env:
         OPENSSL_CONF: ${{github.workspace}}/bssl-compat/source/test/openssl.cnf
+        LD_LIBRARY_PATH: ${{github.workspace}}/build/openssl/install/lib/:${{env.LD_LIBRARY_PATH}}
       run: kcov --exclude-pattern=/usr/include/,/_deps/,_test.,/test_,_test_ ${{github.workspace}}/build/kcov ${{github.workspace}}/build/utests-bssl-compat --gtest_output=xml:${{github.workspace}}/build/results.xml
 
     - name: Coverage Results

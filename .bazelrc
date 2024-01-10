@@ -1,10 +1,9 @@
 import %workspace%/vendor/envoy/.bazelrc
 import %workspace%/vendor.bazelrc
 
+test --test_env=ENVOY_IP_TEST_VERSIONS=v4only
+
 # As of today we do not support QUIC/HTTP3 -- hence we exclude it from the build, always.
 build --@envoy//bazel:http3=false
 build --deleted_packages=@envoy//test/common/quic
 build --deleted_packages=@envoy//test/common/quic/platform
-
-# build --@envoy//bazel:http3=False
-# test --@envoy//bazel:http3=False

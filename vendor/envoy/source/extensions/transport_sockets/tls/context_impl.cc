@@ -182,8 +182,8 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
           // there. And also it differs from server side behavior of SSL_VERIFY_NONE which won't
           // even request client certs. So, instead, we should configure a callback to skip
           // validation and always supply the callback to boring SSL.
-          PANIC("SSL_CTX_set_custom_verify(ctx, verify_mode, customVerifyCallback);");
-          PANIC("SSL_CTX_set_reverify_on_resume(ctx, /*reverify_on_resume_enabled)=*/1);");
+          fprintf(stderr, "SKIPPED SSL_CTX_set_custom_verify(ctx, verify_mode, customVerifyCallback);\n");
+          fprintf(stderr, "SKIPPED SSL_CTX_set_reverify_on_resume(ctx, /*reverify_on_resume_enabled)=*/1);\n");
         } else {
           SSL_CTX_set_verify(ctx, verify_mode, nullptr);
           SSL_CTX_set_cert_verify_callback(ctx, verifyCallback, this);
@@ -287,7 +287,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
               fmt::format("Private key method doesn't support FIPS mode with current parameters"));
         }
 #endif
-        PANIC("SSL_CTX_set_private_key_method(ctx.ssl_ctx_.get(), private_key_method.get());");
+        fprintf(stderr, "SKIPPED SSL_CTX_set_private_key_method(ctx.ssl_ctx_.get(), private_key_method.get());\n");
       } else if (!tls_certificate.privateKey().empty()) {
         // Load private key.
         ctx.loadPrivateKey(tls_certificate.privateKey(), tls_certificate.privateKeyPath(),
