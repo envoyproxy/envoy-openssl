@@ -6,6 +6,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex 'DEFINE_STACK_OF(X509)' \
   --uncomment-func-decl X509_up_ref \
   --uncomment-func-decl X509_free \
+  --uncomment-func-decl d2i_X509 \
   --uncomment-func-decl i2d_X509 \
   --uncomment-macro-redef 'X509_VERSION_[123]' \
   --uncomment-func-decl X509_get0_notBefore \

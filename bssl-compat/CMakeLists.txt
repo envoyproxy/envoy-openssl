@@ -157,6 +157,7 @@ add_library(bssl-compat STATIC
   source/SSL_enable_ocsp_stapling.cc
   source/SSL_error_description.cc
   source/SSL_get0_ocsp_response.c
+  source/SSL_get0_peer_verify_algorithms.cc
   source/SSL_get_cipher_by_value.c
   source/SSL_get_client_CA_list.cc
   source/SSL_get_ciphers.cc
@@ -342,6 +343,7 @@ target_add_bssl_function(bssl-compat
   CRYPTO_memcmp
   d2i_PKCS12_bio
   d2i_SSL_SESSION
+  d2i_X509
   DTLS_method
   EC_GROUP_get_curve_name
   EC_GROUP_get_degree

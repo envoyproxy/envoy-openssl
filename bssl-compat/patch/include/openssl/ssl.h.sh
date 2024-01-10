@@ -21,6 +21,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_set_connect_state \
   --uncomment-func-decl SSL_set_cipher_list \
   --uncomment-func-decl SSL_set_cert_cb \
+  --uncomment-func-decl SSL_get0_peer_verify_algorithms \
   --uncomment-func-decl SSL_set_bio \
   --uncomment-macro SSL_set_app_data \
   --uncomment-func-decl SSL_set_alpn_protos \

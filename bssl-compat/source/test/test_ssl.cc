@@ -1375,3 +1375,56 @@ TEST(SSLTest, test_SSL_alert_from_verify_result) {
   ASSERT_EQ(SSL_AD_CERTIFICATE_EXPIRED, SSL_alert_from_verify_result(X509_V_ERR_CERT_HAS_EXPIRED));
   ASSERT_EQ(SSL_AD_CERTIFICATE_EXPIRED, SSL_alert_from_verify_result(X509_V_ERR_CRL_HAS_EXPIRED));
 }
+
+TEST(SSLTest, test_SSL_get0_peer_verify_algorithms) {
+  TempFile root_ca_cert_pem        { root_ca_cert_pem_str };
+  TempFile client_2_key_pem        { client_2_key_pem_str };
+  TempFile client_2_cert_chain_pem { client_2_cert_chain_pem_str };
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_method()));
+
+  ASSERT_EQ(1, SSL_CTX_set1_sigalgs_list(client_ctx.get(), "rsa_pkcs1_sha256:rsa_pss_rsae_sha256:ecdsa_secp256r1_sha256"));
+
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  ASSERT_TRUE(SSL_CTX_load_verify_locations(client_ctx.get(), root_ca_cert_pem.path(), nullptr));
+
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+  SSL_set_connect_state(client_ssl.get());
+
+  auto cert_cb = [](SSL *ssl, void *arg) -> int {
+    const uint16_t *sigalgs {nullptr};
+    size_t nsigalgs {SSL_get0_peer_verify_algorithms(ssl, &sigalgs)};
+
+    EXPECT_EQ(3, nsigalgs);
+    EXPECT_EQ(SSL_SIGN_RSA_PKCS1_SHA256, sigalgs[0]);
+    EXPECT_EQ(SSL_SIGN_RSA_PSS_RSAE_SHA256, sigalgs[1]);
+    EXPECT_EQ(SSL_SIGN_ECDSA_SECP256R1_SHA256, sigalgs[2]);
+
+    nsigalgs = SSL_get0_peer_verify_algorithms(ssl, &sigalgs);
+
+    EXPECT_EQ(3, nsigalgs);
+    EXPECT_EQ(SSL_SIGN_RSA_PKCS1_SHA256, sigalgs[0]);
+    EXPECT_EQ(SSL_SIGN_RSA_PSS_RSAE_SHA256, sigalgs[1]);
+    EXPECT_EQ(SSL_SIGN_ECDSA_SECP256R1_SHA256, sigalgs[2]);
+
+    return 1;
+  };
+
+  SSL_set_cert_cb(server_ssl.get(), cert_cb, reinterpret_cast<void*>(__LINE__));
+
+  ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+}
