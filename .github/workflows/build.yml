@@ -18,9 +18,6 @@ jobs:
       with:
         submodules: 'true'
 
-    - name: SSH
-      uses: lhotari/action-upterm@v1
-
     - name: Prerequisites
       run: sudo apt update -y && sudo apt install -y libclang-11-dev kcov
 
