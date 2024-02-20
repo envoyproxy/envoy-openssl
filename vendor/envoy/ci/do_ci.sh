@@ -9,15 +9,11 @@ export SRCDIR="${SRCDIR:-$PWD}"
 export ENVOY_SRCDIR="${ENVOY_SRCDIR:-$PWD}"
 NO_BUILD_SETUP="${NO_BUILD_SETUP:-}"
 
-if [[ -z "$NO_BUILD_SETUP" ]]; then
-    # shellcheck source=ci/setup_cache.sh
-    . "$(dirname "$0")"/setup_cache.sh
-    # shellcheck source=ci/build_setup.sh
-    . "$(dirname "$0")"/build_setup.sh
+# shellcheck source=ci/build_setup.sh
+. "$(dirname "$0")"/build_setup.sh
 
-    echo "building using ${NUM_CPUS} CPUs"
-    echo "building for ${ENVOY_BUILD_ARCH}"
-fi
+echo "building using ${NUM_CPUS} CPUs"
+echo "building for ${ENVOY_BUILD_ARCH}"
 cd "${SRCDIR}"
 
 # Its better to fetch too little rather than too much, as whatever is
@@ -167,7 +163,7 @@ function bazel_binary_build() {
     # The COMPILE_TYPE variable is redundant in this case and is only here for
     # readability. It is already set in the .bazelrc config for sizeopt.
     COMPILE_TYPE="opt"
-    CONFIG_ARGS="--config=sizeopt"
+    CONFIG_ARGS=("--config=sizeopt")
   elif [[ "${BINARY_TYPE}" == "fastbuild" ]]; then
     COMPILE_TYPE="fastbuild"
   fi
@@ -185,7 +181,7 @@ function bazel_binary_build() {
   # This is a workaround for https://github.com/bazelbuild/bazel/issues/11834
   [[ -n "${ENVOY_RBE}" ]] && rm -rf bazel-bin/"${ENVOY_BIN}"*
 
-  bazel build "${BAZEL_BUILD_OPTIONS[@]}" --remote_download_toplevel -c "${COMPILE_TYPE}" "${BUILD_TARGET}" ${CONFIG_ARGS}
+  bazel build "${BAZEL_BUILD_OPTIONS[@]}" --remote_download_toplevel -c "${COMPILE_TYPE}" "${BUILD_TARGET}" "${CONFIG_ARGS[@]}"
   collect_build_profile "${BINARY_TYPE}"_build
 
   # Copy the built envoy binary somewhere that we can access outside of the
@@ -195,14 +191,14 @@ function bazel_binary_build() {
   if [[ "${COMPILE_TYPE}" == "dbg" || "${COMPILE_TYPE}" == "opt" ]]; then
     # Generate dwp file for debugging since we used split DWARF to reduce binary
     # size
-    bazel build "${BAZEL_BUILD_OPTIONS[@]}" --remote_download_toplevel -c "${COMPILE_TYPE}" "${BUILD_DEBUG_INFORMATION}" ${CONFIG_ARGS}
+    bazel build "${BAZEL_BUILD_OPTIONS[@]}" --remote_download_toplevel -c "${COMPILE_TYPE}" "${BUILD_DEBUG_INFORMATION}" "${CONFIG_ARGS[@]}"
     # Copy the debug information
     cp -f bazel-bin/"${ENVOY_BIN}".dwp "${FINAL_DELIVERY_DIR}"/envoy.dwp
   fi
 
   # Validation tools for the tools image.
   bazel build "${BAZEL_BUILD_OPTIONS[@]}" --remote_download_toplevel -c "${COMPILE_TYPE}" \
-    //test/tools/schema_validator:schema_validator_tool ${CONFIG_ARGS}
+    //test/tools/schema_validator:schema_validator_tool "${CONFIG_ARGS[@]}"
 
   # Build su-exec utility
   bazel build "${BAZEL_BUILD_OPTIONS[@]}" --remote_download_toplevel -c "${COMPILE_TYPE}" external:su-exec
@@ -487,6 +483,7 @@ case $CI_TARGET in
         TODAY_DATE=$(date -u -I"date")
         export TODAY_DATE
         bazel run "${BAZEL_BUILD_OPTIONS[@]}" //tools/dependency:check \
+              --//tools/dependency:preload_cve_data \
               --action_env=TODAY_DATE \
               -- -v warn \
                  -c cves release_dates releases
@@ -592,7 +589,7 @@ case $CI_TARGET in
         fi
         PLATFORMS="$(IFS=, ; echo "${_PLATFORMS[*]}")"
         export DOCKER_PLATFORM="$PLATFORMS"
-        if [[ -z "${DOCKERHUB_PASSWORD}" && "${#_PLATFORMS[@]}" -eq 1 ]]; then
+        if [[ -z "${DOCKERHUB_PASSWORD}" && "${#_PLATFORMS[@]}" -eq 1 && -z $ENVOY_DOCKER_SAVE_IMAGE ]]; then
             # if you are not pushing the images and there is only one platform
             # then load to Docker (ie local build)
             export DOCKER_LOAD_IMAGES=1
@@ -755,6 +752,8 @@ case $CI_TARGET in
     publish)
         setup_clang_toolchain
         BUILD_SHA="$(git rev-parse HEAD)"
+        ENVOY_COMMIT="${ENVOY_COMMIT:-${BUILD_SHA}}"
+        ENVOY_REPO="${ENVOY_REPO:-envoyproxy/envoy}"
         VERSION_DEV="$(cut -d- -f2 < VERSION.txt)"
         PUBLISH_ARGS=(
             --publish-commitish="$BUILD_SHA"
@@ -764,7 +763,8 @@ case $CI_TARGET in
         fi
         bazel run "${BAZEL_BUILD_OPTIONS[@]}" \
               @envoy_repo//:publish \
-              -- "${PUBLISH_ARGS[@]}"
+              -- --repo="$ENVOY_REPO" \
+                 "${PUBLISH_ARGS[@]}"
         ;;
 
     release|release.server_only)
@@ -823,6 +823,12 @@ case $CI_TARGET in
            bazel-bin/test/tools/schema_validator/schema_validator_tool.stripped \
            "${ENVOY_BINARY_DIR}/schema_validator_tool"
         echo "Release files created in ${ENVOY_BINARY_DIR}"
+        ;;
+
+    release.server_only.binary)
+        setup_clang_toolchain
+        echo "bazel release build..."
+        bazel_envoy_binary_build release
         ;;
 
     release.signed)
@@ -895,7 +901,6 @@ case $CI_TARGET in
         WORKFLOW="envoy-publish.yml"
         # * Note on vars *
         # `ENVOY_REPO`: Should always be envoyproxy/envoy unless testing
-        # `ENVOY_BRANCH`: Target branch for PRs, source branch for others
         # `COMMIT`: This may be a merge commit in a PR
         # `ENVOY_COMMIT`: The actual last commit of branch/PR
         # `ENVOY_HEAD_REF`: must also be set in PRs to provide a unique key for job grouping,
@@ -903,9 +908,10 @@ case $CI_TARGET in
         COMMIT="$(git rev-parse HEAD)"
         ENVOY_COMMIT="${ENVOY_COMMIT:-${COMMIT}}"
         ENVOY_REPO="${ENVOY_REPO:-envoyproxy/envoy}"
+        # Note: CI is always called in main, the CI request is matched from there
         echo "Trigger workflow (${WORKFLOW})"
         echo "  Repo: ${ENVOY_REPO}"
-        echo "  Branch: ${ENVOY_BRANCH}"
+        echo "  Branch: main"
         echo "  Ref: ${COMMIT}"
         echo "  Inputs:"
         echo "    sha: ${ENVOY_COMMIT}"
@@ -918,7 +924,7 @@ case $CI_TARGET in
               -- --repo="$ENVOY_REPO" \
                  --trigger-app-id="$GITHUB_APP_ID" \
                  --trigger-installation-id="$GITHUB_INSTALL_ID" \
-                 --trigger-ref="$ENVOY_BRANCH" \
+                 --trigger-ref="main" \
                  --trigger-workflow="$WORKFLOW" \
                  --trigger-inputs="$INPUTS"
         ;;

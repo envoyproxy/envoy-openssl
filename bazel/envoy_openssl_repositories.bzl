@@ -5,9 +5,9 @@ load("@bazel_tools//tools/build_defs/repo:utils.bzl", "patch", "workspace_and_bu
 # of envoy to be used, please run the update-envoy.sh script.
 ENVOY_ORG = "envoyproxy"
 ENVOY_REPO = "envoy"
-ENVOY_BRANCH = "v1.26.6"
-ENVOY_COMMIT = "c2919e90b0e63ad78602122d6c2c3e2c0df1e0fc"
-ENVOY_SHA256 = "358df10deb5de6f6a02fae4994d9269672ae8eb6d9cd66bdba349bef7843d14a"
+ENVOY_BRANCH = "release/v1.26"
+ENVOY_COMMIT = "772b4189c363e8e9b621ad141e609ae42f35f9f3"
+ENVOY_SHA256 = "31071f1bde79d34d192f8b9cf9a9406856d7a60c557c4d64f6a79665313a446c"
 
 
 def _bssl_compat_repository_impl(ctx):

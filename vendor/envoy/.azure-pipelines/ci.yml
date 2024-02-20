@@ -3,6 +3,10 @@ parameters:
   displayName: "CI target"
   type: string
   default: release
+- name: artifactName
+  displayName: "Artifact name"
+  type: string
+  default: ""
 - name: artifactSuffix
   displayName: "Suffix of artifact"
   type: string
@@ -186,7 +190,7 @@ steps:
         bash -c 'echo "$(GcpServiceAccountKey)"' | base64 --decode > "${GCP_SERVICE_ACCOUNT_KEY_PATH}"
         BAZEL_BUILD_EXTRA_OPTIONS+=" ${{ parameters.bazelConfigRBE }} --google_credentials=${GCP_SERVICE_ACCOUNT_KEY_PATH}"
         ENVOY_RBE=1
-        if [[ "${{ parameters.bazelUseBES }}" == "True" ]]; then
+        if [[ "${{ parameters.bazelUseBES }}" == "True" && -n "${GOOGLE_BES_PROJECT_ID}" ]]; then
             BAZEL_BUILD_EXTRA_OPTIONS+=" --config=rbe-google-bes --bes_instance_name=${GOOGLE_BES_PROJECT_ID}"
         fi
     else
@@ -338,6 +342,9 @@ steps:
 - task: PublishBuildArtifacts@1
   inputs:
     pathtoPublish: "$(Build.StagingDirectory)/envoy"
-    artifactName: ${{ parameters.ciTarget }}
+    ${{ if eq(parameters.artifactName, '') }}:
+      artifactName: ${{ parameters.ciTarget }}
+    ${{ if ne(parameters.artifactName, '') }}:
+      artifactName: ${{ parameters.artifactName }}
   timeoutInMinutes: 10
   condition: eq(${{ parameters.publishEnvoy }}, 'true')
