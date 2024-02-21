@@ -1476,3 +1476,25 @@ GTEST_SKIP() << "TODO: Investigate failure on BSSL_COMPAT";
 
   ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
 }
+
+#ifdef BSSL_COMPAT
+// Tests for segv when calling SSL_CIPHER_get_min_version() on a cipher that is
+// known to OpenSSL, but whos implementation engine is not loaded.
+// The TLS_GOSTR341001_WITH_28147_CNT_IMIT cipher fits this bill because it is
+// known to OpenSSL but it's implementaion is only available when the cgost
+// engine is configured in.
+TEST(SSLTest,SSL_CIPHER_get_min_version_on_non_loaded_cipher) {
+  const SSL_CIPHER *cipher = SSL_get_cipher_by_value(0x0081);
+  ASSERT_TRUE(cipher);
+
+  const char *openssl_name {SSL_CIPHER_get_name(cipher)};
+  ASSERT_TRUE(openssl_name);
+  ASSERT_STREQ("GOST2001-GOST89-GOST89", openssl_name);
+
+  const char *standard_name = SSL_CIPHER_standard_name(cipher);
+  ASSERT_TRUE(standard_name);
+  ASSERT_STREQ("TLS_GOSTR341001_WITH_28147_CNT_IMIT", standard_name);
+
+  ASSERT_EQ(TLS1_2_VERSION, SSL_CIPHER_get_min_version(cipher));
+}
+#endif

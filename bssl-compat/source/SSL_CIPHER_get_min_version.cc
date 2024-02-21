@@ -32,7 +32,7 @@ extern "C" uint16_t SSL_CIPHER_get_min_version(const SSL_CIPHER *cipher) {
   }
 
   const EVP_MD *digest = ossl.ossl_SSL_CIPHER_get_handshake_digest(cipher);
-  if (ossl.ossl_EVP_MD_get_type(digest) != NID_md5_sha1) {
+  if ((digest == nullptr) || (ossl.ossl_EVP_MD_get_type(digest) != NID_md5_sha1)) {
     return TLS1_2_VERSION;
   }
 
