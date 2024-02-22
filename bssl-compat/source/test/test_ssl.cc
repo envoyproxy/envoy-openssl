@@ -1430,17 +1430,7 @@ TEST(SSLTest, test_SSL_get0_peer_verify_algorithms) {
 }
 
 
-// This is skipped on bssl-compat because SSL_get_servername() doesn't work in
-// the context of a callback installed with SSL_CTX_set_select_certificate_cb()
-//
-// TODO: Make SSL_get_servername() work in the context of a callback
-//       installed with SSL_CTX_set_select_certificate_cb()
 TEST(SSLTest, test_SSL_get_servername_inside_select_certificate_cb) {
-
-#ifdef BSSL_COMPAT
-GTEST_SKIP() << "TODO: Investigate failure on BSSL_COMPAT";
-#endif
-
   static const char SERVERNAME[] { "www.example.com" };
 
   TempFile server_2_key_pem        { server_2_key_pem_str };
@@ -1472,6 +1462,38 @@ GTEST_SKIP() << "TODO: Investigate failure on BSSL_COMPAT";
   bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
   ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
   ASSERT_TRUE(SSL_set_tlsext_host_name(client_ssl.get(), SERVERNAME));
+  SSL_set_connect_state(client_ssl.get());
+
+  ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+}
+
+
+TEST(SSLTest, test_SSL_get_servername_null_inside_select_certificate_cb) {
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_server_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_client_method()));
+
+  // Set up server with a callback to check if SSL_get_servername() returns
+  // a nullptr if the client didn't send an SNI host name extension
+  SSL_CTX_set_select_certificate_cb(server_ctx.get(), [](const SSL_CLIENT_HELLO *client_hello) -> ssl_select_cert_result_t {
+    return SSL_get_servername(client_hello->ssl, TLSEXT_NAMETYPE_host_name) ? ssl_select_cert_error : ssl_select_cert_success;
+  });
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  // Set up client
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_NONE, nullptr);
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
   SSL_set_connect_state(client_ssl.get());
 
   ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));

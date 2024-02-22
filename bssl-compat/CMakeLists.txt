@@ -141,7 +141,8 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_cert_verify_callback.cc
   source/SSL_CTX_set_client_CA_list.cc
   source/SSL_CTX_set_next_protos_advertised_cb.cc
-  source/SSL_CTX_set_select_certificate_cb.c
+  source/SSL_CTX_set_select_certificate_cb.cc
+  source/SSL_CTX_set_select_certificate_cb.h
   source/SSL_CTX_set_strict_cipher_list.cc
   source/SSL_CTX_set_tlsext_servername_callback.cc
   source/SSL_CTX_set_tlsext_status_cb.c
@@ -167,6 +168,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_peer_cert_chain.cc
   source/SSL_get_peer_full_cert_chain.cc
   source/SSL_get_peer_signature_algorithm.c
+  source/SSL_get_servername.cc
   source/SSL_get_signature_algorithm_digest.cc
   source/SSL_get_signature_algorithm_key_type.cc
   source/SSL_get_signature_algorithm_name.c
@@ -494,7 +496,6 @@ target_add_bssl_function(bssl-compat
   SSL_get_ex_data
   SSL_get_ex_data_X509_STORE_CTX_idx
   SSL_get_peer_certificate
-  SSL_get_servername
   SSL_get_session
   SSL_get_SSL_CTX
   SSL_get_version
