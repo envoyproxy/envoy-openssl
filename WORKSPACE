@@ -22,9 +22,9 @@ local_repository(
 load("//:bazel/http_archive_with_overwrites.bzl", "http_archive_with_overwrites")
 http_archive_with_overwrites(
     name = "envoy",
-    url = "https://github.com/envoyproxy/envoy/archive/refs/tags/v1.26.3.zip",
-    sha256 = "8d4c99886ae0698c52fdf64b30603354010d2ca991e85fbef5082010ef6110ad",
-    strip_prefix = "envoy-1.26.3",
+    url = "https://github.com/envoyproxy/envoy/archive/refs/tags/v1.26.6.zip",
+    sha256 = "031f7ba8a99b4b6d1a7098698c749015dca48308281bca0e0683271934e95c20",
+    strip_prefix = "envoy-1.26.6",
     patch_args = [ "-p1" ],
     patches = [
         "//patch/envoy:bazel/repositories_extra.bzl.patch",
@@ -36,8 +36,23 @@ http_archive_with_overwrites(
         "//patch/envoy:source/extensions/transport_sockets/tls/utility.cc.patch",
     ],
     overwrites = [
-        # "//patch/envoy:source/extensions/transport_sockets/tls/context_impl.cc",
-        # "//patch/envoy:source/extensions/transport_sockets/tls/context_impl.h",
+        "//patch/envoy:source/extensions/transport_sockets/tls/context_impl.cc",
+        "//patch/envoy:source/extensions/transport_sockets/tls/context_impl.h",
+        "//patch/envoy:source/extensions/transport_sockets/tls/ssl_handshaker.cc",
+        "//patch/envoy:source/extensions/transport_sockets/tls/ssl_handshaker.h",
+        "//patch/envoy:source/extensions/transport_sockets/tls/ssl_socket.cc",
+        "//patch/envoy:source/extensions/transport_sockets/tls/ssl_socket.h",
+        "//patch/envoy:source/extensions/transport_sockets/tls/context_config_impl.cc",
+        "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/cert_validator.h",
+        "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/default_validator.cc",
+        "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/default_validator.h",
+        "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/utility.h",
+        "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/utility.cc",
+        "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/san_matcher.cc",
+        "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/spiffe/spiffe_validator.cc",
+        "//patch/envoy:source/extensions/transport_sockets/tls/cert_validator/spiffe/spiffe_validator.h",
+        "//patch/envoy:source/extensions/filters/listener/tls_inspector/tls_inspector.h",
+        "//patch/envoy:source/extensions/filters/listener/tls_inspector/tls_inspector.cc",
     ],
     repo_mapping = {
         "@boringssl": "@bssl-compat",
