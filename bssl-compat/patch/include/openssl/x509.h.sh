@@ -73,9 +73,11 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_STORE_CTX_set0_trusted_stack \
   --uncomment-func-decl X509_STORE_add_cert \
   --uncomment-func-decl X509_STORE_add_crl \
+  --uncomment-func-decl X509_STORE_CTX_get_current_cert \
   --uncomment-func-decl X509_STORE_CTX_get_error \
   --uncomment-func-decl X509_STORE_CTX_set_error \
   --uncomment-func-decl X509_STORE_CTX_get_error_depth \
+  --uncomment-func-decl X509_STORE_CTX_get0_cert \
   --uncomment-func-decl X509_STORE_CTX_get0_untrusted \
   --uncomment-func-decl X509_STORE_CTX_set0_crls \
   --uncomment-func-decl X509_STORE_CTX_set_verify_cb \

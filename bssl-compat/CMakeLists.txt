@@ -582,9 +582,11 @@ target_add_bssl_function(bssl-compat
   X509_STORE_add_cert
   X509_STORE_add_crl
   X509_STORE_CTX_free
+  X509_STORE_CTX_get_current_cert
   X509_STORE_CTX_get_error
   X509_STORE_CTX_get_error_depth
   X509_STORE_CTX_get_ex_data
+  X509_STORE_CTX_get0_cert
   X509_STORE_CTX_get0_param
   X509_STORE_CTX_new
   X509_STORE_CTX_set_default
