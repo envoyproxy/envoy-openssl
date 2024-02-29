@@ -47,6 +47,8 @@ EOF
 cat << EOF > "${TMP_DIR}/Dockerfile"
     FROM ${DOCKER_IMAGE}
 
+    RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null
+    RUN sed -i "s|^deb.*kitware.*$|deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu focal InRelease|g" /etc/apt/sources.list
     RUN apt update -y
     RUN apt install -y vim
     RUN apt install -y gawk
