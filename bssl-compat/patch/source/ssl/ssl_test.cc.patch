@@ -122,12 +122,3 @@
  }
  
  // TEST_P(SSLVersionTest, RetainOnlySHA256OfCerts) {
-@@ -4935,7 +4971,7 @@
-   // Configure |client_ctx| with a cipher list that does not intersect with its
-   // version configuration.
-   ASSERT_TRUE(SSL_CTX_set_strict_cipher_list(
--      ctx.get(), "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"));
-+      ctx.get(), "ECDHE-RSA-AES128-GCM-SHA256"));
-   ASSERT_TRUE(SSL_CTX_set_max_proto_version(ctx.get(), TLS1_1_VERSION));
- 
-   bssl::UniquePtr<SSL> ssl(SSL_new(ctx.get()));
