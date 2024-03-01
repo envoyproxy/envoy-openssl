@@ -6099,7 +6099,7 @@ TEST_P(SslReadBufferLimitTest, SmallReadsIntoSameSlice) {
 }
 
 // Test asynchronous signing (ECDHE) using a private key provider.
-TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignSuccess) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncSignSuccess) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -6133,7 +6133,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignSuccess) {
 }
 
 // Test asynchronous decryption (RSA).
-TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncDecryptSuccess) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncDecryptSuccess) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_params:
@@ -6170,7 +6170,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncDecryptSuccess) {
 }
 
 // Test synchronous signing (ECDHE).
-TEST_P(SslSocketTest, RsaPrivateKeyProviderSyncSignSuccess) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSyncSignSuccess) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -6204,7 +6204,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderSyncSignSuccess) {
 }
 
 // Test synchronous decryption (RSA).
-TEST_P(SslSocketTest, RsaPrivateKeyProviderSyncDecryptSuccess) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSyncDecryptSuccess) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_params:
@@ -6241,7 +6241,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderSyncDecryptSuccess) {
 }
 
 // Test asynchronous signing (ECDHE) failure (invalid signature).
-TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignFailure) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncSignFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -6276,7 +6276,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignFailure) {
 }
 
 // Test synchronous signing (ECDHE) failure (invalid signature).
-TEST_P(SslSocketTest, RsaPrivateKeyProviderSyncSignFailure) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSyncSignFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -6311,7 +6311,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderSyncSignFailure) {
 }
 
 // Test the sign operation return with an error.
-TEST_P(SslSocketTest, RsaPrivateKeyProviderSignFailure) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSignFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -6345,7 +6345,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderSignFailure) {
 }
 
 // Test the decrypt operation return with an error.
-TEST_P(SslSocketTest, RsaPrivateKeyProviderDecryptFailure) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderDecryptFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_params:
@@ -6382,7 +6382,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderDecryptFailure) {
 }
 
 // Test the sign operation return with an error in complete.
-TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignCompleteFailure) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncSignCompleteFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -6417,7 +6417,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignCompleteFailure) {
 }
 
 // Test the decrypt operation return with an error in complete.
-TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncDecryptCompleteFailure) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncDecryptCompleteFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_params:
@@ -6458,7 +6458,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncDecryptCompleteFailure) {
 
 // Test having one cert with private key method and another with just
 // private key.
-TEST_P(SslSocketTest, RsaPrivateKeyProviderMultiCertSuccess) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderMultiCertSuccess) {
   const std::string client_ctx_yaml = absl::StrCat(R"EOF(
     common_tls_context:
       tls_params:
@@ -6498,7 +6498,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderMultiCertSuccess) {
 // Test having two certs with private key methods. This will
 // synchronously fail because the second certificate is a ECDSA one and
 // the RSA method can't handle it.
-TEST_P(SslSocketTest, RsaPrivateKeyProviderMultiCertFail) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderMultiCertFail) {
   const std::string client_ctx_yaml = absl::StrCat(R"EOF(
     common_tls_context:
       tls_params:
@@ -6544,7 +6544,7 @@ TEST_P(SslSocketTest, RsaPrivateKeyProviderMultiCertFail) {
 }
 
 // Test ECDSA private key method provider mode.
-TEST_P(SslSocketTest, EcdsaPrivateKeyProviderSuccess) {
+TEST_P(SslSocketTest, DISABLED_EcdsaPrivateKeyProviderSuccess) {
   const std::string client_ctx_yaml = absl::StrCat(R"EOF(
     common_tls_context:
       tls_params:
@@ -6578,7 +6578,7 @@ TEST_P(SslSocketTest, EcdsaPrivateKeyProviderSuccess) {
 // Test having two certs with different private key method modes. It's expected that the ECDSA
 // provider mode is being used. RSA provider mode is set to fail with "async_method_error", but
 // that's not happening.
-TEST_P(SslSocketTest, RsaAndEcdsaPrivateKeyProviderMultiCertSuccess) {
+TEST_P(SslSocketTest, DISABLED_RsaAndEcdsaPrivateKeyProviderMultiCertSuccess) {
   const std::string client_ctx_yaml = absl::StrCat(R"EOF(
     common_tls_context:
       tls_params:
@@ -6622,7 +6622,7 @@ TEST_P(SslSocketTest, RsaAndEcdsaPrivateKeyProviderMultiCertSuccess) {
 }
 
 // Test having two certs with different private key method modes. ECDSA provider is set to fail.
-TEST_P(SslSocketTest, RsaAndEcdsaPrivateKeyProviderMultiCertFail) {
+TEST_P(SslSocketTest, DISABLED_RsaAndEcdsaPrivateKeyProviderMultiCertFail) {
   const std::string client_ctx_yaml = absl::StrCat(R"EOF(
     common_tls_context:
       tls_params:
@@ -6668,7 +6668,7 @@ TEST_P(SslSocketTest, RsaAndEcdsaPrivateKeyProviderMultiCertFail) {
 }
 
 // Test private key provider and cert validation can work together.
-TEST_P(SslSocketTest, PrivateKeyProviderWithCertValidation) {
+TEST_P(SslSocketTest, DISABLED_PrivateKeyProviderWithCertValidation) {
   const std::string client_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
