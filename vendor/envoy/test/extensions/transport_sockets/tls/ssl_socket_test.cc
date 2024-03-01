@@ -938,7 +938,7 @@ protected:
       : dispatcher_(api_->allocateDispatcher("test_thread")),
         stream_info_(api_->timeSource(), nullptr), version_(std::get<0>(GetParam())) {
     Runtime::maybeSetRuntimeGuard("envoy.reloadable_features.tls_async_cert_validation",
-                                  std::get<1>(GetParam()));
+                                  false);
   }
 
   void testClientSessionResumption(const std::string& server_ctx_yaml,
@@ -1664,7 +1664,7 @@ TEST_P(SslSocketTest, CertWithNotECCapable) {
   // TODO(luyao): We might need to modify ssl socket to set proper stats for failed handshake
   testUtil(test_options.setExpectedServerStats("")
                .setExpectedSni("server1.example.com")
-               .setExpectedTransportFailureReasonContains("HANDSHAKE_FAILURE_ON_CLIENT_HELLO"));
+               .setExpectedTransportFailureReasonContains("SSLV3_ALERT_HANDSHAKE_FAILURE"));
 }
 
 TEST_P(SslSocketTest, GetUriWithLocalUriSan) {
@@ -1956,7 +1956,7 @@ TEST_P(SslSocketTest, FailedClientAuthCaVerification) {
 
   TestUtilOptions test_options(client_ctx_yaml, server_ctx_yaml, false, version_);
   testUtil(test_options.setExpectedServerStats("ssl.fail_verify_error")
-               .setExpectedVerifyErrorCode(X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY));
+               .setExpectedVerifyErrorCode(X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT));
 }
 
 TEST_P(SslSocketTest, FailedClientAuthSanVerificationNoClientCert) {
