@@ -36,3 +36,4 @@ cscope.*
 .cproject
 user.bazelrc
 log*
+MODULE.bazel.lock
