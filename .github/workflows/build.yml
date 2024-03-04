@@ -33,7 +33,7 @@ jobs:
       run: ctest --test-dir ${{github.workspace}}/build --output-junit ${{github.workspace}}/build/results.xml
 
     - name: Test Results
-      uses: EnricoMi/publish-unit-test-result-action@e780361cd1fc1b1a170624547b3ffda64787d365 # v2.12.0
+      uses: EnricoMi/publish-unit-test-result-action@f355d34d53ad4e7f506f699478db2dd71da9de5f # v2.15.1
       if: always()
       with:
         junit_files: "${{github.workspace}}/build/results.xml"
