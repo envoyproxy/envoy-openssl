@@ -18,13 +18,50 @@
 
 #include <openssl/ssl.h>
 #include <ossl.h>
+#include "SSL_CTX_set_select_certificate_cb.h"
 
 
-extern "C" int SSL_set_ocsp_response(SSL *ssl, const uint8_t *response, size_t response_len) {
-  // OpenSSL takes ownership of the response buffer so we have to take a copy
-  void *copy = ossl.ossl_OPENSSL_memdup(response, response_len);
-  if ((copy == NULL) && response) {
-    return 0;
+typedef std::pair<void*,size_t> OcspResponse;
+
+
+static int index() {
+  static int index {SSL_get_ex_new_index(0, nullptr, nullptr, nullptr, nullptr)};
+  return index;
+}
+
+/**
+ * This callback gets installed via SSL_CTX_set_tlsext_status_cb(...) in order to deal
+ * with the deferred OCSP response that may have been set via SSL_set_ocsp_response()
+ */
+int ssl_apply_deferred_ocsp_response_cb(SSL *ssl, void *arg) {
+  std::unique_ptr<OcspResponse> resp {reinterpret_cast<OcspResponse*>(SSL_get_ex_data(ssl, index()))};
+
+  if (resp) {
+    SSL_set_ex_data(ssl, index(), nullptr);
+    if (ossl.ossl_SSL_set_tlsext_status_ocsp_resp(ssl, resp->first, resp->second) == 0) {
+      return ossl_SSL_TLSEXT_ERR_ALERT_FATAL;
+    }
+    return ossl_SSL_TLSEXT_ERR_OK;
   }
-  return ossl.ossl_SSL_set_tlsext_status_ocsp_resp(ssl, copy, response_len);
+
+  return ossl_SSL_TLSEXT_ERR_NOACK;
+}
+
+/**
+ * If this is called from within the select certificate callback, then we don't call
+ * ossl_SSL_CTX_set_tlsext_status_cb() directly because it doesn't work from within that
+ * callback. Instead, we squirel away the OCSP response bytes to be applied later on via
+ * ossl_SSL_CTX_set_tlsext_status_cb() later on.
+ */
+extern "C" int SSL_set_ocsp_response(SSL *ssl, const uint8_t *response, size_t response_len) {
+  if (void *response_copy {ossl.ossl_OPENSSL_memdup(response, response_len)}) {
+    if (in_select_certificate_cb(ssl)) {
+      return SSL_set_ex_data(ssl, index(), new OcspResponse(response_copy, response_len));
+    }
+    else {
+      return ossl.ossl_SSL_set_tlsext_status_ocsp_resp(ssl, response_copy, response_len);
+    }
+  }
+
+  return response ? 0 : 1;
 }

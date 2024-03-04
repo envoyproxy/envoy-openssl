@@ -1,5 +1,7 @@
 #include <openssl/ssl.h>
 #include <ossl.h>
+#include "SSL_set_ocsp_response.h"
+
 
 /**
  * This is the callback type for BoringSSL's SSL_CTX_set_select_certificate_cb()
@@ -116,5 +118,6 @@ static int ssl_ctx_client_hello_cb(SSL *ssl, int *alert, void *arg) {
 }
 
 extern "C" void SSL_CTX_set_select_certificate_cb(SSL_CTX *ctx, select_certificate_cb_t cb) {
-  ossl.ossl_SSL_CTX_set_client_hello_cb(ctx, ssl_ctx_client_hello_cb, reinterpret_cast<void*>(cb));
+  ossl_SSL_CTX_set_client_hello_cb(ctx, ssl_ctx_client_hello_cb, reinterpret_cast<void*>(cb));
+  ossl_SSL_CTX_set_tlsext_status_cb(ctx, ssl_apply_deferred_ocsp_response_cb);
 }
