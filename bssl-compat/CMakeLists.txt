@@ -95,6 +95,7 @@ add_library(bssl-compat STATIC
   source/FIPS_mode.cc
   source/GENERAL_NAME_free.cc
   source/GENERAL_NAME_new.cc
+  source/GENERAL_NAMES_free.cc
   source/GENERAL_NAMES_new.cc
   source/GENERAL_SUBTREE_free.cc
   source/GENERAL_SUBTREE_new.cc
@@ -679,6 +680,7 @@ set(utests-source-list
   source/test/test_ssl.cc
   source/test/test_stack.cc
   source/test/test_x509.cc
+  source/test/test_x509v3.cc
   source/test/test_pem.cc
   source/test/test_sha256.cc
   # Test data copied from BoringSSL
