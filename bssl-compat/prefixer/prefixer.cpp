@@ -533,7 +533,10 @@ void MyFrontendAction::EndSourceFileAction() {
       }
     }
 
-    cstr << "}" << std::endl
+    cstr << std::endl
+         << "  ossl.ossl_ERR_load_crypto_strings();" << std::endl
+         << "  ossl.ossl_SSL_load_error_strings();" << std::endl
+         << "}" << std::endl
          << std::endl
          << "static void " << opt::prefix << "_fini(void) {" << std::endl
          << "  dlclose(libcrypto);" << std::endl

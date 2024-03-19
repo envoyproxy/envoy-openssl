@@ -42,4 +42,10 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl CBB_add_space \
   --uncomment-func-decl CBB_add_u8 \
   --uncomment-func-decl CBB_add_u16 \
-  --uncomment-using ScopedCBB
+  --uncomment-using ScopedCBB \
+  --uncomment-func-decl CBS_get_u64_decimal \
+  --uncomment-macro CBS_ASN1_BOOLEAN \
+  --uncomment-func-decl CBS_get_asn1_bool \
+  --uncomment-func-decl CBB_add_asn1_oid_from_text \
+  --uncomment-func-decl CBB_add_asn1_uint64 \
+  --uncomment-func-decl CBB_add_asn1_uint64_with_tag \

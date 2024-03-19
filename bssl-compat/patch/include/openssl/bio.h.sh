@@ -31,6 +31,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_new_mem_buf \
   --uncomment-func-decl BIO_mem_contents \
   --uncomment-func-decl BIO_set_mem_eof_return \
+  --uncomment-func-decl BIO_s_socket \
   --uncomment-func-decl BIO_new_connect \
   --uncomment-func-decl BIO_new_bio_pair \
   --uncomment-func-decl ERR_print_errors \
@@ -42,9 +43,10 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_get_data \
   --uncomment-func-decl BIO_set_init \
   --uncomment-func-decl BIO_get_init \
-  --uncomment-macro BIO_CTRL_GET_CLOSE \
-  --uncomment-macro BIO_CTRL_SET_CLOSE \
-  --uncomment-macro BIO_CTRL_FLUSH \
+  --uncomment-macro-redef BIO_CTRL_RESET \
+  --uncomment-macro-redef BIO_CTRL_GET_CLOSE \
+  --uncomment-macro-redef BIO_CTRL_SET_CLOSE \
+  --uncomment-macro-redef BIO_CTRL_FLUSH \
   --uncomment-func-decl BIO_set_shutdown \
   --uncomment-func-decl BIO_get_shutdown \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(BIO,' \

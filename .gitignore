@@ -36,3 +36,6 @@ cscope.*
 user.bazelrc
 log
 log.*
+vendor/envoyproxy-envoy-*
+vendor/maistra-envoy-*
+

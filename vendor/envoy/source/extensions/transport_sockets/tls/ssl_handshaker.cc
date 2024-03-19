@@ -101,8 +101,7 @@ Network::PostIoAction SslHandshakerImpl::doHandshake() {
     //   state_ = Ssl::SocketState::HandshakeInProgress;
     //   return PostIoAction::KeepOpen;
     default:
-      ENVOY_CONN_LOG(error, "ssl error occurred while read: {}", handshake_callbacks_->connection(),
-                    Utility::getErrorDescription(err));
+
       handshake_callbacks_->onFailure();
       return PostIoAction::Close;
     }

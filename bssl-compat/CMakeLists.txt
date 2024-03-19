@@ -75,11 +75,7 @@ add_library(bssl-compat STATIC
   source/EC_KEY_parse_private_key.cc
   source/EC_KEY_set_public_key_affine_coordinate.cc
   source/ED25519_verify.cc
-  source/ERR_error_string_n.cc
-  source/ERR_func_error_string.cc
-  source/ERR_lib_error_string.cc
-  source/ERR_put_error.cc
-  source/ERR_reason_error_string.cc
+  source/err.cc
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
   source/EVP_DigestVerifyFinal.cc
@@ -109,7 +105,6 @@ add_library(bssl-compat STATIC
   source/NAME_CONSTRAINTS_free.cc
   source/NAME_CONSTRAINTS_new.cc
   source/ossl.c
-  source/ossl_ERR_set_error.c
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
   source/PEM_read_bio_X509.cc
@@ -142,7 +137,10 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_alpn_select_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
   source/SSL_CTX_set_client_CA_list.cc
+  source/SSL_CTX_set_custom_verify.cc
   source/SSL_CTX_set_next_protos_advertised_cb.cc
+  source/SSL_CTX_set_private_key_method.cc
+  source/SSL_CTX_set_reverify_on_resume.cc
   source/SSL_CTX_set_select_certificate_cb.cc
   source/SSL_CTX_set_select_certificate_cb.h
   source/SSL_CTX_set_strict_cipher_list.cc
@@ -151,6 +149,7 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_tlsext_ticket_key_cb.cc
   source/SSL_CTX_set_tlsext_ticket_keys.cc
   source/SSL_CTX_set_verify_algorithm_prefs.cc
+  source/SSL_CTX_set_verify_depth.cc
   source/SSL_CTX_set_keylog_callback.cc
   source/SSL_CTX_set_next_proto_select_cb.cc
   source/SSL_CTX_set_verify.cc
@@ -175,6 +174,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_signature_algorithm_key_type.cc
   source/SSL_get_signature_algorithm_name.c
   source/SSL_is_signature_algorithm_rsa_pss.cc
+  source/SSL_send_fatal_alert.cc
   source/SSL_SESSION_from_bytes.c
   source/SSL_SESSION_get_ticket_lifetime_hint.cc
   source/SSL_SESSION_get_version.cc
@@ -198,6 +198,7 @@ add_library(bssl-compat STATIC
   source/X509_STORE_CTX_set0_crls.cc
   source/X509_STORE_CTX_set0_trusted_stack.cc
   source/X509_STORE_CTX_set_verify_cb.cc
+  source/X509_verify_cert_error_string.cc
   source/X509_VERIFY_PARAM_set_time_posix.cc
 )
 
@@ -309,6 +310,7 @@ target_add_bssl_function(bssl-compat
   BIO_clear_flags
   BIO_clear_retry_flags
   BIO_clear_flags
+  BIO_ctrl
   BIO_ctrl_get_read_request
   BIO_ctrl_get_write_guarantee
   BIO_get_data
@@ -361,13 +363,9 @@ target_add_bssl_function(bssl-compat
   ECDSA_SIG_new
   ECDSA_SIG_set0
   ERR_clear_error
-  ERR_error_string
-  ERR_get_error
-  ERR_peek_error
-  ERR_peek_error_line_data
-  ERR_peek_last_error
   ERR_print_errors
   ERR_print_errors_fp
+  ERR_put_error
   EVP_aes_256_cbc
   EVP_aes_128_gcm
   EVP_aes_256_gcm
@@ -484,7 +482,6 @@ target_add_bssl_function(bssl-compat
   SSL_CTX_set_session_id_context
   SSL_CTX_set_timeout
   SSL_CTX_set_tlsext_servername_arg
-  SSL_CTX_set_verify_depth
   SSL_CTX_set1_curves_list
   SSL_CTX_set1_sigalgs_list
   SSL_CTX_use_certificate_chain_file
@@ -604,7 +601,6 @@ target_add_bssl_function(bssl-compat
   X509_up_ref
   X509_verify
   X509_verify_cert
-  X509_verify_cert_error_string
   X509_VERIFY_PARAM_clear_flags
   X509_VERIFY_PARAM_set_flags
   X509_VERIFY_PARAM_set1

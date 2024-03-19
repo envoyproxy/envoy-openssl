@@ -118,6 +118,8 @@ protected:
   // A SSL_CTX_set_cert_verify_callback for custom cert validation.
   static int verifyCallback(X509_STORE_CTX* store_ctx, void* arg);
 
+  // A SSL_CTX_set_custom_verify callback for asynchronous cert validation.
+  static enum ssl_verify_result_t customVerifyCallback(SSL* ssl, uint8_t* out_alert);
   bool parseAndSetAlpn(const std::vector<std::string>& alpn, SSL& ssl);
   std::vector<uint8_t> parseAlpnProtocols(const std::string& alpn_protocols);
 

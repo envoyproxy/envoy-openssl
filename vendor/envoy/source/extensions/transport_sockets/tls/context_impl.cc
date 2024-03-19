@@ -182,8 +182,8 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
           // there. And also it differs from server side behavior of SSL_VERIFY_NONE which won't
           // even request client certs. So, instead, we should configure a callback to skip
           // validation and always supply the callback to boring SSL.
-          fprintf(stderr, "SKIPPED SSL_CTX_set_custom_verify(ctx, verify_mode, customVerifyCallback);\n");
-          fprintf(stderr, "SKIPPED SSL_CTX_set_reverify_on_resume(ctx, /*reverify_on_resume_enabled)=*/1);\n");
+          SSL_CTX_set_custom_verify(ctx, verify_mode, customVerifyCallback);
+          SSL_CTX_set_reverify_on_resume(ctx, /*reverify_on_resume_enabled)=*/1);
         } else {
           SSL_CTX_set_verify(ctx, verify_mode, nullptr);
           SSL_CTX_set_cert_verify_callback(ctx, verifyCallback, this);
@@ -287,7 +287,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
               fmt::format("Private key method doesn't support FIPS mode with current parameters"));
         }
 #endif
-        fprintf(stderr, "SKIPPED SSL_CTX_set_private_key_method(ctx.ssl_ctx_.get(), private_key_method.get());\n");
+        SSL_CTX_set_private_key_method(ctx.ssl_ctx_.get(), private_key_method.get());
       } else if (!tls_certificate.privateKey().empty()) {
         // Load private key.
         ctx.loadPrivateKey(tls_certificate.privateKey(), tls_certificate.privateKeyPath(),
@@ -469,6 +469,44 @@ int ContextImpl::verifyCallback(X509_STORE_CTX* store_ctx, void* arg) {
       reinterpret_cast<Envoy::Ssl::SslExtendedSocketInfo*>(
           SSL_get_ex_data(ssl, ContextImpl::sslExtendedSocketInfoIndex())),
       *cert, transport_socket_options);
+}
+
+enum ssl_verify_result_t ContextImpl::customVerifyCallback(SSL* ssl, uint8_t* out_alert) {
+  auto* extended_socket_info = reinterpret_cast<Envoy::Ssl::SslExtendedSocketInfo*>(
+      SSL_get_ex_data(ssl, ContextImpl::sslExtendedSocketInfoIndex()));
+  if (extended_socket_info->certificateValidationResult() != Ssl::ValidateStatus::NotStarted) {
+    if (extended_socket_info->certificateValidationResult() == Ssl::ValidateStatus::Pending) {
+      return ssl_verify_retry;
+    }
+    ENVOY_LOG(trace, "Already has a result: {}",
+              static_cast<int>(extended_socket_info->certificateValidationStatus()));
+    // Already has a binary result, return immediately.
+    *out_alert = extended_socket_info->certificateValidationAlert();
+    return extended_socket_info->certificateValidationResult() == Ssl::ValidateStatus::Successful
+               ? ssl_verify_ok
+               : ssl_verify_invalid;
+  }
+  // Hasn't kicked off any validation for this connection yet.
+  SSL_CTX* ssl_ctx = SSL_get_SSL_CTX(ssl);
+  ContextImpl* context_impl = static_cast<ContextImpl*>(SSL_CTX_get_app_data(ssl_ctx));
+  auto transport_socket_options_shared_ptr_ptr =
+      static_cast<const Network::TransportSocketOptionsConstSharedPtr*>(SSL_get_app_data(ssl));
+  ASSERT(transport_socket_options_shared_ptr_ptr);
+  ValidationResults result = context_impl->customVerifyCertChain(
+      extended_socket_info, *transport_socket_options_shared_ptr_ptr, ssl);
+  switch (result.status) {
+  case ValidationResults::ValidationStatus::Successful:
+    return ssl_verify_ok;
+  case ValidationResults::ValidationStatus::Pending:
+    return ssl_verify_retry;
+  case ValidationResults::ValidationStatus::Failed: {
+    if (result.tls_alert.has_value() && out_alert) {
+      *out_alert = result.tls_alert.value();
+    }
+    return ssl_verify_invalid;
+  }
+  }
+  PANIC("not reached");
 }
 
 ValidationResults ContextImpl::customVerifyCertChain(

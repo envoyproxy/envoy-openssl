@@ -259,7 +259,6 @@ std::string iana_2_ossl_names(const char *str) {
   for (auto const &mapping : IANA_2_OSSL_NAMES) {
     std::string::size_type i {0};
     while ((i = result.find(mapping.iana, i)) != std::string::npos) {
-      printf ("iana_2_ossl_names : \"%s\" -> \"%s\"\n", mapping.iana, mapping.ossl);
       result.replace(i, strlen(mapping.iana), mapping.ossl);
       i += strlen(mapping.ossl);
     }
