@@ -21,6 +21,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_set_connect_state \
   --uncomment-func-decl SSL_set_cipher_list \
   --uncomment-func-decl SSL_set_cert_cb \
+  --uncomment-func-decl SSL_get0_peer_verify_algorithms \
   --uncomment-func-decl SSL_set_bio \
   --uncomment-macro SSL_set_app_data \
   --uncomment-func-decl SSL_set_alpn_protos \
@@ -189,4 +190,10 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro-redef SSL_CB_HANDSHAKE_DONE \
   --uncomment-macro-redef SSL_MAX_SSL_SESSION_ID_LENGTH \
   --uncomment-macro SSL_TICKET_KEY_NAME_LEN \
+  --uncomment-enum ssl_verify_result_t \
+  --uncomment-func-decl SSL_CTX_set_custom_verify \
+  --uncomment-func-decl SSL_CTX_set_reverify_on_resume \
+  --uncomment-func-decl SSL_CTX_set_private_key_method \
+  --uncomment-func-decl SSL_send_fatal_alert \
+
 

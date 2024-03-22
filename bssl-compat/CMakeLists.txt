@@ -11,11 +11,11 @@ set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openss
 set(OPENSSL_URL_HASH 6933e2f1da6f23a50ea226eec6e91b543d277d2098025763b5931cf6a7e099c7)
 
 SET (CMAKE_C_COMPILER             "clang")
-SET (CMAKE_C_FLAGS                "-Wall -Werror")
+SET (CMAKE_C_FLAGS                "-fPIC -Wall -Werror")
 SET (CMAKE_C_FLAGS_DEBUG          "-g")
 
 SET (CMAKE_CXX_COMPILER           "clang++")
-SET (CMAKE_CXX_FLAGS              "-Wall -Werror")
+SET (CMAKE_CXX_FLAGS              "-fPIC -Wall -Werror")
 SET (CMAKE_CXX_FLAGS_DEBUG        "-g")
 
 set(CMAKE_C_STANDARD 11)
@@ -31,20 +31,19 @@ include(cmake/boringssl.cmake)
 include(cmake/openssl.cmake)
 
 add_subdirectory(prefixer)
-add_custom_command(DEPENDS prefixer OpenSSL::Crypto OpenSSL::SSL
+add_custom_command(DEPENDS prefixer OpenSSL
                    COMMENT "Prefixing OpenSSL files"
                    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl/openssl/err.h
-                   COMMAND prefixer --src-path "${SRC_OPENSSL_HEADERS1}"
-                                    --src-path "${SRC_OPENSSL_HEADERS2}"
+                   COMMAND prefixer --src-path "${OPENSSL_INCLUDE_DIR}"
                                     --src-incl "openssl/*.h"
                                     --src-skip "openssl/asn1_mac.h"
                                     --src-skip "openssl/opensslconf-*.h"
                                     --output "${CMAKE_CURRENT_BINARY_DIR}"
                                     --prefix ossl)
-
-add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/include/ossl.h)
+add_custom_target(ossl-gen DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h)
+add_dependencies(bssl-gen ossl-gen) # generate ossl headers before bssl headers
 
 # custom mappings
 add_library(bssl-compat STATIC
@@ -76,11 +75,7 @@ add_library(bssl-compat STATIC
   source/EC_KEY_parse_private_key.cc
   source/EC_KEY_set_public_key_affine_coordinate.cc
   source/ED25519_verify.cc
-  source/ERR_error_string_n.cc
-  source/ERR_func_error_string.cc
-  source/ERR_lib_error_string.cc
-  source/ERR_put_error.cc
-  source/ERR_reason_error_string.cc
+  source/err.cc
   source/EVP_DecodeBase64.c
   source/EVP_DecodedLength.c
   source/EVP_DigestVerifyFinal.cc
@@ -96,23 +91,27 @@ add_library(bssl-compat STATIC
   source/FIPS_mode.cc
   source/GENERAL_NAME_free.cc
   source/GENERAL_NAME_new.cc
+  source/GENERAL_NAMES_free.cc
   source/GENERAL_NAMES_new.cc
   source/GENERAL_SUBTREE_free.cc
   source/GENERAL_SUBTREE_new.cc
   source/HMAC_Init_ex.cc
   source/i2d_X509.c
+  source/i2d_X509_PUBKEY.cc
+  source/iana_2_ossl_names.cc
   source/internal.h
   source/log.c
   source/log.h
   source/NAME_CONSTRAINTS_free.cc
   source/NAME_CONSTRAINTS_new.cc
   source/ossl.c
-  source/ossl_ERR_set_error.c
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
   source/PEM_read_bio_X509.cc
+  source/PEM_read_bio_X509_AUX.cc
   source/PEM_read_bio_X509_CRL.cc
   source/PEM_read_bio_PUBKEY.cc
+  source/PEM_write_bio_X509.cc
   source/PEM_X509_INFO_read_bio.cc
   source/PKCS12_get_key_and_certs.cc
   source/PKCS12_parse.cc
@@ -138,14 +137,19 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_alpn_select_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
   source/SSL_CTX_set_client_CA_list.cc
+  source/SSL_CTX_set_custom_verify.cc
   source/SSL_CTX_set_next_protos_advertised_cb.cc
-  source/SSL_CTX_set_select_certificate_cb.c
+  source/SSL_CTX_set_private_key_method.cc
+  source/SSL_CTX_set_reverify_on_resume.cc
+  source/SSL_CTX_set_select_certificate_cb.cc
+  source/SSL_CTX_set_select_certificate_cb.h
   source/SSL_CTX_set_strict_cipher_list.cc
   source/SSL_CTX_set_tlsext_servername_callback.cc
   source/SSL_CTX_set_tlsext_status_cb.c
   source/SSL_CTX_set_tlsext_ticket_key_cb.cc
   source/SSL_CTX_set_tlsext_ticket_keys.cc
   source/SSL_CTX_set_verify_algorithm_prefs.cc
+  source/SSL_CTX_set_verify_depth.cc
   source/SSL_CTX_set_keylog_callback.cc
   source/SSL_CTX_set_next_proto_select_cb.cc
   source/SSL_CTX_set_verify.cc
@@ -155,6 +159,7 @@ add_library(bssl-compat STATIC
   source/SSL_enable_ocsp_stapling.cc
   source/SSL_error_description.cc
   source/SSL_get0_ocsp_response.c
+  source/SSL_get0_peer_verify_algorithms.cc
   source/SSL_get_cipher_by_value.c
   source/SSL_get_client_CA_list.cc
   source/SSL_get_ciphers.cc
@@ -164,10 +169,12 @@ add_library(bssl-compat STATIC
   source/SSL_get_peer_cert_chain.cc
   source/SSL_get_peer_full_cert_chain.cc
   source/SSL_get_peer_signature_algorithm.c
+  source/SSL_get_servername.cc
   source/SSL_get_signature_algorithm_digest.cc
   source/SSL_get_signature_algorithm_key_type.cc
   source/SSL_get_signature_algorithm_name.c
   source/SSL_is_signature_algorithm_rsa_pss.cc
+  source/SSL_send_fatal_alert.cc
   source/SSL_SESSION_from_bytes.c
   source/SSL_SESSION_get_ticket_lifetime_hint.cc
   source/SSL_SESSION_get_version.cc
@@ -191,6 +198,7 @@ add_library(bssl-compat STATIC
   source/X509_STORE_CTX_set0_crls.cc
   source/X509_STORE_CTX_set0_trusted_stack.cc
   source/X509_STORE_CTX_set_verify_cb.cc
+  source/X509_verify_cert_error_string.cc
   source/X509_VERIFY_PARAM_set_time_posix.cc
 )
 
@@ -302,6 +310,7 @@ target_add_bssl_function(bssl-compat
   BIO_clear_flags
   BIO_clear_retry_flags
   BIO_clear_flags
+  BIO_ctrl
   BIO_ctrl_get_read_request
   BIO_ctrl_get_write_guarantee
   BIO_get_data
@@ -340,6 +349,7 @@ target_add_bssl_function(bssl-compat
   CRYPTO_memcmp
   d2i_PKCS12_bio
   d2i_SSL_SESSION
+  d2i_X509
   DTLS_method
   EC_GROUP_get_curve_name
   EC_GROUP_get_degree
@@ -353,13 +363,9 @@ target_add_bssl_function(bssl-compat
   ECDSA_SIG_new
   ECDSA_SIG_set0
   ERR_clear_error
-  ERR_error_string
-  ERR_get_error
-  ERR_peek_error
-  ERR_peek_error_line_data
-  ERR_peek_last_error
   ERR_print_errors
   ERR_print_errors_fp
+  ERR_put_error
   EVP_aes_256_cbc
   EVP_aes_128_gcm
   EVP_aes_256_gcm
@@ -476,7 +482,6 @@ target_add_bssl_function(bssl-compat
   SSL_CTX_set_session_id_context
   SSL_CTX_set_timeout
   SSL_CTX_set_tlsext_servername_arg
-  SSL_CTX_set_verify_depth
   SSL_CTX_set1_curves_list
   SSL_CTX_set1_sigalgs_list
   SSL_CTX_use_certificate_chain_file
@@ -490,7 +495,6 @@ target_add_bssl_function(bssl-compat
   SSL_get_ex_data
   SSL_get_ex_data_X509_STORE_CTX_idx
   SSL_get_peer_certificate
-  SSL_get_servername
   SSL_get_session
   SSL_get_SSL_CTX
   SSL_get_version
@@ -577,9 +581,11 @@ target_add_bssl_function(bssl-compat
   X509_STORE_add_cert
   X509_STORE_add_crl
   X509_STORE_CTX_free
+  X509_STORE_CTX_get_current_cert
   X509_STORE_CTX_get_error
   X509_STORE_CTX_get_error_depth
   X509_STORE_CTX_get_ex_data
+  X509_STORE_CTX_get0_cert
   X509_STORE_CTX_get0_param
   X509_STORE_CTX_new
   X509_STORE_CTX_set_default
@@ -595,7 +601,6 @@ target_add_bssl_function(bssl-compat
   X509_up_ref
   X509_verify
   X509_verify_cert
-  X509_verify_cert_error_string
   X509_VERIFY_PARAM_clear_flags
   X509_VERIFY_PARAM_set_flags
   X509_VERIFY_PARAM_set1
@@ -618,11 +623,11 @@ target_link_libraries(bssl-compat INTERFACE ${CMAKE_DL_LIBS})
 # Intallation
 ################################################################################
 
-install(TARGETS bssl-compat LIBRARY DESTINATION lib)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION include)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ext DESTINATION include)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ossl DESTINATION include)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/openssl DESTINATION include)
+set(INSTALL_GTEST OFF)
+install(TARGETS bssl-compat ARCHIVE DESTINATION lib)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION . FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ossl DESTINATION include FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/openssl DESTINATION include FILES_MATCHING PATTERN "*.h")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h DESTINATION include)
 
 ################################################################################
@@ -646,6 +651,7 @@ set(utests-bssl-source-list
   source/crypto/test/file_test_gtest.cc
   source/crypto/test/file_test.cc
   source/crypto/test/file_test.h
+  source/crypto/internal.h
   source/crypto/test/test_util.cc
   source/crypto/test/test_util.h
   source/crypto/x509/x509_test.cc
@@ -670,6 +676,7 @@ set(utests-source-list
   source/test/test_ssl.cc
   source/test/test_stack.cc
   source/test/test_x509.cc
+  source/test/test_x509v3.cc
   source/test/test_pem.cc
   source/test/test_sha256.cc
   # Test data copied from BoringSSL
@@ -685,13 +692,14 @@ set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -W
 # Add env variable SANITIZE_OPTIONS for optional sanitizers
 target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
-set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_INSTALL_DIR}/lib")
+set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_LIBRARY_DIR}")
 gtest_discover_tests(utests-bssl-compat)
 
 ################################################################################
 # Unit Tests built on BoringSSL
 ################################################################################
-add_executable(utests-boring ${utests-source-list} ${utests-bssl-source-list})
+add_executable(utests-boring ${utests-source-list})
+target_add_bssl_source(utests-boring ${utests-bssl-source-list})
 target_include_directories(utests-boring PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/source)
 # Add env variable SANITIZE_OPTIONS for optional sanitizers
 target_link_options(utests-boring PRIVATE "$ENV{SANITIZE_OPTIONS}" )

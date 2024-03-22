@@ -23,3 +23,7 @@ uncomment.sh "$1" --comment \
   --uncomment-func-impl cbb_add_u \
   --uncomment-func-impl CBB_add_u8 \
   --uncomment-func-impl CBB_add_u16 \
+  --uncomment-func-impl CBB_add_asn1_uint64 \
+  --uncomment-func-impl CBB_add_asn1_uint64_with_tag \
+  --uncomment-func-impl parse_dotted_decimal \
+  --uncomment-func-impl CBB_add_asn1_oid_from_text \

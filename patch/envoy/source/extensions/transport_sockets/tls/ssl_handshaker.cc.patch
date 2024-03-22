@@ -1,0 +1,20 @@
+--- a/source/extensions/transport_sockets/tls/ssl_handshaker.cc
++++ b/source/extensions/transport_sockets/tls/ssl_handshaker.cc
+@@ -96,11 +96,13 @@ Network::PostIoAction SslHandshakerImpl::doHandshake() {
+     case SSL_ERROR_WANT_READ:
+     case SSL_ERROR_WANT_WRITE:
+       return PostIoAction::KeepOpen;
+-    case SSL_ERROR_WANT_PRIVATE_KEY_OPERATION:
+-    case SSL_ERROR_WANT_CERTIFICATE_VERIFY:
+-      state_ = Ssl::SocketState::HandshakeInProgress;
+-      return PostIoAction::KeepOpen;
++    // case SSL_ERROR_WANT_PRIVATE_KEY_OPERATION:
++    // case SSL_ERROR_WANT_CERTIFICATE_VERIFY:
++    //   state_ = Ssl::SocketState::HandshakeInProgress;
++    //   return PostIoAction::KeepOpen;
+     default:
++      ENVOY_CONN_LOG(error, "ssl error occurred while read: {}", handshake_callbacks_->connection(),
++                    Utility::getErrorDescription(err));
+       handshake_callbacks_->onFailure();
+       return PostIoAction::Close;
+     }

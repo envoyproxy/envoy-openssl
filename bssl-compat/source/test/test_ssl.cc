@@ -1375,3 +1375,189 @@ TEST(SSLTest, test_SSL_alert_from_verify_result) {
   ASSERT_EQ(SSL_AD_CERTIFICATE_EXPIRED, SSL_alert_from_verify_result(X509_V_ERR_CERT_HAS_EXPIRED));
   ASSERT_EQ(SSL_AD_CERTIFICATE_EXPIRED, SSL_alert_from_verify_result(X509_V_ERR_CRL_HAS_EXPIRED));
 }
+
+TEST(SSLTest, test_SSL_get0_peer_verify_algorithms) {
+  TempFile root_ca_cert_pem        { root_ca_cert_pem_str };
+  TempFile client_2_key_pem        { client_2_key_pem_str };
+  TempFile client_2_cert_chain_pem { client_2_cert_chain_pem_str };
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_method()));
+
+  ASSERT_EQ(1, SSL_CTX_set1_sigalgs_list(client_ctx.get(), "rsa_pkcs1_sha256:rsa_pss_rsae_sha256:ecdsa_secp256r1_sha256"));
+
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  ASSERT_TRUE(SSL_CTX_load_verify_locations(client_ctx.get(), root_ca_cert_pem.path(), nullptr));
+
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+  SSL_set_connect_state(client_ssl.get());
+
+  auto cert_cb = [](SSL *ssl, void *arg) -> int {
+    const uint16_t *sigalgs {nullptr};
+    size_t nsigalgs {SSL_get0_peer_verify_algorithms(ssl, &sigalgs)};
+
+    EXPECT_EQ(3, nsigalgs);
+    EXPECT_EQ(SSL_SIGN_RSA_PKCS1_SHA256, sigalgs[0]);
+    EXPECT_EQ(SSL_SIGN_RSA_PSS_RSAE_SHA256, sigalgs[1]);
+    EXPECT_EQ(SSL_SIGN_ECDSA_SECP256R1_SHA256, sigalgs[2]);
+
+    nsigalgs = SSL_get0_peer_verify_algorithms(ssl, &sigalgs);
+
+    EXPECT_EQ(3, nsigalgs);
+    EXPECT_EQ(SSL_SIGN_RSA_PKCS1_SHA256, sigalgs[0]);
+    EXPECT_EQ(SSL_SIGN_RSA_PSS_RSAE_SHA256, sigalgs[1]);
+    EXPECT_EQ(SSL_SIGN_ECDSA_SECP256R1_SHA256, sigalgs[2]);
+
+    return 1;
+  };
+
+  SSL_set_cert_cb(server_ssl.get(), cert_cb, reinterpret_cast<void*>(__LINE__));
+
+  ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+}
+
+
+TEST(SSLTest, test_SSL_get_servername_inside_select_certificate_cb) {
+  static const char SERVERNAME[] { "www.example.com" };
+
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_server_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_client_method()));
+
+  // Set up server with a callback which checks if SSL_get_servername() works
+  SSL_CTX_set_select_certificate_cb(server_ctx.get(), [](const SSL_CLIENT_HELLO *client_hello) -> ssl_select_cert_result_t {
+    const char *server_name = SSL_get_servername(client_hello->ssl, TLSEXT_NAMETYPE_host_name);
+    if (server_name && strcmp(server_name, SERVERNAME) == 0) {
+      return ssl_select_cert_success;
+    }
+    return ssl_select_cert_error; // Will cause handshake failure
+  });
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  // Set up client
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_NONE, nullptr);
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+  ASSERT_TRUE(SSL_set_tlsext_host_name(client_ssl.get(), SERVERNAME));
+  SSL_set_connect_state(client_ssl.get());
+
+  ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+}
+
+
+TEST(SSLTest, test_SSL_get_servername_null_inside_select_certificate_cb) {
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_server_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_client_method()));
+
+  // Set up server with a callback to check if SSL_get_servername() returns
+  // a nullptr if the client didn't send an SNI host name extension
+  SSL_CTX_set_select_certificate_cb(server_ctx.get(), [](const SSL_CLIENT_HELLO *client_hello) -> ssl_select_cert_result_t {
+    return SSL_get_servername(client_hello->ssl, TLSEXT_NAMETYPE_host_name) ? ssl_select_cert_error : ssl_select_cert_success;
+  });
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  // Set up client
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_NONE, nullptr);
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+  SSL_set_connect_state(client_ssl.get());
+
+  ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+}
+
+#ifdef BSSL_COMPAT
+// Tests for segv when calling SSL_CIPHER_get_min_version() on a cipher that is
+// known to OpenSSL, but whos implementation engine is not loaded.
+// The TLS_GOSTR341001_WITH_28147_CNT_IMIT cipher fits this bill because it is
+// known to OpenSSL but it's implementaion is only available when the cgost
+// engine is configured in.
+TEST(SSLTest,SSL_CIPHER_get_min_version_on_non_loaded_cipher) {
+  const SSL_CIPHER *cipher = SSL_get_cipher_by_value(0x0081);
+  ASSERT_TRUE(cipher);
+
+  const char *openssl_name {SSL_CIPHER_get_name(cipher)};
+  ASSERT_TRUE(openssl_name);
+  ASSERT_STREQ("GOST2001-GOST89-GOST89", openssl_name);
+
+  const char *standard_name = SSL_CIPHER_standard_name(cipher);
+  ASSERT_TRUE(standard_name);
+  ASSERT_STREQ("TLS_GOSTR341001_WITH_28147_CNT_IMIT", standard_name);
+
+  ASSERT_EQ(TLS1_2_VERSION, SSL_CIPHER_get_min_version(cipher));
+}
+#endif
+
+TEST(SSLTest, test_SSL_set_ocsp_response_inside_select_certificate_cb) {
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  static const uint8_t OCSP_RESPONSE[] { 1, 2, 3, 4, 5 };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_server_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_client_method()));
+
+  // Set up server with a select certificate callback that calls SSL_set_ocsp_response()
+  SSL_CTX_set_select_certificate_cb(server_ctx.get(), [](const SSL_CLIENT_HELLO *client_hello) -> ssl_select_cert_result_t {
+    return (SSL_set_ocsp_response(client_hello->ssl, OCSP_RESPONSE, sizeof(OCSP_RESPONSE)) == 1) ?
+      ssl_select_cert_success : ssl_select_cert_error;
+  });
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  // Set up client with ocsp stapling enabled
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_NONE, nullptr);
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+  SSL_set_connect_state(client_ssl.get());
+  SSL_enable_ocsp_stapling(client_ssl.get());
+
+  ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+
+  // Check that the client received the OCSP response ok
+  const uint8_t *ocsp_resp_data{};
+  size_t ocsp_resp_len{};
+  SSL_get0_ocsp_response(client_ssl.get(), &ocsp_resp_data, &ocsp_resp_len);
+  ASSERT_EQ(sizeof(OCSP_RESPONSE), ocsp_resp_len);
+  ASSERT_EQ(0, memcmp(OCSP_RESPONSE, ocsp_resp_data, ocsp_resp_len));
+}

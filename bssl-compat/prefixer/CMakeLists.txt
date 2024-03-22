@@ -16,3 +16,4 @@ target_compile_definitions(prefixer PRIVATE LLVM_LIBRARY_DIR=\"${LLVM_LIBRARY_DI
 target_include_directories(prefixer PRIVATE "${LLVM_INCLUDE_DIRS}")
 target_link_directories(prefixer PRIVATE "${LLVM_LIBRARY_DIRS}")
 target_link_libraries(prefixer PRIVATE clang-cpp $<$<BOOL:${LLVM_LINK_LLVM_DYLIB}>:LLVM>)
+target_link_libraries(prefixer PRIVATE stdc++fs)
