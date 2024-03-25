@@ -1,0 +1,3 @@
+[submodule "bssl-compat/external/boringssl"]
+	path = bssl-compat/external/boringssl
+	url = https://github.com/google/boringssl.git
