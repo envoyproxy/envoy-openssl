@@ -273,18 +273,14 @@ def envoy_dependencies(skip_targets = []):
     # Setup external Bazel rules
     _foreign_cc_dependencies()
 
-    # Binding to an alias pointing to the selected version of BoringSSL:
-    # - BoringSSL FIPS from @boringssl_fips//:ssl,
-    # - non-FIPS BoringSSL from @boringssl//:ssl.
-    _boringssl()
-    _boringssl_fips()
+    # Binding to an alias pointing to the bssl-compat layer
     native.bind(
         name = "ssl",
-        actual = "@envoy//bazel:boringssl",
+        actual = "@bssl-compat//:ssl",
     )
     native.bind(
         name = "crypto",
-        actual = "@envoy//bazel:boringcrypto",
+        actual = "@bssl-compat//:crypto",
     )
 
     # The long repo names (`com_github_fmtlib_fmt` instead of `fmtlib`) are
