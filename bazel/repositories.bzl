@@ -1186,7 +1186,13 @@ def _emsdk():
     )
 
 def _com_github_google_jwt_verify():
-    external_http_archive("com_github_google_jwt_verify")
+    external_http_archive(
+        name = "com_github_google_jwt_verify",
+        patch_args = ["-p1"],
+        patches = [
+            "@envoy//bazel:jwt_verify_lib.patch",
+        ]
+    )
 
     native.bind(
         name = "jwt_verify_lib",
