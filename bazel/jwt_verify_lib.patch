@@ -1,0 +1,87 @@
+diff --git a/src/jwks.cc b/src/jwks.cc
+index a81b576..01115ae 100644
+--- a/src/jwks.cc
++++ b/src/jwks.cc
+@@ -97,18 +97,22 @@ class KeyGetter : public WithStatus {
+   bssl::UniquePtr<RSA> createRsaFromJwk(const std::string& n,
+                                         const std::string& e) {
+     bssl::UniquePtr<RSA> rsa(RSA_new());
+-    rsa->n = createBigNumFromBase64UrlString(n).release();
+-    rsa->e = createBigNumFromBase64UrlString(e).release();
+-    if (rsa->n == nullptr || rsa->e == nullptr) {
++    bssl::UniquePtr<BIGNUM> bn_n = createBigNumFromBase64UrlString(n);
++    bssl::UniquePtr<BIGNUM> bn_e = createBigNumFromBase64UrlString(e);
++
++    if (bn_n == nullptr || bn_e == nullptr) {
+       // RSA public key field is missing or has parse error.
+       updateStatus(Status::JwksRsaParseError);
+       return nullptr;
+     }
+-    if (BN_cmp_word(rsa->e, 3) != 0 && BN_cmp_word(rsa->e, 65537) != 0) {
++
++    if (BN_cmp_word(bn_e.get(), 3) != 0 && BN_cmp_word(bn_e.get(), 65537) != 0) {
+       // non-standard key; reject it early.
+       updateStatus(Status::JwksRsaParseError);
+       return nullptr;
+     }
++
++    RSA_set0_key(rsa.get(), bn_n.release(), bn_e.release(), NULL);
+     return rsa;
+   }
+ 
+diff --git a/src/jwt.cc b/src/jwt.cc
+index 2c22eb4..f5eb37a 100644
+--- a/src/jwt.cc
++++ b/src/jwt.cc
+@@ -48,7 +48,10 @@ Jwt& Jwt::operator=(const Jwt& rhs) {
+ }
+ 
+ Status Jwt::parseFromString(const std::string& jwt) {
+-  // jwt must have exactly 2 dots with 3 sections.
++  // jwt must have exactly 2 dots
++  if (std::count(jwt.begin(), jwt.end(), '.') != 2) {
++    return Status::JwtBadFormat;
++  }
+   jwt_ = jwt;
+   std::vector<absl::string_view> jwt_split =
+       absl::StrSplit(jwt, '.', absl::SkipEmpty());
+diff --git a/src/status.cc b/src/status.cc
+index 37eca7d..e78b615 100644
+--- a/src/status.cc
++++ b/src/status.cc
+@@ -179,6 +179,7 @@ std::string getStatusString(Status status) {
+     case Status::JwksBioAllocError:
+       return "Failed to create BIO due to memory allocation failure";
+   };
++  return "";
+ }
+ 
+ }  // namespace jwt_verify
+diff --git a/src/verify.cc b/src/verify.cc
+index 70eb817..1fcd235 100644
+--- a/src/verify.cc
++++ b/src/verify.cc
+@@ -132,12 +132,20 @@ bool verifySignatureEC(EC_KEY* key, const EVP_MD* md, const uint8_t* signature,
+     return false;
+   }
+ 
+-  if (BN_bin2bn(signature, signature_len / 2, ecdsa_sig->r) == nullptr ||
+-      BN_bin2bn(signature + (signature_len / 2), signature_len / 2,
+-                ecdsa_sig->s) == nullptr) {
++  bssl::UniquePtr<BIGNUM> ecdsa_sig_r {BN_bin2bn(signature, signature_len / 2, nullptr)};
++  bssl::UniquePtr<BIGNUM> ecdsa_sig_s {BN_bin2bn(signature + (signature_len / 2), signature_len / 2, nullptr)};
++
++  if (ecdsa_sig_r.get() == nullptr || ecdsa_sig_s.get() == nullptr) {
+     return false;
+   }
+ 
++  if (ECDSA_SIG_set0(ecdsa_sig.get(), ecdsa_sig_r.get(), ecdsa_sig_s.get()) == 0) {
++    return false;
++  }
++
++  ecdsa_sig_r.release();
++  ecdsa_sig_s.release();
++
+   if (ECDSA_do_verify(digest.data(), digest_len, ecdsa_sig.get(), key) == 1) {
+     return true;
+   }
