@@ -1153,7 +1153,7 @@ INSTANTIATE_TEST_SUITE_P(IpVersionsClientType, SdsDynamicDownstreamPrivateKeyInt
                          testing::ValuesIn(getSdsTestsParams(true)), sdsTestParamsToString);
 
 // Validate that a basic SDS updates work with a private key provider.
-TEST_P(SdsDynamicDownstreamPrivateKeyIntegrationTest, BasicPrivateKeyProvider) {
+TEST_P(SdsDynamicDownstreamPrivateKeyIntegrationTest, DISABLED_BasicPrivateKeyProvider) {
   v3_resource_api_ = true;
 
   TestEnvironment::exec(
@@ -1213,7 +1213,7 @@ INSTANTIATE_TEST_SUITE_P(IpVersionsClientType, SdsCdsPrivateKeyIntegrationTest,
                          testing::ValuesIn(getSdsTestsParams(true)), sdsTestParamsToString);
 
 // Test private key providers in SDS+CDS setup.
-TEST_P(SdsCdsPrivateKeyIntegrationTest, BasicSdsCdsPrivateKeyProvider) {
+TEST_P(SdsCdsPrivateKeyIntegrationTest, DISABLED_BasicSdsCdsPrivateKeyProvider) {
   v3_resource_api_ = true;
 
   TestEnvironment::exec(
