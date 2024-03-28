@@ -95,10 +95,10 @@ Network::PostIoAction SslHandshakerImpl::doHandshake() {
     case SSL_ERROR_WANT_READ:
     case SSL_ERROR_WANT_WRITE:
       return PostIoAction::KeepOpen;
-    case SSL_ERROR_WANT_PRIVATE_KEY_OPERATION:
-    case SSL_ERROR_WANT_CERTIFICATE_VERIFY:
-      state_ = Ssl::SocketState::HandshakeInProgress;
-      return PostIoAction::KeepOpen;
+    // case SSL_ERROR_WANT_PRIVATE_KEY_OPERATION:
+    // case SSL_ERROR_WANT_CERTIFICATE_VERIFY:
+    //   state_ = Ssl::SocketState::HandshakeInProgress;
+    //   return PostIoAction::KeepOpen;
     default:
       handshake_callbacks_->onFailure();
       return PostIoAction::Close;
