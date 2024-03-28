@@ -27,6 +27,10 @@ public:
 
 TEST_F(IoHandleBioTest, WriteError) {
   EXPECT_CALL(io_handle_, writev(_, 1))
+      .WillOnce(Return(testing::ByMove(
+          Api::IoCallUint64Result(0, Api::IoErrorPtr(new Network::IoSocketError(100),
+                                                     Network::IoSocketError::deleteIoError)))));
+  EXPECT_EQ(-1, BIO_write(bio_, nullptr, 10));
       .WillOnce(
           Return(testing::ByMove(Api::IoCallUint64Result(0, Network::IoSocketError::create(100)))));
   EXPECT_EQ(-1, BIO_write(bio_, nullptr, 10));

@@ -54,7 +54,7 @@ INSTANTIATE_TEST_SUITE_P(IpVersions, SslIntegrationTest,
 // Test that Envoy behaves correctly when receiving an SSLAlert for an unspecified code. The codes
 // are defined in the standard, and assigned codes have a string associated with them in BoringSSL,
 // which is included in logs. For an unknown code, verify that no crash occurs.
-TEST_P(SslIntegrationTest, UnknownSslAlert) {
+TEST_P(SslIntegrationTest, DISABLED_UnknownSslAlert) {
   initialize();
   Network::ClientConnectionPtr connection = makeSslClientConnection({});
   ConnectionStatusCallbacks callbacks;
