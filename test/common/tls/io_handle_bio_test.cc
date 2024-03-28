@@ -27,6 +27,10 @@ public:
 
 TEST_F(IoHandleBioTest, WriteError) {
   EXPECT_CALL(io_handle_, writev(_, 1))
+      .WillOnce(Return(testing::ByMove(
+          Api::IoCallUint64Result(0, Api::IoErrorPtr(new Network::IoSocketError(100),
+                                                     Network::IoSocketError::deleteIoError)))));
+  EXPECT_EQ(-1, BIO_write(bio_, nullptr, 10));
       .WillOnce(
           Return(testing::ByMove(Api::IoCallUint64Result(0, Network::IoSocketError::create(100)))));
   EXPECT_EQ(-1, BIO_write(bio_, nullptr, 10));
@@ -36,13 +40,24 @@ TEST_F(IoHandleBioTest, WriteError) {
 }
 
 TEST_F(IoHandleBioTest, TestMiscApis) {
-  EXPECT_EQ(BIO_read(bio_, nullptr, 0), 0);
+  EXPECT_DEATH(BIO_ctrl(bio_, BIO_C_GET_FD, 0, nullptr), "should not be called");
+  EXPECT_DEATH(BIO_ctrl(bio_, BIO_C_SET_FD, 0, nullptr), "should not be called");
 
-  int ret = BIO_reset(bio_);
+  int ret = BIO_ctrl(bio_, BIO_CTRL_RESET, 0, nullptr);
   EXPECT_EQ(ret, 0);
 
-  ret = BIO_flush(bio_);
+  ret = BIO_ctrl(bio_, BIO_CTRL_FLUSH, 0, nullptr);
   EXPECT_EQ(ret, 1);
+
+  ret = BIO_ctrl(bio_, BIO_CTRL_SET_CLOSE, 1, nullptr);
+  EXPECT_EQ(ret, 1);
+
+  ret = BIO_ctrl(bio_, BIO_CTRL_GET_CLOSE, 0, nullptr);
+  EXPECT_EQ(ret, 1);
+
+  EXPECT_CALL(io_handle_, close())
+      .WillOnce(Return(testing::ByMove(Api::IoCallUint64Result{0, Api::IoError::none()})));
+  BIO_set_init(bio_, 1);
 }
 
 } // namespace Tls

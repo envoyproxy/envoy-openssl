@@ -9,6 +9,7 @@ load(
     "envoy_package",
     "envoy_select_enable_http3",
     "envoy_select_enable_http_datagrams",
+    "envoy_select_enable_http3",
 )
 
 licenses(["notice"])  # Apache 2
@@ -92,18 +93,14 @@ envoy_cc_library(
     name = "quic_stat_names_lib",
     srcs = ["quic_stat_names.cc"],
     hdrs = ["quic_stat_names.h"],
-    deps = select({
-        "//bazel:disable_http3": [
-            "//envoy/stats:stats_interface",
-            "//source/common/stats:symbol_table_lib",
-        ],
-        "//conditions:default": [
-            "//envoy/stats:stats_interface",
-            "//source/common/stats:symbol_table_lib",
-            "@com_github_google_quiche//:quic_core_error_codes_lib",
-            "@com_github_google_quiche//:quic_core_types_lib",
-        ],
-    }),
+    tags = ["nofips"],
+    deps = [
+        "//source/common/stats:symbol_table_lib",
+    ] + envoy_select_enable_http3([
+        "//envoy/stats:stats_interface",
+        "@com_github_google_quiche//:quic_core_error_codes_lib",
+        "@com_github_google_quiche//:quic_core_types_lib",
+    ]),
 )
 
 envoy_cc_library(
