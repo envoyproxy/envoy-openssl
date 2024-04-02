@@ -46,6 +46,7 @@ TAGS
 clang-tidy-fixes.yaml
 clang.bazelrc
 user.bazelrc
+openssl.bazelrc
 cmake-build-debug
 /linux
 bazel.output.txt
