@@ -692,11 +692,13 @@ gtest_discover_tests(utests-bssl-compat)
 ################################################################################
 # Unit Tests built on BoringSSL
 ################################################################################
-add_executable(utests-boring ${utests-source-list})
-target_add_bssl_source(utests-boring ${utests-bssl-source-list})
-target_include_directories(utests-boring PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/source)
-# Add env variable SANITIZE_OPTIONS for optional sanitizers
-target_link_options(utests-boring PRIVATE "$ENV{SANITIZE_OPTIONS}" )
-target_link_libraries(utests-boring PRIVATE BoringSSL::SSL BoringSSL::Crypto)
-target_link_libraries(utests-boring PRIVATE GTest::gtest_main)
-gtest_discover_tests(utests-boring)
+if(BUILD_BORINGSSL)
+  add_executable(utests-boring ${utests-source-list})
+  target_add_bssl_source(utests-boring ${utests-bssl-source-list})
+  target_include_directories(utests-boring PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/source)
+  # Add env variable SANITIZE_OPTIONS for optional sanitizers
+  target_link_options(utests-boring PRIVATE "$ENV{SANITIZE_OPTIONS}" )
+  target_link_libraries(utests-boring PRIVATE BoringSSL::SSL BoringSSL::Crypto)
+  target_link_libraries(utests-boring PRIVATE GTest::gtest_main)
+  gtest_discover_tests(utests-boring)
+endif(BUILD_BORINGSSL)
