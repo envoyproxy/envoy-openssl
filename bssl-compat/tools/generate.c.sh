@@ -25,7 +25,7 @@ function error {
     exit 1
 }
 
-INCLUDE_DIR="$TOP_DIR/external/boringssl/include"
+INCLUDE_DIR="$TOP_DIR/third_party/boringssl/src/include"
 [[ -d "$INCLUDE_DIR" ]] || error "INCLUDE_DIR $INCLUDE_DIR does not exist"
 
 ################################################################################
