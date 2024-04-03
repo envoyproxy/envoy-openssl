@@ -25,10 +25,6 @@ docker build --pull --iidfile "${SCRATCH_DIR}/iid" -f - "${SCRATCH_DIR}" << EOF
     RUN sed -i "s|^deb.*kitware.*$|deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ \$(lsb_release -cs) main|g" /etc/apt/sources.list
     RUN apt update
 
-    # Install Go Binaries
-    RUN wget -qO- https://go.dev/dl/go1.19.11.linux-amd64.tar.gz | tar xz -C /usr/local
-    ENV ENVOY_OPENSSL_PATH=/usr/local/go/bin
-
     # Install OpenSSL 3.0.x
     RUN apt install -y build-essential checkinstall zlib1g-dev
     RUN wget -qO- https://github.com/openssl/openssl/releases/download/openssl-3.0.8/openssl-3.0.8.tar.gz | tar xz -C /

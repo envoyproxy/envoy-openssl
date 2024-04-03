@@ -25,7 +25,7 @@ CMAKE_CURRENT_BINARY_DIR="${2?"CMAKE_CURRENT_BINARY_DIR not specified"}"
 SRC_FILE="${3?"SRC_FILE not specified"}" # e.g. crypto/err/internal.h
 DST_FILE="${4?"DST_FILE not specified"}" # e.g. source/crypto/err/internal.h
 
-SRC_DIR="$CMAKE_CURRENT_SOURCE_DIR/external/boringssl"
+SRC_DIR="$CMAKE_CURRENT_SOURCE_DIR/third_party/boringssl/src"
 PATCH_DIR="$CMAKE_CURRENT_SOURCE_DIR/patch"
 
 #
