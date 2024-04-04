@@ -2,20 +2,34 @@
 
 [Cloud-native high-performance edge/middle/service proxy](https://www.envoyproxy.io/)
 
-Envoy is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CNCF). If you are a
-company that wants to help shape the evolution of technologies that are container-packaged,
-dynamically-scheduled and microservices-oriented, consider joining the CNCF. For details about who's
-involved and how Envoy plays a role, read the CNCF
-[announcement](https://www.cncf.io/blog/2017/09/13/cncf-hosts-envoy/).
+# Envoy OpenSSL
 
-## Envoy OpenSSL
+This README deals with the specifics of this [envoyproxy/envoy-openssl](https://github.com/envoyproxy/envoy-openssl) repository, describing primarily how it differs from the regular [envoyproxy/envoy](https://github.com/envoyproxy/envoy) repository. The full README for the regular [envoyproxy/envoy](https://github.com/envoyproxy/envoy) repository can be found [here](https://github.com/envoyproxy/envoy/blob/main/README.md). 
+
+## Repository Structure
 
 This repository is a copy of the regular [envoyproxy/envoy](https://github.com/envoyproxy/envoy)
 repository, with additions & modifications that enable Envoy to be built on OpenSSL rather than
-BoringSSL.
+BoringSSL. In addition to the regular Envoy repository structure, already described in
+[REPO_LAYOUT.md](REPO_LAYOUT.md), this repository has the following additions & modifications that
+are specific to building Envoy on OpenSSL:
 
-This README deals with the specifics of building Envoy on OpenSSL, whereas the README for the
-regular Envoy can be found [here](https://github.com/envoyproxy/envoy/blob/main/README.md). 
+* `bssl-compat` This additional directory contains the BoringSSL Compatability Layer implementation. This provides an implementation of the BoringSSL API on top of the OpenSSL libraries.
+* `openssl` This additional directory contains config & script files for building Envoy on the `bssl-compat` library rather than on BoringSSL. Where possible, these scripts are minimal wrappers, and delegate most of their behavior to the corresponding scripts in the regular envoy `ci` directory.
+* `WORKSPACE` This is the regular envoy `WORKSPACE` file with an additional `local_repository` declaration for the `bssl-compat` library.
+
+## Branching
+
+It is intended that this repository contains the same `release/v1.xx` branch structure as the
+regular envoy repository, starting from `release/v1.26`. Each of those branches is a copy of the
+identically named branch from the regular [envoyproxy/envoy](https://github.com/envoyproxy/envoy)
+repository, with the addition of:
+
+* The additional script & config files, required to build on OpenSSL, as described above.
+* Modifications to envoy source code that cannot be hidden in the `bssl-compat` layer.
+
+Note that the initial `release/v1.26` branch is *not* intended for production.
+It is anticipated that `release/v1.28` will be the first branch to reach production.
 
 ## Building
 
@@ -31,11 +45,11 @@ Building & running tests, and building the envoy binary itself, is done using th
 script, which handles some openssl specific config and then passes control to the regular `ci/do_ci.sh`
 script.
 
-Although the regular `ci/do_ci.sh` script supports many options for building/testing different variants of envoy,
-including the use of various sanitizers, the envoy-openssl project has so far only been built and tested
-using the `debug` options described below. Any other `do_ci.sh` options that are described
-in the regular envoy documentation [here](https://github.com/envoyproxy/envoy/tree/main/ci#readme)
-_should_ work but have not been tested.
+Although the regular `ci/do_ci.sh` script supports many options for building & testing different
+variants of envoy, as descibed in [ci/README](ci/README.md), including the use of various sanitizers,
+the envoy-openssl project has so far only been built and tested using the `debug` options described
+below. All of the other `ci/do_ci.sh` options that are described in the regular envoy documentation
+[here](https://github.com/envoyproxy/envoy/tree/main/ci#readme) _may_ work but have not been tested.
 
 To build the envoy executable and run specified tests, in debug mode:
 ```bash
@@ -47,14 +61,18 @@ To build just the envoy executable, in debug mode:
 ./openssl/run_envoy_docker.sh './openssl/do_ci.sh debug.server_only'
 ```
 
-After running these build commands, the resulting envoy executable can be found in the host's file system at `/tmp/envoy-docker-build/envoy/x64/source/exe/envoy/envoy`. Note that you can place the build artifacts at a different location on the host by setting ENVOY_DOCKER_BUILD_DIR environment variable _before_ invoking the `openssl/run_envoy_docker.sh` script. For example, running the following command would put the build artifact in `/build/envoy/x64/source/exe/envoy/envoy`:
+After running these build commands, the resulting envoy executable can be found in the host's file
+system at `/tmp/envoy-docker-build/envoy/x64/source/exe/envoy/envoy`. Note that you can place the
+build artifacts at a different location on the host by setting ENVOY_DOCKER_BUILD_DIR environment
+variable _before_ invoking the `openssl/run_envoy_docker.sh` script. For example, running the
+following command would put the build artifact in `/build/envoy/x64/source/exe/envoy/envoy`:
 ```bash
 ENVOY_DOCKER_BUILD_DIR=/build ./openssl/run_envoy_docker.sh './openssl/do_ci.sh debug.server_only'
 ```
 
 Note that, in addition to running the `do_ci.sh` script directly in batch mode, as done in the examples
 above, the `openssl/run_envoy_docker.sh` script can also be used to run an interactive shell, which
-can be more convenient when repeatedly buildin/running tests:
+can be more convenient, for example when repeatedly building & running tests:
 
 ```bash
 host $ ./openssl/run_envoy_docker.sh bash
