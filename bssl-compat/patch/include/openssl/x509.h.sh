@@ -87,6 +87,15 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_VERIFY_PARAM_set_flags \
   --uncomment-func-decl X509_VERIFY_PARAM_clear_flags \
   --uncomment-func-decl X509_VERIFY_PARAM_set_time_posix \
+  --uncomment-func-decl X509_NAME_oneline \
+  --uncomment-func-decl X509_CRL_get_issuer \
+  --uncomment-func-decl X509_VERIFY_PARAM_get_flags \
+  --uncomment-func-decl X509_STORE_CTX_get0_chain \
+  --uncomment-func-decl X509_STORE_set_check_crl \
+  --uncomment-func-decl X509_STORE_set_get_crl \
+  --uncomment-func-decl X509_CRL_dup \
+  --uncomment-typedef X509_STORE_CTX_get_crl_fn \
+  --uncomment-typedef X509_STORE_CTX_check_crl_fn \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(X509,' \
   --uncomment-regex 'BORINGSSL_MAKE_UP_REF(X509,' \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(X509_CRL,' \
