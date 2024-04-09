@@ -445,6 +445,7 @@ target_add_bssl_function(bssl-compat
   SHA512
   SSL_accept
   SSL_accept
+  SSL_alert_desc_string_long
   SSL_CIPHER_get_auth_nid
   SSL_CIPHER_get_cipher_nid
   SSL_CIPHER_get_digest_nid
@@ -536,6 +537,8 @@ target_add_bssl_function(bssl-compat
   X509_alias_get0
   X509_cmp
   X509_CRL_cmp
+  X509_CRL_dup
+  X509_CRL_get_issuer
   X509_CRL_free
   X509_CRL_up_ref
   X509_digest
@@ -567,6 +570,7 @@ target_add_bssl_function(bssl-compat
   X509_NAME_get_entry
   X509_NAME_get_index_by_NID
   X509_NAME_new
+  X509_NAME_oneline
   X509_NAME_print_ex
   X509_new
   X509_PUBKEY_get
@@ -580,6 +584,7 @@ target_add_bssl_function(bssl-compat
   X509_STORE_CTX_get_error_depth
   X509_STORE_CTX_get_ex_data
   X509_STORE_CTX_get0_cert
+  X509_STORE_CTX_get0_chain
   X509_STORE_CTX_get0_param
   X509_STORE_CTX_new
   X509_STORE_CTX_set_default
@@ -591,11 +596,14 @@ target_add_bssl_function(bssl-compat
   X509_STORE_new
   X509_STORE_up_ref
   X509_STORE_set_flags
+  X509_STORE_set_get_crl
+  X509_STORE_set_check_crl
   X509_STORE_set_verify_cb
   X509_up_ref
   X509_verify
   X509_verify_cert
   X509_VERIFY_PARAM_clear_flags
+  X509_VERIFY_PARAM_get_flags
   X509_VERIFY_PARAM_set_flags
   X509_VERIFY_PARAM_set1
 )
