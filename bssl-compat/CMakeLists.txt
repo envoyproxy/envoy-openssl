@@ -464,6 +464,7 @@ target_add_bssl_function(bssl-compat
   SSL_CTX_set_cert_store
   SSL_CTX_get_ex_data
   SSL_CTX_get_options
+  SSL_CTX_get_session_cache_mode
   SSL_CTX_get_verify_mode
   SSL_CTX_get0_certificate
   SSL_CTX_get0_param
