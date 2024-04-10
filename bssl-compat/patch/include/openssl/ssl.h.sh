@@ -198,5 +198,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_alert_desc_string_long \
   --uncomment-func-decl SSL_set_enforce_rsa_key_usage \
   --uncomment-func-decl SSL_was_key_usage_invalid \
+  --uncomment-func-decl SSL_CTX_get_session_cache_mode \
 
 
