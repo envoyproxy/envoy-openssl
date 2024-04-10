@@ -5,8 +5,7 @@ test --test_env=ENVOY_IP_TEST_VERSIONS=v4only
 
 # As of today we do not support QUIC/HTTP3,
 # hence we exclude it from the build, always.
-build --//bazel:http3=false
-build --deleted_packages=//test/common/quic
-build --deleted_packages=//test/common/quic/platform
+build --deleted_packages=//test/common/quic,//test/common/quic/platform
+build --//bazel:http3=False
 
 try-import %workspace%/openssl.bazelrc
