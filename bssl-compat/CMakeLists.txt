@@ -178,10 +178,12 @@ add_library(bssl-compat STATIC
   source/SSL_set_cert_cb.cc
   source/SSL_set_chain_and_key.cc
   source/SSL_set_client_CA_list.cc
+  source/SSL_set_enforce_rsa_key_usage.cc
   source/SSL_set_ocsp_response.cc
   source/SSL_set_renegotiate_mode.cc
   source/SSL_set_info_callback.cc
   source/SSL_set_verify.cc
+  source/SSL_was_key_usage_invalid.cc
   source/stack.c
   source/TLS_VERSION_to_string.cc
   source/TLS_with_buffers_method.cc
