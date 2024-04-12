@@ -1,6 +1,7 @@
 #include <openssl/err.h>
 #include <ossl.h>
 #include <map>
+#include <string>
 
 
 uint64_t o2b(uint64_t e) {
