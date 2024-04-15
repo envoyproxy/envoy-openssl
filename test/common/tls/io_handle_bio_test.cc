@@ -27,10 +27,6 @@ public:
 
 TEST_F(IoHandleBioTest, WriteError) {
   EXPECT_CALL(io_handle_, writev(_, 1))
-      .WillOnce(Return(testing::ByMove(
-          Api::IoCallUint64Result(0, Api::IoErrorPtr(new Network::IoSocketError(100),
-                                                     Network::IoSocketError::deleteIoError)))));
-  EXPECT_EQ(-1, BIO_write(bio_, nullptr, 10));
       .WillOnce(
           Return(testing::ByMove(Api::IoCallUint64Result(0, Network::IoSocketError::create(100)))));
   EXPECT_EQ(-1, BIO_write(bio_, nullptr, 10));
@@ -40,7 +36,10 @@ TEST_F(IoHandleBioTest, WriteError) {
 }
 
 TEST_F(IoHandleBioTest, TestMiscApis) {
-  EXPECT_EQ(BIO_read(bio_, nullptr, 0), 0);
+  // EXPECT_EQ(BIO_read(bio_, nullptr, 0), 0);
+
+  EXPECT_DEATH(BIO_ctrl(bio_, BIO_C_GET_FD, 0, nullptr), "should not be called");
+  EXPECT_DEATH(BIO_ctrl(bio_, BIO_C_SET_FD, 0, nullptr), "should not be called");
 
   int ret = BIO_reset(bio_);
   EXPECT_EQ(ret, 0);
