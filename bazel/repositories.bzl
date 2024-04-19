@@ -1416,3 +1416,4 @@ def _com_github_maxmind_libmaxminddb():
         name = "maxmind",
         actual = "@envoy//bazel/foreign_cc:maxmind_linux",
     )
+
