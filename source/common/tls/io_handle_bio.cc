@@ -65,18 +65,6 @@ long io_handle_ctrl(BIO*, int cmd, long, void*) {
   long ret = 1;
 
   switch (cmd) {
-  case BIO_C_SET_FD:
-    RELEASE_ASSERT(false, "should not be called");
-    break;
-  case BIO_C_GET_FD:
-    RELEASE_ASSERT(false, "should not be called");
-    break;
-  case BIO_CTRL_GET_CLOSE:
-    ret = BIO_get_shutdown(b);
-    break;
-  case BIO_CTRL_SET_CLOSE:
-    BIO_set_shutdown(b, int(num));
-    break;
   case BIO_CTRL_FLUSH:
     ret = 1;
     break;
