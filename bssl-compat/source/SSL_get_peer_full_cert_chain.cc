@@ -17,6 +17,7 @@
  */
 #include <openssl/ssl.h>
 #include <ossl.h>
+#include "override.h"
 
 
 /*
@@ -58,27 +59,45 @@
  * is not incremented, and must not be freed.
  */
 extern "C" STACK_OF(X509) *SSL_get_peer_full_cert_chain(const SSL *ssl) {
-  // ossl_SSL_get_peer_cert_chain() doesn't return ownership of either the stack
-  // object or the elements it contains, and no X509 ref counts are incremented.
-  STACK_OF(X509)* tmp = (STACK_OF(X509)*)ossl.ossl_SSL_get_peer_cert_chain(ssl);
-
-  // Make a shallow copy of the stack if it's not null
-  STACK_OF(X509)* result = (tmp ? sk_X509_dup(tmp) : NULL);
-
-  if (result && ossl.ossl_SSL_is_server(ssl)) {
-    // The ssl object represents a server, so result does not contain the
-    // client's leaf certificate. Therefore, we must get the client's leaf
-    // certificate separately, and insert it into the result stack.
-    // We use SSL_get0_peer_certificate() so that the ownership of the X509 is
-    // not passed back to us, in order to match the ownership status of the
-    // other X509 objects already in the result stack.
-    X509* client_leaf_cert = ossl.ossl_SSL_get0_peer_certificate(ssl);
-
-    if ((client_leaf_cert == NULL) || !sk_X509_insert(result, client_leaf_cert, 0)) {
-      sk_X509_free(result);
-      result = NULL;
-    }
+  // If someone has provided us with an override result, just return that
+  if (auto r = OverrideResult<SSL_get_peer_full_cert_chain>::get(ssl)) {
+    return r->value();
   }
 
-  return result;
+  // For a client, SSL_get_peer_cert_chain() gives us exactly what we want in
+  // terms of the content and ownership semantics so just return the result.
+  if (!ossl_SSL_is_server(ssl)) {
+    return reinterpret_cast<STACK_OF(X509)*>(ossl_SSL_get_peer_cert_chain(ssl));
+  }
+
+  // For a server we have to concatenate the client's leaf + intermediate
+  // certificates (if any), and we also need to return the correct ownership
+  if (X509* leaf = ossl_SSL_get0_peer_certificate(ssl)) {
+    STACK_OF(X509) *result {nullptr};
+
+    if (STACK_OF(X509) *chain = reinterpret_cast<STACK_OF(X509)*>(ossl_SSL_get_peer_cert_chain(ssl))) {
+      result = sk_X509_dup(chain);
+      sk_X509_insert(result, leaf, 0);
+    }
+    else {
+      result = sk_X509_new_null();
+      sk_X509_push(result, leaf);
+    }
+
+    // Now squirrel away the STACK_OF(X509) so that we can return it without
+    // returning ownership to the caller, also ensuring that it doesn't leak
+    static int index {SSL_get_ex_new_index(0, nullptr, nullptr, nullptr,
+                          +[](void *, void *ptr, CRYPTO_EX_DATA *, int, long, void*) {
+                            printf("%s()\n", __func__);
+                            if (ptr) sk_X509_free(reinterpret_cast<STACK_OF(X509)*>(ptr));
+                          })};
+    if (void *old = ossl_SSL_get_ex_data(const_cast<SSL*>(ssl), index)) {
+      sk_X509_free(reinterpret_cast<STACK_OF(X509)*>(old));
+    }
+    ossl_SSL_set_ex_data(const_cast<SSL*>(ssl), index, result);
+
+    return result;
+  }
+
+  return nullptr;
 }

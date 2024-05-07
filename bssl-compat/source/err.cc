@@ -99,6 +99,7 @@ extern "C" const char *ERR_reason_error_string(uint32_t packed_error) {
     { "unsupported protocol",            "UNSUPPORTED_PROTOCOL"             },
     { "no shared cipher",                "NO_SHARED_CIPHER"                 },
     { "no suitable signature algorithm", "NO_COMMON_SIGNATURE_ALGORITHMS"   },
+    { "certificate verify failed",       "CERTIFICATE_VERIFY_FAILED"        },
   };
 
   const char *result = ossl.ossl_ERR_reason_error_string(b2o(packed_error));

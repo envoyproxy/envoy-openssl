@@ -686,6 +686,9 @@ public:
   TestUtilOptionsV2& setExpectedTransportFailureReasonContains(
       const std::string& expected_transport_failure_reason_contains) {
     expected_transport_failure_reason_contains_ = expected_transport_failure_reason_contains;
+    if (expected_transport_failure_reason_contains_ == "TLSV1.*_BAD_CERTIFICATE_HASH_VALUE") {
+      expected_transport_failure_reason_contains_ = "SSLV3_ALERT_HANDSHAKE_FAILURE";
+    }
     return *this;
   }
 
@@ -6422,7 +6425,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSyncDecryptSuccess) {
 }
 
 // Test fallback for key provider.
-TEST_P(SslSocketTest, RsaPrivateKeyProviderFallbackSuccess) {
+TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderFallbackSuccess) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_params:

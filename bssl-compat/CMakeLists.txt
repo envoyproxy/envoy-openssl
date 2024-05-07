@@ -99,6 +99,8 @@ add_library(bssl-compat STATIC
   source/NAME_CONSTRAINTS_free.cc
   source/NAME_CONSTRAINTS_new.cc
   source/ossl.c
+  source/override.h
+  source/override.cc
   source/PEM_read_bio_PrivateKey.cc
   source/PEM_read_bio_RSAPrivateKey.c
   source/PEM_read_bio_X509.cc
