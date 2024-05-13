@@ -304,10 +304,6 @@ TEST(SSLTest, test_SSL_get_peer_full_cert_chain) {
     ASSERT_TRUE(client_certs);
     ASSERT_EQ(4, sk_X509_num(client_certs));
 
-#ifdef BSSL_COMPAT
-    sk_X509_free(client_certs); // bssl-compat library gives us ownership, but BoringSSL doesn't
-#endif
-
     char buf[sizeof(MESSAGE)];
     ASSERT_EQ(sizeof(MESSAGE), SSL_read(ssl.get(), buf, sizeof(buf)));
     ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
@@ -342,10 +338,6 @@ TEST(SSLTest, test_SSL_get_peer_full_cert_chain) {
     STACK_OF(X509) *server_certs = SSL_get_peer_full_cert_chain(ssl.get());
     ASSERT_TRUE(server_certs);
     ASSERT_EQ(4, sk_X509_num(server_certs));
-
-#ifdef BSSL_COMPAT
-    sk_X509_free(server_certs); // bssl-compat library gives us ownership, but BoringSSL doesn't
-#endif
 
     char buf[sizeof(MESSAGE)];
     ASSERT_EQ(sizeof(MESSAGE), SSL_write(ssl.get(), MESSAGE, sizeof(MESSAGE)));
