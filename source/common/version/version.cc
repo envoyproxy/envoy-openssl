@@ -37,7 +37,16 @@ const envoy::config::core::v3::BuildVersion& VersionInfo::buildVersion() {
   return *result;
 }
 
-bool VersionInfo::sslFipsCompliant() { return FIPS_mode() == 1; }
+bool VersionInfo::sslFipsCompliant() {
+#ifdef ENVOY_SSL_FIPS
+// (tedjpoole) This assert is commented out because we (mis)use the --define=boringssl=fips
+// option to compile out QUIC support (because quiche/quic won't build on BoringSSL FIPS).
+//RELEASE_ASSERT(FIPS_mode() == 1, "FIPS mode must be enabled in Envoy FIPS configuration.");
+  return true;
+#else
+  return false;
+#endif
+}
 
 const std::string& VersionInfo::buildType() {
 #ifdef NDEBUG
