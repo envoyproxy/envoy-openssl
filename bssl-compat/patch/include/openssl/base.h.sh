@@ -68,7 +68,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef X509_STORE_CTX \
   --uncomment-typedef-redef X509_STORE \
   --uncomment-typedef-redef ECDSA_SIG --sed 's/ossl_ecdsa_sig_st/ossl_ECDSA_SIG_st/' \
-  --uncomment-typedef BIO_METHOD \
+  --uncomment-typedef-redef BIO_METHOD \
   --uncomment-macro BORINGSSL_UNSAFE_DETERMINISTIC_MODE \
   --uncomment-macro BORINGSSL_API_VERSION \
   --uncomment-macro OPENSSL_EXPORT \
