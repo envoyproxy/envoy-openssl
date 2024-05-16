@@ -503,7 +503,8 @@ TEST_P(SslIntegrationTest, LogPeerIpSanUnsupportedIpVersion) {
   }
 }
 
-TEST_P(SslIntegrationTest, AsyncCertValidationSucceeds) {
+// This test is disabled because it uses the timed_cert_validator which we don't support.
+TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationSucceeds) {
   // Config client to use an async cert validator which defer the actual validation by 5ms.
   envoy::config::core::v3::TypedExtensionConfig* custom_validator_config =
       new envoy::config::core::v3::TypedExtensionConfig();
@@ -533,7 +534,8 @@ typed_config:
   connection->close(Network::ConnectionCloseType::NoFlush);
 }
 
-TEST_P(SslIntegrationTest, AsyncCertValidationSucceedsWithLocalAddress) {
+// This test is disabled because it uses the timed_cert_validator which we don't support.
+TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationSucceedsWithLocalAddress) {
   envoy::config::core::v3::TypedExtensionConfig* custom_validator_config =
       new envoy::config::core::v3::TypedExtensionConfig();
   TestUtility::loadFromYaml(TestEnvironment::substitute(R"EOF(
@@ -586,7 +588,8 @@ typed_config:
   connection->close(Network::ConnectionCloseType::NoFlush);
 }
 
-TEST_P(SslIntegrationTest, AsyncCertValidationAfterTearDown) {
+// This test is disabled because it uses the timed_cert_validator which we don't support.
+TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationAfterTearDown) {
   envoy::config::core::v3::TypedExtensionConfig* custom_validator_config =
       new envoy::config::core::v3::TypedExtensionConfig();
   TestUtility::loadFromYaml(TestEnvironment::substitute(R"EOF(
@@ -635,7 +638,8 @@ typed_config:
   }
 }
 
-TEST_P(SslIntegrationTest, AsyncCertValidationAfterSslShutdown) {
+// This test is disabled because it uses the timed_cert_validator which we don't support.
+TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationAfterSslShutdown) {
   envoy::config::core::v3::TypedExtensionConfig* custom_validator_config =
       new envoy::config::core::v3::TypedExtensionConfig();
   TestUtility::loadFromYaml(TestEnvironment::substitute(R"EOF(
