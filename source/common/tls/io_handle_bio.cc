@@ -99,6 +99,7 @@ BIO* BIO_new_io_handle(Envoy::Network::IoHandle* io_handle) {
 
   // Initialize the BIO
   BIO_set_data(b, io_handle);
+  BIO_set_shutdown(b, 0);
   BIO_set_init(b, 1);
 
   return b;

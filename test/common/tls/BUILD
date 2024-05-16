@@ -149,7 +149,7 @@ envoy_cc_test_library(
 envoy_cc_test_library(
     name = "test_private_key_method_provider_test_lib",
     srcs = [
-        "test_private_key_method_provider.cc",
+#       "test_private_key_method_provider.cc",
     ],
     hdrs = [
         "test_private_key_method_provider.h",

@@ -4180,7 +4180,7 @@ envoy_quic_cc_library(
     ],
 )
 
-envoy_cc_library(
+envoy_quic_cc_library(
     name = "quic_core_types_lib",
     srcs = [
         "quiche/quic/core/quic_connection_id.cc",
@@ -4192,11 +4192,7 @@ envoy_cc_library(
         "quiche/quic/core/quic_packet_number.h",
         "quiche/quic/core/quic_types.h",
     ],
-    copts = quiche_copts,
     external_deps = ["ssl"],
-    repository = "@envoy",
-    tags = ["nofips"],
-    visibility = ["//visibility:public"],
     deps = [
         ":quic_core_crypto_random_lib",
         ":quic_core_error_codes_lib",
