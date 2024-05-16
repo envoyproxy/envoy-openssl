@@ -358,6 +358,12 @@ target_add_bssl_function(bssl-compat
   EC_KEY_new_by_curve_name
   EC_KEY_free
   EC_KEY_get0_group
+  EC_KEY_get0_private_key
+  EC_KEY_set_public_key
+  EC_KEY_set_private_key
+  EC_POINT_free
+  EC_POINT_mul
+  EC_POINT_new
   ECDSA_size
   ECDSA_SIG_free
   ECDSA_SIG_get0
