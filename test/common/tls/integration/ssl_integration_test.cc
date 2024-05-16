@@ -386,7 +386,8 @@ TEST_P(SslIntegrationTest, LogPeerIpSanUnsupportedIpVersion) {
   EXPECT_EQ(result, "1.2.3.4,0:1:2:3::4");
 }
 
-TEST_P(SslIntegrationTest, AsyncCertValidationSucceeds) {
+// This test is disabled because it uses the timed_cert_validator which we don't support.
+TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationSucceeds) {
   // Config client to use an async cert validator which defer the actual validation by 5ms.
   auto custom_validator_config = std::make_unique<envoy::config::core::v3::TypedExtensionConfig>(
       envoy::config::core::v3::TypedExtensionConfig());
@@ -416,9 +417,10 @@ typed_config:
   connection->close(Network::ConnectionCloseType::NoFlush);
 }
 
-TEST_P(SslIntegrationTest, AsyncCertValidationSucceedsWithLocalAddress) {
-  auto custom_validator_config = std::make_unique<envoy::config::core::v3::TypedExtensionConfig>(
-      envoy::config::core::v3::TypedExtensionConfig());
+// This test is disabled because it uses the timed_cert_validator which we don't support.
+TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationSucceedsWithLocalAddress) {
+  envoy::config::core::v3::TypedExtensionConfig* custom_validator_config =
+      new envoy::config::core::v3::TypedExtensionConfig();
   TestUtility::loadFromYaml(TestEnvironment::substitute(R"EOF(
 name: "envoy.tls.cert_validator.timed_cert_validator"
 typed_config:
@@ -469,9 +471,10 @@ typed_config:
   connection->close(Network::ConnectionCloseType::NoFlush);
 }
 
-TEST_P(SslIntegrationTest, AsyncCertValidationAfterTearDown) {
-  auto custom_validator_config = std::make_unique<envoy::config::core::v3::TypedExtensionConfig>(
-      envoy::config::core::v3::TypedExtensionConfig());
+// This test is disabled because it uses the timed_cert_validator which we don't support.
+TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationAfterTearDown) {
+  envoy::config::core::v3::TypedExtensionConfig* custom_validator_config =
+      new envoy::config::core::v3::TypedExtensionConfig();
   TestUtility::loadFromYaml(TestEnvironment::substitute(R"EOF(
 name: "envoy.tls.cert_validator.timed_cert_validator"
 typed_config:
@@ -518,9 +521,10 @@ typed_config:
   }
 }
 
-TEST_P(SslIntegrationTest, AsyncCertValidationAfterSslShutdown) {
-  auto custom_validator_config = std::make_unique<envoy::config::core::v3::TypedExtensionConfig>(
-      envoy::config::core::v3::TypedExtensionConfig());
+// This test is disabled because it uses the timed_cert_validator which we don't support.
+TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationAfterSslShutdown) {
+  envoy::config::core::v3::TypedExtensionConfig* custom_validator_config =
+      new envoy::config::core::v3::TypedExtensionConfig();
   TestUtility::loadFromYaml(TestEnvironment::substitute(R"EOF(
 name: "envoy.tls.cert_validator.timed_cert_validator"
 typed_config:
