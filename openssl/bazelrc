@@ -14,5 +14,3 @@ common --//bazel:http3=False
 common --define=boringssl=fips
 build --build_tag_filters=-nofips
 test --test_tag_filters=-nofips
-
-try-import %workspace%/openssl.bazelrc
