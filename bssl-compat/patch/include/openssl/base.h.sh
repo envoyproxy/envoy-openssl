@@ -45,9 +45,11 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef BIGNUM \
   --uncomment-typedef-redef BUF_MEM \
   --uncomment-typedef-redef BIO \
+  --uncomment-typedef-redef BN_CTX \
   --uncomment-typedef-redef BN_GENCB \
   --uncomment-typedef-redef EC_GROUP \
   --uncomment-typedef-redef EC_KEY \
+  --uncomment-typedef-redef EC_POINT \
   --uncomment-typedef-redef ENGINE \
   --uncomment-typedef-redef EVP_MD_CTX --sed 's/ossl_env_md_ctx_st/ossl_evp_md_ctx_st/' \
   --uncomment-typedef-redef EVP_MD --sed 's/ossl_env_md_st/ossl_evp_md_st/' \
