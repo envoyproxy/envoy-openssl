@@ -41,9 +41,8 @@ build container, but with some additional requirements installed, including Open
 container is launched using the the `openssl/run_envoy_docker.sh` script, which handles some openssl
 specific config and then passes control to the regular `ci/run_envoy_docker.sh` script.
 
-Building & running tests, and building the envoy binary itself, is done using the `openssl/do_ci.sh`
-script, which handles some openssl specific config and then passes control to the regular `ci/do_ci.sh`
-script.
+Building & running tests, and building the envoy binary itself, is done using the regular
+`ci/do_ci.sh` script.
 
 Although the regular `ci/do_ci.sh` script supports many options for building & testing different
 variants of envoy, as descibed in [ci/README](ci/README.md), including the use of various sanitizers,
@@ -53,12 +52,12 @@ below. All of the other `ci/do_ci.sh` options that are described in the regular 
 
 To build the envoy executable and run specified tests, in debug mode:
 ```bash
-./openssl/run_envoy_docker.sh './openssl/do_ci.sh debug //test/extensions/transport_sockets/tls/...'
+./openssl/run_envoy_docker.sh './ci/do_ci.sh debug //test/extensions/transport_sockets/tls/...'
 ```
 
 To build just the envoy executable, in debug mode:
 ```bash
-./openssl/run_envoy_docker.sh './openssl/do_ci.sh debug.server_only'
+./openssl/run_envoy_docker.sh './ci/do_ci.sh debug.server_only'
 ```
 
 After running these build commands, the resulting envoy executable can be found in the host's file
@@ -67,7 +66,7 @@ build artifacts at a different location on the host by setting ENVOY_DOCKER_BUIL
 variable _before_ invoking the `openssl/run_envoy_docker.sh` script. For example, running the
 following command would put the build artifact in `/build/envoy/x64/source/exe/envoy/envoy`:
 ```bash
-ENVOY_DOCKER_BUILD_DIR=/build ./openssl/run_envoy_docker.sh './openssl/do_ci.sh debug.server_only'
+ENVOY_DOCKER_BUILD_DIR=/build ./openssl/run_envoy_docker.sh './ci/do_ci.sh debug.server_only'
 ```
 
 Note that, in addition to running the `do_ci.sh` script directly in batch mode, as done in the examples
@@ -77,8 +76,8 @@ can be more convenient, for example when repeatedly building & running tests:
 ```bash
 host $ ./openssl/run_envoy_docker.sh bash
 
-container $ ./openssl/do_ci.sh debug //test/extensions/transport_sockets/tls/...
-container $ ./openssl/do_ci.sh debug //test/common/runtime/...
+container $ ./ci/do_ci.sh debug //test/extensions/transport_sockets/tls/...
+container $ ./ci/do_ci.sh debug //test/common/runtime/...
 ```
 
 ## Running Envoy
@@ -93,21 +92,8 @@ Expecting to load OpenSSL version 3.0.x but got 1.1.6
 ```
 
 To ensure that envoy loads the OpenSSL 3.0.x libraries, their path needs to be prepended to `LD_LIBRARY_PATH` before it is executed:
-
-<<<<<<< HEAD
-If you've found a vulnerability or a potential vulnerability in Envoy please let us know at
-[envoy-security](mailto:envoy-security@googlegroups.com). We'll send a confirmation
-email to acknowledge your report, and we'll send an additional email when we've identified the issue
-positively or negatively.
-
-For further details please see our complete [security release process](SECURITY.md).
-
-## Releases
-
-For further details please see our [release process](https://github.com/envoyproxy/envoy/blob/main/RELEASES.md).
-=======
 ```bash
 $ LD_LIBRARY_PATH=$OPENSSL_ROOT_DIR/lib64:$LD_LIBRARY_PATH /build/envoy/x64/source/exe/envoy/envoy --version
 /build/envoy/x64/source/exe/envoy/envoy  version: dcd3e1c50ace27b14441fc8b28650b62c0bf2dd2/1.26.8-dev/Modified/DEBUG/BoringSSL
 ```
->>>>>>> ef628dc3f7 (Added basic build instructions and scripts)
+
