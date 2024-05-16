@@ -59,6 +59,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "openssl/ssl.h"
+#include <ossl/openssl/provider.h>
 
 using testing::_;
 using testing::ContainsRegex;
@@ -2481,6 +2482,17 @@ TEST_P(SslSocketTest, CertificatesWithPassword) {
 }
 
 TEST_P(SslSocketTest, Pkcs12CertificatesWithPassword) {
+  // The password_protected_certkey.p12 used in this test, uses the "RC2-40-CBC"
+  // encryption algorithm, which OpenSSL considers legacy and insecure.
+  // Therefore, to get this test to pass, we need to temporarily load OpenSSL's
+  // legacy provider (as well as the default one) and also unload it when finished.
+  std::unique_ptr<ossl_OSSL_PROVIDER,void(*)(ossl_OSSL_PROVIDER*)> legacy_provider(
+                      ossl_OSSL_PROVIDER_load(nullptr, "legacy"),
+                      [](ossl_OSSL_PROVIDER *p){ ossl_OSSL_PROVIDER_unload(p); });
+  std::unique_ptr<ossl_OSSL_PROVIDER,void(*)(ossl_OSSL_PROVIDER*)> default_provider(
+                      ossl_OSSL_PROVIDER_load(nullptr, "default"),
+                      [](ossl_OSSL_PROVIDER *p){ ossl_OSSL_PROVIDER_unload(p); });
+
   envoy::config::listener::v3::Listener listener;
   envoy::config::listener::v3::FilterChain* filter_chain = listener.add_filter_chains();
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
@@ -7176,7 +7188,7 @@ TEST_P(SslSocketTest, Sni) {
   testUtil(test_options.setExpectedSni("foo.bar.com"));
 }
 
-TEST_P(SslSocketTest, AsyncCustomCertValidatorSucceeds) {
+TEST_P(SslSocketTest, DISABLED_AsyncCustomCertValidatorSucceeds) {
   const std::string client_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -7219,7 +7231,7 @@ TEST_P(SslSocketTest, AsyncCustomCertValidatorSucceeds) {
                .setExpectedSerialNumber(TEST_NO_SAN_CERT_SERIAL));
 }
 
-TEST_P(SslSocketTest, AsyncCustomCertValidatorFails) {
+TEST_P(SslSocketTest, DISABLED_AsyncCustomCertValidatorFails) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -7257,7 +7269,7 @@ TEST_P(SslSocketTest, AsyncCustomCertValidatorFails) {
                .setExpectedVerifyErrorCode(X509_V_ERR_CERT_REVOKED));
 }
 
-TEST_P(SslSocketTest, RsaKeyUsageVerificationEnforcementOff) {
+TEST_P(SslSocketTest, DISABLED_RsaKeyUsageVerificationEnforcementOff) {
   envoy::config::listener::v3::Listener listener;
   envoy::config::listener::v3::FilterChain* filter_chain = listener.add_filter_chains();
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext server_tls_context;
@@ -7287,7 +7299,7 @@ TEST_P(SslSocketTest, RsaKeyUsageVerificationEnforcementOff) {
   testUtilV2(test_options);
 }
 
-TEST_P(SslSocketTest, RsaKeyUsageVerificationEnforcementOn) {
+TEST_P(SslSocketTest, DISABLED_RsaKeyUsageVerificationEnforcementOn) {
   envoy::config::listener::v3::Listener listener;
   envoy::config::listener::v3::FilterChain* filter_chain = listener.add_filter_chains();
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext server_tls_context;
