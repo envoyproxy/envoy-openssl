@@ -44,16 +44,15 @@ add_library(bssl-compat STATIC
   source/ASN1_TIME_free.cc
   source/BASIC_CONSTRAINTS_free.cc
   source/BASIC_CONSTRAINTS_new.cc
-  source/bio_meth_map.cpp
   source/BIO_free.cc
   source/BIO_mem_contents.cc
+  source/BIO_meth_set_ctrl.cc
+  source/BIO_meth_set_read.cc
+  source/BIO_meth_set_write.cc
   source/BIO_new_bio_pair.cc
-  source/BIO_new.cc
   source/BIO_pending.cc
   source/BIO_printf.cc
   source/BIO_read_asn1.c
-  source/BIO_s_mem.cc
-  source/BIO_s_socket.cc
   source/BIO_snprintf.cc
   source/BIO_vfree.cc
   source/BN_cmp_word.cc
@@ -315,6 +314,8 @@ target_add_bssl_function(bssl-compat
   BIO_get_init
   BIO_get_mem_ptr
   BIO_get_shutdown
+  BIO_meth_new
+  BIO_new
   BIO_new_connect
   BIO_new_mem_buf
   BIO_puts
@@ -327,6 +328,8 @@ target_add_bssl_function(bssl-compat
   BIO_set_retry_read
   BIO_set_retry_write
   BIO_set_shutdown
+  BIO_s_mem
+  BIO_s_socket
   BIO_should_read
   BIO_should_retry
   BIO_should_write
@@ -670,7 +673,6 @@ set(utests-bssl-source-list
 set(utests-source-list
   # Our hand written bssl-compat tests
   source/test/test_asn1.cc
-  source/test/test_bio.cc
   source/test/test_bn.cc
   source/test/test_cipher.cc
   source/test/test_crypto.cc
