@@ -11,9 +11,11 @@ def envoy_cc_platform_dep(name):
         "//conditions:default": [name + "_posix"],
     })
 
+# When building on bssl-compat, ignore whether we are building with BoringSSL
+# in FIPS or non FIPS mode, and just pretend it's in the default non-FIPS mode.
 def envoy_select_boringssl(if_fips, default = None, if_disabled = None):
     return select({
-        "@envoy//bazel:boringssl_fips": if_fips,
+        "@envoy//bazel:boringssl_fips": default or [],
         "@envoy//bazel:boringssl_disabled": if_disabled or [],
         "//conditions:default": default or [],
     })
