@@ -197,7 +197,7 @@ TEST_P(TlsInspectorIntegrationTest, JA3FingerprintIsSet) {
   client_->close(Network::ConnectionCloseType::NoFlush);
 
   EXPECT_THAT(waitForAccessLog(listener_access_log_name_),
-              testing::Eq("71d1f47d1125ac53c3c6a4863c087cfe"));
+              testing::Eq("54619c7296adab310ed514d06812d95f"));
 
   test_server_->waitUntilHistogramHasSamples("tls_inspector.bytes_processed");
   auto bytes_processed_histogram = test_server_->histogram("tls_inspector.bytes_processed");
@@ -206,7 +206,7 @@ TEST_P(TlsInspectorIntegrationTest, JA3FingerprintIsSet) {
       1);
   EXPECT_EQ(static_cast<int>(TestUtility::readSampleSum(test_server_->server().dispatcher(),
                                                         *bytes_processed_histogram)),
-            115);
+            145);
 }
 
 TEST_P(TlsInspectorIntegrationTest, RequestedBufferSizeCanGrow) {
@@ -252,7 +252,7 @@ TEST_P(TlsInspectorIntegrationTest, RequestedBufferSizeCanGrow) {
       1);
   EXPECT_EQ(static_cast<int>(TestUtility::readSampleSum(test_server_->server().dispatcher(),
                                                         *bytes_processed_histogram)),
-            515);
+            405);
 }
 
 INSTANTIATE_TEST_SUITE_P(IpVersions, TlsInspectorIntegrationTest,
