@@ -411,7 +411,6 @@ void testUtil(const TestUtilOptions& options) {
       .WillByDefault(ReturnRef(*server_api));
 
   // For private key method testing.
-<<<<<<< HEAD:test/common/tls/ssl_socket_test.cc
   NiceMock<Ssl::MockContextManager> context_manager;
   Extensions::PrivateKeyMethodProvider::TestPrivateKeyMethodFactory test_factory;
   Registry::InjectFactory<Ssl::PrivateKeyMethodProviderInstanceFactory>
@@ -425,22 +424,6 @@ void testUtil(const TestUtilOptions& options) {
         .WillOnce(ReturnRef(private_key_method_manager))
         .WillRepeatedly(ReturnRef(private_key_method_manager));
   }
-=======
-  ASSERT_FALSE(options.expectedPrivateKeyMethod()) << "Private Key Method Provider not supported";
-  // NiceMock<Ssl::MockContextManager> context_manager;
-  // Extensions::PrivateKeyMethodProvider::TestPrivateKeyMethodFactory test_factory;
-  // Registry::InjectFactory<Ssl::PrivateKeyMethodProviderInstanceFactory>
-  //     test_private_key_method_factory(test_factory);
-  // PrivateKeyMethodManagerImpl private_key_method_manager;
-  // if (options.expectedPrivateKeyMethod()) {
-  //   EXPECT_CALL(server_factory_context, sslContextManager())
-  //       .WillOnce(ReturnRef(context_manager))
-  //       .WillRepeatedly(ReturnRef(context_manager));
-  //   EXPECT_CALL(context_manager, privateKeyMethodManager())
-  //       .WillOnce(ReturnRef(private_key_method_manager))
-  //       .WillRepeatedly(ReturnRef(private_key_method_manager));
-  // }
->>>>>>> e496e5afa2 (Code changes to compile on bssl-compat/openssl):test/extensions/transport_sockets/tls/ssl_socket_test.cc
 
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext server_tls_context;
   TestUtility::loadFromYaml(TestEnvironment::substitute(options.serverCtxYaml()),
