@@ -5,6 +5,7 @@ set -euo pipefail
 uncomment.sh "$1" --comment -h \
   --uncomment-func-decl EVP_PKEY_new \
   --uncomment-func-decl EVP_PKEY_free \
+  --uncomment-func-decl EVP_PKEY_up_ref \
   --uncomment-func-decl EVP_PKEY_cmp \
   --uncomment-func-decl EVP_PKEY_id \
   --uncomment-func-decl EVP_PKEY_assign_RSA \
@@ -26,5 +27,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl EVP_DigestVerifyFinal \
   --uncomment-func-decl EVP_PKEY_CTX_set_rsa_padding \
   --uncomment-func-decl EVP_PKEY_CTX_set_rsa_mgf1_md \
-  --uncomment-regex 'BORINGSSL_MAKE_DELETER(EVP_PKEY,'
+  --uncomment-regex 'BORINGSSL_MAKE_DELETER(EVP_PKEY,' \
+  --uncomment-regex 'BORINGSSL_MAKE_UP_REF(EVP_PKEY,'
 
