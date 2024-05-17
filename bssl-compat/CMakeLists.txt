@@ -65,6 +65,7 @@ add_library(bssl-compat STATIC
   source/d2i_GENERAL_NAME.cc
   source/ECDSA_do_verify.cc
   source/ECDSA_sign.cc
+  source/EC_KEY_check_fips.cc
   source/EC_KEY_parse_private_key.cc
   source/EC_KEY_set_public_key_affine_coordinate.cc
   source/ED25519_verify.cc
@@ -112,11 +113,13 @@ add_library(bssl-compat STATIC
   source/PKCS12_parse.cc
   source/PKCS12_verify_mac.cc
   source/RAND_bytes.cc
+  source/RSA_check_fips.cc
   source/RSA_decrypt.cc
   source/RSA_encrypt.cc
   source/RSA_generate_key_ex.cc
   source/RSA_private_key_from_bytes.cc
   source/RSA_public_key_from_bytes.cc
+  source/RSA_sign_pss_mgf1.cc
   source/SHA256.cc
   source/SSL_add_file_cert_subjects_to_stack.cc
   source/SSL_CIPHER_get_kx_nid.cc
@@ -414,6 +417,7 @@ target_add_bssl_function(bssl-compat
   EVP_PKEY_CTX_set_rsa_mgf1_md
   EVP_PKEY_CTX_set_rsa_padding
   EVP_PKEY_free
+  EVP_PKEY_up_ref
   EVP_PKEY_get_raw_public_key
   EVP_PKEY_new
   EVP_PKEY_set1_RSA
