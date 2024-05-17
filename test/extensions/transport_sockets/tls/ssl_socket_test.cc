@@ -38,6 +38,7 @@
 #include "test/extensions/transport_sockets/tls/test_data/san_multiple_dns_cert_info.h"
 #include "test/extensions/transport_sockets/tls/test_data/san_uri_cert_info.h"
 #include "test/extensions/transport_sockets/tls/test_data/selfsigned_ecdsa_p256_cert_info.h"
+#include "test/extensions/transport_sockets/tls/test_private_key_method_provider.h"
 #include "test/mocks/buffer/mocks.h"
 #include "test/mocks/init/mocks.h"
 #include "test/mocks/local_info/mocks.h"
@@ -339,19 +340,19 @@ void testUtil(const TestUtilOptions& options) {
 
   // For private key method testing.
   ASSERT_FALSE(options.expectedPrivateKeyMethod()) << "Private Key Method Provider not supported";
-  // NiceMock<Ssl::MockContextManager> context_manager;
-  // Extensions::PrivateKeyMethodProvider::TestPrivateKeyMethodFactory test_factory;
-  // Registry::InjectFactory<Ssl::PrivateKeyMethodProviderInstanceFactory>
-  //     test_private_key_method_factory(test_factory);
-  // PrivateKeyMethodManagerImpl private_key_method_manager;
-  // if (options.expectedPrivateKeyMethod()) {
-  //   EXPECT_CALL(server_factory_context, sslContextManager())
-  //       .WillOnce(ReturnRef(context_manager))
-  //       .WillRepeatedly(ReturnRef(context_manager));
-  //   EXPECT_CALL(context_manager, privateKeyMethodManager())
-  //       .WillOnce(ReturnRef(private_key_method_manager))
-  //       .WillRepeatedly(ReturnRef(private_key_method_manager));
-  // }
+  NiceMock<Ssl::MockContextManager> context_manager;
+  Extensions::PrivateKeyMethodProvider::TestPrivateKeyMethodFactory test_factory;
+  Registry::InjectFactory<Ssl::PrivateKeyMethodProviderInstanceFactory>
+      test_private_key_method_factory(test_factory);
+  PrivateKeyMethodManagerImpl private_key_method_manager;
+  if (options.expectedPrivateKeyMethod()) {
+    EXPECT_CALL(server_factory_context, sslContextManager())
+        .WillOnce(ReturnRef(context_manager))
+        .WillRepeatedly(ReturnRef(context_manager));
+    EXPECT_CALL(context_manager, privateKeyMethodManager())
+        .WillOnce(ReturnRef(private_key_method_manager))
+        .WillRepeatedly(ReturnRef(private_key_method_manager));
+  }
 
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext server_tls_context;
   TestUtility::loadFromYaml(TestEnvironment::substitute(options.serverCtxYaml()),
