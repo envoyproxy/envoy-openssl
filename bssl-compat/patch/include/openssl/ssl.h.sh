@@ -142,6 +142,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro-redef 'SSL_FILETYPE_[[:alnum:]_]*' \
   --uncomment-func-decl SSL_CTX_use_certificate_chain_file \
   --uncomment-enum ssl_private_key_result_t \
+  --uncomment-struct ssl_private_key_method_st \
   --uncomment-regex 'DEFINE_CONST_STACK_OF(SSL_CIPHER)' \
   --uncomment-func-decl SSL_CIPHER_get_cipher_nid \
   --uncomment-func-decl SSL_CIPHER_get_digest_nid \

@@ -16,9 +16,11 @@ uncomment.sh "$1" --comment -h \
 --uncomment-func-decl RSA_encrypt \
 --uncomment-func-decl RSA_decrypt \
 --uncomment-func-decl RSA_sign \
+--uncomment-func-decl RSA_sign_pss_mgf1 \
 --uncomment-func-decl RSA_verify \
 --uncomment-func-decl RSA_size \
 --uncomment-func-decl RSA_check_key \
+--uncomment-func-decl RSA_check_fips \
 --uncomment-func-decl RSA_add_pkcs1_prefix \
 --uncomment-func-decl RSA_public_key_from_bytes \
 --uncomment-func-decl RSA_private_key_from_bytes \
