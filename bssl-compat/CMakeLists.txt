@@ -7,8 +7,8 @@ if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
-set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.8.tar.gz)
-set(OPENSSL_URL_HASH 6933e2f1da6f23a50ea226eec6e91b543d277d2098025763b5931cf6a7e099c7)
+set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.13.tar.gz)
+set(OPENSSL_URL_HASH e74504ed7035295ec7062b1da16c15b57ff2a03cd2064a28d8c39458cacc45fc)
 
 SET (CMAKE_C_COMPILER    "clang")
 SET (CMAKE_CXX_COMPILER  "clang++")
@@ -131,6 +131,7 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_get_max_proto_version.cc
   source/SSL_CTX_get_min_proto_version.cc
   source/SSL_CTX_get_ex_new_index.cc
+  source/SSL_CTX_get_session_cache_mode.cc
   source/SSL_CTX_sess_set_new_cb.cc
   source/SSL_CTX_set_alpn_select_cb.cc
   source/SSL_CTX_set_cert_verify_callback.cc
@@ -195,6 +196,7 @@ add_library(bssl-compat STATIC
   source/X509_sign.cc
   source/X509_STORE_CTX_get0_untrusted.cc
   source/X509_STORE_CTX_init.cc
+  source/X509_STORE_CTX_get0_chain.cc
   source/X509_STORE_CTX_set0_crls.cc
   source/X509_STORE_CTX_set0_trusted_stack.cc
   source/X509_STORE_CTX_set_verify_cb.cc
@@ -479,7 +481,6 @@ target_add_bssl_function(bssl-compat
   SSL_CTX_set_cert_store
   SSL_CTX_get_ex_data
   SSL_CTX_get_options
-  SSL_CTX_get_session_cache_mode
   SSL_CTX_get_verify_mode
   SSL_CTX_get0_certificate
   SSL_CTX_get0_param
@@ -602,7 +603,6 @@ target_add_bssl_function(bssl-compat
   X509_STORE_CTX_get_error_depth
   X509_STORE_CTX_get_ex_data
   X509_STORE_CTX_get0_cert
-  X509_STORE_CTX_get0_chain
   X509_STORE_CTX_get0_param
   X509_STORE_CTX_new
   X509_STORE_CTX_set_default
