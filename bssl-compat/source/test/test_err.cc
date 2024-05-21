@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <openssl/err.h>
-#include <openssl/sslerr.h>
+#include <openssl/ssl.h>
 #include <limits>
 
 
@@ -38,9 +38,9 @@ TEST(ErrTest, test_SSL_R_NO_SUITABLE_SIGNATURE_ALGORITHM) {
   ERR_clear_error();
 
 #ifdef BSSL_COMPAT
-  ossl_ERR_put_error(ERR_LIB_SSL, 0, SSL_R_NO_SUITABLE_SIGNATURE_ALGORITHM, __FILE__, __LINE__);
+  ERR_put_error(ERR_LIB_SSL, 0, ossl_SSL_R_NO_SUITABLE_SIGNATURE_ALGORITHM, __FILE__, __LINE__);
 #else // BoringSSL
-  ERR_put_error(ERR_LIB_SSL, 0, 253/*SSL_R_NO_COMMON_SIGNATURE_ALGORITHMS*/, __FILE__, __LINE__);
+  ERR_put_error(ERR_LIB_SSL, 0, SSL_R_NO_COMMON_SIGNATURE_ALGORITHMS, __FILE__, __LINE__);
 #endif
 
   uint32_t e = ERR_get_error();
