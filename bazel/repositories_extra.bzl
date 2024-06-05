@@ -24,7 +24,7 @@ def envoy_dependencies_extra(
     python_register_toolchains(
         name = "python%s" % _python_minor_version(python_version),
         python_version = python_version,
-        ignore_root_user_error = True,
+        ignore_root_user_error = ignore_root_user_error,
     )
 
     aspect_bazel_lib_dependencies()
