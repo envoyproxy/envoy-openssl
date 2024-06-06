@@ -328,7 +328,11 @@ void TlsInspectorTest::testJA3(const std::string& fingerprint, bool expect_serve
   if (expect_server_name) {
     EXPECT_CALL(socket_, setRequestedServerName(absl::string_view("www.envoyproxy.io")));
   }
-  EXPECT_CALL(socket_, setRequestedApplicationProtocols(_)).Times(expect_alpn ? 1 : 0);
+  if (expect_alpn) {
+    EXPECT_CALL(socket_, setRequestedApplicationProtocols(testing::Contains("HTTP/1.1")));
+  } else {
+    EXPECT_CALL(socket_, setRequestedApplicationProtocols(_)).Times(0);
+  }
   // EXPECT_CALL(cb_, continueFilterChain(true));
   EXPECT_CALL(socket_, setDetectedTransportProtocol(absl::string_view("tls")));
   EXPECT_CALL(socket_, detectedTransportProtocol()).Times(::testing::AnyNumber());
