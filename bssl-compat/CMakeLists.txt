@@ -10,8 +10,9 @@ endif()
 set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.13.tar.gz)
 set(OPENSSL_URL_HASH e74504ed7035295ec7062b1da16c15b57ff2a03cd2064a28d8c39458cacc45fc)
 
-SET (CMAKE_C_COMPILER    "clang")
-SET (CMAKE_CXX_COMPILER  "clang++")
+# dcillera - commented out as they're declared in function "cmake" of Bazel BUILD file 
+# SET (CMAKE_C_COMPILER    "clang")
+# SET (CMAKE_CXX_COMPILER  "clang++")
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -118,6 +119,7 @@ add_library(bssl-compat STATIC
   source/RSA_decrypt.cc
   source/RSA_encrypt.cc
   source/RSA_generate_key_ex.cc
+  source/RSA_padding_add_PKCS1_PSS_mgf1.cc
   source/RSA_private_key_from_bytes.cc
   source/RSA_public_key_from_bytes.cc
   source/RSA_sign_pss_mgf1.cc
