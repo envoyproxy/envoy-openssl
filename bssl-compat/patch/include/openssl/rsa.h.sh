@@ -24,6 +24,7 @@ uncomment.sh "$1" --comment -h \
 --uncomment-func-decl RSA_add_pkcs1_prefix \
 --uncomment-func-decl RSA_public_key_from_bytes \
 --uncomment-func-decl RSA_private_key_from_bytes \
+--uncomment-func-decl RSA_padding_add_PKCS1_PSS_mgf1 \
 --uncomment-macro-redef 'RSA_R_[a-zA-Z0-9_]*' \
 --uncomment-macro-redef 'RSA_[a-zA-Z0-9_]*_PADDING' \
 --uncomment-macro-redef RSA_F4 \
