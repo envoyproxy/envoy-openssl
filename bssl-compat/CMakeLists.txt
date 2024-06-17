@@ -141,7 +141,6 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_custom_verify.cc
   source/SSL_CTX_set_next_protos_advertised_cb.cc
   source/SSL_CTX_set_private_key_method.cc
-  source/SSL_CTX_set_reverify_on_resume.cc
   source/SSL_CTX_set_select_certificate_cb.cc
   source/SSL_CTX_set_select_certificate_cb.h
   source/SSL_CTX_set_strict_cipher_list.cc
@@ -185,7 +184,6 @@ add_library(bssl-compat STATIC
   source/SSL_set_cert_cb.cc
   source/SSL_set_chain_and_key.cc
   source/SSL_set_client_CA_list.cc
-  source/SSL_set_enforce_rsa_key_usage.cc
   source/SSL_set_ocsp_response.cc
   source/SSL_set_renegotiate_mode.cc
   source/SSL_set_info_callback.cc
