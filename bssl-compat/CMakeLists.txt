@@ -141,7 +141,6 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_custom_verify.cc
   source/SSL_CTX_set_next_protos_advertised_cb.cc
   source/SSL_CTX_set_private_key_method.cc
-  source/SSL_CTX_set_reverify_on_resume.cc
   source/SSL_CTX_set_select_certificate_cb.cc
   source/SSL_CTX_set_select_certificate_cb.h
   source/SSL_CTX_set_strict_cipher_list.cc
