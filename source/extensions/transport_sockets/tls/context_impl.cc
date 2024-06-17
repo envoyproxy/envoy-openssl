@@ -182,7 +182,9 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
         // even request client certs. So, instead, we should configure a callback to skip
         // validation and always supply the callback to boring SSL.
         SSL_CTX_set_custom_verify(ctx, verify_mode, customVerifyCallback);
+#ifdef ENABLE_REVERIFY_ENFORCE_RSA  // Disabled as not implememnted in the bSSL layer
         SSL_CTX_set_reverify_on_resume(ctx, /*reverify_on_resume_enabled)=*/1);
+#endif
       }
     }
   }
@@ -738,7 +740,9 @@ ClientContextImpl::newSsl(const Network::TransportSocketOptionsConstSharedPtr& o
     SSL_set_renegotiate_mode(ssl_con.get(), ssl_renegotiate_freely);
   }
 
+#ifdef ENABLE_REVERIFY_ENFORCE_RSA  // Disabled as not implememnted in the bSSL layer
   SSL_set_enforce_rsa_key_usage(ssl_con.get(), enforce_rsa_key_usage_);
+#endif
 
   if (max_session_keys_ > 0) {
     if (session_keys_single_use_) {
