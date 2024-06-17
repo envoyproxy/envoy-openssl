@@ -193,11 +193,9 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro SSL_TICKET_KEY_NAME_LEN \
   --uncomment-enum ssl_verify_result_t \
   --uncomment-func-decl SSL_CTX_set_custom_verify \
-  --uncomment-func-decl SSL_CTX_set_reverify_on_resume \
   --uncomment-func-decl SSL_CTX_set_private_key_method \
   --uncomment-func-decl SSL_send_fatal_alert \
   --uncomment-func-decl SSL_alert_desc_string_long \
-  --uncomment-func-decl SSL_set_enforce_rsa_key_usage \
   --uncomment-func-decl SSL_was_key_usage_invalid \
   --uncomment-func-decl SSL_CTX_get_session_cache_mode \
 
