@@ -102,10 +102,7 @@ static ossl_BIO_METHOD *bio_method_new(const BIO_METHOD *bsslMethod) {
     ossl.ossl_BIO_meth_set_callback_ctrl(osslMethod, nullptr);
   }
   else {
-    // Simulate a segfault
-    volatile int* nasty_ptr = reinterpret_cast<int*>(0x0);
-    *(nasty_ptr) = 0; 
-   // bssl_compat_fatal("BIO_METHOD::callback_ctrl is not supported");
+    bssl_compat_fatal("BIO_METHOD::callback_ctrl is not supported");
   }
 
   return osslMethod;
