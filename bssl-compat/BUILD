@@ -15,11 +15,7 @@ cmake(
     visibility = ["//visibility:public"],
     generate_crosstool_file = False,
     tags = ["requires-network"],
-    env = { "GOCACHE" : "/tmp",
-            "CMAKE_C_COMPILER" : "clang",
-            "CMAKE_CXX_COMPILER" : "clang++",
-            "Clang_ROOT" : "/usr/lib/llvm"
-},
+    env = { "Clang_ROOT" : "/usr/lib/llvm" },
 
     build_args = [ "-j" ]
 )
