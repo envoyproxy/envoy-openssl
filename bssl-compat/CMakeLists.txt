@@ -10,9 +10,6 @@ endif()
 set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.13.tar.gz)
 set(OPENSSL_URL_HASH e74504ed7035295ec7062b1da16c15b57ff2a03cd2064a28d8c39458cacc45fc)
 
-SET (CMAKE_C_COMPILER    "clang")
-SET (CMAKE_CXX_COMPILER  "clang++")
-
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -140,7 +137,6 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_custom_verify.cc
   source/SSL_CTX_set_next_protos_advertised_cb.cc
   source/SSL_CTX_set_private_key_method.cc
-  source/SSL_CTX_set_reverify_on_resume.cc
   source/SSL_CTX_set_select_certificate_cb.cc
   source/SSL_CTX_set_select_certificate_cb.h
   source/SSL_CTX_set_strict_cipher_list.cc
@@ -184,12 +180,10 @@ add_library(bssl-compat STATIC
   source/SSL_set_cert_cb.cc
   source/SSL_set_chain_and_key.cc
   source/SSL_set_client_CA_list.cc
-  source/SSL_set_enforce_rsa_key_usage.cc
   source/SSL_set_ocsp_response.cc
   source/SSL_set_renegotiate_mode.cc
   source/SSL_set_info_callback.cc
   source/SSL_set_verify.cc
-  source/SSL_was_key_usage_invalid.cc
   source/stack.c
   source/TLS_VERSION_to_string.cc
   source/TLS_with_buffers_method.cc
