@@ -14,7 +14,6 @@ cmake(
     out_static_libs = ["libbssl-compat.a"],
     visibility = ["//visibility:public"],
     generate_crosstool_file = False,
-    tags = ["requires-network"],
     env = { "Clang_ROOT" : "/usr/lib/llvm" },
 
     build_args = [ "-j" ]
