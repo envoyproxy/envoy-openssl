@@ -58,13 +58,7 @@ envoy_cc_library(
 envoy_cc_library(
     name = "version_lib",
     srcs = ["version.cc"],
-    copts = envoy_select_boringssl(
-        [
-            "-DENVOY_SSL_VERSION=\\\"BoringSSL-FIPS\\\"",
-            "-DENVOY_SSL_FIPS",
-        ],
-        ["-DENVOY_SSL_VERSION=\\\"BoringSSL\\\""],
-    ),
+    copts = ["-DENVOY_SSL_VERSION=\\\"OpenSSL\\\""],
     external_deps = ["ssl"],
     tags = ["notidy"],
     deps = [
