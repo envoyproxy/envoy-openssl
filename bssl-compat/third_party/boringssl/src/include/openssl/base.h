@@ -118,7 +118,7 @@ extern "C" {
 #define OPENSSL_32_BIT
 #elif defined(__s390__) || defined(__s390x__) || defined(__zarch__)
 #define OPENSSL_64_BIT
-#elif defined(__ppc64le__) || defined(__ARCH_PPC64LE__)
+#elif defined(__ppc64le__) || defined(__ARCH_PPC64LE__) || defined(_ARCH_PPC64)
 #define OPENSSL_64_BIT
 #else
 // Note BoringSSL only supports standard 32-bit and 64-bit two's-complement,
