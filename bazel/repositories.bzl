@@ -3,7 +3,8 @@ load("@envoy_api//bazel:envoy_http_archive.bzl", "envoy_http_archive")
 load("@envoy_api//bazel:external_deps.bzl", "load_repository_locations")
 load(":repository_locations.bzl", "PROTOC_VERSIONS", "REPOSITORY_LOCATIONS_SPEC")
 
-PPC_SKIP_TARGETS = ["envoy.string_matcher.lua", "envoy.filters.http.lua", "envoy.router.cluster_specifier_plugin.lua"]
+# ppc64le uses luajit2 so http.lua can be built
+PPC_SKIP_TARGETS = []
 
 WINDOWS_SKIP_TARGETS = [
     "envoy.extensions.http.cache.file_system_http_cache",
