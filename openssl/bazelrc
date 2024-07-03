@@ -17,3 +17,4 @@ test --test_tag_filters=-nofips
 
 # Arch-specific build flags, triggered with --config=$ARCH in bazel build command
 build:s390x --//source/extensions/filters/common/lua:luajit2=1 --copt="-Wno-deprecated-declarations" --action_env=BAZEL_LINKLIBS=-lstdc++ --linkopt=-fuse-ld=gold
+build:ppc --//source/extensions/filters/common/lua:luajit2=1 --linkopt=-fuse-ld=lld
