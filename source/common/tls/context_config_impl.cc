@@ -24,6 +24,22 @@ namespace Tls {
 
 namespace {
 
+bool getFipsEnabled() {
+  std::ifstream file("/proc/sys/crypto/fips_enabled");
+  if (file.fail()) {
+    return false;
+  }
+
+  std::stringstream file_string;
+  file_string << file.rdbuf();
+
+  std::string fipsEnabledText = file_string.str();
+  fipsEnabledText.erase(fipsEnabledText.find_last_not_of("\n") + 1);
+  return fipsEnabledText.compare("1") == 0;
+}
+
+static const bool isFipsEnabled = getFipsEnabled();
+
 std::vector<Secret::TlsCertificateConfigProviderSharedPtr> getTlsCertificateConfigProviders(
     const envoy::extensions::transport_sockets::tls::v3::CommonTlsContext& config,
     Server::Configuration::TransportSocketFactoryContext& factory_context,
@@ -307,21 +323,19 @@ const unsigned ClientContextConfigImpl::DEFAULT_MIN_VERSION = TLS1_2_VERSION;
 const unsigned ClientContextConfigImpl::DEFAULT_MAX_VERSION = TLS1_2_VERSION;
 
 const std::string ClientContextConfigImpl::DEFAULT_CIPHER_SUITES =
-#ifndef BORINGSSL_FIPS
-    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:"
-    "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:"
-#else // BoringSSL FIPS
+  isFipsEnabled ?
     "ECDHE-ECDSA-AES128-GCM-SHA256:"
     "ECDHE-RSA-AES128-GCM-SHA256:"
-#endif
+    "ECDHE-ECDSA-AES256-GCM-SHA384:"
+    "ECDHE-RSA-AES256-GCM-SHA384:"
+  :
+    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:"
+    "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:"
     "ECDHE-ECDSA-AES256-GCM-SHA384:"
     "ECDHE-RSA-AES256-GCM-SHA384:";
 
 const std::string ClientContextConfigImpl::DEFAULT_CURVES =
-#ifndef BORINGSSL_FIPS
-    "X25519:"
-#endif
-    "P-256";
+  isFipsEnabled ? "P-256" : "X25519:P-256";
 
 absl::StatusOr<std::unique_ptr<ClientContextConfigImpl>> ClientContextConfigImpl::create(
     const envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext& config,
@@ -355,138 +369,6 @@ ClientContextConfigImpl::ClientContextConfigImpl(
         "Multiple TLS certificates are not supported for client contexts");
     return;
   }
-}
-
-const unsigned ServerContextConfigImpl::DEFAULT_MIN_VERSION = TLS1_2_VERSION;
-const unsigned ServerContextConfigImpl::DEFAULT_MAX_VERSION = TLS1_3_VERSION;
-
-const std::string ServerContextConfigImpl::DEFAULT_CIPHER_SUITES =
-#ifndef BORINGSSL_FIPS
-    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:"
-    "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:"
-#else // BoringSSL FIPS
-    "ECDHE-ECDSA-AES128-GCM-SHA256:"
-    "ECDHE-RSA-AES128-GCM-SHA256:"
-#endif
-    "ECDHE-ECDSA-AES256-GCM-SHA384:"
-    "ECDHE-RSA-AES256-GCM-SHA384:";
-
-const std::string ServerContextConfigImpl::DEFAULT_CURVES =
-#ifndef BORINGSSL_FIPS
-    "X25519:"
-#endif
-    "P-256";
-
-ServerContextConfigImpl::ServerContextConfigImpl(
-    const envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext& config,
-    Server::Configuration::TransportSocketFactoryContext& factory_context)
-    : ContextConfigImpl(config.common_tls_context(), DEFAULT_MIN_VERSION, DEFAULT_MAX_VERSION,
-                        DEFAULT_CIPHER_SUITES, DEFAULT_CURVES, factory_context),
-      require_client_certificate_(
-          PROTOBUF_GET_WRAPPED_OR_DEFAULT(config, require_client_certificate, false)),
-      ocsp_staple_policy_(ocspStaplePolicyFromProto(config.ocsp_staple_policy())),
-      session_ticket_keys_provider_(getTlsSessionTicketKeysConfigProvider(factory_context, config)),
-      disable_stateless_session_resumption_(getStatelessSessionResumptionDisabled(config)),
-      disable_stateful_session_resumption_(config.disable_stateful_session_resumption()),
-      full_scan_certs_on_sni_mismatch_(PROTOBUF_GET_WRAPPED_OR_DEFAULT(
-          config, full_scan_certs_on_sni_mismatch,
-          !Runtime::runtimeFeatureEnabled(
-              "envoy.reloadable_features.no_full_scan_certs_on_sni_mismatch"))) {
-
-  if (session_ticket_keys_provider_ != nullptr) {
-    // Validate tls session ticket keys early to reject bad sds updates.
-    stk_validation_callback_handle_ = session_ticket_keys_provider_->addValidationCallback(
-        [this](const envoy::extensions::transport_sockets::tls::v3::TlsSessionTicketKeys& keys) {
-          getSessionTicketKeys(keys);
-        });
-    // Load inlined, static or dynamic secret that's already available.
-    if (session_ticket_keys_provider_->secret() != nullptr) {
-      session_ticket_keys_ = getSessionTicketKeys(*session_ticket_keys_provider_->secret());
-    }
-  }
-
-  if (!capabilities().provides_certificates) {
-    if ((config.common_tls_context().tls_certificates().size() +
-         config.common_tls_context().tls_certificate_sds_secret_configs().size()) == 0) {
-      throwEnvoyExceptionOrPanic("No TLS certificates found for server context");
-    } else if (!config.common_tls_context().tls_certificates().empty() &&
-               !config.common_tls_context().tls_certificate_sds_secret_configs().empty()) {
-      throwEnvoyExceptionOrPanic(
-          "SDS and non-SDS TLS certificates may not be mixed in server contexts");
-    }
-  }
-
-  if (config.has_session_timeout()) {
-    session_timeout_ =
-        std::chrono::seconds(DurationUtil::durationToSeconds(config.session_timeout()));
-  }
-}
-
-void ServerContextConfigImpl::setSecretUpdateCallback(std::function<void()> callback) {
-  ContextConfigImpl::setSecretUpdateCallback(callback);
-  if (session_ticket_keys_provider_) {
-    // Once session_ticket_keys_ receives new secret, this callback updates
-    // ContextConfigImpl::session_ticket_keys_ with new session ticket keys.
-    stk_update_callback_handle_ =
-        session_ticket_keys_provider_->addUpdateCallback([this, callback]() {
-          session_ticket_keys_ = getSessionTicketKeys(*session_ticket_keys_provider_->secret());
-          callback();
-        });
-  }
-}
-
-std::vector<Ssl::ServerContextConfig::SessionTicketKey>
-ServerContextConfigImpl::getSessionTicketKeys(
-    const envoy::extensions::transport_sockets::tls::v3::TlsSessionTicketKeys& keys) {
-  std::vector<Ssl::ServerContextConfig::SessionTicketKey> result;
-  for (const auto& datasource : keys.keys()) {
-    result.emplace_back(getSessionTicketKey(
-        THROW_OR_RETURN_VALUE(Config::DataSource::read(datasource, false, api_), std::string)));
-  }
-  return result;
-}
-
-// Extracts a SessionTicketKey from raw binary data.
-// Throws if key_data is invalid.
-Ssl::ServerContextConfig::SessionTicketKey
-ServerContextConfigImpl::getSessionTicketKey(const std::string& key_data) {
-  // If this changes, need to figure out how to deal with key files
-  // that previously worked. For now, just assert so we'll notice that
-  // it changed if it does.
-  static_assert(sizeof(SessionTicketKey) == 80, "Input is expected to be this size");
-
-  if (key_data.size() != sizeof(SessionTicketKey)) {
-    throwEnvoyExceptionOrPanic(fmt::format("Incorrect TLS session ticket key length. "
-                                           "Length {}, expected length {}.",
-                                           key_data.size(), sizeof(SessionTicketKey)));
-  }
-
-  SessionTicketKey dst_key;
-
-  std::copy_n(key_data.begin(), dst_key.name_.size(), dst_key.name_.begin());
-  size_t pos = dst_key.name_.size();
-  std::copy_n(key_data.begin() + pos, dst_key.hmac_key_.size(), dst_key.hmac_key_.begin());
-  pos += dst_key.hmac_key_.size();
-  std::copy_n(key_data.begin() + pos, dst_key.aes_key_.size(), dst_key.aes_key_.begin());
-  pos += dst_key.aes_key_.size();
-  ASSERT(key_data.begin() + pos == key_data.end());
-
-  return dst_key;
-}
-
-Ssl::ServerContextConfig::OcspStaplePolicy ServerContextConfigImpl::ocspStaplePolicyFromProto(
-    const envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext::OcspStaplePolicy&
-        policy) {
-  switch (policy) {
-    PANIC_ON_PROTO_ENUM_SENTINEL_VALUES;
-  case envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext::LENIENT_STAPLING:
-    return Ssl::ServerContextConfig::OcspStaplePolicy::LenientStapling;
-  case envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext::STRICT_STAPLING:
-    return Ssl::ServerContextConfig::OcspStaplePolicy::StrictStapling;
-  case envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext::MUST_STAPLE:
-    return Ssl::ServerContextConfig::OcspStaplePolicy::MustStaple;
-  }
-  PANIC_DUE_TO_CORRUPT_ENUM;
 }
 
 } // namespace Tls
