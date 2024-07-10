@@ -4,6 +4,53 @@
 #include "override.h"
 
 
+/*
+ * This function maps from TLS alert codes (SSL_AD_* constants) to X509 error
+ * codes (X509_V_ERR_* constants).
+ * 
+ * Because the set of TLS alerts and X509 errors are not equal, this is not a
+ * lossless mapping. However, to achieve the best mapping, this function is
+ * written using some knowledge of OpenSSL's internals. Specifically, the
+ * "x509table" array (in ssl/statem/statem_lic.c) was used to derive the switch
+ * statement.
+ * 
+ * Each TLS alert case returns a corresponding X509 error that OpenSSL will map
+ * back to the same TLS alert. If a TLS alert is not explicitly handled in the
+ * switch, it is because OpenSSL doesn't have a mapping from any X509 value to
+ * that TLS alert. In these cases, the default case will return
+ * X509_V_ERR_APPLICATION_VERIFICATION which OpenSSL will map to
+ * SSL_AD_HANDSHAKE_FAILURE
+ * 
+ * https://github.com/openssl/openssl/blob/9cff14fd97814baf8a9a07d8447960a64d616ada/ssl/statem/statem_lib.c#L1351-L1395
+ */
+static int tls_alert_to_x590_err(int alert)
+{
+  switch(alert) {
+    case SSL_AD_BAD_CERTIFICATE:
+      return X509_V_ERR_CERT_REJECTED;
+    case SSL_AD_CERTIFICATE_EXPIRED:
+      return X509_V_ERR_CERT_HAS_EXPIRED;
+    case SSL_AD_CERTIFICATE_REVOKED:
+      return X509_V_ERR_CERT_REVOKED;
+    case SSL_AD_CERTIFICATE_UNKNOWN:
+      return X509_V_ERR_INVALID_NON_CA;
+    case SSL_AD_DECRYPT_ERROR:
+      return X509_V_ERR_CERT_SIGNATURE_FAILURE;
+    case SSL_AD_HANDSHAKE_FAILURE:
+      return X509_V_ERR_APPLICATION_VERIFICATION;
+    case SSL_AD_INTERNAL_ERROR:
+      return X509_V_ERR_UNSPECIFIED;
+    case SSL_AD_UNKNOWN_CA:
+      return X509_V_ERR_INVALID_CA;
+    case SSL_AD_UNSUPPORTED_CERTIFICATE:
+      return X509_V_ERR_INVALID_PURPOSE;
+    default:
+      return X509_V_ERR_APPLICATION_VERIFICATION;
+  }
+}
+
+
+
 /**
  * This is the OpenSSL callback which invokes the BoringSSL callback.
  * Return 1 to indicate verification success and 0 to indicate verification failure
@@ -47,28 +94,14 @@ static int ossl_cert_verify_callback(X509_STORE_CTX *ctx, void *arg) {
       // Translate the TLS alert value, received from the BoringSSL callback, to an X509 error, and
       // set it on the X509_STORE_CTX. OpenSSL will ultimately translate the X509 error back into a
       // TLS alert value which it will send to the peer.
-      switch(alert) {
-        case SSL_AD_CERTIFICATE_EXPIRED: {
-          ossl_X509_STORE_CTX_set_error(ctx, X509_V_ERR_CERT_HAS_EXPIRED);
-          break;
-        }
-        case SSL_AD_UNKNOWN_CA: {
-          ossl_X509_STORE_CTX_set_error(ctx, X509_V_ERR_INVALID_CA);
-          break;
-        }
-        default: {
-          // Setting this X509 error sends a SSL_AD_HANDSHAKE_FAILURE alert to the peer
-          ossl_X509_STORE_CTX_set_error(ctx, X509_V_ERR_APPLICATION_VERIFICATION);
-          break;
-        }
-      }
+      ossl_X509_STORE_CTX_set_error(ctx, tls_alert_to_x590_err(alert));
       return 0;
     }
     case ssl_verify_retry: {
       // TODO: Use ossl_SSL_set_retry_verify() for client side
       // TODO: Use ossl_ASYNC_pause/start_job() for server side (or both sides)
       bssl_compat_error("Async certificate validation not supported");
-      ossl_X509_STORE_CTX_set_error(ctx, X509_V_ERR_APPLICATION_VERIFICATION);
+      ossl_X509_STORE_CTX_set_error(ctx, X509_V_ERR_INVALID_CALL);
       return 0;
     }
   }
