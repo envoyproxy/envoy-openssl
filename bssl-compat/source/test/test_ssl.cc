@@ -1083,21 +1083,25 @@ TEST(SSLTest, test_SSL_set1_curves_list) {
 
 
 static bool CompleteHandshakes(SSL *client, SSL *server) {
-  for (;;) {
+  bool result {true};
+
+  while(result) {
     int client_ret = SSL_do_handshake(client);
     int client_err = SSL_get_error(client, client_ret);
-    if (client_err != SSL_ERROR_NONE && client_err != SSL_ERROR_WANT_READ && client_err != SSL_ERROR_WANT_WRITE) {
-      fprintf(stderr, "Client error: %s\n", SSL_error_description(client_err));
-      ERR_print_errors_fp(stderr);
-      return false;
-    }
 
     int server_ret = SSL_do_handshake(server);
     int server_err = SSL_get_error(server, server_ret);
+
+    if (client_err != SSL_ERROR_NONE && client_err != SSL_ERROR_WANT_READ && client_err != SSL_ERROR_WANT_WRITE) {
+      fprintf(stderr, "Client error: %s\n", SSL_error_description(client_err));
+      ERR_print_errors_fp(stderr);
+      result = false;
+    }
+
     if (server_err != SSL_ERROR_NONE && server_err != SSL_ERROR_WANT_READ && server_err != SSL_ERROR_WANT_WRITE) {
       fprintf(stderr, "Server error: %s\n", SSL_error_description(server_err));
       ERR_print_errors_fp(stderr);
-      return false;
+      result = false;
     }
 
     if (client_ret == 1 && server_ret == 1) {
@@ -1105,7 +1109,7 @@ static bool CompleteHandshakes(SSL *client, SSL *server) {
     }
   }
 
-  return true;
+  return result;
 }
 
 class SocketCloser {
@@ -1552,4 +1556,83 @@ TEST(SSLTest, test_SSL_set_ocsp_response_inside_select_certificate_cb) {
   SSL_get0_ocsp_response(client_ssl.get(), &ocsp_resp_data, &ocsp_resp_len);
   ASSERT_EQ(sizeof(OCSP_RESPONSE), ocsp_resp_len);
   ASSERT_EQ(0, memcmp(OCSP_RESPONSE, ocsp_resp_data, ocsp_resp_len));
+}
+
+
+/**
+ * Test that setting a TLS alert and returning ssl_verify_invalid, from a
+ * callback installed via SSL_CTX_set_custom_verify(), results in a handshake
+ * failure, and that same TLS alert being received by the peer (subject to our
+ * restrictions on mapping from TLS alert to X509 error code and back again)
+ */
+TEST(SSLTest, test_SSL_CTX_set_custom_verify_alert_codes) {
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  static const std::map<uint8_t,const char*> alerts {
+    // Alerts that we can map
+    { SSL_AD_HANDSHAKE_FAILURE, "handshake failure" },
+    { SSL_AD_CERTIFICATE_EXPIRED, "certificate expired" },
+    { SSL_AD_BAD_CERTIFICATE, "bad certificate" },
+    { SSL_AD_CERTIFICATE_REVOKED, "certificate revoked" },
+    { SSL_AD_DECRYPT_ERROR, "decrypt error" },
+    { SSL_AD_UNKNOWN_CA, "unknown CA" },
+    { SSL_AD_CERTIFICATE_UNKNOWN, "certificate unknown" },
+    { SSL_AD_UNSUPPORTED_CERTIFICATE, "unsupported certificate" },
+    { SSL_AD_INTERNAL_ERROR, "internal error" },
+    { SSL_AD_CERTIFICATE_REVOKED, "certificate revoked" },
+    // Alerts that we cannot map
+    { SSL_AD_ACCESS_DENIED, "handshake failure" },
+    { SSL_AD_BAD_CERTIFICATE_HASH_VALUE, "handshake failure" },
+    { SSL_AD_BAD_CERTIFICATE_STATUS_RESPONSE, "handshake failure" },
+    { SSL_AD_BAD_RECORD_MAC, "handshake failure" },
+    { SSL_AD_CERTIFICATE_REQUIRED, "handshake failure" },
+    { SSL_AD_CERTIFICATE_UNOBTAINABLE, "handshake failure" },
+    { SSL_AD_CLOSE_NOTIFY, "handshake failure" },
+    { SSL_AD_DECODE_ERROR, "handshake failure" },
+    { SSL_AD_DECOMPRESSION_FAILURE, "handshake failure" },
+    // An invalid alert code
+    { 255, "handshake failure" },
+  };
+
+  for (auto const& [alert_code, alert_string] : alerts) {
+    int sockets[2];
+    ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+    SocketCloser close[] { sockets[0], sockets[1] };
+
+    bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_server_method()));
+    bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_client_method()));
+
+    // Install an info callback on the server to check for the expected tls alert
+    // If the server reads a TLS alert, it stores the string description of the
+    // alert in the SSL object's app data so that the test code can check for it.
+    ossl_SSL_CTX_set_info_callback(server_ctx.get(), [](const SSL *ssl, int type, int val){
+      if (type & ossl_SSL_CB_READ_ALERT) {
+        SSL_set_app_data(const_cast<SSL*>(ssl), ossl_SSL_alert_desc_string_long(val));
+      }
+    });
+    ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+    ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+    bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+    ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+    SSL_set_accept_state(server_ssl.get());
+
+    // Set up client with a custom verify callback that will set out_alert and
+    // return ssl_verify_invalid. This should cause the client to send the
+    // specified TLS alert to the server and cause a handshake failure.
+    SSL_CTX_set_custom_verify(client_ctx.get(), SSL_VERIFY_PEER, [](SSL *ssl, uint8_t *out_alert) -> enum ssl_verify_result_t {
+      *out_alert = *static_cast<uint8_t*>(SSL_get_app_data(ssl));
+      return ssl_verify_invalid;
+    });
+    bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+    ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+    SSL_set_connect_state(client_ssl.get());
+    // Setup the TLS alert code to be sent from the custom verify callback
+    SSL_set_app_data(client_ssl.get(), &alert_code);
+
+    ASSERT_FALSE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+
+    // Check that the server received the expected TLS alert
+    ASSERT_STREQ(alert_string, static_cast<char*>(SSL_get_app_data(server_ssl.get())));
+  }
 }
