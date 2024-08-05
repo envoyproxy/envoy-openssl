@@ -1012,3 +1012,8 @@ def _com_github_maxmind_libmaxminddb():
         name = "com_github_maxmind_libmaxminddb",
         build_file_content = BUILD_ALL_CONTENT,
     )
+    native.bind(
+        name = "maxmind",
+        actual = "@envoy//bazel/foreign_cc:maxmind_linux",
+    )
+
