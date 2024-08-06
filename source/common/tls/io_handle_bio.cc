@@ -17,7 +17,7 @@ namespace {
 inline Envoy::Network::IoHandle* bio_io_handle(BIO* bio) {
   return reinterpret_cast<Envoy::Network::IoHandle*>(BIO_get_data(bio));
 }
-
+#if 0
 // NOLINTNEXTLINE(readability-identifier-naming)
 int io_handle_new(BIO* bio) {
   BIO_set_init(bio, 0);
@@ -41,7 +41,7 @@ int io_handle_free(BIO* bio) {
   }
   return 1;
 }
-
+#endif
 // NOLINTNEXTLINE(readability-identifier-naming)
 int io_handle_read(BIO* b, char* out, int outl) {
   if (out == nullptr) {
@@ -85,7 +85,7 @@ int io_handle_write(BIO* b, const char* in, int inl) {
 }
 
 // NOLINTNEXTLINE(readability-identifier-naming)
-long io_handle_ctrl(BIO*, int cmd, long, void*) {
+long io_handle_ctrl(BIO* b, int cmd, long num, void*) {
   long ret = 1;
 
   switch (cmd) {
