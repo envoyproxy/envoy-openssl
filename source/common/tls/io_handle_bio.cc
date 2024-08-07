@@ -111,6 +111,7 @@ long io_handle_ctrl(BIO* b, int cmd, long num, void*) {
   return ret;
 }
 
+
 // NOLINTNEXTLINE(readability-identifier-naming)
 const BIO_METHOD* BIO_s_io_handle(void) {
   static const BIO_METHOD* method = [&] {
@@ -119,6 +120,8 @@ const BIO_METHOD* BIO_s_io_handle(void) {
     RELEASE_ASSERT(BIO_meth_set_read(ret, io_handle_read), "");
     RELEASE_ASSERT(BIO_meth_set_write(ret, io_handle_write), "");
     RELEASE_ASSERT(BIO_meth_set_ctrl(ret, io_handle_ctrl), "");
+    RELEASE_ASSERT(BIO_meth_set_create(ret, io_handle_new), "");
+    RELEASE_ASSERT(BIO_meth_set_destroy(ret, io_handle_free), "");
     return ret;
   }();
   return method;
