@@ -62,6 +62,7 @@ add_library(bssl-compat STATIC
   source/d2i_GENERAL_NAME.cc
   source/ECDSA_do_verify.cc
   source/ECDSA_sign.cc
+  source/ECDSA_verify.cc
   source/EC_KEY_check_fips.cc
   source/EC_KEY_parse_private_key.cc
   source/EC_KEY_set_public_key_affine_coordinate.cc
