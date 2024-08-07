@@ -1,7 +1,18 @@
 date: June 30, 2024
 
 bug_fixes:
+# *Changes expected to improve the state of the world and are unlikely to have negative effects*
 - area: http
   change: |
     Fixed a bug where additional :ref:`cookie attributes <envoy_v3_api_msg_config.route.v3.RouteAction.HashPolicy.cookie>`
     are not sent properly to clients.
+- area: stateful_session
+  change: |
+    Support 0 TTL for proto-encoded cookies, which disables cookie expiration by Envoy.
+
+removed_config_or_runtime:
+# *Normally occurs at the end of the* :ref:`deprecation period <deprecated>`
+
+new_features:
+
+deprecated:
