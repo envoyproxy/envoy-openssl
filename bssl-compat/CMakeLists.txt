@@ -43,7 +43,9 @@ add_library(bssl-compat STATIC
   source/BASIC_CONSTRAINTS_new.cc
   source/BIO_free.cc
   source/BIO_mem_contents.cc
+  source/BIO_meth_set_create.cc
   source/BIO_meth_set_ctrl.cc
+  source/BIO_meth_set_destroy.cc
   source/BIO_meth_set_read.cc
   source/BIO_meth_set_write.cc
   source/BIO_new_bio_pair.cc
