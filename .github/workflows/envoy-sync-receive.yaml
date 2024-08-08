@@ -1,0 +1,44 @@
+name: Sync from Envoy
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        type: string
+        required: true
+        description: 'Which branch to sync'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-22.04
+    if: |
+      ${{
+          !contains(github.actor, '[bot]')
+          || github.actor == 'update-openssl-envoy[bot]'
+      }}
+    steps:
+    - id: appauth
+      uses: envoyproxy/toolshed/gh-actions/appauth@actions-v0.2.35
+      with:
+        key: ${{ secrets.ENVOY_CI_UPDATE_BOT_KEY }}
+        app_id: ${{ secrets.ENVOY_CI_UPDATE_APP_ID }}
+    - name: "Checkout ${{ github.repository }}[${{ github.event.inputs.branch }}]"
+      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29  # v4.1.6
+      with:
+        ref: ${{ github.event.inputs.branch }}
+        token: ${{ steps.appauth.outputs.token }}
+        fetch-depth: 0
+    - name: "Set git user details"
+      run: |
+        git config user.name "${{ github.actor }}"
+        git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+    - run: ci/envoy-sync-receive.sh ${{ github.event.inputs.branch }}
+      env:
+        GH_TOKEN: ${{ steps.appauth.outputs.token }}
