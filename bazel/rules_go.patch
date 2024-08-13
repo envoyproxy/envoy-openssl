@@ -16,7 +16,7 @@ diff --git a/go/private/rules/binary.bzl b/go/private/rules/binary.bzl
 index 91748eda..c1aeb91e 100644
 --- a/go/private/rules/binary.bzl
 +++ b/go/private/rules/binary.bzl
-@@ -443,8 +443,9 @@ def _go_tool_binary_impl(ctx):
+@@ -452,8 +452,9 @@ def _go_tool_binary_impl(ctx):
              content = cmd,
          )
          ctx.actions.run(
@@ -34,7 +34,7 @@ index 4da43060..9003755d 100644
 +++ b/go/private/platforms.bzl
 @@ -30,7 +30,6 @@ BAZEL_GOARCH_CONSTRAINTS = {
      "amd64": "@platforms//cpu:x86_64",
-     "arm": "@platforms//cpu:arm",
+     "arm": "@platforms//cpu:armv7",
      "arm64": "@platforms//cpu:aarch64",
 -    "ppc64": "@platforms//cpu:ppc",
      "ppc64le": "@platforms//cpu:ppc",
