@@ -237,12 +237,10 @@ std::string Utility::generalNameAsString(const GENERAL_NAME* general_name) {
       break;
     case V_ASN1_ENUMERATED:
     case V_ASN1_INTEGER: {
-      BIGNUM san_bn;
-      BN_init(&san_bn);
-      value->type == V_ASN1_ENUMERATED ? ASN1_ENUMERATED_to_BN(value->value.enumerated, &san_bn)
-                                       : ASN1_INTEGER_to_BN(value->value.integer, &san_bn);
-      char* san_char = BN_bn2dec(&san_bn);
-      BN_free(&san_bn);
+      bssl::UniquePtr<BIGNUM> san_bn { BN_new() };
+      value->type == V_ASN1_ENUMERATED ? ASN1_ENUMERATED_to_BN(value->value.enumerated, san_bn.get())
+                                       : ASN1_INTEGER_to_BN(value->value.integer, san_bn.get());
+      char* san_char = BN_bn2dec(san_bn.get());
       if (san_char != nullptr) {
         san.assign(san_char);
         OPENSSL_free(san_char);
