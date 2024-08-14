@@ -140,7 +140,9 @@ ClientContextImpl::newSsl(const Network::TransportSocketOptionsConstSharedPtr& o
     SSL_set_renegotiate_mode(ssl_con.get(), ssl_renegotiate_freely);
   }
 
+  #if 0  // Disabled as not implemented in the bSSL layer
   SSL_set_enforce_rsa_key_usage(ssl_con.get(), enforce_rsa_key_usage_);
+  #endif
 
   if (max_session_keys_ > 0) {
     if (session_keys_single_use_) {
