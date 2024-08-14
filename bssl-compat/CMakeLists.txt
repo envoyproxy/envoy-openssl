@@ -287,13 +287,13 @@ target_add_bssl_include(bssl-compat
 
 # Case where simple mapping exists
 target_add_bssl_function(bssl-compat
+  ASN1_ENUMERATED_to_BN
   ASN1_IA5STRING_free
   ASN1_IA5STRING_new
   ASN1_IA5STRING_new
   ASN1_IA5STRING_new
   ASN1_INTEGER_free
   ASN1_INTEGER_new
-  ASN1_INTEGER_to_BN
   ASN1_INTEGER_to_BN
   ASN1_OBJECT_free
   ASN1_STRING_data
@@ -342,6 +342,7 @@ target_add_bssl_function(bssl-compat
   BN_add_word
   BN_add_word
   BN_add_word
+  BN_bn2dec
   BN_dup
   BN_free
   BN_hex2bn
@@ -433,7 +434,9 @@ target_add_bssl_function(bssl-compat
   HMAC_Update
   i2d_SSL_SESSION
   MD5
+  OBJ_cmp
   OBJ_txt2obj
+  OBJ_obj2txt
   OPENSSL_free
   OPENSSL_malloc
   OPENSSL_memdup
