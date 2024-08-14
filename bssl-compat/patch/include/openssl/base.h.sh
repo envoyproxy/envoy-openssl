@@ -25,6 +25,15 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef SSL_PRIVATE_KEY_METHOD \
   --uncomment-typedef ossl_ssize_t \
   --uncomment-typedef CBS_ASN1_TAG \
+  --uncomment-typedef-redef ASN1_TYPE \
+  --uncomment-typedef-redef ASN1_BIT_STRING \
+  --uncomment-typedef-redef ASN1_PRINTABLESTRING \
+  --uncomment-typedef-redef ASN1_T61STRING \
+  --uncomment-typedef-redef ASN1_GENERALSTRING \
+  --uncomment-typedef-redef ASN1_UTCTIME \
+  --uncomment-typedef-redef ASN1_GENERALIZEDTIME \
+  --uncomment-typedef-redef ASN1_VISIBLESTRING \
+  --uncomment-typedef-redef ASN1_UTF8STRING \
   --uncomment-typedef-redef ASN1_TIME \
   --uncomment-typedef-redef ASN1_ITEM \
   --uncomment-typedef-redef ASN1_OBJECT \
@@ -32,6 +41,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef ASN1_INTEGER \
   --uncomment-typedef-redef ASN1_OCTET_STRING \
   --uncomment-typedef-redef ASN1_STRING \
+  --uncomment-typedef-redef ASN1_ENUMERATED \
   --uncomment-typedef-redef BASIC_CONSTRAINTS \
   --uncomment-typedef-redef NAME_CONSTRAINTS \
   --uncomment-typedef-redef OPENSSL_INIT_SETTINGS \
