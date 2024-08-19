@@ -386,14 +386,7 @@ ClientContextConfigImpl::ClientContextConfigImpl(
 }
 
 const unsigned ServerContextConfigImpl::DEFAULT_MIN_VERSION = TLS1_VERSION;
-
-// FIPS configuration
-// TLS 1.3 is not supported on systems working in FIPS mode. As a result,
-// connections that require TLS 1.3 for interoperability do not function
-// on a system working in FIPS mode.
-// see https://bugzilla.redhat.com/show_bug.cgi?id=1724250
-const unsigned ServerContextConfigImpl::DEFAULT_MAX_VERSION =
-  isFipsEnabled ? TLS1_2_VERSION : TLS1_3_VERSION;
+const unsigned ServerContextConfigImpl::DEFAULT_MAX_VERSION = TLS1_3_VERSION;
 
 const std::string ServerContextConfigImpl::DEFAULT_CIPHER_SUITES =
   isFipsEnabled ?
