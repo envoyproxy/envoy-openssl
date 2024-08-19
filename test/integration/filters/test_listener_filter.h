@@ -6,8 +6,9 @@
 
 #include "source/common/router/string_accessor_impl.h"
 #include "source/common/stream_info/uint32_accessor_impl.h"
-
+#ifdef ENVOY_ENABLE_QUIC
 #include "quiche/quic/core/quic_packets.h"
+#endif
 
 namespace Envoy {
 /**
