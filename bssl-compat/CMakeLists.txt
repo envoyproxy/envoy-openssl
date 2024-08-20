@@ -114,6 +114,7 @@ add_library(bssl-compat STATIC
   source/PKCS12_verify_mac.cc
   source/RAND_bytes.cc
   source/RSA_check_fips.cc
+  source/RSA_check_key.cc
   source/RSA_decrypt.cc
   source/RSA_encrypt.cc
   source/RSA_generate_key_ex.cc
@@ -445,7 +446,6 @@ target_add_bssl_function(bssl-compat
   PEM_bytes_read_bio
   PKCS12_free
   RSA_bits
-  RSA_check_key
   RSA_free
   RSA_get0_crt_params
   RSA_get0_factors
