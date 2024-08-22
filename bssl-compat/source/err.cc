@@ -9,6 +9,8 @@ uint64_t o2b(uint64_t e) {
     case 0x0A0000C1: return 0x100000B8;
     case 0x0A0C0100: return 0x10000041;
     case 0x0A000076: return 0x100000FD;
+    case 0x0A000102: return 0x100000F0;
+    case 0x0A000086: return 0x1000007D;
   }
   return e;
 }
@@ -18,6 +20,8 @@ uint64_t b2o(uint64_t e) {
     case 0x100000B8: return 0x0A0000C1;
     case 0x10000041: return 0x0A0C0100;
     case 0x100000FD: return 0x0A000076;
+    case 0x100000F0: return 0x0A000102;
+    case 0x1000007D: return 0x0A000086;
   }
   return e;
 }
@@ -41,6 +45,8 @@ extern "C" char *ERR_error_string_n(uint32_t packed_error, char *buf, size_t len
     { 0x100000fd, "error:100000fd:SSL routines:OPENSSL_internal:NO_COMMON_SIGNATURE_ALGORITHMS" },
     { 0x1e08010c, "error:0900006e:PEM routines:OPENSSL_internal:NO_START_LINE" },
     { 0x05800074, "error:0b000074:X.509 certificate routines:OPENSSL_internal:KEY_VALUES_MISMATCH" },
+    { 0x100000F0, "TLS_error:|268435696:SSL routines:OPENSSL_internal:UNSUPPORTED_PROTOCOL:TLS_error_end" },
+    { 0x1000007D, "TLS_error:|268435581:SSL routines:OPENSSL_internal:UNSUPPORTED_PROTOCOL:TLS_error_end" },
   };
 
   auto i = ERRORMAP.find(packed_error);
