@@ -841,16 +841,12 @@ tcp_logs:
       tls_properties:
         tls_version: TLSv1_2
         tls_cipher_suite:
-          value: 49199
+          value: 65535
         local_certificate_properties:
           subject_alt_name:
             - uri: "spiffe://lyft.com/backend-team"
           subject: "emailAddress=backend-team@lyft.com,CN=Test Backend Team,OU=Lyft Engineering,O=Lyft,L=San Francisco,ST=California,C=US"
-        peer_certificate_properties:
-          subject_alt_name:
-            - uri: "spiffe://lyft.com/frontend-team"
-          subject: "emailAddress=frontend-team@lyft.com,CN=Test Frontend Team,OU=Lyft Engineering,O=Lyft,L=San Francisco,ST=California,C=US"
-          issuer: "CN=Test CA,OU=Lyft Engineering,O=Lyft,L=San Francisco,ST=California,C=US"
+        peer_certificate_properties: {{}}
       upstream_remote_address:
         socket_address: {{}}
       upstream_local_address:
