@@ -85,7 +85,10 @@ absl::StatusOr<int> DefaultCertValidator::initializeSslContexts(std::vector<SSL_
 
     for (auto& ctx : contexts) {
       X509_STORE* store = SSL_CTX_get_cert_store(ctx);
-      X509_STORE_set_flags(store, X509_V_FLAG_PARTIAL_CHAIN);
+      // RH - Restore reloadable feature check to avoid failure of RevokedIntermediateCertificate test
+      if (Runtime::runtimeFeatureEnabled("envoy.reloadable_features.enable_intermediate_ca")) {
+        X509_STORE_set_flags(store, X509_V_FLAG_PARTIAL_CHAIN);
+      }
       bool has_crl = false;
       for (const X509_INFO* item : list.get()) {
         if (item->x509) {
@@ -134,7 +137,10 @@ absl::StatusOr<int> DefaultCertValidator::initializeSslContexts(std::vector<SSL_
 
     for (auto& ctx : contexts) {
       X509_STORE* store = SSL_CTX_get_cert_store(ctx);
-      X509_STORE_set_flags(store, X509_V_FLAG_PARTIAL_CHAIN);
+      // RH - Restore reloadable feature check to avoid failure of RevokedIntermediateCertificate test
+      if (Runtime::runtimeFeatureEnabled("envoy.reloadable_features.enable_intermediate_ca")) {
+        X509_STORE_set_flags(store, X509_V_FLAG_PARTIAL_CHAIN);
+      }
       for (const X509_INFO* item : list.get()) {
         if (item->crl) {
           X509_STORE_add_crl(store, item->crl);

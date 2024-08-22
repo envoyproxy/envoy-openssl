@@ -115,6 +115,7 @@ RUNTIME_GUARD(envoy_restart_features_fix_dispatcher_approximate_now);
 RUNTIME_GUARD(envoy_restart_features_quic_handle_certs_with_shared_tls_code);
 RUNTIME_GUARD(envoy_restart_features_use_eds_cache_for_ads);
 RUNTIME_GUARD(envoy_restart_features_use_fast_protobuf_hash);
+RUNTIME_GUARD(envoy_reloadable_features_enable_intermediate_ca);
 
 // Begin false flags. Most of them should come with a TODO to flip true.
 
