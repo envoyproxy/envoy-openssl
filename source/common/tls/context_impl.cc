@@ -179,7 +179,9 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
         // even request client certs. So, instead, we should configure a callback to skip
         // validation and always supply the callback to boring SSL.
         SSL_CTX_set_custom_verify(ctx, verify_mode, customVerifyCallback);
+#if 0  // Disabled as not implememnted in the bSSL layer
         SSL_CTX_set_reverify_on_resume(ctx, /*reverify_on_resume_enabled)=*/1);
+#endif
       }
     }
   }
@@ -582,9 +584,11 @@ void ContextImpl::logHandshake(SSL* ssl) const {
   // Increment the `was_key_usage_invalid_` stats to indicate the given cert would have triggered an
   // error but is allowed because the enforcement that rsa key usage and tls usage need to be
   // matched has been disabled.
+#if 0  // Disabled as SSL_was_key_usage_invalid() is not implememnted in the bSSL layer
   if (SSL_was_key_usage_invalid(ssl)) {
     stats_.was_key_usage_invalid_.inc();
   }
+#endif
 #endif // BORINGSSL_API_VERSION
 }
 
