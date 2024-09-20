@@ -190,6 +190,7 @@ add_library(bssl-compat STATIC
   source/stack.c
   source/TLS_VERSION_to_string.cc
   source/TLS_with_buffers_method.cc
+  source/X509_EXTENSION_get_object.cc
   source/X509_EXTENSION_get_data.cc
   source/X509_sign.cc
   source/X509_STORE_CTX_get0_untrusted.cc
@@ -562,6 +563,7 @@ target_add_bssl_function(bssl-compat
   X509_CRL_up_ref
   X509_digest
   X509_free
+  X509_get_ext_count
   X509_get_ext
   X509_get_ext_by_OBJ
   X509_get_ext_d2i

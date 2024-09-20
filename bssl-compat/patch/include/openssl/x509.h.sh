@@ -15,6 +15,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_get_subject_name \
   --uncomment-func-decl X509_get_X509_PUBKEY \
   --uncomment-func-decl X509_get_pubkey \
+  --uncomment-func-decl X509_get_ext_count \
   --uncomment-func-decl X509_get_ext_by_OBJ \
   --uncomment-func-decl X509_get_ext \
   --uncomment-func-decl X509_new \
@@ -37,6 +38,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_NAME_get_entry \
   --uncomment-func-decl X509_NAME_add_entry_by_txt \
   --uncomment-func-decl X509_NAME_ENTRY_set \
+  --uncomment-func-decl X509_EXTENSION_get_object \
   --uncomment-func-decl X509_EXTENSION_get_data \
   --uncomment-func-decl X509_digest \
   --uncomment-func-decl X509_NAME_digest \
