@@ -18,3 +18,34 @@ index 64cb677..9a8c62c 100644
      additional_tools = depset(transitive = [make_data.target.files])
 
      return built_tool_rule_impl(
+diff --git a/toolchains/built_toolchains.bzl b/toolchains/built_toolchains.bzl
+index 4f32252..1a9dc57 100644
+--- a/toolchains/built_toolchains.bzl
++++ b/toolchains/built_toolchains.bzl
+@@ -275,6 +275,9 @@ cc_import(
+
+                 # This patch is required as rules_foreign_cc runs in MSYS2 on Windows and MSYS2's "mkdir" is used
+                 Label("//toolchains:pkgconfig-makefile-vc.patch"),
++
++               # This patch is required to overcome type mismatch error
++               Label("//toolchains:pkgconfig-valgrind.patch"),
+             ],
+             urls = [
+                 "https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz",
+diff --git a/toolchains/pkgconfig-valgrind.patch b/toolchains/pkgconfig-valgrind.patch
+new file mode 100644
+index 0000000..f6f4cc8
+--- /dev/null
++++ b/toolchains/pkgconfig-valgrind.patch
+@@ -0,0 +1,11 @@
++--- glib/glib/valgrind.h
+++++ glib/glib/valgrind.h
++@@ -643,7 +643,7 @@
++                     /* results = r3 */                           \
++                     "lgr %0, 3\n\t"                              \
++                     : "=d" (_zzq_result)                         \
++-                    : "a" (&_zzq_args[0]), "0" (_zzq_default)    \
+++                    : "a" (&_zzq_args[0]), "0" ((unsigned long long int)(_zzq_default))    \
++                     : "cc", "2", "3", "memory"                   \
++                    );                                            \
++    _zzq_result;                                                  \
