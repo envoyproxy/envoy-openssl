@@ -57,7 +57,6 @@ RUNTIME_GUARD(envoy_reloadable_features_http1_connection_close_header_in_redirec
 RUNTIME_GUARD(envoy_reloadable_features_http1_use_balsa_parser);
 RUNTIME_GUARD(envoy_reloadable_features_http2_discard_host_header);
 // Ignore the automated "remove this flag" issue: we should keep this for 1 year.
-RUNTIME_GUARD(envoy_reloadable_features_http2_use_oghttp2);
 RUNTIME_GUARD(envoy_reloadable_features_http2_use_visitor_for_data);
 RUNTIME_GUARD(envoy_reloadable_features_http2_validate_authority_with_quiche);
 RUNTIME_GUARD(envoy_reloadable_features_http3_happy_eyeballs);
@@ -85,6 +84,7 @@ RUNTIME_GUARD(envoy_reloadable_features_quic_upstream_socket_use_address_cache_f
 RUNTIME_GUARD(envoy_reloadable_features_reject_invalid_yaml);
 RUNTIME_GUARD(envoy_reloadable_features_report_stream_reset_error_code);
 RUNTIME_GUARD(envoy_reloadable_features_sanitize_http2_headers_without_nghttp2);
+RUNTIME_GUARD(envoy_reloadable_features_sanitize_sni_in_access_log);
 RUNTIME_GUARD(envoy_reloadable_features_sanitize_te);
 RUNTIME_GUARD(envoy_reloadable_features_send_header_raw_value);
 RUNTIME_GUARD(envoy_reloadable_features_send_local_reply_when_no_buffer_and_upstream_request);
@@ -123,6 +123,8 @@ FALSE_RUNTIME_GUARD(envoy_reloadable_features_test_feature_false);
 FALSE_RUNTIME_GUARD(envoy_reloadable_features_streaming_shadow);
 // TODO(adisuissa) reset to true to enable unified mux by default
 FALSE_RUNTIME_GUARD(envoy_reloadable_features_unified_mux);
+// TODO(birenroy) flip after the security issue is addressed.
+FALSE_RUNTIME_GUARD(envoy_reloadable_features_http2_use_oghttp2);
 // Used to track if runtime is initialized.
 FALSE_RUNTIME_GUARD(envoy_reloadable_features_runtime_initialized);
 // TODO(mattklein123): Flip this to true and/or remove completely once verified by Envoy Mobile.
@@ -159,6 +161,8 @@ FALSE_RUNTIME_GUARD(envoy_reloadable_features_reresolve_if_no_connections);
 FALSE_RUNTIME_GUARD(envoy_restart_features_xds_failover_support);
 // TODO(fredyw): evaluate and either make this a config knob or remove.
 FALSE_RUNTIME_GUARD(envoy_reloadable_features_dns_cache_set_ip_version_to_remove);
+// TODO(botengyao): this will be default true in the next release after this warning release.
+FALSE_RUNTIME_GUARD(envoy_reloadable_features_explicit_internal_address_config);
 
 // A flag to set the maximum TLS version for google_grpc client to TLS1.2, when needed for
 // compliance restrictions.
