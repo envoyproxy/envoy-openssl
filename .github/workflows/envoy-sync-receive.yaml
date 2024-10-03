@@ -1,4 +1,13 @@
-name: Sync from Envoy
+# This workflow is invoked from the envoy-sync.yaml workflow in the upstream
+# envoy repository. Each time there is a push to one of the branches listed in
+# the upstream envoy-sync.yaml workflow, this workflow will be invoked, with the
+# branch name passed as an input.
+
+# Currently this workflow does nothing because we currently sync from upstream
+# envoy on a regular timed schedule via the envoy-sync-scheduled.yaml workflow,
+# instead of being triggered on every upstream push.
+
+name: Sync from Upstream (Pushed)
 
 permissions:
   contents: read
@@ -18,27 +27,4 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-22.04
-    if: |
-      ${{
-          !contains(github.actor, '[bot]')
-          || github.actor == 'update-openssl-envoy[bot]'
-      }}
-    steps:
-    - id: appauth
-      uses: envoyproxy/toolshed/gh-actions/appauth@actions-v0.2.35
-      with:
-        key: ${{ secrets.ENVOY_CI_UPDATE_BOT_KEY }}
-        app_id: ${{ secrets.ENVOY_CI_UPDATE_APP_ID }}
-    - name: "Checkout ${{ github.repository }}[${{ github.event.inputs.branch }}]"
-      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29  # v4.1.6
-      with:
-        ref: ${{ github.event.inputs.branch }}
-        token: ${{ steps.appauth.outputs.token }}
-        fetch-depth: 0
-    - name: "Set git user details"
-      run: |
-        git config user.name "${{ github.actor }}"
-        git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
-    - run: ci/envoy-sync-receive.sh ${{ github.event.inputs.branch }}
-      env:
-        GH_TOKEN: ${{ steps.appauth.outputs.token }}
+    if: false
