@@ -24,6 +24,8 @@ namespace Tls {
 
 namespace {
 
+static const bool isFipsEnabled = ContextConfigImpl::getFipsEnabled();
+
 std::vector<Secret::TlsCertificateConfigProviderSharedPtr> getTlsCertificateConfigProviders(
     const envoy::extensions::transport_sockets::tls::v3::CommonTlsContext& config,
     Server::Configuration::TransportSocketFactoryContext& factory_context,
@@ -307,21 +309,19 @@ const unsigned ClientContextConfigImpl::DEFAULT_MIN_VERSION = TLS1_2_VERSION;
 const unsigned ClientContextConfigImpl::DEFAULT_MAX_VERSION = TLS1_2_VERSION;
 
 const std::string ClientContextConfigImpl::DEFAULT_CIPHER_SUITES =
-#ifndef BORINGSSL_FIPS
-    "[ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305]:"
-    "[ECDHE-RSA-AES128-GCM-SHA256|ECDHE-RSA-CHACHA20-POLY1305]:"
-#else // BoringSSL FIPS
+  isFipsEnabled ?
     "ECDHE-ECDSA-AES128-GCM-SHA256:"
     "ECDHE-RSA-AES128-GCM-SHA256:"
-#endif
+    "ECDHE-ECDSA-AES256-GCM-SHA384:"
+    "ECDHE-RSA-AES256-GCM-SHA384:"
+  :
+    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:"
+    "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:"
     "ECDHE-ECDSA-AES256-GCM-SHA384:"
     "ECDHE-RSA-AES256-GCM-SHA384:";
 
 const std::string ClientContextConfigImpl::DEFAULT_CURVES =
-#ifndef BORINGSSL_FIPS
-    "X25519:"
-#endif
-    "P-256";
+  isFipsEnabled ? "P-256" : "X25519:P-256";
 
 absl::StatusOr<std::unique_ptr<ClientContextConfigImpl>> ClientContextConfigImpl::create(
     const envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext& config,

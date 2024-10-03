@@ -1,0 +1,41 @@
+--- a/include/openssl/stack.h
++++ b/include/openssl/stack.h
+@@ -413,11 +413,6 @@
+     return ((sk_##name##_cmp_func)cmp_func)(&a_ptr, &b_ptr);                  \
+   }                                                                           \
+                                                                               \
+-  OPENSSL_INLINE int sk_##name##_call_delete_if_func(                         \
+-      OPENSSL_sk_delete_if_func func, void *obj, void *data) {                \
+-    return ((sk_##name##_delete_if_func)func)((ptrtype)obj, data);            \
+-  }                                                                           \
+-                                                                              \
+   OPENSSL_INLINE STACK_OF(name) *sk_##name##_new(sk_##name##_cmp_func comp) { \
+     return (STACK_OF(name) *)sk_new((OPENSSL_sk_cmp_func)comp);               \
+   }                                                                           \
+@@ -469,12 +464,6 @@
+     return (ptrtype)sk_delete_ptr((_STACK *)sk, (const void *)p);             \
+   }                                                                           \
+                                                                               \
+-  OPENSSL_INLINE void sk_##name##_delete_if(                                  \
+-      STACK_OF(name) *sk, sk_##name##_delete_if_func func, void *data) {      \
+-    sk_delete_if((_STACK *)sk, sk_##name##_call_delete_if_func,               \
+-                 (OPENSSL_sk_delete_if_func)func, data);                      \
+-  }                                                                           \
+-                                                                              \
+   OPENSSL_INLINE int sk_##name##_find(const STACK_OF(name) *sk,               \
+                                       size_t *out_index, constptrtype p) {    \
+     return sk_find((const _STACK *)sk, out_index, (const void *)p,            \
+@@ -558,11 +547,8 @@
+     // sk_FOO_pop_free is defined by macros and bound by name, so we cannot
+     // access it from C++ here.
+     using Type = typename StackTraits<Stack>::Type;
+-    sk_pop_free_ex(reinterpret_cast<_STACK *>(sk),
+-                   [](OPENSSL_sk_free_func /* unused */, void *ptr) {
+-                     DeleterImpl<Type>::Free(reinterpret_cast<Type *>(ptr));
+-                   },
+-                   nullptr);
++    ossl_OPENSSL_sk_pop_free(reinterpret_cast<_STACK *>(sk),
++                   reinterpret_cast<void (*)(void *)>(DeleterImpl<Type>::Free));
+   }
+ };
+ 
