@@ -28,3 +28,5 @@ jobs:
   sync:
     runs-on: ubuntu-22.04
     if: false
+    steps:
+    - run: echo 'Does nothing'
