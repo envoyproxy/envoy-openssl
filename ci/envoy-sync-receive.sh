@@ -22,12 +22,15 @@
 
 set -xeuo pipefail
 
-[[ -t 1 ]] && ANSI_GREEN="\033[0;32m"
-[[ -t 1 ]] && ANSI_RED="\033[0;31m"
-[[ -t 1 ]] && ANSI_RESET="\033[0m"
+notice() { printf "::notice:: %s\n" "$1"; }
 
-info() { printf "${ANSI_GREEN:-}INFO: %s${ANSI_RESET:-}\n" "$1"; }
-error() { printf "${ANSI_RED:-}ERROR: %s${ANSI_RESET:-}\n" "$1"; }
+SCRATCH="$(mktemp -d)"
+cleanup() {
+    local savexit=$?
+    rm -rf -- "${SCRATCH}"
+    exit "${savexit}"
+}
+trap 'cleanup' EXIT
 
 SRC_REPO_URL="https://github.com/envoyproxy/envoy.git"
 SRC_REPO_PATH="${SRC_REPO_URL/#*github.com?/}"
@@ -40,17 +43,6 @@ DST_REPO_PATH="${DST_REPO_URL/#*github.com?/}"
 DST_REPO_PATH="${DST_REPO_PATH/%.git/}"
 DST_BRANCH_NAME=$(git branch --show-current)
 DST_HEAD_SHA=$(git rev-parse HEAD)
-
-
-info "Source URL    : ${SRC_REPO_URL}"
-info "Source path   : ${SRC_REPO_PATH}"
-info "Source branch : ${SRC_BRANCH_NAME}"
-info "Source head   : ${SRC_HEAD_SHA}"
-
-info "Destination URL    : ${DST_REPO_URL}"
-info "Destination path   : ${DST_REPO_PATH}"
-info "Destination branch : ${DST_BRANCH_NAME}"
-info "Destination head   : ${DST_HEAD_SHA}"
 
 # Add the remote upstream repo and fetch the specified branch
 git remote remove upstream &> /dev/null || true
@@ -70,9 +62,11 @@ DST_NEW_BRANCH_NAME="auto-merge-$(echo "${SRC_BRANCH_NAME}" | tr /. -)"
 # Set the default remote for the gh command
 gh repo set-default "${DST_REPO_PATH}"
 
+# Ensure the merge commit message lists all the merged commits (defaults to 20)
+git config set --local merge.log 100000
+
 # Perform the merge using --no-ff option to force creating a merge commit
-info "Performing ${TITLE}"
-if git merge --no-ff -m "${TITLE}" --log "upstream/${SRC_BRANCH_NAME}"; then
+if git merge --no-ff -m "${TITLE}" --log "upstream/${SRC_BRANCH_NAME}" > "${SCRATCH}/mergeout"; then
     DST_NEW_HEAD_SHA="$(git rev-parse HEAD)"
     if [[ "${DST_NEW_HEAD_SHA}" != "${DST_HEAD_SHA}" ]]; then
         git push --force origin "HEAD:${DST_NEW_BRANCH_NAME}"
@@ -95,27 +89,37 @@ if git merge --no-ff -m "${TITLE}" --log "upstream/${SRC_BRANCH_NAME}"; then
     else
         MERGE_OUTCOME="No changes"
     fi
-    info "${TITLE} successful (${MERGE_OUTCOME})"
+    notice "${TITLE} successful (${MERGE_OUTCOME})"
     # Close any related issues with a comment describing why
     for ISSUE_ID in $(gh issue list -S "${TITLE} failed" | cut -f1); do
         ISSUE_URL="https://github.com/${DST_REPO_PATH}/issues/${ISSUE_ID}"
         gh issue close "${ISSUE_URL}" --comment "Successful ${TITLE} (${MERGE_OUTCOME})"
-        info "Closed ${ISSUE_URL}"
+        notice "Closed ${ISSUE_URL}"
     done
 else # merge fail
-    error "${TITLE} failed"
+    notice "${TITLE} failed"
     ISSUE_COUNT=$(gh issue list -S "${TITLE} failed" | wc -l)
     if [[ ${ISSUE_COUNT} == 0 ]]; then
         ISSUE_URL=$(gh issue create --title "${TITLE} failed" --body "${TITLE} failed")
-        ISSUE_OUTCOME="Created ${ISSUE_URL}"
+        ISSUE_ID="$(basename "${ISSUE_URL}")"
+        ISSUE_OUTCOME="Created"
     else
         ISSUE_ID="$(gh issue list -S "${TITLE} failed sort:created-asc" | tail -1 | cut -f1)"
         ISSUE_URL="https://github.com/${DST_REPO_PATH}/issues/${ISSUE_ID}"
-        ISSUE_OUTCOME="Updated ${ISSUE_URL}"
+        ISSUE_OUTCOME="Updated"
     fi
-    gh issue comment "${ISSUE_URL}" --body-file - <<-EOF
-		Failed to ${TITLE}
-		From [${SRC_HEAD_SHA}](https://github.com/${SRC_REPO_PATH}/commit/${SRC_HEAD_SHA})
-	EOF
-    info "${ISSUE_OUTCOME}"
+    COMMENT_URL=$(\
+        gh issue comment "${ISSUE_URL}" --body-file - <<-EOF
+			Failed to ${TITLE}
+			
+			Upstream   : [${SRC_HEAD_SHA}](https://github.com/${SRC_REPO_PATH}/commit/${SRC_HEAD_SHA})
+			Downstream : [${DST_HEAD_SHA}](https://github.com/${DST_REPO_PATH}/commit/${DST_HEAD_SHA})
+			
+			\`\`\`
+			$(cat "${SCRATCH}/mergeout" || true)
+			\`\`\`
+		EOF
+    )
+    notice "${ISSUE_OUTCOME} ISSUE#${ISSUE_ID} (${COMMENT_URL})"
+    exit 1
 fi
