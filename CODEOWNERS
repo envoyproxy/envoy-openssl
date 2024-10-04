@@ -374,3 +374,10 @@ extensions/filters/http/oauth2 @derekargueta @mattklein123
 /contrib/dlb @mattklein123 @daixiang0
 /contrib/qat/ @giantcroc @soulxu
 /contrib/generic_proxy/ @wbpcode @soulxu @zhaohuabing @rojkov @htuch
+
+# The bulk of the files in this envoyproxy/envoy-openssl repository are just
+# copied from the upstream envoyproxy/envoy repository by automation.
+# Therefore, all of the above code owners should NOT be notified about changes
+# to this repository. To achive that, we have a default pattern which overrides
+# all the matches from above, and notifies the envoy-openssl-sync team instead.
+* @envoyproxy/envoy-openssl-sync
