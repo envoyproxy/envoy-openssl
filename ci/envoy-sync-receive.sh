@@ -62,11 +62,9 @@ DST_NEW_BRANCH_NAME="auto-merge-$(echo "${SRC_BRANCH_NAME}" | tr /. -)"
 # Set the default remote for the gh command
 gh repo set-default "${DST_REPO_PATH}"
 
-# Ensure the merge commit message lists all the merged commits (defaults to 20)
-git config set --local merge.log 100000
-
 # Perform the merge using --no-ff option to force creating a merge commit
-if git merge --no-ff -m "${TITLE}" --log "upstream/${SRC_BRANCH_NAME}" > "${SCRATCH}/mergeout"; then
+if git merge --no-ff --log=10000 --signoff -m "${TITLE}" \
+                "upstream/${SRC_BRANCH_NAME}" > "${SCRATCH}/mergeout"; then
     DST_NEW_HEAD_SHA="$(git rev-parse HEAD)"
     if [[ "${DST_NEW_HEAD_SHA}" != "${DST_HEAD_SHA}" ]]; then
         git push --force origin "HEAD:${DST_NEW_BRANCH_NAME}"
