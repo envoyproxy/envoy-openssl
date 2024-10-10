@@ -565,7 +565,12 @@ void MyFrontendAction::EndSourceFileAction() {
   std::regex regex("[a-zA-Z_][a-zA-Z0-9_]*", std::regex::basic | std::regex::optimize);
   opt::vstr() << "Processing " << files.size() << " files...\n";
   for (auto [header, incl] : files) {
-    auto path = opt::incdir() / opt::prefix / header;
+    std::filesystem::path path;
+    if (header == opt::hfile() || header == opt::cfile()) {
+      path = header;
+    } else {
+      path = opt::incdir() / opt::prefix / header;
+    }
     std::string buffer;
 
     opt::vstr() << " - " << path << "\n";
