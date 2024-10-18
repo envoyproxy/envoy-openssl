@@ -2,98 +2,97 @@
 
 [Cloud-native high-performance edge/middle/service proxy](https://www.envoyproxy.io/)
 
-Envoy is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CNCF). If you are a
-company that wants to help shape the evolution of technologies that are container-packaged,
-dynamically-scheduled and microservices-oriented, consider joining the CNCF. For details about who's
-involved and how Envoy plays a role, read the CNCF
-[announcement](https://www.cncf.io/blog/2017/09/13/cncf-hosts-envoy/).
+# Envoy OpenSSL
 
-[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/1266/badge)](https://bestpractices.coreinfrastructure.org/projects/1266)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/envoyproxy/envoy/badge)](https://securityscorecards.dev/viewer/?uri=github.com/envoyproxy/envoy)
-[![CLOMonitor](https://img.shields.io/endpoint?url=https://clomonitor.io/api/projects/cncf/envoy/badge)](https://clomonitor.io/projects/cncf/envoy)
-[![Azure Pipelines](https://dev.azure.com/cncf/envoy/_apis/build/status/11?branchName=main)](https://dev.azure.com/cncf/envoy/_build/latest?definitionId=11&branchName=main)
-[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/envoy.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:envoy)
-[![Jenkins](https://powerci.osuosl.org/buildStatus/icon?job=build-envoy-static-master&subject=ppc64le%20build)](https://powerci.osuosl.org/job/build-envoy-static-master/)
-[![Jenkins](https://ibmz-ci.osuosl.org/buildStatus/icon?job=Envoy_IBMZ_CI&subject=s390x%20build)](https://ibmz-ci.osuosl.org/job/Envoy_IBMZ_CI/)
+This README deals with the specifics of this [envoyproxy/envoy-openssl](https://github.com/envoyproxy/envoy-openssl) repository, describing primarily how it differs from the regular [envoyproxy/envoy](https://github.com/envoyproxy/envoy) repository. The full README for the regular [envoyproxy/envoy](https://github.com/envoyproxy/envoy) repository can be found [here](https://github.com/envoyproxy/envoy/blob/main/README.md). 
 
-## Documentation
+## Repository Structure
 
-* [Official documentation](https://www.envoyproxy.io/)
-* [FAQ](https://www.envoyproxy.io/docs/envoy/latest/faq/overview)
-* [Unofficial Chinese documentation](https://cloudnative.to/envoy/)
-* [Example documentation](https://github.com/envoyproxy/examples/)
-* [Blog](https://medium.com/@mattklein123/envoy-threading-model-a8d44b922310) about the threading model
-* [Blog](https://medium.com/@mattklein123/envoy-hot-restart-1d16b14555b5) about hot restart
-* [Blog](https://medium.com/@mattklein123/envoy-stats-b65c7f363342) about stats architecture
-* [Blog](https://medium.com/@mattklein123/the-universal-data-plane-api-d15cec7a) about universal data plane API
-* [Blog](https://medium.com/@mattklein123/lyfts-envoy-dashboards-5c91738816b1) on Lyft's Envoy dashboards
+This repository is a copy of the regular [envoyproxy/envoy](https://github.com/envoyproxy/envoy)
+repository, with additions & modifications that enable Envoy to be built on OpenSSL rather than
+BoringSSL. In addition to the regular Envoy repository structure, already described in
+[REPO_LAYOUT.md](REPO_LAYOUT.md), this repository has the following additions & modifications that
+are specific to building Envoy on OpenSSL:
 
-## Related
+* `bssl-compat` This additional directory contains the BoringSSL Compatability Layer implementation. This provides an implementation of the BoringSSL API on top of the OpenSSL libraries.
+* `openssl` This additional directory contains config & script files for building Envoy on the `bssl-compat` library rather than on BoringSSL. Where possible, these scripts are minimal wrappers, and delegate most of their behavior to the corresponding scripts in the regular envoy `ci` directory.
+* `WORKSPACE` This is the regular envoy `WORKSPACE` file with an additional `local_repository` declaration for the `bssl-compat` library.
 
-* [data-plane-api](https://github.com/envoyproxy/data-plane-api): v2 API definitions as a standalone
-  repository. This is a read-only mirror of [api](api/).
-* [envoy-perf](https://github.com/envoyproxy/envoy-perf): Performance testing framework.
-* [envoy-filter-example](https://github.com/envoyproxy/envoy-filter-example): Example of how to add new filters
-  and link to the main repository.
+## Branching
 
-## Contact
+It is intended that this repository contains the same `release/v1.xx` branch structure as the
+regular envoy repository, starting from `release/v1.26`. Each of those branches is a copy of the
+identically named branch from the regular [envoyproxy/envoy](https://github.com/envoyproxy/envoy)
+repository, with the addition of:
 
-* [envoy-announce](https://groups.google.com/forum/#!forum/envoy-announce): Low frequency mailing
-  list where we will email announcements only.
-* [envoy-security-announce](https://groups.google.com/forum/#!forum/envoy-security-announce): Low frequency mailing
-  list where we will email security related announcements only.
-* [envoy-users](https://groups.google.com/forum/#!forum/envoy-users): General user discussion.
-* [envoy-dev](https://groups.google.com/forum/#!forum/envoy-dev): Envoy developer discussion (APIs,
-  feature design, etc.).
-* [envoy-maintainers](https://groups.google.com/forum/#!forum/envoy-maintainers): Use this list
-  to reach all core Envoy maintainers.
-* [Twitter](https://twitter.com/EnvoyProxy/): Follow along on Twitter!
-* [Slack](https://envoyproxy.slack.com/): Slack, to get invited go [here](https://communityinviter.com/apps/envoyproxy/envoy).
-  * NOTE: Response to user questions is best effort on Slack. For a "guaranteed" response please email
-    envoy-users@ per the guidance in the following linked thread.
+* The additional script & config files, required to build on OpenSSL, as described above.
+* Modifications to envoy source code that cannot be hidden in the `bssl-compat` layer.
 
-Please see [this](https://groups.google.com/forum/#!topic/envoy-announce/l9zjYsnS3TY) email thread
-for information on email list usage.
+Note that the initial `release/v1.26` branch is *not* intended for production.
+It is anticipated that `release/v1.28` will be the first branch to reach production.
 
-## Contributing
+## Building
 
-Contributing to Envoy is fun and modern C++ is a lot less scary than you might think if you don't
-have prior experience. To get started:
+The process for building envoy-openssl is very similar to building regular envoy, wherever possible
+reusing the same builder image and the same scripts, and the same steps.
 
-* [Contributing guide](CONTRIBUTING.md)
-* [Beginner issues](https://github.com/envoyproxy/envoy/issues?q=is%3Aopen+is%3Aissue+label%3Abeginner)
-* [Build/test quick start using docker](ci#building-and-running-tests-as-a-developer)
-* [Developer guide](DEVELOPER.md)
-* Consider installing the Envoy [development support toolchain](https://github.com/envoyproxy/envoy/blob/main/support/README.md), which helps automate parts of the development process, particularly those involving code review.
-* Please make sure that you let us know if you are working on an issue so we don't duplicate work!
+Building the envoy-openssl project is done in a build container which is based on the regular envoy
+build container, but with some additional requirements installed, including OpenSSL 3.0.x. This build
+container is launched using the the `openssl/run_envoy_docker.sh` script, which handles some openssl
+specific config and then passes control to the regular `ci/run_envoy_docker.sh` script.
 
-## Community Meeting
+Building & running tests, and building the envoy binary itself, is done using the regular
+`ci/do_ci.sh` script.
 
-The Envoy team has a scheduled meeting time twice per month on Tuesday at 9am PT. The public
-Google calendar is [here](https://goo.gl/PkDijT).  The meeting will only be held
-if there are agenda items listed in the [meeting
-minutes](https://goo.gl/5Cergb).  Any member of the community should be able to
-propose agenda items by adding to the minutes.  The maintainers will either confirm
-the additions to the agenda, or will cancel the meeting within 24 hours of the scheduled
-date if there is no confirmed agenda.
+Although the regular `ci/do_ci.sh` script supports many options for building & testing different
+variants of envoy, as descibed in [ci/README](ci/README.md), including the use of various sanitizers,
+the envoy-openssl project has so far only been built and tested using the `debug` options described
+below. All of the other `ci/do_ci.sh` options that are described in the regular envoy documentation
+[here](https://github.com/envoyproxy/envoy/tree/main/ci#readme) _may_ work but have not been tested.
 
-## Security
+To build the envoy executable and run specified tests, in debug mode:
+```bash
+./openssl/run_envoy_docker.sh './ci/do_ci.sh debug //test/extensions/transport_sockets/tls/...'
+```
 
-### Security Audit
+To build just the envoy executable, in debug mode:
+```bash
+./openssl/run_envoy_docker.sh './ci/do_ci.sh debug.server_only'
+```
 
-There has been several third party engagements focused on Envoy security:
-* In 2018 Cure53 performed a security audit, [full report](docs/security/audit_cure53_2018.pdf).
-* In 2021 Ada Logics performed an audit on our fuzzing infrastructure with recommendations for improvements, [full report](docs/security/audit_fuzzer_adalogics_2021.pdf).
+After running these build commands, the resulting envoy executable can be found in the host's file
+system at `/tmp/envoy-docker-build/envoy/x64/source/exe/envoy/envoy`. Note that you can place the
+build artifacts at a different location on the host by setting ENVOY_DOCKER_BUILD_DIR environment
+variable _before_ invoking the `openssl/run_envoy_docker.sh` script. For example, running the
+following command would put the build artifact in `/build/envoy/x64/source/exe/envoy/envoy`:
+```bash
+ENVOY_DOCKER_BUILD_DIR=/build ./openssl/run_envoy_docker.sh './ci/do_ci.sh debug.server_only'
+```
 
-### Reporting security vulnerabilities
+Note that, in addition to running the `do_ci.sh` script directly in batch mode, as done in the examples
+above, the `openssl/run_envoy_docker.sh` script can also be used to run an interactive shell, which
+can be more convenient, for example when repeatedly building & running tests:
 
-If you've found a vulnerability or a potential vulnerability in Envoy please let us know at
-[envoy-security](mailto:envoy-security@googlegroups.com). We'll send a confirmation
-email to acknowledge your report, and we'll send an additional email when we've identified the issue
-positively or negatively.
+```bash
+host $ ./openssl/run_envoy_docker.sh bash
 
-For further details please see our complete [security release process](SECURITY.md).
+container $ ./ci/do_ci.sh debug //test/extensions/transport_sockets/tls/...
+container $ ./ci/do_ci.sh debug //test/common/runtime/...
+```
 
-## Releases
+## Running Envoy
 
-For further details please see our [release process](https://github.com/envoyproxy/envoy/blob/main/RELEASES.md).
+When running the envoy executable in the build container, by default it will fail, with the following error
+message, bacause the build image only has OpenSSL 1.1.x installed, but the envoy executable needs to load
+and use OpenSSL 3.0.x libraries:
+
+```bash
+$ /build/envoy/x64/source/exe/envoy/envoy --version
+Expecting to load OpenSSL version 3.0.x but got 1.1.6
+```
+
+To ensure that envoy loads the OpenSSL 3.0.x libraries, their path needs to be prepended to `LD_LIBRARY_PATH` before it is executed:
+```bash
+$ LD_LIBRARY_PATH=$OPENSSL_ROOT_DIR/lib64:$LD_LIBRARY_PATH /build/envoy/x64/source/exe/envoy/envoy --version
+/build/envoy/x64/source/exe/envoy/envoy  version: dcd3e1c50ace27b14441fc8b28650b62c0bf2dd2/1.26.8-dev/Modified/DEBUG/BoringSSL
+```
