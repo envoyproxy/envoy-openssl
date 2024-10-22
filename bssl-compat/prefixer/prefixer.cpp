@@ -25,6 +25,7 @@ namespace opt {
   static std::set<std::string>    srcskip;
   static std::filesystem::path    output  = std::filesystem::current_path();
   static std::string              prefix  = "ossl";
+  static bool                     relative_incl = false;
   static bool                     verbose = false;
 
   static std::vector<std::regex>  extraIdentifiers  = {
@@ -442,6 +443,9 @@ void MyFrontendAction::EndSourceFileAction() {
     for(const auto &f : m_functions) {
       std::string header = f.getHeader(srcmgr);
       if(funcmap.find(header) == funcmap.end()) {
+        if (opt::relative_incl) {
+           header = header.substr(header.find(opt::prefix), header.length());
+        }
         hstr << "#include \"" << header <<"\"" << std::endl;
       }
       funcmap[header].push_back(f);
@@ -642,6 +646,7 @@ static bool usage(int exitcode) {
             << "  --prefix <string>       The prefix to be applied to functions, types & macros" << std::endl
             << "  --output <path>         Output directory for generated files" << std::endl
             << "  --verbose               Print more info about what's being done" << std::endl
+            << "  --relative-incl         Include headers in <prefix>.h with relative paths, starting with <prefix>/." << std::endl
             << std::endl
             << "All files will be generated under the output directory as follows:" << std::endl
             << std::endl
@@ -687,6 +692,9 @@ int main(int argc, const char **argv) {
     }
     else if ((arg == "--output") && ((++i < argc) || usage(-1))) {
       opt::output = argv[i];
+    }
+    else if (arg == "--relative-incl") {
+      opt::relative_incl = true;
     }
     else if (arg == "--verbose") {
       opt::verbose = true;
