@@ -561,9 +561,11 @@ target_add_bssl_function(bssl-compat
   X509_CRL_free
   X509_CRL_up_ref
   X509_digest
+  X509_EXTENSION_get_object
   X509_free
   X509_get_ext
   X509_get_ext_by_OBJ
+  X509_get_ext_count
   X509_get_ext_d2i
   X509_get_extension_flags
   X509_get_issuer_name
