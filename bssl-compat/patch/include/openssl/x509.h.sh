@@ -94,6 +94,8 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_STORE_set_check_crl \
   --uncomment-func-decl X509_STORE_set_get_crl \
   --uncomment-func-decl X509_CRL_dup \
+  --uncomment-func-decl X509_get_ext_count \
+  --uncomment-func-decl X509_EXTENSION_get_object \
   --uncomment-typedef X509_STORE_CTX_get_crl_fn \
   --uncomment-typedef X509_STORE_CTX_check_crl_fn \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(X509,' \
