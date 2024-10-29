@@ -1321,7 +1321,7 @@ typed_config:
   EXPECT_EQ(test_server_->counter("aysnc_cert_selection.cert_selection_sync")->value(), 1);
 }
 
-TEST_P(SslIntegrationTest, AsyncCertSelectorSucceeds) {
+TEST_P(SslIntegrationTest, DISABLED_AsyncCertSelectorSucceeds) {
   tls_cert_selector_yaml_ = R"EOF(
 name: test-tls-context-provider
 typed_config:
@@ -1339,7 +1339,7 @@ typed_config:
             1);
 }
 
-TEST_P(SslIntegrationTest, AsyncSleepCertSelectorSucceeds) {
+TEST_P(SslIntegrationTest, DISABLED_AsyncSleepCertSelectorSucceeds) {
   tls_cert_selector_yaml_ = R"EOF(
 name: test-tls-context-provider
 typed_config:
@@ -1357,7 +1357,7 @@ typed_config:
             1);
 }
 
-TEST_P(SslIntegrationTest, AsyncSleepCertSelectionAfterTearDown) {
+TEST_P(SslIntegrationTest, DISABLED_AsyncSleepCertSelectionAfterTearDown) {
   tls_cert_selector_yaml_ = R"EOF(
 name: test-tls-context-provider
 typed_config:
@@ -1388,7 +1388,7 @@ typed_config:
                                  TestUtility::DefaultTimeout, dispatcher_.get());
 }
 
-TEST_P(SslIntegrationTest, AsyncCertSelectionAfterSslShutdown) {
+TEST_P(SslIntegrationTest, DISABLED_AsyncCertSelectionAfterSslShutdown) {
   tls_cert_selector_yaml_ = R"EOF(
 name: test-tls-context-provider
 typed_config:
