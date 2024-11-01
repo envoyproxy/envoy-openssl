@@ -1,0 +1,33 @@
+name: envoy-openssl-checks
+on:
+  pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  statuses: write
+
+jobs:
+  build-and-test-release:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: "checkout"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: build-and-test-release
+        id: build-and-test-release
+        uses: sclorg/testing-farm-as-github-action@v3
+        with:
+          api_key: ${{ secrets.TF_API_KEY }}
+          api_url: https://api.dev.testing-farm.io/v0.1
+          compose: Fedora-41
+          tmt_plan_regex: "build-and-test-release"
+          pull_request_status_name: "build-and-test-release"
+          update_pull_request_status: true
