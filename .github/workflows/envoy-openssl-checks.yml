@@ -30,4 +30,3 @@ jobs:
           compose: Fedora-41
           tmt_plan_regex: "build-and-test-release"
           pull_request_status_name: "build-and-test-release"
-          update_pull_request_status: true
