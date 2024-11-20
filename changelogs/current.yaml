@@ -15,13 +15,14 @@ minor_behavior_changes:
     ``envoy.reloadable_features.normalize_rds_provider_config`` to true.
 
 bug_fixes:
-- area: http/1
+# *Changes expected to improve the state of the world and are unlikely to have negative effects*
+- area: lrs
   change: |
-    Fixes sending overload crashes when HTTP/1 request is reset.
-- area: happy_eyeballs
-  change: |
-    Validate that ``additional_address`` are IP addresses instead of crashing when sorting.
-- area: balsa
-  change: |
-    Fix incorrect handling of non-101 1xx responses. This fix can be temporarily reverted by setting runtime guard
-    ``envoy.reloadable_features.wait_for_first_byte_before_balsa_msg_done`` to false.
+    Fixes errors stat being incremented and warning log spamming for LoadStatsReporting graceful stream close.
+
+removed_config_or_runtime:
+# *Normally occurs at the end of the* :ref:`deprecation period <deprecated>`
+
+new_features:
+
+deprecated:
