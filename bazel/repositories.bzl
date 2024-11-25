@@ -4,7 +4,8 @@ load("@envoy_api//bazel:external_deps.bzl", "load_repository_locations")
 load(":dev_binding.bzl", "envoy_dev_binding")
 load(":repository_locations.bzl", "PROTOC_VERSIONS", "REPOSITORY_LOCATIONS_SPEC")
 
-PPC_SKIP_TARGETS = ["envoy.string_matcher.lua", "envoy.filters.http.lua", "envoy.router.cluster_specifier_plugin.lua"]
+# ppc64le uses luajit2 so http.lua can be built
+PPC_SKIP_TARGETS = []
 
 WINDOWS_SKIP_TARGETS = [
     "envoy.extensions.http.cache.file_system_http_cache",
@@ -128,18 +129,14 @@ def envoy_dependencies(skip_targets = []):
     # Setup external Bazel rules
     _foreign_cc_dependencies()
 
-    # Binding to an alias pointing to the selected version of BoringSSL:
-    # - BoringSSL FIPS from @boringssl_fips//:ssl,
-    # - non-FIPS BoringSSL from @boringssl//:ssl.
-    _boringssl()
-    _boringssl_fips()
+    # Binding to an alias pointing to the bssl-compat layer
     native.bind(
         name = "ssl",
-        actual = "@envoy//bazel:boringssl",
+        actual = "@envoy//bssl-compat:ssl",
     )
     native.bind(
         name = "crypto",
-        actual = "@envoy//bazel:boringcrypto",
+        actual = "@envoy//bssl-compat:crypto",
     )
 
     # The long repo names (`com_github_fmtlib_fmt` instead of `fmtlib`) are
@@ -174,6 +171,7 @@ def envoy_dependencies(skip_targets = []):
     _com_github_jbeder_yaml_cpp()
     _com_github_libevent_libevent()
     _com_github_luajit_luajit()
+    _com_github_luajit2_luajit2()
     _com_github_nghttp2_nghttp2()
     _com_github_msgpack_cpp()
     _com_github_skyapm_cpp2sky()
@@ -849,7 +847,13 @@ def _emsdk():
     )
 
 def _com_github_google_jwt_verify():
-    external_http_archive("com_github_google_jwt_verify")
+    external_http_archive(
+        name = "com_github_google_jwt_verify",
+        patch_args = ["-p1"],
+        patches = [
+            "@envoy//bazel:jwt_verify_lib.patch",
+        ]
+    )
 
 def _com_github_luajit_luajit():
     external_http_archive(
@@ -858,6 +862,25 @@ def _com_github_luajit_luajit():
         patches = ["@envoy//bazel/foreign_cc:luajit.patch"],
         patch_args = ["-p1"],
         patch_cmds = ["chmod u+x build.py"],
+    )
+
+    native.bind(
+        name = "luajit",
+        actual = "@envoy//bazel/foreign_cc:luajit",
+    )
+
+def _com_github_luajit2_luajit2():
+    external_http_archive(
+        name = "com_github_luajit2_luajit2",
+        build_file_content = BUILD_ALL_CONTENT,
+        patches = ["@envoy//bazel/foreign_cc:luajit2.patch"],
+        patch_args = ["-p1"],
+        patch_cmds = ["chmod u+x build.py"],
+    )
+
+    native.bind(
+        name = "luajit2",
+        actual = "@envoy//bazel/foreign_cc:luajit2",
     )
 
 def _com_github_google_tcmalloc():
@@ -982,10 +1005,19 @@ def _rules_ruby():
     external_http_archive("rules_ruby")
 
 def _foreign_cc_dependencies():
-    external_http_archive(name = "rules_foreign_cc")
+    external_http_archive(
+        name = "rules_foreign_cc",
+        patch_args = ["-p1"],
+        patches = ["@envoy//bazel:rules_foreign_cc.patch"],
+    )
 
 def _com_github_maxmind_libmaxminddb():
     external_http_archive(
         name = "com_github_maxmind_libmaxminddb",
         build_file_content = BUILD_ALL_CONTENT,
     )
+    native.bind(
+        name = "maxmind",
+        actual = "@envoy//bazel/foreign_cc:maxmind_linux",
+    )
+
