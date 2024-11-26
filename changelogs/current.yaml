@@ -5,9 +5,27 @@ behavior_changes:
 
 minor_behavior_changes:
 # *Changes that may cause incompatibilities for some users, but should not for most*
+- area: dns
+  change: |
+    Patched c-ares to address CVE-2024-25629.
 
 bug_fixes:
 # *Changes expected to improve the state of the world and are unlikely to have negative effects*
+- area: access_log
+  change: |
+    Relaxed the restriction on SNI logging to allow the ``_`` character, even if
+    ``envoy.reloadable_features.sanitize_sni_in_access_log`` is enabled.
+- area: original_ip_detection custom header extension
+  change: |
+    Reverted :ref:`custom header
+    <envoy_v3_api_msg_extensions.http.original_ip_detection.custom_header.v3.CustomHeaderConfig>` extension to its
+    original behavior by disabling automatic XFF header appending that was inadvertently introduced in PR #31831.
+- area: tracers
+  change: |
+    Avoid possible overflow when setting span attributes in Dynatrace sampler.
+- area: validation/tools
+  change: |
+    Add back missing extension for ``schema_validator_tool``.
 
 removed_config_or_runtime:
 # *Normally occurs at the end of the* :ref:`deprecation period <deprecated>`
