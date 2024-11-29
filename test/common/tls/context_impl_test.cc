@@ -1320,9 +1320,17 @@ TEST_F(ClientContextConfigImplTest, RSA1024Cert) {
                             *tls_context.mutable_common_tls_context()->add_tls_certificates());
   auto client_context_config = *ClientContextConfigImpl::create(tls_context, factory_context_);
   Stats::IsolatedStoreImpl store;
-
   std::string error_msg(
+#ifdef OPENSSL_NO_RHEL
+      "Failed to load certificate chain from .*selfsigned_rsa_1024_cert.pem, only RSA certificates "
+#ifdef BORINGSSL_FIPS
+      "with 2048-bit, 3072-bit or 4096-bit keys are supported in FIPS mode"
+#else
+      "with 2048-bit or larger keys are supported"
+#endif
+#else
          "Failed to load certificate chain from .*selfsigned_rsa_1024_cert.pem"
+#endif
   );
   EXPECT_THAT(manager_.createSslClientContext(*store.rootScope(), *client_context_config)
                   .status()
@@ -1341,8 +1349,20 @@ TEST_F(ClientContextConfigImplTest, RSA1024Pkcs12) {
                             *tls_context.mutable_common_tls_context()->add_tls_certificates());
   auto client_context_config = *ClientContextConfigImpl::create(tls_context, factory_context_);
   Stats::IsolatedStoreImpl store;
+#ifdef OPENSSL_NO_RHEL
+ 
+  std::string error_msg("Failed to load certificate chain from .*selfsigned_rsa_1024_certkey.p12, "
+                        "only RSA certificates "
+#ifdef BORINGSSL_FIPS
+                        "with 2048-bit, 3072-bit or 4096-bit keys are supported in FIPS mode"
+#else
+                        "with 2048-bit or larger keys are supported"
+#endif
+#else
   std::string error_msg("Failed to load certificate from .*selfsigned_rsa_1024_certkey.p12"
+#endif
   );
+
   EXPECT_THAT(manager_.createSslClientContext(*store.rootScope(), *client_context_config)
                   .status()
                   .message(),

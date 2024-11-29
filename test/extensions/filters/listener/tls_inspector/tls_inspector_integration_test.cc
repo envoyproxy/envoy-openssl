@@ -206,8 +206,12 @@ TEST_P(TlsInspectorIntegrationTest, JA3FingerprintIsSet) {
       1);
   EXPECT_EQ(static_cast<int>(TestUtility::readSampleSum(test_server_->server().dispatcher(),
                                                         *bytes_processed_histogram)),
+#ifdef OPENSSL_NO_RHEL
+            145);
+#else
             // Value expected in RHEL-9                                            
             135);
+#endif
 }
 
 TEST_P(TlsInspectorIntegrationTest, RequestedBufferSizeCanGrow) {
@@ -253,8 +257,12 @@ TEST_P(TlsInspectorIntegrationTest, RequestedBufferSizeCanGrow) {
       1);
   EXPECT_EQ(static_cast<int>(TestUtility::readSampleSum(test_server_->server().dispatcher(),
                                                         *bytes_processed_histogram)),
+#ifdef OPENSSL_NO_RHEL
+            405); 
+#else
             // Value expected in RHEL-9                                             
             395);
+#endif
 }
 
 INSTANTIATE_TEST_SUITE_P(IpVersions, TlsInspectorIntegrationTest,

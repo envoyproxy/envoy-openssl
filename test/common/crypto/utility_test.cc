@@ -146,6 +146,10 @@ TEST(UtilityTest, TestVerifySignature) {
     auto sig = Hex::decode(signature);
 
     auto result = UtilitySingleton::get().verifySignature(hash_func, *crypto, sig, text);
+#ifdef OPENSSL_NO_RHEL
+    EXPECT_EQ(true, result.result_);
+    EXPECT_EQ("", result.error_message_);
+#else
     if(hash_func == "sha1"){
       // In RHEL-OpenSSL sha1 is not supported
       EXPECT_EQ(false, result.result_);
@@ -154,6 +158,7 @@ TEST(UtilityTest, TestVerifySignature) {
       EXPECT_EQ(true, result.result_);
       EXPECT_EQ("", result.error_message_);
     }
+#endif
 
   }
 

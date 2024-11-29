@@ -648,6 +648,41 @@ TEST_P(TcpGrpcAccessLogIntegrationTest, SslNotTerminated) {
   ASSERT_TRUE(waitForAccessLogConnection());
   ASSERT_TRUE(waitForAccessLogStream());
   ASSERT_TRUE(
+#ifdef OPENSSL_NO_RHEL
+      waitForAccessLogRequest(fmt::format(R"EOF(
+identifier:
+  node:
+    id: node_name
+    cluster: cluster_name
+    locality:
+      zone: zone_name
+    user_agent_name: "envoy"
+  log_name: foo
+tcp_logs:
+  log_entry:
+    common_properties:
+      downstream_remote_address:
+        socket_address:
+          address: {}
+      downstream_local_address:
+        socket_address:
+          address: {}
+      tls_properties:
+        tls_sni_hostname: sni
+        local_certificate_properties:
+        peer_certificate_properties:       
+      upstream_remote_address:
+        socket_address:
+      upstream_local_address:
+        socket_address:
+      downstream_direct_remote_address:
+        socket_address:
+          address: {}
+    connection_properties:
+      received_bytes: 163
+      sent_bytes: 163
+)EOF",
+#else
       waitForAccessLogRequest(fmt::format(R"EOF(
 identifier:
   node:
@@ -681,6 +716,7 @@ tcp_logs:
       received_bytes: 155
       sent_bytes: 155
 )EOF",
+#endif
                                           Network::Test::getLoopbackAddressString(ipVersion()),
                                           Network::Test::getLoopbackAddressString(ipVersion()),
                                           Network::Test::getLoopbackAddressString(ipVersion()))));
@@ -703,6 +739,44 @@ TEST_P(TcpGrpcAccessLogIntegrationTest, SslNotTerminatedWithJA3) {
   ASSERT_TRUE(waitForAccessLogConnection());
   ASSERT_TRUE(waitForAccessLogStream());
   ASSERT_TRUE(
+#ifdef OPENSSL_NO_RHEL
+      waitForAccessLogRequest(fmt::format(R"EOF(
+identifier:
+  node:
+    id: node_name
+    cluster: cluster_name
+    locality:
+      zone: zone_name
+    user_agent_name: "envoy"
+  log_name: foo
+tcp_logs:
+  log_entry:
+    common_properties:
+      downstream_remote_address:
+        socket_address:
+          address: {}
+      downstream_local_address:
+        socket_address:
+          address: {}
+      tls_properties:
+        tls_sni_hostname: sni
+        local_certificate_properties:
+        peer_certificate_properties:
+        ja3_fingerprint: "f34cc73a821433e5f56e38868737a636"
+      upstream_remote_address:
+        socket_address:
+      upstream_local_address:
+        socket_address:
+      downstream_direct_remote_address:
+        socket_address:
+          address: {}
+      tls_properties:
+        tls_sni_hostname: sni       
+    connection_properties:
+      received_bytes: 163
+      sent_bytes: 163
+)EOF",
+#else
       waitForAccessLogRequest(fmt::format(R"EOF(
 identifier:
   node:
@@ -740,6 +814,7 @@ tcp_logs:
       received_bytes: 155
       sent_bytes: 155
 )EOF",
+#endif
                                           Network::Test::getLoopbackAddressString(ipVersion()),
                                           Network::Test::getLoopbackAddressString(ipVersion()),
                                           Network::Test::getLoopbackAddressString(ipVersion()))));
@@ -761,6 +836,41 @@ TEST_P(TcpGrpcAccessLogIntegrationTest, SslNotTerminatedWithJA3NoSNI) {
   ASSERT_TRUE(waitForAccessLogConnection());
   ASSERT_TRUE(waitForAccessLogStream());
   ASSERT_TRUE(
+#ifdef OPENSSL_NO_RHEL
+      waitForAccessLogRequest(fmt::format(R"EOF(
+identifier:
+  node:
+    id: node_name
+    cluster: cluster_name
+    locality:
+      zone: zone_name
+    user_agent_name: "envoy"
+  log_name: foo
+tcp_logs:
+  log_entry:
+    common_properties:
+      downstream_remote_address:
+        socket_address:
+          address: {}
+      downstream_local_address:
+        socket_address:
+          address: {}
+      tls_properties:
+        local_certificate_properties:
+        peer_certificate_properties:
+        ja3_fingerprint: "54619c7296adab310ed514d06812d95f"
+      upstream_remote_address:
+        socket_address:
+      upstream_local_address:
+        socket_address:
+      downstream_direct_remote_address:
+        socket_address:
+          address: {}
+    connection_properties:
+      received_bytes: 151
+      sent_bytes: 151
+)EOF",
+#else
       waitForAccessLogRequest(fmt::format(R"EOF(
 identifier:
   node:
@@ -795,6 +905,7 @@ tcp_logs:
       received_bytes: 143
       sent_bytes: 143
 )EOF",
+#endif
                                           Network::Test::getLoopbackAddressString(ipVersion()),
                                           Network::Test::getLoopbackAddressString(ipVersion()),
                                           Network::Test::getLoopbackAddressString(ipVersion()))));
