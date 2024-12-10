@@ -28,7 +28,6 @@ envoy_cc_library(
     srcs = ["lua.cc"],
     hdrs = ["lua.h"],
     deps = [
-        "//bazel/foreign_cc:luajit",
         "//envoy/thread_local:thread_local_interface",
         "//source/common/common:assert_lib",
         "//source/common/common:c_smart_ptr_lib",
@@ -36,8 +35,8 @@ envoy_cc_library(
         "//source/common/common:thread_lib",
         "//source/common/protobuf",
     ] + select({
-        ":with_luajit2": [envoy_external_dep_path("luajit2")],
-        "//conditions:default": [envoy_external_dep_path("luajit")],
+        ":with_luajit2": ["//bazel/foreign_cc:luajit2"],
+        "//conditions:default": ["//bazel/foreign_cc:luajit"],
     }),
 )
 
