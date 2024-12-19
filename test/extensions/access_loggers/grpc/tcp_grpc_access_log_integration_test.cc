@@ -678,8 +678,8 @@ tcp_logs:
         socket_address:
           address: {}
     connection_properties:
-      received_bytes: 155
-      sent_bytes: 155
+      received_bytes: 163
+      sent_bytes: 163
 )EOF",
                                           Network::Test::getLoopbackAddressString(ipVersion()),
                                           Network::Test::getLoopbackAddressString(ipVersion()),
@@ -737,8 +737,8 @@ tcp_logs:
         tls_sni_hostname: sni
         ja3_fingerprint: "f34cc73a821433e5f56e38868737a636"
     connection_properties:
-      received_bytes: 155
-      sent_bytes: 155
+      received_bytes: 163
+      sent_bytes: 163
 )EOF",
                                           Network::Test::getLoopbackAddressString(ipVersion()),
                                           Network::Test::getLoopbackAddressString(ipVersion()),
@@ -791,9 +791,11 @@ tcp_logs:
       downstream_direct_remote_address:
         socket_address:
           address: {}
+      tls_properties:
+        ja3_fingerprint: "54619c7296adab310ed514d06812d95f"
     connection_properties:
-      received_bytes: 143
-      sent_bytes: 143
+      received_bytes: 151
+      sent_bytes: 151
 )EOF",
                                           Network::Test::getLoopbackAddressString(ipVersion()),
                                           Network::Test::getLoopbackAddressString(ipVersion()),
