@@ -20,6 +20,7 @@ jobs:
       matrix:
         branch_name:
           - main
+          - release/v1.32
           - release/v1.31
           - release/v1.28
     steps:
