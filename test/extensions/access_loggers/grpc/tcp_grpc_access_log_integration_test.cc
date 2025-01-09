@@ -666,17 +666,16 @@ tcp_logs:
       downstream_local_address:
         socket_address:
           address: {}
-      tls_properties:
-        tls_sni_hostname: sni
-        local_certificate_properties:
-        peer_certificate_properties: 
       upstream_remote_address:
         socket_address:
       upstream_local_address:
         socket_address:
+      access_log_type: NotSet
       downstream_direct_remote_address:
         socket_address:
           address: {}
+      tls_properties:
+        tls_sni_hostname: sni
     connection_properties:
       received_bytes: 163
       sent_bytes: 163
@@ -721,15 +720,11 @@ tcp_logs:
       downstream_local_address:
         socket_address:
           address: {}
-      tls_properties:
-        tls_sni_hostname: "sni"
-        local_certificate_properties:
-        peer_certificate_properties:
-        ja3_fingerprint: "f34cc73a821433e5f56e38868737a636"
       upstream_remote_address:
         socket_address:
       upstream_local_address:
         socket_address:
+      access_log_type: NotSet
       downstream_direct_remote_address:
         socket_address:
           address: {}
@@ -779,10 +774,6 @@ tcp_logs:
       downstream_local_address:
         socket_address:
           address: {}
-      tls_properties:
-        local_certificate_properties:
-        peer_certificate_properties:
-        ja3_fingerprint: "54619c7296adab310ed514d06812d95f"
       upstream_remote_address:
         socket_address:
       upstream_local_address:

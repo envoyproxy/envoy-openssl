@@ -146,15 +146,8 @@ TEST(UtilityTest, TestVerifySignature) {
     auto sig = Hex::decode(signature);
 
     auto result = UtilitySingleton::get().verifySignature(hash_func, *crypto, sig, text);
-    if(hash_func == "sha1"){
-      // In RHEL-OpenSSL sha1 is not supported
-      EXPECT_EQ(false, result.result_);
-      EXPECT_EQ("Failed to initialize digest verify.", result.error_message_);
-    } else {
-      EXPECT_EQ(true, result.result_);
-      EXPECT_EQ("", result.error_message_);
-    }
-
+    EXPECT_EQ(true, result.result_);
+    EXPECT_EQ("", result.error_message_);
   }
 
   auto signature =
