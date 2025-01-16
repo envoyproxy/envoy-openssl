@@ -34,7 +34,7 @@ public:
   void startPreInit() override;
 
   // Extensions::Common::DynamicForwardProxy::DnsCache::UpdateCallbacks
-  void onDnsHostAddOrUpdate(
+  absl::Status onDnsHostAddOrUpdate(
       const std::string& host,
       const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr& host_info) override;
   void onDnsHostRemove(const std::string& host) override;
@@ -44,8 +44,8 @@ public:
 
   bool allowCoalescedConnections() const { return allow_coalesced_connections_; }
   bool enableSubCluster() const override { return enable_sub_cluster_; }
-  Upstream::HostConstSharedPtr chooseHost(absl::string_view host,
-                                          Upstream::LoadBalancerContext* context) const;
+  Upstream::HostSelectionResponse chooseHost(absl::string_view host,
+                                             Upstream::LoadBalancerContext* context) const;
 
   // Extensions::Common::DynamicForwardProxy::DfpCluster
   std::pair<bool, absl::optional<envoy::config::cluster::v3::Cluster>>
@@ -98,7 +98,7 @@ private:
     // DfpLb
     Upstream::HostConstSharedPtr findHostByName(const std::string& host) const override;
     // Upstream::LoadBalancer
-    Upstream::HostConstSharedPtr chooseHost(Upstream::LoadBalancerContext* context) override;
+    Upstream::HostSelectionResponse chooseHost(Upstream::LoadBalancerContext* context) override;
     // Preconnecting not implemented.
     Upstream::HostConstSharedPtr peekAnotherHost(Upstream::LoadBalancerContext*) override {
       return nullptr;
@@ -167,7 +167,7 @@ private:
     Cluster& cluster_;
   };
 
-  void
+  absl::Status
   addOrUpdateHost(absl::string_view host,
                   const Extensions::Common::DynamicForwardProxy::DnsHostInfoSharedPtr& host_info,
                   std::unique_ptr<Upstream::HostVector>& hosts_added)

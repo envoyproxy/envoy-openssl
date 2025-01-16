@@ -66,6 +66,7 @@ actual mechanics of the release itself.
 | 2023 Q3 | Boteng Yao ([botengyao](https://github.com/botengyao))         | Kateryna Nezdolii ([nezdolik](https://github.com/nezdolik))              |
 | 2023 Q4 | Paul Merrison ([pmerrison](https://github.com/pmerrison))      | Brian Sonnenberg ([briansonnenberg](https://github.com/briansonnenberg)) |
 | 2024 Q2 | Ryan Northey ([phlax](https://github.com/phlax))               | Boteng Yao ([botengyao](https://github.com/botengyao))                   |
+| 2024 Q3 | Ryan Northey ([phlax](https://github.com/phlax))               | Boteng Yao ([botengyao](https://github.com/botengyao))                   |
 
 ## Major release schedule
 
@@ -140,5 +141,7 @@ Security releases are published on a 3-monthly cycle, around the mid point betwe
 |:-------:|:----------:|:----------:|:----------:|
 | 2024 Q2 | 2024/06/04 | 2024/06/04 |   0 days   |
 | 2024 Q3 | 2024/09/03 | 2024/09/19 |  16 days   |
+| 2024 Q4 | 2024/12/03 | 2024/12/18 |  15 days   |
+| 2025 Q1 | 2025/03/04 |
 
 NOTE: Zero-day vulnerabilities, and upstream vulnerabilities disclosed to us under embargo, may necessitate an emergency release with little or no warning.

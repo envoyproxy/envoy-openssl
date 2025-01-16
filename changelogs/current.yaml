@@ -5,35 +5,25 @@ behavior_changes:
 
 minor_behavior_changes:
 # *Changes that may cause incompatibilities for some users, but should not for most*
-- area: access_log
-  change: |
-    New implementation of the JSON formatter will be enabled by default.
-    The :ref:`sort_properties <envoy_v3_api_field_config.core.v3.JsonFormatOptions.sort_properties>` field will
-    be ignored in the new implementation because the new implementation always sorts properties. And the new implementation
-    will always keep the value type in the JSON output. For example, the duration field will always be rendered as a number
-    instead of a string.
-    This behavior change could be disabled temporarily by setting the runtime
-    ``envoy.reloadable_features.logging_with_fast_json_formatter`` to false.
-- area: formatter
-  change: |
-    The NaN and Infinity values of float will be serialized to ``null`` and ``"inf"`` respectively in the
-    metadata (``DYNAMIC_METADATA``, ``CLUSTER_METADATA``, etc.) formatter.
 
 bug_fixes:
 # *Changes expected to improve the state of the world and are unlikely to have negative effects*
+- area: dfp
+  change:
+    Fixes a bug when loading a DNS cache entry with an empty authority/host header. This fix can be reverted by setting
+    runtime guard ``envoy.reloadable_features.dfp_fail_on_empty_host_header`` to ``false``.
 
 removed_config_or_runtime:
 # *Normally occurs at the end of the* :ref:`deprecation period <deprecated>`
-- area: http
-  change: |
-    Removed runtime flag ``envoy.reloadable_features.http_route_connect_proxy_by_default`` and legacy code paths.
-- area: upstream
-  change: |
-    Removed runtime flag ``envoy.restart_features.allow_client_socket_creation_failure`` and legacy code paths.
 
 new_features:
-- area: tls
+- area: lua
   change: |
-    Added support for P-384 and P-521 curves for TLS server certificates.
+    Added :ref:`virtualClusterName() <config_http_filters_lua_stream_info_virtual_cluster_name>` API to the Stream Info
+    Object to get the name of the virtual cluster matched.
+- area: udp_proxy
+  change: |
+    Added support for outlier detection in UDP proxy. This change can be temporarily reverted by setting runtime guard
+    ``envoy.reloadable_features.enable_udp_proxy_outlier_detection`` to ``false``.
 
 deprecated:

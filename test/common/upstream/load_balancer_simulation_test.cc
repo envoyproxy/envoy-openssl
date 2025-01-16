@@ -38,7 +38,7 @@ static HostSharedPtr newTestHost(Upstream::ClusterInfoConstSharedPtr cluster,
                                  uint32_t weight = 1, const std::string& zone = "") {
   envoy::config::core::v3::Locality locality;
   locality.set_zone(zone);
-  return HostSharedPtr{new HostImpl(
+  return HostSharedPtr{*HostImpl::create(
       cluster, "", *Network::Utility::resolveUrl(url), nullptr, nullptr, weight, locality,
       envoy::config::endpoint::v3::Endpoint::HealthCheckConfig::default_instance(), 0,
       envoy::config::core::v3::UNKNOWN, time_source)};
@@ -116,7 +116,7 @@ void leastRequestLBWeightTest(LRLBTestParams params) {
       *time_source};
 
   for (uint64_t i = 0; i < num_requests; i++) {
-    host_hits[lb_.chooseHost(nullptr)]++;
+    host_hits[lb_.chooseHost(nullptr).host]++;
   }
 
   std::vector<double> observed_pcts;
@@ -268,7 +268,7 @@ public:
                             per_zone_local_shared),
           {}, empty_vector_, empty_vector_, random_.random(), absl::nullopt);
 
-      HostConstSharedPtr selected = lb.chooseHost(nullptr);
+      HostConstSharedPtr selected = lb.chooseHost(nullptr).host;
       hits[selected->address()->asString()]++;
     }
 
