@@ -57,6 +57,7 @@ FETCH_PROTO_TARGETS=(
     @com_github_bufbuild_buf//:bin/buf
     //tools/proto_format/...)
 
+
 retry () {
     local n wait iterations
     wait="${1}"
@@ -910,7 +911,9 @@ case $CI_TARGET in
     release.signed)
         echo "Signing binary packages..."
         setup_clang_toolchain
-        bazel build "${BAZEL_BUILD_OPTIONS[@]}" //distribution:signed
+        bazel build \
+              "${BAZEL_BUILD_OPTIONS[@]}" \
+              //distribution:signed
         cp -a bazel-bin/distribution/release.signed.tar.zst "${BUILD_DIR}/envoy/"
         ;;
 
