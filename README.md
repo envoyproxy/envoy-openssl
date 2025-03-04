@@ -31,6 +31,30 @@ repository, with the addition of:
 Note that the initial `release/v1.26` branch is *not* intended for production.
 It is anticipated that `release/v1.28` will be the first branch to reach production.
 
+## Synchronizing
+
+Since this repository is primarily a copy of the [envoyproxy/envoy](https://github.com/envoyproxy/envoy) repository,
+the process of keeping this repository in sync with the regular envoy repository is automated.
+
+This automation is implemented by the
+[envoy-sync-scheduled.yaml](.github/workflows/envoy-sync-scheduled.yaml)
+workflow which executes on a daily schedule. For each of the branches listed in
+the workflow's strategy matrix, a merge is attempted from the [envoyproxy/envoy](https://github.com/envoyproxy/envoy)
+repository into the identically named branch in this repository.
+
+- If the merge is successful, it:
+  - pushes the feature branch to the repository
+  - creates the associated pull request if it doesn't already exist
+  - closes the associated issue if it already exists
+- If the merge is unsuccessful, it:
+  - leaves the associated pull request untouched if it already exists
+  - creates the associated issue issue if it doesn't already exist
+  - adds a comment on the associated issue to describe the merge fail
+
+Note that the feature branches created by this automation are named
+`auto-merge-<branch-name>`. These repeatable names allow the workflow to reuse &
+update existing branches and pull requests, rather than creating new ones each time.
+
 ## Building
 
 The process for building envoy-openssl is very similar to building regular envoy, wherever possible
