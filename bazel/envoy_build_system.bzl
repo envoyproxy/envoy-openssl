@@ -96,6 +96,7 @@ def _envoy_directory_genrule_impl(ctx):
         tools = ctx.files.tools,
         outputs = [tree],
         command = "mkdir -p " + tree.path + " && " + ctx.expand_location(ctx.attr.cmd),
+        use_default_shell_env = True,
         env = {"GENRULE_OUTPUT_DIR": tree.path},
         toolchain = None,
     )
