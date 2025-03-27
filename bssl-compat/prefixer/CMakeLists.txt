@@ -12,6 +12,7 @@ include(AddLLVM) # For llvm_update_compile_flags()
 
 add_executable(prefixer prefixer.cpp)
 llvm_update_compile_flags(prefixer) # Adds appropriate exception & rtti flags
+llvm_setup_rpath(prefixer)
 target_compile_definitions(prefixer PRIVATE LLVM_LIBRARY_DIR=\"${LLVM_LIBRARY_DIR}\")
 target_include_directories(prefixer PRIVATE "${LLVM_INCLUDE_DIRS}")
 target_link_directories(prefixer PRIVATE "${LLVM_LIBRARY_DIRS}")
