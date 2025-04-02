@@ -17,10 +17,11 @@ docker build --pull --iidfile "${SCRATCH_DIR}/iid" -f - "${SCRATCH_DIR}" << EOF
     # Install the missing Kitware public key
     RUN wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor - > /usr/share/keyrings/kitware-archive-keyring.gpg
     RUN sed -i "s|^deb.*kitware.*$|deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ \$(lsb_release -cs) main|g" /etc/apt/sources.list
+    RUN wget -q -O - https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/xUbuntu_20.04/Release.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/devel_kubic_libcontainers_stable.gpg > /dev/null
     RUN apt update
 
     # Install OpenSSL 3.0.x
-    ENV OPENSSL_VERSION=3.0.8
+    ENV OPENSSL_VERSION=3.0.16
     ENV OPENSSL_ROOTDIR=/usr/local/openssl-\$OPENSSL_VERSION
     RUN apt install -y build-essential checkinstall zlib1g-dev
     RUN wget -qO- https://github.com/openssl/openssl/releases/download/openssl-\$OPENSSL_VERSION/openssl-\$OPENSSL_VERSION.tar.gz | tar xz -C /
