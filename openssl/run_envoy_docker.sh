@@ -21,7 +21,7 @@ docker build --pull --iidfile "${SCRATCH_DIR}/iid" -f - "${SCRATCH_DIR}" << EOF
     RUN apt update
 
     # Install OpenSSL 3.0.x
-    ENV OPENSSL_VERSION=3.0.8
+    ENV OPENSSL_VERSION=3.0.16
     ENV OPENSSL_ROOTDIR=/usr/local/openssl-\$OPENSSL_VERSION
     RUN apt install -y build-essential checkinstall zlib1g-dev
     RUN wget -qO- https://github.com/openssl/openssl/releases/download/openssl-\$OPENSSL_VERSION/openssl-\$OPENSSL_VERSION.tar.gz | tar xz -C /
