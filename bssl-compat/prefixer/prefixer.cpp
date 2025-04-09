@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <regex>
 #include <glob.h>
+#include <cerrno>
 
 
 namespace opt {
@@ -611,9 +612,22 @@ void MyFrontendAction::EndSourceFileAction() {
     }
 
     // Write the file back
+    // Save the file with a temporary name and perform a rename, sometimes saving directly will trigger an OS error
     {
-      std::ofstream ofstr(path);
+      std::string new_file(path);
+      std::string tmp_file(new_file + ".tmp");
+      std::ofstream ofstr(tmp_file);
+      if (!ofstr) {
+        llvm::errs() << "Error opening the header for writing: " << tmp_file << ". Reason: " << std::strerror(errno) << " - Aborting.\n";
+        exit(1);
+      }
       ofstr << buffer;
+      ofstr.close();
+      if (!ofstr) {
+        llvm::errs() << "Error saving the new header: " << tmp_file << ". Reason: " << std::strerror(errno) << " - Aborting.\n";
+        exit(1);
+      }
+      std::filesystem::rename(tmp_file, new_file);
     }
   }
 }
@@ -709,7 +723,7 @@ int main(int argc, const char **argv) {
           globflags |= GLOB_APPEND;
         }
         for (auto i = 0; i < globbuf.gl_pathc; i++) {
-          auto p = std::filesystem::proximate(globbuf.gl_pathv[i], srcpath);
+          auto p = std::filesystem::path(globbuf.gl_pathv[i]).lexically_relative(srcpath);
           opt::headers[p] = true;
         }
         globfree (&globbuf);
@@ -723,7 +737,7 @@ int main(int argc, const char **argv) {
           globflags |= GLOB_APPEND;
         }
         for (auto i = 0; i < globbuf.gl_pathc; i++) {
-          auto p = std::filesystem::proximate(globbuf.gl_pathv[i], srcpath);
+          auto p = std::filesystem::path(globbuf.gl_pathv[i]).lexically_relative(srcpath);
           opt::headers[p] = false;
         }
         globfree (&globbuf);
@@ -764,7 +778,15 @@ int main(int argc, const char **argv) {
         str << "#include \"" << opt::prefix << "/" << hdr << "\"" << std::endl;
       }
     }
-    std::system((std::string("sed -i ") + subts.str() + files.str()).c_str());
+
+    opt::vstr() << "\nAbout to run sed:\n" << std::string("sed -i ") + subts.str() + files.str() << "\n\n";
+    int ret = std::system((std::string("sed -i ") + subts.str() + files.str()).c_str());
+    if (ret != 0) {
+      llvm::errs() << "Error running the sed command below:\n";
+      llvm::errs() << std::string("sed -i ") + subts.str() + files.str() << "\n\n";
+      llvm::errs() << "Aborting.\n";
+      return ret;
+    }
   }
 
   clang::tooling::ClangTool tool(CompilationDatabase(), { tmpfile });

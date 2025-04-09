@@ -15,7 +15,8 @@ cmake(
     visibility = ["//visibility:public"],
     generate_crosstool_file = False,
 
-    build_args = [ "-j" ]
+    build_args = [ "-j" ],
+    deps = ["@openssl//:ssl"],
 )
 
 alias(
