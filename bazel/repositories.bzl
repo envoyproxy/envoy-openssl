@@ -134,6 +134,8 @@ def envoy_dependencies(skip_targets = []):
     # Setup external Bazel rules
     _foreign_cc_dependencies()
 
+    _openssl()
+
     # Binding to an alias pointing to the bssl-compat layer
     native.bind(
         name = "ssl",
@@ -274,6 +276,12 @@ def _boringssl_fips():
     external_http_archive(
         name = "boringssl_fips",
         build_file = "@envoy//bazel/external:boringssl_fips.BUILD",
+    )
+
+def _openssl():
+    external_http_archive(
+        name = "openssl",
+        build_file = "@envoy//bazel/external:openssl.BUILD",
     )
 
 def _com_github_openhistogram_libcircllhist():
