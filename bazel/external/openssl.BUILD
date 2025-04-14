@@ -1,5 +1,5 @@
 load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
-load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library")
 
 licenses(["notice"])  # Apache 2
 
@@ -22,15 +22,20 @@ configure_make(
     out_include_dir = "include",
 )
 
-cc_library(
+envoy_cc_library(
     name = "ssl",
     deps = [":openssl"],
-    includes = ["include"],
+    repository = "@envoy",
+    rbe_pool = "6gig",
     visibility = ["//visibility:public"],
+    srcs = [":openssl"],
 )
 
-cc_library(
+envoy_cc_library(
     name = "crypto",
     deps = [":openssl"],
+    repository = "@envoy",
+    rbe_pool = "6gig",
     visibility = ["//visibility:public"],
+    srcs = [":openssl"],
 )

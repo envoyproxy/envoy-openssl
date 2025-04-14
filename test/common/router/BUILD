@@ -259,6 +259,7 @@ envoy_directory_genrule(
         # This is deliberately in srcs, since we run into host/target confusion
         # otherwise in oss-fuzz builds.
         ":config_impl_test_static",
+        "@openssl//:ssl",
     ],
     cmd = " ".join([
         "$(location corpus_from_config_impl_sh)",
