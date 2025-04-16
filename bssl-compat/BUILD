@@ -15,8 +15,11 @@ cmake(
     visibility = ["//visibility:public"],
     generate_crosstool_file = False,
 
+    cache_entries = {"CMAKE_BUILD_TYPE": "Bazel"},
+    generate_args = ["-GNinja"],
+
     build_args = [ "-j" ],
-    deps = ["@openssl//:ssl"],
+    deps = ["@openssl//:libs"],
 )
 
 alias(

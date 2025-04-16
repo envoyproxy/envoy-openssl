@@ -1,12 +1,12 @@
 load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
-load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library")
+#load("@envoy//bazel:envoy_build_system.bzl", "envoy_cc_library")
 
 licenses(["notice"])  # Apache 2
 
 filegroup(
     name = "all",
     srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
+    #visibility = ["//visibility:public"],
 )
 
 configure_make(
@@ -20,22 +20,40 @@ configure_make(
     out_static_libs = ["libssl.a", "libcrypto.a"],
     out_shared_libs = ["libssl.so.3", "libssl.so", "libcrypto.so.3", "libcrypto.so"],
     out_include_dir = "include",
+    visibility = ["//visibility:public"],
 )
 
-envoy_cc_library(
-    name = "ssl",
+# filegroup(
+#     name = "libs",
+#     srcs = [":openssl"],
+#     visibility = ["//visibility:public"],
+# )
+
+cc_library(
+    name = "libs",
     deps = [":openssl"],
-    repository = "@envoy",
-    rbe_pool = "6gig",
     visibility = ["//visibility:public"],
     srcs = [":openssl"],
+    data = [":openssl"],
+    alwayslink = True,
 )
 
-envoy_cc_library(
-    name = "crypto",
-    deps = [":openssl"],
-    repository = "@envoy",
-    rbe_pool = "6gig",
-    visibility = ["//visibility:public"],
-    srcs = [":openssl"],
-)
+# envoy_cc_library(
+#     name = "libs",
+#     deps = [":openssl"],
+#     repository = "@envoy",
+#     rbe_pool = "6gig",
+#     visibility = ["//visibility:public"],
+#     srcs = [":openssl"],
+#     data = [":openssl"],
+#     alwayslink = True,
+# )
+
+# envoy_cc_library(
+#     name = "crypto",
+#     deps = [":openssl"],
+#     repository = "@envoy",
+#     rbe_pool = "6gig",
+#     visibility = ["//visibility:public"],
+#     srcs = [":openssl"],
+# )
