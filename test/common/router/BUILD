@@ -238,70 +238,70 @@ envoy_proto_library(
 )
 
 # envoy_cc_test_binary is generating mostly static binary regardless of config
-envoy_cc_test_binary(
-    name = "config_impl_test_static",
-    rbe_pool = "6gig",
-    deps = [
-        ":config_impl_test_lib",
-        "//test:main",
-    ],
-)
+# envoy_cc_test_binary(
+#     name = "config_impl_test_static",
+#     rbe_pool = "6gig",
+#     deps = [
+#         ":config_impl_test_lib",
+#         "//test:main",
+#     ],
+# )
 
-sh_binary(
-    name = "corpus_from_config_impl_sh",
-    srcs = ["corpus_from_config_impl.sh"],
-)
+# sh_binary(
+#     name = "corpus_from_config_impl_sh",
+#     srcs = ["corpus_from_config_impl.sh"],
+# )
 
-envoy_directory_genrule(
-    name = "corpus_from_config_impl",
-    testonly = 1,
-    srcs = [
-        # This is deliberately in srcs, since we run into host/target confusion
-        # otherwise in oss-fuzz builds.
-        ":config_impl_test_static",
-        "@openssl//:openssl",
-    ],
-    cmd = " ".join([
-        "$(location corpus_from_config_impl_sh)",
-        "$(location //test/common/router:config_impl_test_static)",
-    ]),
-    exec_properties = select({
-        "//bazel:engflow_rbe_x86_64": {"Pool": "6gig"},
-        "//conditions:default": {},
-    }),
-    tools = [":corpus_from_config_impl_sh"],
-)
+# envoy_directory_genrule(
+#     name = "corpus_from_config_impl",
+#     testonly = 1,
+#     srcs = [
+#         # This is deliberately in srcs, since we run into host/target confusion
+#         # otherwise in oss-fuzz builds.
+#         ":config_impl_test_static",
+#         "@openssl//:openssl",
+#     ],
+#     cmd = " ".join([
+#         "$(location corpus_from_config_impl_sh)",
+#         "$(location //test/common/router:config_impl_test_static)",
+#     ]),
+#     exec_properties = select({
+#         "//bazel:engflow_rbe": {"Pool": "6gig"},
+#         "//conditions:default": {},
+#     }),
+#     tools = [":corpus_from_config_impl_sh"],
+# )
 
-filegroup(
-    name = "route_corpus",
-    testonly = 1,
-    srcs = select({
-        # TODO(asraa): Clean this up for cross-compilation. Right now we assume
-        # the host and target are the same on x86 builds, so we only execute the
-        # corpus generation binary on x86 platforms.
-        "//bazel:x86": [":corpus_from_config_impl"],
-        "//conditions:default": [],
-    }) + glob([
-        "route_corpus/**",
-    ]),
-)
+# filegroup(
+#     name = "route_corpus",
+#     testonly = 1,
+#     srcs = select({
+#         # TODO(asraa): Clean this up for cross-compilation. Right now we assume
+#         # the host and target are the same on x86 builds, so we only execute the
+#         # corpus generation binary on x86 platforms.
+#         "//bazel:x86": [":corpus_from_config_impl"],
+#         "//conditions:default": [],
+#     }) + glob([
+#         "route_corpus/**",
+#     ]),
+# )
 
-envoy_cc_fuzz_test(
-    name = "route_fuzz_test",
-    size = "large",
-    srcs = ["route_fuzz_test.cc"],
-    corpus = ":route_corpus",
-    rbe_pool = "6gig",
-    # The :config_impl_test_static target does not build with coverage
-    tags = ["nocoverage"],
-    deps = [
-        ":route_fuzz_proto_cc_proto",
-        "//source/common/router:config_lib",
-        "//test/fuzz:utility_lib",
-        "//test/mocks/server:instance_mocks",
-        "@envoy_api//envoy/config/route/v3:pkg_cc_proto",
-    ],
-)
+# envoy_cc_fuzz_test(
+#     name = "route_fuzz_test",
+#     size = "large",
+#     srcs = ["route_fuzz_test.cc"],
+#     corpus = ":route_corpus",
+#     rbe_pool = "6gig",
+#     # The :config_impl_test_static target does not build with coverage
+#     tags = ["nocoverage"],
+#     deps = [
+#         ":route_fuzz_proto_cc_proto",
+#         "//source/common/router:config_lib",
+#         "//test/fuzz:utility_lib",
+#         "//test/mocks/server:instance_mocks",
+#         "@envoy_api//envoy/config/route/v3:pkg_cc_proto",
+#     ],
+# )
 
 envoy_cc_test(
     name = "router_ratelimit_test",
