@@ -476,8 +476,8 @@ void MyFrontendAction::EndSourceFileAction() {
          << "#include <assert.h>" << std::endl
          << "#include \"" << opt::prefix << ".h\"" << std::endl
          << std::endl
-         << "#define LIBCRYPTO_SO \"libcrypto.so" << (m_shlibversion.size() ? "." + m_shlibversion : "") << "\"" << std::endl
-         << "#define LIBSSL_SO \"libssl.so" << (m_shlibversion.size() ? "." + m_shlibversion : "") << "\"" << std::endl
+         << "#define LIBCRYPTO_SO \"libcrypto.so.3" << (m_shlibversion.size() ? "." + m_shlibversion : "") << "\"" << std::endl
+         << "#define LIBSSL_SO \"libssl.so.3" << (m_shlibversion.size() ? "." + m_shlibversion : "") << "\"" << std::endl
          << std::endl
          << "static void *libcrypto;" << std::endl
          << "static void *libssl;" << std::endl

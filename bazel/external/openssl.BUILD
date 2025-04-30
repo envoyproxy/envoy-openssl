@@ -18,7 +18,7 @@ configure_make(
     args = ["-j"],
     out_lib_dir = "lib64",
     out_static_libs = ["libssl.a", "libcrypto.a"],
-    out_shared_libs = ["libssl.so.3", "libssl.so", "libcrypto.so.3", "libcrypto.so"],
+    out_shared_libs = ["libssl.so.3", "libcrypto.so.3"],
     out_include_dir = "include",
     visibility = ["//visibility:public"],
 )
