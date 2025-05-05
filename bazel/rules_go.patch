@@ -16,12 +16,15 @@ diff --git a/go/private/rules/binary.bzl b/go/private/rules/binary.bzl
 index 40a17f4d..2741ad71 100644
 --- a/go/private/rules/binary.bzl
 +++ b/go/private/rules/binary.bzl
-@@ -462,8 +462,9 @@ exit /b %GO_EXIT_CODE%
+@@ -513,8 +513,6 @@ exit /b %GO_EXIT_CODE%
              content = cmd,
          )
          ctx.actions.run(
 -            executable = bat,
--            inputs = sdk.headers + sdk.tools + sdk.srcs + ctx.files.srcs + [sdk.go],
+-            inputs = depset(
+-                ctx.files.srcs + [sdk.go],
+-                transitive = [sdk.headers, sdk.srcs, sdk.tools],
+-            ),
 +            executable = "cmd.exe",
 +            arguments = ["/S", "/C", bat.path.replace("/", "\\")],
 +            inputs = sdk.headers + sdk.tools + sdk.srcs + ctx.files.srcs + [sdk.go, bat],
