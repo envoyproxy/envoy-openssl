@@ -158,6 +158,7 @@ add_library(bssl-compat STATIC
   source/SSL_enable_ocsp_stapling.cc
   source/SSL_error_description.cc
   source/SSL_get0_ocsp_response.c
+  source/SSL_get0_peer_certificates.c
   source/SSL_get0_peer_verify_algorithms.cc
   source/SSL_get_cipher_by_value.c
   source/SSL_get_client_CA_list.cc
