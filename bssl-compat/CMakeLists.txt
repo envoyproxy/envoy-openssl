@@ -433,11 +433,14 @@ target_add_bssl_function(bssl-compat
   HMAC_CTX_new
   HMAC_Final
   HMAC_Update
+  i2d_ASN1_OCTET_STRING
   i2d_SSL_SESSION
+  i2d_X509_NAME
   MD5
   OBJ_cmp
   OBJ_txt2obj
   OBJ_obj2txt
+  OBJ_obj2nid
   OPENSSL_free
   OPENSSL_malloc
   OPENSSL_memdup
@@ -557,13 +560,18 @@ target_add_bssl_function(bssl-compat
   X509_cmp
   X509_CRL_cmp
   X509_CRL_dup
-  X509_CRL_get_issuer
   X509_CRL_free
+  X509_CRL_get0_by_cert
+  X509_CRL_get_ext
+  X509_CRL_get_ext_by_NID
+  X509_CRL_get_issuer
   X509_CRL_up_ref
+  X509_CRL_verify
   X509_digest
   X509_EXTENSION_get_object
   X509_free
   X509_get_ext
+  X509_get_ext_by_NID
   X509_get_ext_by_OBJ
   X509_get_ext_count
   X509_get_ext_d2i
@@ -586,6 +594,7 @@ target_add_bssl_function(bssl-compat
   X509_NAME_dup
   X509_NAME_entry_count
   X509_NAME_ENTRY_get_data
+  X509_NAME_ENTRY_get_object
   X509_NAME_ENTRY_set
   X509_NAME_free
   X509_NAME_get_entry
@@ -625,6 +634,7 @@ target_add_bssl_function(bssl-compat
   X509_VERIFY_PARAM_clear_flags
   X509_VERIFY_PARAM_get_flags
   X509_VERIFY_PARAM_set_flags
+  X509_VERIFY_PARAM_set_depth
   X509_VERIFY_PARAM_set1
 )
 
