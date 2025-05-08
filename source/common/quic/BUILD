@@ -127,7 +127,7 @@ envoy_cc_library(
         ":quic_io_handle_wrapper_lib",
         ":quic_transport_socket_factory_lib",
         "//envoy/ssl:tls_certificate_config_interface",
-        "//source/common/quic:cert_compression_lib",
+#        "//source/common/quic:cert_compression_lib",
         "//source/common/quic:quic_server_transport_socket_factory_lib",
         "//source/common/stream_info:stream_info_lib",
         "//source/server:listener_stats",
@@ -483,7 +483,7 @@ envoy_cc_library(
         "//envoy/ssl:context_config_interface",
         "//source/common/common:assert_lib",
         "//source/common/network:transport_socket_options_lib",
-        "//source/common/quic:cert_compression_lib",
+        # "//source/common/quic:cert_compression_lib",
         "//source/common/tls:client_ssl_socket_lib",
         "//source/common/tls:context_config_lib",
         "@com_github_google_quiche//:quic_core_crypto_crypto_handshake_lib",
@@ -585,9 +585,10 @@ envoy_cc_library(
 
 envoy_cc_library(
     name = "send_buffer_monitor_lib",
-    srcs = envoy_select_enable_http3(["send_buffer_monitor.cc"]),
-    hdrs = envoy_select_enable_http3(["send_buffer_monitor.h"]),
-    deps = envoy_select_enable_http3([
+    srcs = ["send_buffer_monitor.cc"],
+    hdrs = ["send_buffer_monitor.h"],
+    tags = ["nofips"],
+    deps = [
         "//source/common/common:assert_lib",
         "@com_github_google_quiche//:quic_core_session_lib",
     ]),
