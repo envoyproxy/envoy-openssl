@@ -29,3 +29,14 @@ const char *SSL_get_curve_name(uint16_t curve_id) {
   }
   return NULL;
 }
+
+size_t SSL_get_all_curve_names(const char **out, size_t max_out) {
+  size_t nameSize = (sizeof(kNamedGroups) / sizeof(kNamedGroups[0]));
+   if(max_out != 0) {
+     *out++ = "";
+     for(int i = 0; i < nameSize; i++) {
+        *out++ = kNamedGroups[i].name;
+     }
+   }
+   return 1+nameSize;
+}
