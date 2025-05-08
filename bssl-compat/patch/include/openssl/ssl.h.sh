@@ -197,6 +197,8 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_send_fatal_alert \
   --uncomment-func-decl SSL_alert_desc_string_long \
   --uncomment-func-decl SSL_CTX_get_session_cache_mode \
-  --uncomment-func-decl SSL_get0_peer_certificates
-
-
+  --uncomment-func-decl SSL_get0_peer_certificates \
+  --uncomment-func-decl SSL_get_all_cipher_names \
+  --uncomment-func-decl SSL_get_all_signature_algorithm_names \
+  --uncomment-func-decl SSL_get_all_version_names \
+  --uncomment-func-decl SSL_get_all_curve_names \
