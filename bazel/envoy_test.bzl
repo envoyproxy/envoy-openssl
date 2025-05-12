@@ -86,6 +86,7 @@ def envoy_cc_fuzz_test(
         size = "medium",
         deps = [],
         tags = [],
+        env = {},
         **kwargs):
     exec_properties = exec_properties | select({
         repository + "//bazel:engflow_rbe_x86_64": {"Pool": rbe_pool} if rbe_pool else {},
@@ -112,6 +113,11 @@ def envoy_cc_fuzz_test(
         tags = tags,
         **kwargs
     )
+
+    real_env = dict(env)
+    real_env.update({
+        "LD_LIBRARY_PATH": "/build/bazel_root/base/execroot/envoy/bazel-out/k8-fastbuild/bin/external/openssl/openssl/lib64",
+    })
 
     native.cc_test(
         name = name,
@@ -140,6 +146,7 @@ def envoy_cc_fuzz_test(
         }),
         size = size,
         tags = ["fuzz_target"] + tags,
+        env = real_env,
     )
 
     fuzzing_decoration(
@@ -178,6 +185,12 @@ def envoy_cc_test(
         repository + "//bazel:engflow_rbe_x86_64": {"Pool": rbe_pool} if rbe_pool else {},
         "//conditions:default": {},
     })
+
+    real_env = dict(env)
+    real_env.update({
+        "LD_LIBRARY_PATH": "/build/bazel_root/base/execroot/envoy/bazel-out/k8-fastbuild/bin/external/openssl/openssl/lib64",
+    })
+
     native.cc_test(
         name = name,
         srcs = srcs,
@@ -200,7 +213,7 @@ def envoy_cc_test(
         shard_count = shard_count,
         size = size,
         flaky = flaky,
-        env = env,
+        env = real_env,
         exec_properties = exec_properties,
     )
 
@@ -288,6 +301,7 @@ def envoy_benchmark_test(
         data = [],
         rbe_pool = None,
         exec_properties = {},
+        env = {},
         tags = [],
         repository = "",
         **kargs):
@@ -295,6 +309,12 @@ def envoy_benchmark_test(
         repository + "//bazel:engflow_rbe_x86_64": {"Pool": rbe_pool} if rbe_pool else {},
         "//conditions:default": {},
     })
+
+    real_env = dict(env)
+    real_env.update({
+        "LD_LIBRARY_PATH": "/build/bazel_root/base/execroot/envoy/bazel-out/k8-fastbuild/bin/external/openssl/openssl/lib64",
+    })
+
     native.sh_test(
         name = name,
         srcs = [repository + "//bazel:test_for_benchmark_wrapper.sh"],
@@ -302,6 +322,7 @@ def envoy_benchmark_test(
         exec_properties = exec_properties,
         args = ["%s/%s" % (native.package_name(), benchmark_binary)],
         tags = tags + ["nocoverage"],
+        env = real_env,
         **kargs
     )
 
@@ -341,6 +362,7 @@ def envoy_sh_test(
         coverage = True,
         cc_binary = [],
         tags = [],
+        env = {},
         **kargs):
     if coverage:
         if cc_binary == []:
@@ -358,16 +380,22 @@ def envoy_sh_test(
             srcs = [test_runner_cc],
             data = srcs + data + cc_binary,
             tags = tags,
+            env = env,
             deps = ["//test/test_common:environment_lib"] + cc_binary,
             **kargs
         )
 
     else:
+        real_env = dict(env)
+        real_env.update({
+            "LD_LIBRARY_PATH": "/build/bazel_root/base/execroot/envoy/bazel-out/k8-fastbuild/bin/external/openssl/openssl/lib64",
+        })
         native.sh_test(
             name = name,
             srcs = ["//bazel:sh_test_wrapper.sh"],
             data = srcs + data + cc_binary,
             args = srcs,
             tags = tags + ["nocoverage"],
+            env = real_env,
             **kargs
         )

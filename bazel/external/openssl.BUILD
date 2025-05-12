@@ -6,36 +6,29 @@ licenses(["notice"])  # Apache 2
 filegroup(
     name = "all",
     srcs = glob(["**"]),
-    #visibility = ["//visibility:public"],
 )
 
 configure_make(
     name = "openssl",
     lib_source = ":all",
+    lib_name = "openssl",
     configure_in_place = True,
     configure_command = "Configure",
     targets = ["build_sw", "install_sw"],
     args = ["-j"],
     out_lib_dir = "lib64",
-    out_static_libs = ["libssl.a", "libcrypto.a"],
+    #out_static_libs = ["libssl.a", "libcrypto.a"],
     out_shared_libs = ["libssl.so.3", "libcrypto.so.3"],
     out_include_dir = "include",
     visibility = ["//visibility:public"],
 )
-
-# filegroup(
-#     name = "libs",
-#     srcs = [":openssl"],
-#     visibility = ["//visibility:public"],
-# )
 
 cc_library(
     name = "libs",
     deps = [":openssl"],
     visibility = ["//visibility:public"],
     srcs = [":openssl"],
-    data = [":openssl"],
-    alwayslink = True,
+    linkstatic = True,
 )
 
 # envoy_cc_library(
