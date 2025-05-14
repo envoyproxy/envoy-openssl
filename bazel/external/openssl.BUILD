@@ -17,7 +17,6 @@ configure_make(
     targets = ["build_sw", "install_sw"],
     args = ["-j"],
     out_lib_dir = "lib64",
-    #out_static_libs = ["libssl.a", "libcrypto.a"],
     out_shared_libs = ["libssl.so.3", "libcrypto.so.3"],
     out_include_dir = "include",
     visibility = ["//visibility:public"],
@@ -26,9 +25,9 @@ configure_make(
 cc_library(
     name = "libs",
     deps = [":openssl"],
-    visibility = ["//visibility:public"],
     srcs = [":openssl"],
     linkstatic = True,
+    visibility = ["//visibility:public"],
 )
 
 # envoy_cc_library(

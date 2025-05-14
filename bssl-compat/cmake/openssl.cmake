@@ -1,4 +1,18 @@
+if(DEFINED ENV{OPENSSL_ROOT_FILE})
+    set(_openssl_root_file "$ENV{EXT_BUILD_ROOT}/$ENV{OPENSSL_ROOT_FILE}")
+    message(STATUS "Reading OPENSSL_ROOT_DIR from file ${_openssl_root_file}")
+    file(READ "${_openssl_root_file}" _openssl_root_raw)
+    string(STRIP "${_openssl_root_raw}" OPENSSL_ROOT_DIR)
+    set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT_DIR}/include")
+    set(OPENSSL_SSL_LIBRARY "${OPENSSL_ROOT_DIR}/lib64/libssl.so.3")
+    set(OPENSSL_CRYPTO_LIBRARY "${OPENSSL_ROOT_DIR}/lib64/libcrypto.so.3")
+    message(STATUS "Using OpenSSL from ${OPENSSL_ROOT_DIR}")
+endif()
+
 find_package(OpenSSL 3.0 COMPONENTS Crypto SSL)
+
+message(STATUS "OpenSSL include dir: ${OPENSSL_INCLUDE_DIR}")
+message(STATUS "OpenSSL libraries: ${OPENSSL_LIBRARIES}")
 
 if(OpenSSL_FOUND)
     add_custom_target(OpenSSL)

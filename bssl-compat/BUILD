@@ -7,6 +7,19 @@ filegroup(
 
 licenses(["notice"])  # Apache 2
 
+genrule(
+    name = "openssl_root_dir",
+    srcs = ["@openssl//:openssl"],
+    outs = ["openssl_root_dir.txt"],
+    cmd = """
+        set -e
+        OPENSSL_FILE=$$(find $(locations @openssl//:openssl) -name libssl.so.3 | head -n1)
+        OPENSSL_DIR=$$(dirname "$$OPENSSL_FILE")
+        EXEC_ROOT=$$(pwd | sed 's#/bazel-out/.*##')
+        echo $${EXEC_ROOT}/$${OPENSSL_DIR%/lib64} > $@
+    """,
+)
+
 cmake(
     name = "bssl-compat-cmake",
     lib_source = ":srcs",
@@ -19,11 +32,9 @@ cmake(
     generate_args = ["-GNinja"],
 
     build_args = [ "-j" ],
-    #deps = ["@openssl//:libs"],
-    build_data = ["@openssl//:libs"],
+    data = ["@openssl//:openssl", ":openssl_root_dir"],
     env = {
-        "OPENSSL_ROOT_DIR": "/build/bazel_root/base/execroot/envoy/bazel-out/k8-fastbuild/bin/external/openssl/openssl",
-        "LD_LIBRARY_PATH": "/build/bazel_root/base/execroot/envoy/bazel-out/k8-fastbuild/bin/external/openssl/openssl/lib64",
+        "OPENSSL_ROOT_FILE": "$(location :openssl_root_dir)",
     },
 )
 
