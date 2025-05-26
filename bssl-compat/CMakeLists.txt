@@ -154,6 +154,7 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_next_proto_select_cb.cc
   source/SSL_CTX_set_verify.cc
   source/SSL_CTX_use_certificate.cc
+  source/SSL_CTX_set_compliance_policy.cc
   source/SSL_CTX_use_PrivateKey.cc
   source/SSL_early_callback_ctx_extension_get.c
   source/SSL_enable_ocsp_stapling.cc
