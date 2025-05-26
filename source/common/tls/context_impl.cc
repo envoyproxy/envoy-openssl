@@ -189,10 +189,8 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
     }
   }
 
-#if 0
-//  Used below when calling functions non present in OpenSSL
-//  const bool fips_mode = FIPS_mode();
-#endif
+ const bool fips_mode = FIPS_mode();
+
 
 #ifdef BORINGSSL_FIPS
   if (!capabilities_.is_fips_compliant) {
@@ -362,8 +360,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
     }
   }
 
-#if 0
-         // Functions not available in OpenSSL
+         
   // Compliance policy must be applied last to have a defined behavior.
   if (const auto policy = config.compliancePolicy(); policy.has_value()) {
     switch (policy.value()) {
@@ -388,7 +385,6 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
       return;
     }
   }
- #endif
 }
 
 void ContextImpl::keylogCallback(const SSL* ssl, const char* line) {
