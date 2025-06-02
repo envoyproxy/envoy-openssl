@@ -518,8 +518,8 @@ void MyFrontendAction::EndSourceFileAction() {
          << "  int minor = (version & 0x0FF00000) >> 20;" << std::endl
          << "  int patch = (version & 0x00000FF0) >> 4;" << std::endl
          << std::endl
-         << "  if ((major != ossl_OPENSSL_VERSION_MAJOR) || (minor != ossl_OPENSSL_VERSION_MINOR)) {" << std::endl
-         << "    fprintf(stderr, \"Expecting to load OpenSSL version %d.%d.x but got %d.%d.%d\\n\"," << std::endl
+         << "  if ((major != ossl_OPENSSL_VERSION_MAJOR) || (minor < ossl_OPENSSL_VERSION_MINOR)) {" << std::endl
+         << "    fprintf(stderr, \"Expecting to load OpenSSL version at least %d.%d.x but got %d.%d.%d\\n\"," << std::endl
          << "                      ossl_OPENSSL_VERSION_MAJOR," << std::endl
          << "                      ossl_OPENSSL_VERSION_MINOR," << std::endl
          << "                      major, minor, patch);" << std::endl
