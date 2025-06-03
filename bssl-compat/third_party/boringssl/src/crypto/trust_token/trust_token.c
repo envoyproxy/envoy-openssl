@@ -78,16 +78,50 @@ const TRUST_TOKEN_METHOD *TRUST_TOKEN_experiment_v2_pmb(void) {
   return &kMethod;
 }
 
+const TRUST_TOKEN_METHOD *TRUST_TOKEN_pst_v1_voprf(void) {
+  static const TRUST_TOKEN_METHOD kMethod = {
+      voprf_pst1_generate_key,
+      voprf_pst1_derive_key_from_secret,
+      voprf_pst1_client_key_from_bytes,
+      voprf_pst1_issuer_key_from_bytes,
+      voprf_pst1_blind,
+      voprf_pst1_sign,
+      voprf_pst1_unblind,
+      voprf_pst1_read,
+      0, /* has_private_metadata */
+      6, /* max_keys */
+      0, /* has_srr */
+  };
+  return &kMethod;
+}
+
+const TRUST_TOKEN_METHOD *TRUST_TOKEN_pst_v1_pmb(void) {
+  static const TRUST_TOKEN_METHOD kMethod = {
+      pmbtoken_pst1_generate_key,
+      pmbtoken_pst1_derive_key_from_secret,
+      pmbtoken_pst1_client_key_from_bytes,
+      pmbtoken_pst1_issuer_key_from_bytes,
+      pmbtoken_pst1_blind,
+      pmbtoken_pst1_sign,
+      pmbtoken_pst1_unblind,
+      pmbtoken_pst1_read,
+      1, /* has_private_metadata */
+      3, /* max_keys */
+      0, /* has_srr */
+  };
+  return &kMethod;
+}
+
+
 void TRUST_TOKEN_PRETOKEN_free(TRUST_TOKEN_PRETOKEN *pretoken) {
   OPENSSL_free(pretoken);
 }
 
 TRUST_TOKEN *TRUST_TOKEN_new(const uint8_t *data, size_t len) {
-  TRUST_TOKEN *ret = OPENSSL_malloc(sizeof(TRUST_TOKEN));
+  TRUST_TOKEN *ret = OPENSSL_zalloc(sizeof(TRUST_TOKEN));
   if (ret == NULL) {
     return NULL;
   }
-  OPENSSL_memset(ret, 0, sizeof(TRUST_TOKEN));
   ret->data = OPENSSL_memdup(data, len);
   if (len != 0 && ret->data == NULL) {
     OPENSSL_free(ret);
@@ -170,11 +204,10 @@ TRUST_TOKEN_CLIENT *TRUST_TOKEN_CLIENT_new(const TRUST_TOKEN_METHOD *method,
     return NULL;
   }
 
-  TRUST_TOKEN_CLIENT *ret = OPENSSL_malloc(sizeof(TRUST_TOKEN_CLIENT));
+  TRUST_TOKEN_CLIENT *ret = OPENSSL_zalloc(sizeof(TRUST_TOKEN_CLIENT));
   if (ret == NULL) {
     return NULL;
   }
-  OPENSSL_memset(ret, 0, sizeof(TRUST_TOKEN_CLIENT));
   ret->method = method;
   ret->max_batchsize = (uint16_t)max_batchsize;
   return ret;
@@ -411,11 +444,10 @@ TRUST_TOKEN_ISSUER *TRUST_TOKEN_ISSUER_new(const TRUST_TOKEN_METHOD *method,
     return NULL;
   }
 
-  TRUST_TOKEN_ISSUER *ret = OPENSSL_malloc(sizeof(TRUST_TOKEN_ISSUER));
+  TRUST_TOKEN_ISSUER *ret = OPENSSL_zalloc(sizeof(TRUST_TOKEN_ISSUER));
   if (ret == NULL) {
     return NULL;
   }
-  OPENSSL_memset(ret, 0, sizeof(TRUST_TOKEN_ISSUER));
   ret->method = method;
   ret->max_batchsize = (uint16_t)max_batchsize;
   return ret;

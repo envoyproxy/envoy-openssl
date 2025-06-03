@@ -26,11 +26,6 @@
 #include "internal.h"
 
 
-void CBS_init(CBS *cbs, const uint8_t *data, size_t len) {
-  cbs->data = data;
-  cbs->len = len;
-}
-
 static int cbs_get(CBS *cbs, const uint8_t **p, size_t n) {
   if (cbs->len < n) {
     return 0;
@@ -45,14 +40,6 @@ static int cbs_get(CBS *cbs, const uint8_t **p, size_t n) {
 int CBS_skip(CBS *cbs, size_t len) {
   const uint8_t *dummy;
   return cbs_get(cbs, &dummy, len);
-}
-
-const uint8_t *CBS_data(const CBS *cbs) {
-  return cbs->data;
-}
-
-size_t CBS_len(const CBS *cbs) {
-  return cbs->len;
 }
 
 int CBS_stow(const CBS *cbs, uint8_t **out_ptr, size_t *out_len) {
@@ -520,11 +507,9 @@ int CBS_get_asn1_int64(CBS *cbs, int64_t *out) {
     return 0;
   }
   uint8_t sign_extend[sizeof(int64_t)];
-  memset(sign_extend, is_negative ? 0xff : 0, sizeof(sign_extend));
-  for (size_t i = 0; i < len; i++) {
-    sign_extend[i] = data[len - i - 1];
-  }
-  memcpy(out, sign_extend, sizeof(sign_extend));
+  OPENSSL_memset(sign_extend, is_negative ? 0xff : 0, sizeof(sign_extend));
+  OPENSSL_memcpy(sign_extend + sizeof(int64_t) - len, data, len);
+  *out = CRYPTO_load_u64_be(sign_extend);
   return 1;
 }
 
@@ -694,8 +679,31 @@ int CBS_is_unsigned_asn1_integer(const CBS *cbs) {
 
 static int add_decimal(CBB *out, uint64_t v) {
   char buf[DECIMAL_SIZE(uint64_t) + 1];
-  BIO_snprintf(buf, sizeof(buf), "%" PRIu64, v);
+  snprintf(buf, sizeof(buf), "%" PRIu64, v);
   return CBB_add_bytes(out, (const uint8_t *)buf, strlen(buf));
+}
+
+int CBS_is_valid_asn1_oid(const CBS *cbs) {
+  if (CBS_len(cbs) == 0) {
+    return 0;  // OID encodings cannot be empty.
+  }
+
+  CBS copy = *cbs;
+  uint8_t v, prev = 0;
+  while (CBS_get_u8(&copy, &v)) {
+    // OID encodings are a sequence of minimally-encoded base-128 integers (see
+    // |parse_base128_integer|). If |prev|'s MSB was clear, it was the last byte
+    // of an integer (or |v| is the first byte). |v| is then the first byte of
+    // the next integer. If first byte of an integer is 0x80, it is not
+    // minimally-encoded.
+    if ((prev & 0x80) == 0 && v == 0x80) {
+      return 0;
+    }
+    prev = v;
+  }
+
+  // The last byte should must end an integer encoding.
+  return (prev & 0x80) == 0;
 }
 
 char *CBS_asn1_oid_to_text(const CBS *cbs) {

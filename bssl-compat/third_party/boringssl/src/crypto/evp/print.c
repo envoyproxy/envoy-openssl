@@ -181,11 +181,11 @@ static int do_rsa_print(BIO *out, const RSA *rsa, int off,
 }
 
 static int rsa_pub_print(BIO *bp, const EVP_PKEY *pkey, int indent) {
-  return do_rsa_print(bp, pkey->pkey.rsa, indent, 0);
+  return do_rsa_print(bp, EVP_PKEY_get0_RSA(pkey), indent, 0);
 }
 
 static int rsa_priv_print(BIO *bp, const EVP_PKEY *pkey, int indent) {
-  return do_rsa_print(bp, pkey->pkey.rsa, indent, 1);
+  return do_rsa_print(bp, EVP_PKEY_get0_RSA(pkey), indent, 1);
 }
 
 
@@ -194,12 +194,12 @@ static int rsa_priv_print(BIO *bp, const EVP_PKEY *pkey, int indent) {
 static int do_dsa_print(BIO *bp, const DSA *x, int off, int ptype) {
   const BIGNUM *priv_key = NULL;
   if (ptype == 2) {
-    priv_key = x->priv_key;
+    priv_key = DSA_get0_priv_key(x);
   }
 
   const BIGNUM *pub_key = NULL;
   if (ptype > 0) {
-    pub_key = x->pub_key;
+    pub_key = DSA_get0_pub_key(x);
   }
 
   const char *ktype = "DSA-Parameters";
@@ -210,14 +210,15 @@ static int do_dsa_print(BIO *bp, const DSA *x, int off, int ptype) {
   }
 
   if (!BIO_indent(bp, off, 128) ||
-      BIO_printf(bp, "%s: (%u bit)\n", ktype, BN_num_bits(x->p)) <= 0 ||
+      BIO_printf(bp, "%s: (%u bit)\n", ktype, BN_num_bits(DSA_get0_p(x))) <=
+          0 ||
       // |priv_key| and |pub_key| may be NULL, in which case |bn_print| will
       // silently skip them.
       !bn_print(bp, "priv:", priv_key, off) ||
       !bn_print(bp, "pub:", pub_key, off) ||
-      !bn_print(bp, "P:", x->p, off) ||
-      !bn_print(bp, "Q:", x->q, off) ||
-      !bn_print(bp, "G:", x->g, off)) {
+      !bn_print(bp, "P:", DSA_get0_p(x), off) ||
+      !bn_print(bp, "Q:", DSA_get0_q(x), off) ||
+      !bn_print(bp, "G:", DSA_get0_g(x), off)) {
     return 0;
   }
 
@@ -225,15 +226,15 @@ static int do_dsa_print(BIO *bp, const DSA *x, int off, int ptype) {
 }
 
 static int dsa_param_print(BIO *bp, const EVP_PKEY *pkey, int indent) {
-  return do_dsa_print(bp, pkey->pkey.dsa, indent, 0);
+  return do_dsa_print(bp, EVP_PKEY_get0_DSA(pkey), indent, 0);
 }
 
 static int dsa_pub_print(BIO *bp, const EVP_PKEY *pkey, int indent) {
-  return do_dsa_print(bp, pkey->pkey.dsa, indent, 1);
+  return do_dsa_print(bp, EVP_PKEY_get0_DSA(pkey), indent, 1);
 }
 
 static int dsa_priv_print(BIO *bp, const EVP_PKEY *pkey, int indent) {
-  return do_dsa_print(bp, pkey->pkey.dsa, indent, 2);
+  return do_dsa_print(bp, EVP_PKEY_get0_DSA(pkey), indent, 2);
 }
 
 
@@ -293,16 +294,16 @@ static int do_EC_KEY_print(BIO *bp, const EC_KEY *x, int off, int ktype) {
 }
 
 static int eckey_param_print(BIO *bp, const EVP_PKEY *pkey, int indent) {
-  return do_EC_KEY_print(bp, pkey->pkey.ec, indent, 0);
+  return do_EC_KEY_print(bp, EVP_PKEY_get0_EC_KEY(pkey), indent, 0);
 }
 
 static int eckey_pub_print(BIO *bp, const EVP_PKEY *pkey, int indent) {
-  return do_EC_KEY_print(bp, pkey->pkey.ec, indent, 1);
+  return do_EC_KEY_print(bp, EVP_PKEY_get0_EC_KEY(pkey), indent, 1);
 }
 
 
 static int eckey_priv_print(BIO *bp, const EVP_PKEY *pkey, int indent) {
-  return do_EC_KEY_print(bp, pkey->pkey.ec, indent, 2);
+  return do_EC_KEY_print(bp, EVP_PKEY_get0_EC_KEY(pkey), indent, 2);
 }
 
 
@@ -354,7 +355,7 @@ static int print_unsupported(BIO *out, const EVP_PKEY *pkey, int indent,
 
 int EVP_PKEY_print_public(BIO *out, const EVP_PKEY *pkey, int indent,
                           ASN1_PCTX *pctx) {
-  EVP_PKEY_PRINT_METHOD *method = find_method(pkey->type);
+  EVP_PKEY_PRINT_METHOD *method = find_method(EVP_PKEY_id(pkey));
   if (method != NULL && method->pub_print != NULL) {
     return method->pub_print(out, pkey, indent);
   }
@@ -363,7 +364,7 @@ int EVP_PKEY_print_public(BIO *out, const EVP_PKEY *pkey, int indent,
 
 int EVP_PKEY_print_private(BIO *out, const EVP_PKEY *pkey, int indent,
                            ASN1_PCTX *pctx) {
-  EVP_PKEY_PRINT_METHOD *method = find_method(pkey->type);
+  EVP_PKEY_PRINT_METHOD *method = find_method(EVP_PKEY_id(pkey));
   if (method != NULL && method->priv_print != NULL) {
     return method->priv_print(out, pkey, indent);
   }
@@ -372,7 +373,7 @@ int EVP_PKEY_print_private(BIO *out, const EVP_PKEY *pkey, int indent,
 
 int EVP_PKEY_print_params(BIO *out, const EVP_PKEY *pkey, int indent,
                           ASN1_PCTX *pctx) {
-  EVP_PKEY_PRINT_METHOD *method = find_method(pkey->type);
+  EVP_PKEY_PRINT_METHOD *method = find_method(EVP_PKEY_id(pkey));
   if (method != NULL && method->param_print != NULL) {
     return method->param_print(out, pkey, indent);
   }

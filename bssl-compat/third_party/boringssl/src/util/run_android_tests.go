@@ -19,6 +19,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -30,6 +31,7 @@ import (
 	"strconv"
 	"strings"
 
+	"boringssl.googlesource.com/boringssl/util/build"
 	"boringssl.googlesource.com/boringssl/util/testconfig"
 )
 
@@ -149,7 +151,7 @@ func goTool(args ...string) error {
 		targetPrefix = fmt.Sprintf("aarch64-linux-android%d-", *apiLevel)
 		cmd.Env = append(cmd.Env, "GOARCH=arm64")
 	default:
-		fmt.Errorf("unknown Android ABI: %q", *abi)
+		return fmt.Errorf("unknown Android ABI: %q", *abi)
 	}
 
 	// Go's Android support requires cgo and compilers from the NDK. See
@@ -233,13 +235,14 @@ func detectOptionsFromCMake() error {
 		fmt.Printf("Detected ABI %q from CMakeCache.txt.\n", *abi)
 	}
 	if *apiLevel == 0 {
-		apiLevelStr, ok := cmakeVars["ANDROID_NATIVE_API_LEVEL"]
+		apiLevelStr, ok := cmakeVars["ANDROID_PLATFORM"]
 		if !ok {
-			return errors.New("ANDROID_NATIVE_API_LEVEL not found in CMakeCache.txt")
+			return errors.New("ANDROID_PLATFORM not found in CMakeCache.txt")
 		}
+		apiLevelStr = strings.TrimPrefix(apiLevelStr, "android-")
 		var err error
 		if *apiLevel, err = strconv.Atoi(apiLevelStr); err != nil {
-			return fmt.Errorf("error parsing ANDROID_NATIVE_API_LEVEL: %s", err)
+			return fmt.Errorf("error parsing ANDROID_PLATFORM: %s", err)
 		}
 		fmt.Printf("Detected API level %d from CMakeCache.txt.\n", *apiLevel)
 	}
@@ -287,6 +290,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	targetsJSON, err := os.ReadFile("gen/sources.json")
+	if err != nil {
+		fmt.Printf("Error reading sources.json: %s.\n", err)
+		os.Exit(1)
+	}
+	var targets map[string]build.Target
+	if err := json.Unmarshal(targetsJSON, &targets); err != nil {
+		fmt.Printf("Error reading sources.json: %s.\n", err)
+		os.Exit(1)
+	}
+
 	// Clear the target directory.
 	if err := adb("shell", "rm -Rf /data/local/tmp/boringssl-tmp"); err != nil {
 		fmt.Printf("Failed to clear target directory: %s\n", err)
@@ -308,6 +322,9 @@ func main() {
 			"util/all_tests.json",
 			"BUILDING.md",
 		)
+		for _, target := range targets {
+			files = append(files, target.Data...)
+		}
 
 		tests, err := testconfig.ParseTestConfig("util/all_tests.json")
 		if err != nil {
@@ -337,28 +354,6 @@ func main() {
 
 	if enableSSLTests() {
 		binaries = append(binaries, "ssl/test/bssl_shim")
-		files = append(files,
-			"BUILDING.md",
-			"ssl/test/runner/cert.pem",
-			"ssl/test/runner/channel_id_key.pem",
-			"ssl/test/runner/ecdsa_p224_cert.pem",
-			"ssl/test/runner/ecdsa_p224_key.pem",
-			"ssl/test/runner/ecdsa_p256_cert.pem",
-			"ssl/test/runner/ecdsa_p256_key.pem",
-			"ssl/test/runner/ecdsa_p384_cert.pem",
-			"ssl/test/runner/ecdsa_p384_key.pem",
-			"ssl/test/runner/ecdsa_p521_cert.pem",
-			"ssl/test/runner/ecdsa_p521_key.pem",
-			"ssl/test/runner/ed25519_cert.pem",
-			"ssl/test/runner/ed25519_key.pem",
-			"ssl/test/runner/key.pem",
-			"ssl/test/runner/rsa_1024_cert.pem",
-			"ssl/test/runner/rsa_1024_key.pem",
-			"ssl/test/runner/rsa_chain_cert.pem",
-			"ssl/test/runner/rsa_chain_key.pem",
-			"util/all_tests.json",
-		)
-
 		fmt.Printf("Building runner...\n")
 		if err := goTool("test", "-c", "-o", filepath.Join(tmpDir, "ssl/test/runner/runner"), "./ssl/test/runner/"); err != nil {
 			fmt.Printf("Error building runner: %s\n", err)
@@ -367,15 +362,16 @@ func main() {
 	}
 
 	var libraries []string
-	if _, err := os.Stat(filepath.Join(*buildDir, "crypto/libcrypto.so")); err == nil {
+	if _, err := os.Stat(filepath.Join(*buildDir, "libcrypto.so")); err == nil {
 		libraries = []string{
 			"libboringssl_gtest.so",
-			"crypto/libcrypto.so",
-			"decrepit/libdecrepit.so",
-			"ssl/libssl.so",
+			"libcrypto.so",
+			"libdecrepit.so",
+			"libpki.so",
+			"libssl.so",
 		}
 	} else if !os.IsNotExist(err) {
-		fmt.Printf("Failed to stat crypto/libcrypto.so: %s\n", err)
+		fmt.Printf("Failed to stat libcrypto.so: %s\n", err)
 		os.Exit(1)
 	}
 

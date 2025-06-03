@@ -68,7 +68,7 @@ int NETSCAPE_SPKI_set_pubkey(NETSCAPE_SPKI *x, EVP_PKEY *pkey) {
   return (X509_PUBKEY_set(&(x->spkac->pubkey), pkey));
 }
 
-EVP_PKEY *NETSCAPE_SPKI_get_pubkey(NETSCAPE_SPKI *x) {
+EVP_PKEY *NETSCAPE_SPKI_get_pubkey(const NETSCAPE_SPKI *x) {
   if ((x == NULL) || (x->spkac == NULL)) {
     return NULL;
   }
@@ -77,7 +77,7 @@ EVP_PKEY *NETSCAPE_SPKI_get_pubkey(NETSCAPE_SPKI *x) {
 
 // Load a Netscape SPKI from a base64 encoded string
 
-NETSCAPE_SPKI *NETSCAPE_SPKI_b64_decode(const char *str, int len) {
+NETSCAPE_SPKI *NETSCAPE_SPKI_b64_decode(const char *str, ossl_ssize_t len) {
   unsigned char *spki_der;
   const unsigned char *p;
   size_t spki_len;
