@@ -124,7 +124,7 @@
 #include "internal.h"
 
 
-static int xname_cmp(const X509_NAME **a, const X509_NAME **b) {
+static int xname_cmp(const X509_NAME *const *a, const X509_NAME *const *b) {
   return X509_NAME_cmp(*a, *b);
 }
 
@@ -143,7 +143,7 @@ static int add_bio_cert_subjects_to_stack(STACK_OF(X509_NAME) *out, BIO *bio,
   struct RestoreCmpFunc {
     ~RestoreCmpFunc() { sk_X509_NAME_set_cmp_func(stack, old_cmp); }
     STACK_OF(X509_NAME) *stack;
-    int (*old_cmp)(const X509_NAME **, const X509_NAME **);
+    int (*old_cmp)(const X509_NAME *const *, const X509_NAME *const *);
   };
   RestoreCmpFunc restore = {out, sk_X509_NAME_set_cmp_func(out, xname_cmp)};
 
@@ -199,8 +199,12 @@ static int add_bio_cert_subjects_to_stack(STACK_OF(X509_NAME) *out, BIO *bio,
   return 1;
 }
 
+int SSL_add_bio_cert_subjects_to_stack(STACK_OF(X509_NAME) *out, BIO *bio) {
+  return add_bio_cert_subjects_to_stack(out, bio, /*allow_empty=*/true);
+}
+
 STACK_OF(X509_NAME) *SSL_load_client_CA_file(const char *file) {
-  bssl::UniquePtr<BIO> in(BIO_new_file(file, "r"));
+  bssl::UniquePtr<BIO> in(BIO_new_file(file, "rb"));
   if (in == nullptr) {
     return nullptr;
   }
@@ -215,15 +219,11 @@ STACK_OF(X509_NAME) *SSL_load_client_CA_file(const char *file) {
 
 int SSL_add_file_cert_subjects_to_stack(STACK_OF(X509_NAME) *out,
                                         const char *file) {
-  bssl::UniquePtr<BIO> in(BIO_new_file(file, "r"));
+  bssl::UniquePtr<BIO> in(BIO_new_file(file, "rb"));
   if (in == nullptr) {
     return 0;
   }
   return SSL_add_bio_cert_subjects_to_stack(out, in.get());
-}
-
-int SSL_add_bio_cert_subjects_to_stack(STACK_OF(X509_NAME) *out, BIO *bio) {
-  return add_bio_cert_subjects_to_stack(out, bio, /*allow_empty=*/true);
 }
 
 int SSL_use_certificate_file(SSL *ssl, const char *file, int type) {

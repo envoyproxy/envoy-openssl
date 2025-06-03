@@ -85,7 +85,7 @@ static int asn1_template_ex_d2i(ASN1_VALUE **pval, const unsigned char **in,
 static int asn1_template_noexp_d2i(ASN1_VALUE **val, const unsigned char **in,
                                    long len, const ASN1_TEMPLATE *tt, char opt,
                                    CRYPTO_BUFFER *buf, int depth);
-static int asn1_ex_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len,
+static int asn1_ex_c2i(ASN1_VALUE **pval, const unsigned char *cont, long len,
                        int utype, const ASN1_ITEM *it);
 static int asn1_d2i_ex_primitive(ASN1_VALUE **pval, const unsigned char **in,
                                  long len, const ASN1_ITEM *it, int tag,
@@ -134,6 +134,23 @@ unsigned long ASN1_tag2bit(int tag) {
     return 0;
   }
   return tag2bit[tag];
+}
+
+static int is_supported_universal_type(int tag, int aclass) {
+  if (aclass != V_ASN1_UNIVERSAL) {
+    return 0;
+  }
+  return tag == V_ASN1_OBJECT || tag == V_ASN1_NULL || tag == V_ASN1_BOOLEAN ||
+         tag == V_ASN1_BIT_STRING || tag == V_ASN1_INTEGER ||
+         tag == V_ASN1_ENUMERATED || tag == V_ASN1_OCTET_STRING ||
+         tag == V_ASN1_NUMERICSTRING || tag == V_ASN1_PRINTABLESTRING ||
+         tag == V_ASN1_T61STRING || tag == V_ASN1_VIDEOTEXSTRING ||
+         tag == V_ASN1_IA5STRING || tag == V_ASN1_UTCTIME ||
+         tag == V_ASN1_GENERALIZEDTIME || tag == V_ASN1_GRAPHICSTRING ||
+         tag == V_ASN1_VISIBLESTRING || tag == V_ASN1_GENERALSTRING ||
+         tag == V_ASN1_UNIVERSALSTRING || tag == V_ASN1_BMPSTRING ||
+         tag == V_ASN1_UTF8STRING || tag == V_ASN1_SET ||
+         tag == V_ASN1_SEQUENCE;
 }
 
 // Macro to initialize and invalidate the cache
@@ -677,7 +694,7 @@ static int asn1_d2i_ex_primitive(ASN1_VALUE **pval, const unsigned char **in,
       OPENSSL_PUT_ERROR(ASN1, ASN1_R_NESTED_ASN1_ERROR);
       return 0;
     }
-    if (oclass != V_ASN1_UNIVERSAL) {
+    if (!is_supported_universal_type(utype, oclass)) {
       utype = V_ASN1_OTHER;
     }
   }
@@ -732,7 +749,7 @@ err:
 
 // Translate ASN1 content octets into a structure
 
-static int asn1_ex_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len,
+static int asn1_ex_c2i(ASN1_VALUE **pval, const unsigned char *cont, long len,
                        int utype, const ASN1_ITEM *it) {
   ASN1_VALUE **opval = NULL;
   ASN1_STRING *stmp;
@@ -821,13 +838,19 @@ static int asn1_ex_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len,
     case V_ASN1_OTHER:
     case V_ASN1_SET:
     case V_ASN1_SEQUENCE:
+    // TODO(crbug.com/boringssl/412): This default case should be removed, now
+    // that we've resolved https://crbug.com/boringssl/561. However, it is still
+    // needed to support some edge cases in |ASN1_PRINTABLE|. |ASN1_PRINTABLE|
+    // broadly doesn't tolerate unrecognized universal tags, but except for
+    // eight values that map to |B_ASN1_UNKNOWN| instead of zero. See the
+    // X509Test.NameAttributeValues test.
     default: {
       CBS cbs;
       CBS_init(&cbs, cont, (size_t)len);
       if (utype == V_ASN1_BMPSTRING) {
         while (CBS_len(&cbs) != 0) {
           uint32_t c;
-          if (!cbs_get_ucs2_be(&cbs, &c)) {
+          if (!CBS_get_ucs2_be(&cbs, &c)) {
             OPENSSL_PUT_ERROR(ASN1, ASN1_R_INVALID_BMPSTRING);
             goto err;
           }
@@ -836,7 +859,7 @@ static int asn1_ex_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len,
       if (utype == V_ASN1_UNIVERSALSTRING) {
         while (CBS_len(&cbs) != 0) {
           uint32_t c;
-          if (!cbs_get_utf32_be(&cbs, &c)) {
+          if (!CBS_get_utf32_be(&cbs, &c)) {
             OPENSSL_PUT_ERROR(ASN1, ASN1_R_INVALID_UNIVERSALSTRING);
             goto err;
           }
@@ -845,7 +868,7 @@ static int asn1_ex_c2i(ASN1_VALUE **pval, const unsigned char *cont, int len,
       if (utype == V_ASN1_UTF8STRING) {
         while (CBS_len(&cbs) != 0) {
           uint32_t c;
-          if (!cbs_get_utf8(&cbs, &c)) {
+          if (!CBS_get_utf8(&cbs, &c)) {
             OPENSSL_PUT_ERROR(ASN1, ASN1_R_INVALID_UTF8STRING);
             goto err;
           }

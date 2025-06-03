@@ -400,7 +400,7 @@ bool ssl_get_new_session(SSL_HANDSHAKE *hs) {
   return true;
 }
 
-int ssl_ctx_rotate_ticket_encryption_key(SSL_CTX *ctx) {
+bool ssl_ctx_rotate_ticket_encryption_key(SSL_CTX *ctx) {
   OPENSSL_timeval now;
   ssl_ctx_get_current_time(ctx, &now);
   {
@@ -412,7 +412,7 @@ int ssl_ctx_rotate_ticket_encryption_key(SSL_CTX *ctx) {
          ctx->ticket_key_current->next_rotation_tv_sec > now.tv_sec) &&
         (!ctx->ticket_key_prev ||
          ctx->ticket_key_prev->next_rotation_tv_sec > now.tv_sec)) {
-      return 1;
+      return true;
     }
   }
 
@@ -423,7 +423,7 @@ int ssl_ctx_rotate_ticket_encryption_key(SSL_CTX *ctx) {
     // The current key has not been initialized or it is expired.
     auto new_key = bssl::MakeUnique<TicketKey>();
     if (!new_key) {
-      return 0;
+      return false;
     }
     RAND_bytes(new_key->name, 16);
     RAND_bytes(new_key->hmac_key, 16);
@@ -447,7 +447,7 @@ int ssl_ctx_rotate_ticket_encryption_key(SSL_CTX *ctx) {
     ctx->ticket_key_prev.reset();
   }
 
-  return 1;
+  return true;
 }
 
 static int ssl_encrypt_ticket_with_cipher_ctx(SSL_HANDSHAKE *hs, CBB *out,
@@ -560,30 +560,28 @@ static int ssl_encrypt_ticket_with_method(SSL_HANDSHAKE *hs, CBB *out,
   return 1;
 }
 
-int ssl_encrypt_ticket(SSL_HANDSHAKE *hs, CBB *out,
+bool ssl_encrypt_ticket(SSL_HANDSHAKE *hs, CBB *out,
                        const SSL_SESSION *session) {
   // Serialize the SSL_SESSION to be encoded into the ticket.
-  uint8_t *session_buf = NULL;
+  uint8_t *session_buf = nullptr;
   size_t session_len;
   if (!SSL_SESSION_to_bytes_for_ticket(session, &session_buf, &session_len)) {
-    return -1;
+    return false;
   }
+  bssl::UniquePtr<uint8_t> free_session_buf(session_buf);
 
-  int ret = 0;
   if (hs->ssl->session_ctx->ticket_aead_method) {
-    ret = ssl_encrypt_ticket_with_method(hs, out, session_buf, session_len);
+    return ssl_encrypt_ticket_with_method(hs, out, session_buf, session_len);
   } else {
-    ret = ssl_encrypt_ticket_with_cipher_ctx(hs, out, session_buf, session_len);
+    return ssl_encrypt_ticket_with_cipher_ctx(hs, out, session_buf,
+                                              session_len);
   }
-
-  OPENSSL_free(session_buf);
-  return ret;
 }
 
-int ssl_session_is_context_valid(const SSL_HANDSHAKE *hs,
-                                 const SSL_SESSION *session) {
+bool ssl_session_is_context_valid(const SSL_HANDSHAKE *hs,
+                                  const SSL_SESSION *session) {
   if (session == NULL) {
-    return 0;
+    return false;
   }
 
   return session->sid_ctx_length == hs->config->cert->sid_ctx_length &&
@@ -591,9 +589,9 @@ int ssl_session_is_context_valid(const SSL_HANDSHAKE *hs,
                         hs->config->cert->sid_ctx_length) == 0;
 }
 
-int ssl_session_is_time_valid(const SSL *ssl, const SSL_SESSION *session) {
+bool ssl_session_is_time_valid(const SSL *ssl, const SSL_SESSION *session) {
   if (session == NULL) {
-    return 0;
+    return false;
   }
 
   struct OPENSSL_timeval now;
@@ -601,14 +599,14 @@ int ssl_session_is_time_valid(const SSL *ssl, const SSL_SESSION *session) {
 
   // Reject tickets from the future to avoid underflow.
   if (now.tv_sec < session->time) {
-    return 0;
+    return false;
   }
 
   return session->timeout > now.tv_sec - session->time;
 }
 
-int ssl_session_is_resumable(const SSL_HANDSHAKE *hs,
-                             const SSL_SESSION *session) {
+bool ssl_session_is_resumable(const SSL_HANDSHAKE *hs,
+                              const SSL_SESSION *session) {
   const SSL *const ssl = hs->ssl;
   return ssl_session_is_context_valid(hs, session) &&
          // The session must have been created by the same type of end point as
@@ -937,7 +935,8 @@ BSSL_NAMESPACE_END
 using namespace bssl;
 
 ssl_session_st::ssl_session_st(const SSL_X509_METHOD *method)
-    : x509_method(method),
+    : RefCounted(CheckSubClass()),
+      x509_method(method),
       extended_master_secret(false),
       peer_sha256_valid(false),
       not_resumable(false),
@@ -959,18 +958,14 @@ SSL_SESSION *SSL_SESSION_new(const SSL_CTX *ctx) {
 }
 
 int SSL_SESSION_up_ref(SSL_SESSION *session) {
-  CRYPTO_refcount_inc(&session->references);
+  session->UpRefInternal();
   return 1;
 }
 
 void SSL_SESSION_free(SSL_SESSION *session) {
-  if (session == NULL ||
-      !CRYPTO_refcount_dec_and_test_zero(&session->references)) {
-    return;
+  if (session != nullptr) {
+    session->DecRefInternal();
   }
-
-  session->~ssl_session_st();
-  OPENSSL_free(session);
 }
 
 const uint8_t *SSL_SESSION_get_id(const SSL_SESSION *session,
@@ -1208,12 +1203,7 @@ int SSL_SESSION_get_ex_new_index(long argl, void *argp,
                                  CRYPTO_EX_unused *unused,
                                  CRYPTO_EX_dup *dup_unused,
                                  CRYPTO_EX_free *free_func) {
-  int index;
-  if (!CRYPTO_get_ex_new_index(&g_ex_data_class, &index, argl, argp,
-                               free_func)) {
-    return -1;
-  }
-  return index;
+  return CRYPTO_get_ex_new_index_ex(&g_ex_data_class, argl, argp, free_func);
 }
 
 int SSL_SESSION_set_ex_data(SSL_SESSION *session, int idx, void *arg) {
