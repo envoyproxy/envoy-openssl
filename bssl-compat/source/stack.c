@@ -26,7 +26,7 @@
  * supplied copyfunc() and freeing by freefunc(). The function freefunc() is
  * only called if an error occurs.
  */
-_STACK *sk_deep_copy(const _STACK *sk,
+_STACK *OPENSSL_sk_deep_copy(const _STACK *sk,
                                     OPENSSL_sk_call_copy_func call_copy_func,
                                     OPENSSL_sk_copy_func copy_func,
                                     OPENSSL_sk_call_free_func call_free_func,
@@ -49,7 +49,7 @@ _STACK *sk_deep_copy(const _STACK *sk,
  * with an invalid index. An error is not raised in these conditions.
  * sk_TYPE_delete() returns pointer to the deleted element or NULL on error.
  */
-void *sk_delete(_STACK *sk, size_t where) {
+void *OPENSSL_sk_delete(_STACK *sk, size_t where) {
   return ossl.ossl_OPENSSL_sk_delete(sk, where);
 }
 
@@ -65,7 +65,7 @@ void *sk_delete(_STACK *sk, size_t where) {
  * sk_TYPE_delete_ptr() deletes element matching ptr from sk. It returns the
  * deleted element or NULL if no element matching ptr was found.
  */
-void *sk_delete_ptr(_STACK *sk, const void *p) {
+void *OPENSSL_sk_delete_ptr(_STACK *sk, const void *p) {
   return ossl.ossl_OPENSSL_sk_delete_ptr(sk, p);
 }
 
@@ -80,7 +80,7 @@ void *sk_delete_ptr(_STACK *sk, const void *p) {
  * sk_TYPE_dup() returns a shallow copy of sk or an empty stack if the passed
  * stack is NULL. Note the pointers in the copy are identical to the original.
  */
-_STACK *sk_dup(const _STACK *sk) {
+_STACK *OPENSSL_sk_dup(const _STACK *sk) {
   return ossl.ossl_OPENSSL_sk_dup(sk);
 }
 
@@ -110,7 +110,7 @@ _STACK *sk_dup(const _STACK *sk) {
  * rather than the pointers themselves and the order of elements in sk can
  * change.
  */
-int sk_find(const _STACK *sk, size_t *out_index, const void *p, OPENSSL_sk_call_cmp_func call_cmp_func) {
+int OPENSSL_sk_find(const _STACK *sk, size_t *out_index, const void *p, OPENSSL_sk_call_cmp_func call_cmp_func) {
   (void)call_cmp_func;
 
   int idx = -1;
@@ -208,7 +208,7 @@ void sk_free(_STACK *sk) {
  * sk after the new element is inserted or zero if an error (such as memory
  * allocation failure) occurred.
  */
-size_t sk_insert(_STACK *sk, void *p, size_t where) {
+size_t OPENSSL_sk_insert(_STACK *sk, void *p, size_t where) {
   return ossl.ossl_OPENSSL_sk_insert(sk, p, where);
 }
 
@@ -221,7 +221,7 @@ size_t sk_insert(_STACK *sk, void *p, size_t where) {
  * =======
  * sk_TYPE_is_sorted() returns 1 if sk is sorted and 0 otherwise
  */
-int sk_is_sorted(const _STACK *sk) {
+int OPENSSL_sk_is_sorted(const _STACK *sk) {
   int sorted = ossl.ossl_OPENSSL_sk_is_sorted(sk);
 
   if (!sorted) {
@@ -264,7 +264,7 @@ size_t sk_num(const _STACK *sk) {
  * equivalent to sk_TYPE_new_reserve(compare, 0).  sk_TYPE_new() return an
  * empty stack or NULL if an error occurs.
  */
-_STACK *sk_new(OPENSSL_sk_cmp_func comp) {
+_STACK *OPENSSL_sk_new(OPENSSL_sk_cmp_func comp) {
   return ossl.ossl_OPENSSL_sk_new((ossl_OPENSSL_sk_compfunc)comp);
 }
 
@@ -310,7 +310,7 @@ void *sk_pop(_STACK *sk) {
  * sk_TYPE_pop_free() frees up all elements of sk and sk itself. The free
  * function freefunc() is called on each element to free it.
  */
-OPENSSL_EXPORT void sk_pop_free_ex(_STACK *sk,
+OPENSSL_EXPORT void OPENSSL_sk_pop_free_ex(_STACK *sk,
                                    OPENSSL_sk_call_free_func call_free_func,
                                    OPENSSL_sk_free_func free_func) {
   (void)call_free_func;
@@ -345,7 +345,7 @@ size_t sk_push(_STACK *sk, void *p) {
  * previous comparison function is returned or NULL if there was no previous
  * comparison function.
  */
-OPENSSL_sk_cmp_func sk_set_cmp_func(_STACK *sk, OPENSSL_sk_cmp_func comp) {
+OPENSSL_sk_cmp_func OPENSSL_sk_set_cmp_func(_STACK *sk, OPENSSL_sk_cmp_func comp) {
   return (OPENSSL_sk_cmp_func)ossl.ossl_OPENSSL_sk_set_cmp_func(sk, (ossl_OPENSSL_sk_compfunc)comp);
 }
 
@@ -362,7 +362,7 @@ OPENSSL_sk_cmp_func sk_set_cmp_func(_STACK *sk, OPENSSL_sk_cmp_func comp) {
  * with an invalid index. An error is not raised in these conditions.
  * sk_TYPE_shift() return a pointer to the deleted element or NULL on error.
  */
-void *sk_shift(_STACK *sk) {
+void *OPENSSL_sk_shift(_STACK *sk) {
   return ossl.ossl_OPENSSL_sk_shift(sk);
 }
 
@@ -377,7 +377,7 @@ void *sk_shift(_STACK *sk) {
  * =======
  * sk_TYPE_sort() sorts sk using the supplied comparison function.
  */
-void sk_sort(_STACK *sk, OPENSSL_sk_call_cmp_func call_cmp_func) {
+void OPENSSL_sk_sort(_STACK *sk, OPENSSL_sk_call_cmp_func call_cmp_func) {
   (void)call_cmp_func;
   ossl.ossl_OPENSSL_sk_sort(sk);
 }
@@ -412,6 +412,6 @@ void *sk_value(const _STACK *sk, size_t i) {
  * sk_TYPE_zero() on a NULL stack, empty stack, or with an invalid index. An
  * error is not raised in these conditions.
  */
-void sk_zero(_STACK *sk) {
+void OPENSSL_sk_zero(_STACK *sk) {
   ossl.ossl_OPENSSL_sk_zero(sk);
 }

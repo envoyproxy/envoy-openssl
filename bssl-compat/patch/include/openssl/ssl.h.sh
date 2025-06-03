@@ -175,7 +175,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-enum ssl_renegotiate_mode_t \
   --uncomment-struct ssl_early_callback_ctx \
   --uncomment-enum ssl_select_cert_result_t \
-  --uncomment-func-decl SSL_CIPHER_get_rfc_name \
   --uncomment-func-decl TLS_server_method \
   --uncomment-func-decl TLS_client_method \
   --uncomment-func-decl i2d_SSL_SESSION \
@@ -202,3 +201,12 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_get_all_signature_algorithm_names \
   --uncomment-func-decl SSL_get_all_version_names \
   --uncomment-func-decl SSL_get_all_curve_names \
+  --uncomment-macro SSL_GROUP_SECP224R1 \
+  --uncomment-macro SSL_GROUP_SECP256R1 \
+  --uncomment-macro SSL_GROUP_SECP384R1 \
+  --uncomment-macro SSL_GROUP_SECP521R1 \
+  --uncomment-macro SSL_GROUP_X25519 \
+  --uncomment-macro SSL_GROUP_X25519_MLKEM768 \
+  --uncomment-macro SSL_GROUP_X25519_KYBER768_DRAFT00 \
+  --uncomment-macro DTLS1_3_EXPERIMENTAL_VERSION \
+  --uncomment-func-decl SSL_CIPHER_get_handshake_digest \

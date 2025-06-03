@@ -17,36 +17,40 @@ uncomment.sh "$1" --comment -h \
   --uncomment-struct DeleterImpl \
   --uncomment-class StackIteratorImpl \
   --uncomment-using StackIterator \
-  --uncomment-regex-range 'inline\>' '}' \
-  --uncomment-regex-range 'inline\>.*\<begin\>' '}' \
-  --uncomment-regex-range 'inline\>.*\<end\>' '}' \
+  --uncomment-regex-range 'inline.*' '^}$' \
   --uncomment-regex '}$' \
   --uncomment-regex 'namespace internal {' \
   --uncomment-regex '}  // namespace internal' \
-  --sed '/^\/\/ } _STACK;$/atypedef struct ossl_stack_st _STACK;' \
   --uncomment-typedef OPENSSL_sk_free_func \
   --uncomment-typedef OPENSSL_sk_copy_func \
   --uncomment-typedef OPENSSL_sk_cmp_func \
   --uncomment-typedef OPENSSL_sk_call_free_func \
   --uncomment-typedef OPENSSL_sk_call_copy_func \
   --uncomment-typedef OPENSSL_sk_call_cmp_func \
-  --uncomment-func-decl sk_new \
+  --uncomment-typedef OPENSSL_sk_delete_if_func \
+  --uncomment-func-decl OPENSSL_sk_deep_copy \
+  --uncomment-func-decl OPENSSL_sk_num \
+  --uncomment-func-decl OPENSSL_sk_pop_free_ex \
+  --uncomment-func-decl OPENSSL_sk_push \
+  --uncomment-func-decl OPENSSL_sk_pop \
+  --uncomment-func-decl OPENSSL_sk_new_null \
+  --uncomment-func-decl OPENSSL_sk_value \
+  --uncomment-func-decl OPENSSL_sk_set \
+  --uncomment-func-decl OPENSSL_sk_free \
+  --uncomment-func-decl OPENSSL_sk_delete \
+  --uncomment-func-decl OPENSSL_sk_delete_ptr \
+  --uncomment-func-decl OPENSSL_sk_new \
+  --uncomment-func-decl OPENSSL_sk_insert \
+  --uncomment-func-decl OPENSSL_sk_is_sorted \
+  --uncomment-func-decl OPENSSL_sk_dup \
+  --uncomment-func-decl OPENSSL_sk_find \
+  --uncomment-func-decl OPENSSL_sk_set_cmp_func \
+  --uncomment-func-decl OPENSSL_sk_shift \
+  --uncomment-func-decl OPENSSL_sk_sort \
+  --uncomment-func-decl OPENSSL_sk_zero \
   --uncomment-func-decl sk_new_null \
   --uncomment-func-decl sk_num \
-  --uncomment-func-decl sk_zero \
   --uncomment-func-decl sk_value \
-  --uncomment-func-decl sk_set \
   --uncomment-func-decl sk_free \
-  --uncomment-func-decl sk_pop_free_ex \
-  --uncomment-func-decl sk_insert \
-  --uncomment-func-decl sk_delete \
-  --uncomment-func-decl sk_delete_ptr \
-  --uncomment-func-decl sk_find \
-  --uncomment-func-decl sk_shift \
-  --uncomment-func-decl sk_push \
-  --uncomment-func-decl sk_pop \
-  --uncomment-func-decl sk_dup \
-  --uncomment-func-decl sk_sort \
-  --uncomment-func-decl sk_is_sorted \
-  --uncomment-func-decl sk_set_cmp_func \
-  --uncomment-func-decl sk_deep_copy \
+  --uncomment-macro OPENSSL_STACK \
+  --uncomment-macro _STACK \

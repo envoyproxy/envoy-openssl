@@ -113,11 +113,13 @@ add_library(bssl-compat STATIC
   source/PKCS12_parse.cc
   source/PKCS12_verify_mac.cc
   source/RAND_bytes.cc
+  source/RAND_enable_fork_unsafe_buffering.c
   source/RSA_check_fips.cc
   source/RSA_check_key.cc
   source/RSA_decrypt.cc
   source/RSA_encrypt.cc
   source/RSA_generate_key_ex.cc
+  source/RSA_new_public_key.c
   source/RSA_private_key_from_bytes.cc
   source/RSA_public_key_from_bytes.cc
   source/RSA_sign_pss_mgf1.cc
@@ -126,7 +128,6 @@ add_library(bssl-compat STATIC
   source/SSL_CIPHER_get_kx_nid.cc
   source/SSL_CIPHER_get_min_version.cc
   source/SSL_CIPHER_get_prf_nid.cc
-  source/SSL_CIPHER_get_rfc_name.cc
   source/SSL_CTX_get_ciphers.cc
   source/SSL_CTX_get_client_CA_list.cc
   source/SSL_CTX_get_max_proto_version.cc
@@ -213,8 +214,10 @@ target_add_bssl_include(bssl-compat
   include/openssl/asn1.h
   include/openssl/asn1_mac.h
   include/openssl/asn1t.h
+  include/openssl/asm_base.h
   include/openssl/base64.h
   include/openssl/base.h
+  include/openssl/bcm_public.h
   include/openssl/bio.h
   include/openssl/blake2.h
   include/openssl/blowfish.h
@@ -255,6 +258,8 @@ target_add_bssl_include(bssl-compat
   include/openssl/md4.h
   include/openssl/md5.h
   include/openssl/mem.h
+  include/openssl/mlkem.h
+  include/openssl/mem.h
   include/openssl/nid.h
   include/openssl/objects.h
   include/openssl/obj.h
@@ -268,6 +273,7 @@ target_add_bssl_include(bssl-compat
   include/openssl/pkcs8.h
   include/openssl/poly1305.h
   include/openssl/pool.h
+  include/openssl/posix_time.h
   include/openssl/rand.h
   include/openssl/rc4.h
   include/openssl/ripemd.h
@@ -276,18 +282,28 @@ target_add_bssl_include(bssl-compat
   include/openssl/service_indicator.h
   include/openssl/sha.h
   include/openssl/siphash.h
+  include/openssl/slhdsa.h
   include/openssl/span.h
   include/openssl/srtp.h
   include/openssl/ssl3.h
   include/openssl/ssl.h
   include/openssl/stack.h
   include/openssl/thread.h
+  include/openssl/target.h
   include/openssl/tls1.h
   include/openssl/trust_token.h
   include/openssl/type_check.h
   include/openssl/x509.h
   include/openssl/x509v3.h
+  include/openssl/x509v3_errors.h
   include/openssl/x509_vfy.h
+  include/openssl/experimental/dilithium.h
+  include/openssl/experimental/kyber.h
+  include/openssl/experimental/spx.h
+  include/openssl/pki/certificate.h 
+  include/openssl/pki/signature_verify_cache.h
+  include/openssl/pki/verify_error.h
+  include/openssl/pki/verify.h
 )
 
 # Case where simple mapping exists
@@ -317,6 +333,7 @@ target_add_bssl_function(bssl-compat
   BIO_ctrl
   BIO_ctrl_get_read_request
   BIO_ctrl_get_write_guarantee
+  BIO_eof
   BIO_get_data
   BIO_get_init
   BIO_get_mem_ptr
@@ -324,11 +341,18 @@ target_add_bssl_function(bssl-compat
   BIO_meth_new
   BIO_new
   BIO_new_connect
+  BIO_new_file
+  BIO_new_fd
+  BIO_new_fp
+  BIO_new_socket
+  BIO_gets
   BIO_new_mem_buf
   BIO_puts
   BIO_read
+  BIO_read_filename
   BIO_reset
   BIO_get_mem_data
+  BIO_s_file
   BIO_set_data
   BIO_set_init
   BIO_set_mem_eof_return
@@ -411,6 +435,7 @@ target_add_bssl_function(bssl-compat
   EVP_MD_CTX_free
   EVP_MD_CTX_new
   EVP_MD_CTX_destroy
+  EVP_MD_nid
   EVP_MD_size
   EVP_MD_type
   EVP_md4
@@ -450,10 +475,24 @@ target_add_bssl_function(bssl-compat
   OPENSSL_memdup
   OPENSSL_realloc
   OPENSSL_init_ssl
+  OPENSSL_sk_free
+  OPENSSL_sk_new_null
+  OPENSSL_sk_num
+  OPENSSL_sk_pop
+  OPENSSL_sk_push
+  OPENSSL_sk_value
   PEM_bytes_read_bio
   PKCS12_free
   RSA_bits
   RSA_free
+  RSA_get0_d
+  RSA_get0_dmp1
+  RSA_get0_dmq1
+  RSA_get0_e
+  RSA_get0_iqmp
+  RSA_get0_n
+  RSA_get0_p
+  RSA_get0_q
   RSA_get0_crt_params
   RSA_get0_factors
   RSA_get0_key
@@ -475,6 +514,7 @@ target_add_bssl_function(bssl-compat
   SSL_CIPHER_get_auth_nid
   SSL_CIPHER_get_cipher_nid
   SSL_CIPHER_get_digest_nid
+  SSL_CIPHER_get_handshake_digest
   SSL_CIPHER_get_id
   SSL_CIPHER_get_name
   SSL_CIPHER_standard_name
@@ -561,6 +601,7 @@ target_add_bssl_function(bssl-compat
   TLS_server_method
   X509_add1_ext_i2d
   X509_alias_get0
+  X509_check_purpose
   X509_cmp
   X509_CRL_cmp
   X509_CRL_dup
@@ -608,6 +649,8 @@ target_add_bssl_function(bssl-compat
   X509_NAME_print_ex
   X509_new
   X509_PUBKEY_get
+  X509_set_issuer_name
+  X509_set_subject_name
   X509_set_pubkey
   X509_set_version
   X509_STORE_add_cert
@@ -629,8 +672,6 @@ target_add_bssl_function(bssl-compat
   X509_STORE_new
   X509_STORE_up_ref
   X509_STORE_set_flags
-  X509_STORE_set_get_crl
-  X509_STORE_set_check_crl
   X509_STORE_set_verify_cb
   X509_up_ref
   X509_verify
@@ -664,8 +705,9 @@ install(TARGETS bssl-compat ARCHIVE DESTINATION lib)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION . FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ossl DESTINATION include FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/openssl DESTINATION include FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/openssl/pki DESTINATION include FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/openssl/experimental DESTINATION include FILES_MATCHING PATTERN "*.h")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h DESTINATION include)
-
 ################################################################################
 # Unit Tests
 ################################################################################
@@ -687,11 +729,15 @@ set(utests-bssl-source-list
   source/crypto/test/file_test_gtest.cc
   source/crypto/test/file_test.cc
   source/crypto/test/file_test.h
+  source/crypto/test/file_util.cc
+  source/crypto/test/file_util.h
+  source/crypto/test/test_data.cc
+  source/crypto/test/test_data.h
   source/crypto/internal.h
+  source/crypto/bcm_support.h
   source/crypto/test/test_util.cc
   source/crypto/test/test_util.h
   source/crypto/x509/x509_test.cc
-  source/crypto/x509v3/internal.h
   source/ssl/ssl_c_test.c
   source/ssl/ssl_test.cc
 )
@@ -717,7 +763,6 @@ set(utests-source-list
   # Test data copied from BoringSSL
   source/crypto/test/crypto_test_data.cc
 )
-
 ################################################################################
 # Unit Tests built on bssl-compat
 ################################################################################
@@ -729,7 +774,6 @@ target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
 target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
 set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_LIBRARY_DIR}")
 gtest_discover_tests(utests-bssl-compat)
-
 ################################################################################
 # Unit Tests built on BoringSSL
 ################################################################################

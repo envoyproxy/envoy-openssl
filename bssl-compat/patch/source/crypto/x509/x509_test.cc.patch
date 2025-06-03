@@ -1,13 +1,14 @@
---- a/source/crypto/x509/x509_test.cc
-+++ b/source/crypto/x509/x509_test.cc
-@@ -1717,14 +1717,22 @@
+--- a/x509_test.cc	2025-05-20 12:13:04.957115735 +0200
++++ b/x509_test.cc	2025-05-20 12:21:08.564390933 +0200
+@@ -1987,14 +1987,23 @@
  
      bssl::UniquePtr<NAME_CONSTRAINTS> nc(NAME_CONSTRAINTS_new());
      ASSERT_TRUE(nc);
+-    nc->permittedSubtrees = sk_GENERAL_SUBTREE_new_null();
 +#ifdef BSSL_COMPAT // FIXME: See StackTest.test4
 +    nc->permittedSubtrees = reinterpret_cast<ossl_STACK_OF(ossl_GENERAL_SUBTREE)*>(sk_GENERAL_SUBTREE_new_null());
 +#else
-     nc->permittedSubtrees = sk_GENERAL_SUBTREE_new_null();
++     nc->permittedSubtrees = sk_GENERAL_SUBTREE_new_null();
 +#endif
      ASSERT_TRUE(nc->permittedSubtrees);
      bssl::UniquePtr<GENERAL_SUBTREE> subtree(GENERAL_SUBTREE_new());
@@ -15,15 +16,17 @@
      GENERAL_NAME_free(subtree->base);
      subtree->base = MakeGeneralName(t.type, t.constraint).release();
      ASSERT_TRUE(subtree->base);
-+#ifdef BSSL_COMPAT // FIXME: 
+-    ASSERT_TRUE(bssl::PushToStack(nc->permittedSubtrees, std::move(subtree)));
++#ifdef BSSL_COMPAT // FIXME:
 +    ASSERT_TRUE(bssl::PushToStack(reinterpret_cast<STACK_OF(GENERAL_SUBTREE)*>(nc->permittedSubtrees), std::move(subtree)));
 +#else
-     ASSERT_TRUE(bssl::PushToStack(nc->permittedSubtrees, std::move(subtree)));
++     ASSERT_TRUE(bssl::PushToStack(nc->permittedSubtrees, std::move(subtree)));
 +#endif
++
  
      bssl::UniquePtr<X509> root =
          MakeTestCert("Root", "Root", key.get(), /*is_ca=*/true);
-@@ -3453,6 +3461,7 @@
+@@ -3764,6 +3773,7 @@
  t6uPxHrmpUY=
  -----END CERTIFICATE-----
  )";
@@ -31,7 +34,7 @@
  static const char kP256InvalidParam[] = R"(
  -----BEGIN CERTIFICATE-----
  MIIBMTCBz6ADAgECAgIE0jATBggqhkjOPQQDAgQHZ2FyYmFnZTAPMQ0wCwYDVQQD
-@@ -3464,6 +3473,7 @@
+@@ -3775,6 +3785,7 @@
  fLULTZnynuQUULQkRcF7S7T2WpIL
  -----END CERTIFICATE-----
  )";
@@ -39,7 +42,7 @@
  static const char kRSANoParam[] = R"(
  -----BEGIN CERTIFICATE-----
  MIIBWzCBx6ADAgECAgIE0jALBgkqhkiG9w0BAQswDzENMAsGA1UEAxMEVGVzdDAg
-@@ -3488,6 +3498,7 @@
+@@ -3799,6 +3810,7 @@
  SwmQUz4bRpckRBj+sIyp1We+pg==
  -----END CERTIFICATE-----
  )";
@@ -47,15 +50,16 @@
  static const char kRSAInvalidParam[] = R"(
  -----BEGIN CERTIFICATE-----
  MIIBbTCB0KADAgECAgIE0jAUBgkqhkiG9w0BAQsEB2dhcmJhZ2UwDzENMAsGA1UE
-@@ -3500,6 +3511,7 @@
+@@ -3811,7 +3823,7 @@
  5OMNZ/ajVwOssw61GcAlScRqEHkZFBoGp7e+QpgB2tf9
  -----END CERTIFICATE-----
  )";
+-
 +#endif
- 
  TEST(X509Test, AlgorithmParameters) {
    // P-256 parameters should be omitted, but we accept NULL ones.
-@@ -3514,12 +3526,14 @@
+   bssl::UniquePtr<EVP_PKEY> key = PrivateKeyFromPEM(kP256Key);
+@@ -3825,11 +3837,13 @@
    ASSERT_TRUE(cert);
    EXPECT_TRUE(X509_verify(cert.get(), key.get()));
  
@@ -63,14 +67,13 @@
    cert = CertFromPEM(kP256InvalidParam);
    ASSERT_TRUE(cert);
    EXPECT_FALSE(X509_verify(cert.get(), key.get()));
-   uint32_t err = ERR_get_error();
-   EXPECT_EQ(ERR_LIB_X509, ERR_GET_LIB(err));
-   EXPECT_EQ(X509_R_INVALID_PARAMETER, ERR_GET_REASON(err));
+   EXPECT_TRUE(
+       ErrorEquals(ERR_get_error(), ERR_LIB_X509, X509_R_INVALID_PARAMETER));
 +#endif
  
    // RSA parameters should be NULL, but we accept omitted ones.
    key = PrivateKeyFromPEM(kRSAKey);
-@@ -3533,12 +3547,14 @@
+@@ -3843,11 +3857,13 @@
    ASSERT_TRUE(cert);
    EXPECT_TRUE(X509_verify(cert.get(), key.get()));
  
@@ -78,10 +81,9 @@
    cert = CertFromPEM(kRSAInvalidParam);
    ASSERT_TRUE(cert);
    EXPECT_FALSE(X509_verify(cert.get(), key.get()));
-   err = ERR_get_error();
-   EXPECT_EQ(ERR_LIB_X509, ERR_GET_LIB(err));
-   EXPECT_EQ(X509_R_INVALID_PARAMETER, ERR_GET_REASON(err));
+   EXPECT_TRUE(
+       ErrorEquals(ERR_get_error(), ERR_LIB_X509, X509_R_INVALID_PARAMETER));
 +#endif
  }
  
- // TEST(X509Test, GeneralName)  {
+ TEST(X509Test, GeneralName)  {

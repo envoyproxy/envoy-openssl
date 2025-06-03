@@ -4,7 +4,6 @@ set -euo pipefail
 
 uncomment.sh "$1" --comment \
   --uncomment-regex '#include' \
-  --uncomment-regex 'std::string\s*GetTestData\s*(.*);' \
   --uncomment-regex 'static .* kPassword\[\] = ' \
   --uncomment-regex 'static .* kUnicodePassword\[\] = ' \
   --uncomment-func-impl StringToBytes \
