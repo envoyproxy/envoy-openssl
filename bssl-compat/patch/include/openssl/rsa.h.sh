@@ -27,4 +27,17 @@ uncomment.sh "$1" --comment -h \
 --uncomment-macro-redef 'RSA_R_[a-zA-Z0-9_]*' \
 --uncomment-macro-redef 'RSA_[a-zA-Z0-9_]*_PADDING' \
 --uncomment-macro-redef RSA_F4 \
---uncomment-regex 'BORINGSSL_MAKE_DELETER(RSA'
+--uncomment-regex 'BORINGSSL_MAKE_DELETER(RSA' \
+--uncomment-func-decl RSA_get0_e \
+--uncomment-func-decl RSA_get0_d \
+--uncomment-func-decl RSA_get0_n \
+--uncomment-func-decl RSA_get0_q \
+--uncomment-func-decl RSA_get0_dmp1 \
+--uncomment-func-decl RSA_get0_dmq1 \
+--uncomment-func-decl RSA_get0_p \
+--uncomment-func-decl RSA_get0_iqmp \
+--uncomment-func-decl RSA_new_private_key_no_crt \
+--uncomment-func-decl RSA_new_private_key_no_e \
+--uncomment-func-decl RSA_new_public_key \
+--uncomment-func-decl RSA_new_private_key \
+--uncomment-macro RSA_FLAG_NO_PUBLIC_EXPONENT

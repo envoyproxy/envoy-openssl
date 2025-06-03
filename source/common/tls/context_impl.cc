@@ -530,8 +530,8 @@ ValidationResults ContextImpl::customVerifyCertChain(
 void ContextImpl::incCounter(const Stats::StatName name, absl::string_view value,
                              const Stats::StatName fallback) const {
   const Stats::StatName value_stat_name = stat_name_set_->getBuiltin(value, fallback);
-  // ENVOY_BUG(value_stat_name != fallback,
-  //           absl::StrCat("Unexpected ", scope_.symbolTable().toString(name), " value: ", value));
+  ENVOY_BUG(value_stat_name != fallback,
+            absl::StrCat("Unexpected ", scope_.symbolTable().toString(name), " value: ", value));
   Stats::Utility::counterFromElements(scope_, {name, value_stat_name}).inc();
 }
 

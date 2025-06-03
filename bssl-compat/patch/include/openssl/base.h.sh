@@ -78,27 +78,17 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef SSL \
   --uncomment-typedef-redef X509 \
   --uncomment-typedef-redef X509_REVOKED \
-  --uncomment-typedef-redef X509_STORE_CTX \
   --uncomment-typedef-redef X509_STORE \
   --uncomment-typedef-redef ECDSA_SIG --sed 's/ossl_ecdsa_sig_st/ossl_ECDSA_SIG_st/' \
   --uncomment-typedef-redef BIO_METHOD \
-  --uncomment-macro BORINGSSL_UNSAFE_DETERMINISTIC_MODE \
   --uncomment-macro BORINGSSL_API_VERSION \
   --uncomment-macro OPENSSL_EXPORT \
   --uncomment-macro OPENSSL_MSVC_PRAGMA \
   --uncomment-macro OPENSSL_UNUSED \
   --uncomment-macro OPENSSL_INLINE \
-  --uncomment-macro OPENSSL_ASM_INCOMPATIBLE \
-  --uncomment-macro OPENSSL_NO_ASM \
   --uncomment-macro BORINGSSL_ENUM_INT \
   --uncomment-macro BORINGSSL_NO_CXX \
-  --uncomment-macro OPENSSL_NO_THREADS_CORRUPT_MEMORY_AND_LEAK_SECRETS_IF_THREADED \
-  --uncomment-macro 'OPENSSL_\(32\|64\)_BIT' \
-  --uncomment-macro 'OPENSSL_\(X86_64\|X86\|AARCH64\|ARM\|MIPS\|MIPS64\|RISCV64\|PNACL\)' \
-  --uncomment-macro 'OPENSSL_\(APPLE\|MACOS\|IOS\)' \
-  --uncomment-macro 'OPENSSL_\(WINDOWS\|LINUX\|FUCHSIA\|TRUSTY\|ANDROID\|FREEBSD\)' \
   --uncomment-macro 'OPENSSL_\(THREADS\|IS_BORINGSSL\|VERSION_NUMBER\|\)' \
-  --uncomment-macro 'OPENSSL_[ATM]SAN' \
   --uncomment-regex 'enum\s*.*\s*BORINGSSL_ENUM_INT' \
   --uncomment-regex 'namespace\s*internal\s*{' \
   --uncomment-regex '}\s*//\s*namespace\s*internal' \
@@ -110,5 +100,8 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex-range 'template\s*<typename\s*T,\s*typename\s*Enable\s*=\s*void>' 'struct\s*DeleterImpl\s*\{\};' \
   --uncomment-struct Deleter \
   --uncomment-regex-range 'template\s*<typename\s*T,\s*typename\s*CleanupRet,\s*void\s*(\*init)(T\s*\*),' '};$' \
-  --uncomment-regex 'template\s*<typename' 'using\s*UniquePtr'
-
+  --uncomment-regex 'template\s*<typename' 'using\s*UniquePtr' \
+  --uncomment-macro OPENSSL_DEPRECATED \
+  --uncomment-typedef-redef X509_STORE_CTX \
+  --uncomment-typedef-redef GENERAL_NAME \
+  

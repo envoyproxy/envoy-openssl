@@ -60,5 +60,17 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro BIO_TYPE_MEM \
   --uncomment-macro BIO_TYPE_SOCKET \
   --uncomment-func-decl BIO_should_retry \
-
-
+  --uncomment-macro BIO_NOCLOSE \
+  --uncomment-macro BIO_CLOSE \
+  --uncomment-func-decl BIO_eof \
+  --uncomment-func-decl BIO_s_file \
+  --uncomment-func-decl BIO_new_socket \
+  --uncomment-func-decl BIO_gets \
+  --uncomment-macro BIO_FP_TEXT \
+  --uncomment-func-decl BIO_new_file \
+  --uncomment-func-decl BIO_read_filename \
+  --uncomment-func-decl BIO_new_fp \
+  --uncomment-func-decl BIO_new_fd \
+  --uncomment-macro BIO_TYPE_DESCRIPTOR \
+  --uncomment-macro BIO_TYPE_SOURCE_SINK \
+  

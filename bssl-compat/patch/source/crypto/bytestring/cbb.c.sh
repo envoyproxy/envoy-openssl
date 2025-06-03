@@ -27,3 +27,5 @@ uncomment.sh "$1" --comment \
   --uncomment-func-impl CBB_add_asn1_uint64_with_tag \
   --uncomment-func-impl parse_dotted_decimal \
   --uncomment-func-impl CBB_add_asn1_oid_from_text \
+  --uncomment-func-impl cbb_on_error \
+  

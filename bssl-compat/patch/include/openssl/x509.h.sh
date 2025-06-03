@@ -94,8 +94,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_CRL_get_issuer \
   --uncomment-func-decl X509_VERIFY_PARAM_get_flags \
   --uncomment-func-decl X509_STORE_CTX_get0_chain \
-  --uncomment-func-decl X509_STORE_set_check_crl \
-  --uncomment-func-decl X509_STORE_set_get_crl \
   --uncomment-func-decl X509_CRL_dup \
   --uncomment-func-decl X509_get_ext_count \
   --uncomment-func-decl X509_EXTENSION_get_object \
@@ -104,8 +102,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_CRL_get_ext \
   --uncomment-func-decl X509_get_ext_by_NID \
   --uncomment-func-decl X509_CRL_get_ext_by_NID \
-  --uncomment-typedef X509_STORE_CTX_get_crl_fn \
-  --uncomment-typedef X509_STORE_CTX_check_crl_fn \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(X509,' \
   --uncomment-regex 'BORINGSSL_MAKE_UP_REF(X509,' \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(X509_CRL,' \
@@ -115,4 +111,36 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(X509_STORE,' \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(X509_STORE_CTX,' \
   --uncomment-macro-redef 'X509_R_[[:alnum:]_]*' \
-  --uncomment-regex 'DECLARE_ASN1_FUNCTIONS_const(X509_PUBKEY)' \
+  --uncomment-macro-redef 'GEN_[[:alnum:]_]*' \
+  --uncomment-typedef GENERAL_NAMES \
+  --uncomment-regex 'DEFINE_STACK_OF(GENERAL_NAME)' \
+  --sed '/typedef struct GENERAL_SUBTREE_st {/itypedef struct ossl_GENERAL_SUBTREE_st GENERAL_SUBTREE;' \
+  --uncomment-regex 'DEFINE_STACK_OF(GENERAL_SUBTREE)' \
+  --uncomment-macro-redef 'EXFLAG_[[:alnum:]_]*' \
+  --uncomment-func-decl GENERAL_NAME_set0_value \
+  --uncomment-func-decl X509_get_extension_flags \
+  --uncomment-func-decl X509_get_key_usage \
+  --uncomment-func-decl GENERAL_NAME_free \
+  --uncomment-regex 'BORINGSSL_MAKE_DELETER(BASIC_CONSTRAINTS, BASIC_CONSTRAINTS_free)' \
+  --uncomment-regex 'BORINGSSL_MAKE_DELETER(GENERAL_NAME, GENERAL_NAME_free)' \
+  --uncomment-regex 'BORINGSSL_MAKE_DELETER(GENERAL_SUBTREE, GENERAL_SUBTREE_free)' \
+  --uncomment-regex 'BORINGSSL_MAKE_DELETER(NAME_CONSTRAINTS, NAME_CONSTRAINTS_free)' \
+  --uncomment-macro-redef 'X509V3_ADD_[[:alnum:]_]*' \
+  --uncomment-func-decl BASIC_CONSTRAINTS_free \
+  --uncomment-func-decl NAME_CONSTRAINTS_free \
+  --uncomment-func-decl GENERAL_SUBTREE_free \
+  --uncomment-func-decl GENERAL_NAMES_new \
+  --uncomment-func-decl GENERAL_NAMES_free \
+  --uncomment-func-decl GENERAL_NAME_new \
+  --uncomment-func-decl X509_set_issuer_name \
+  --uncomment-func-decl X509_set_subject_name \
+  --uncomment-func-decl BASIC_CONSTRAINTS_new \
+  --uncomment-func-decl i2d_X509_PUBKEY \
+  --uncomment-struct GENERAL_NAME_st \
+  --uncomment-func-decl X509_check_purpose \
+  --uncomment-macro X509_PURPOSE_ANY \
+  --uncomment-macro X509_PURPOSE_SSL_SERVER \
+  --uncomment-func-decl GENERAL_SUBTREE_new \
+  --uncomment-regex-range 'typedef struct otherName_st.*' '.*OTHERNAME;' \
+  --uncomment-regex-range 'typedef struct EDIPartyName_st.*' '.*EDIPARTYNAME;' \
+  --uncomment-func-decl NAME_CONSTRAINTS_new \

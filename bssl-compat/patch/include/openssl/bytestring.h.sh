@@ -4,10 +4,10 @@ set -euo pipefail
 
 uncomment.sh "$1" --comment -h \
   --uncomment-struct cbs_st \
-  --uncomment-func-decl CBS_init \
+  --uncomment-func-impl CBS_init \
   --uncomment-func-decl CBS_skip \
-  --uncomment-func-decl CBS_data \
-  --uncomment-func-decl CBS_len \
+  --uncomment-func-impl CBS_data \
+  --uncomment-func-impl CBS_len \
   --uncomment-func-decl CBS_get_u8 \
   --uncomment-func-decl CBS_get_u16 \
   --uncomment-func-decl CBS_get_u8_length_prefixed \
@@ -49,3 +49,5 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl CBB_add_asn1_oid_from_text \
   --uncomment-func-decl CBB_add_asn1_uint64 \
   --uncomment-func-decl CBB_add_asn1_uint64_with_tag \
+  --uncomment-func-decl CBS_get_bytes \
+ 
