@@ -1,45 +1,78 @@
 #include <openssl/ssl.h>
 #include <ossl.h>
 
-static const size_t kMaxSignatureAlgorithmNameLen = 24;
-
-struct SignatureAlgorithmName {
-  uint16_t signature_algorithm;
-  const char name[kMaxSignatureAlgorithmNameLen];
+static const char* kSigAlgCandidates[] = {
+    "ecdsa_secp256r1_sha256",
+    "ecdsa_secp384r1_sha384",
+    "ecdsa_secp521r1_sha512",
+    "ed25519",
+    "ed448",
+    "rsa_pss_pss_sha256",
+    "rsa_pss_pss_sha384",
+    "rsa_pss_pss_sha512",
+    "rsa_pss_rsae_sha256",
+    "rsa_pss_rsae_sha384",
+    "rsa_pss_rsae_sha512",
+    "rsa_pkcs1_sha256",
+    "rsa_pkcs1_sha384",
+    "rsa_pkcs1_sha512",
+    "ecdsa_sha224",
+    "ecdsa_sha256",
+    "ecdsa_sha384",
+    "ecdsa_sha512",
+    "ecdsa_sha1",
+    "rsa_pkcs1_sha224",
+    "rsa_pkcs1_sha1",
+    "dsa_sha224",
+    "dsa_sha1",
+    "dsa_sha256",
+    "dsa_sha384",
+    "dsa_sha512",
+    "gostr34102012_256_intrinsic",
+    "gostr34102012_512_intrinsic",
+    "gostr34102012_256_gostr34112012_256",
+    "gostr34102012_512_gostr34112012_512",
+    "gostr34102001_gostr3411",
+    "rsa_pkcs1_md5_sha1",
+    "rsa_pkcs1_sha256_legacy"
 };
 
-static const struct SignatureAlgorithmName kSignatureAlgorithmNames[] = {
-    {SSL_SIGN_RSA_PKCS1_MD5_SHA1, "rsa_pkcs1_md5_sha1"},
-    {SSL_SIGN_RSA_PKCS1_SHA1, "rsa_pkcs1_sha1"},
-    {SSL_SIGN_RSA_PKCS1_SHA256, "rsa_pkcs1_sha256"},
-    {SSL_SIGN_RSA_PKCS1_SHA256_LEGACY, "rsa_pkcs1_sha256_legacy"},
-    {SSL_SIGN_RSA_PKCS1_SHA384, "rsa_pkcs1_sha384"},
-    {SSL_SIGN_RSA_PKCS1_SHA512, "rsa_pkcs1_sha512"},
-    {SSL_SIGN_ECDSA_SHA1, "ecdsa_sha1"},
-    {SSL_SIGN_ECDSA_SECP256R1_SHA256, "ecdsa_secp256r1_sha256"},
-    {SSL_SIGN_ECDSA_SECP384R1_SHA384, "ecdsa_secp384r1_sha384"},
-    {SSL_SIGN_ECDSA_SECP521R1_SHA512, "ecdsa_secp521r1_sha512"},
-    {SSL_SIGN_RSA_PSS_RSAE_SHA256, "rsa_pss_rsae_sha256"},
-    {SSL_SIGN_RSA_PSS_RSAE_SHA384, "rsa_pss_rsae_sha384"},
-    {SSL_SIGN_RSA_PSS_RSAE_SHA512, "rsa_pss_rsae_sha512"},
-    {SSL_SIGN_ED25519, "ed25519"},
-};
-
+#define CANDIDATES_SIZE 33
 
 size_t SSL_get_all_signature_algorithm_names(const char **out, size_t max_out) {
-  const char *kPredefinedNames[] = {"ecdsa_sha256", "ecdsa_sha384",
-                                    "ecdsa_sha512"};
-   size_t predefinedSize = (sizeof(kPredefinedNames) / sizeof(kPredefinedNames[0]));
-   size_t nameSize = (sizeof(kSignatureAlgorithmNames) / sizeof(kSignatureAlgorithmNames[0]));
-   if(max_out != 0) {
-     for(int i = 0; i < predefinedSize; i++) {
-        *out++ = kPredefinedNames[i];
-     }
-     for(int i = 0; i < nameSize; i++) {
-        *out++ = kSignatureAlgorithmNames[i].name;
-     }
-   }
-   return predefinedSize+nameSize;
+  static uint8_t initialized = 0;
+  static char* validSigAlgNames[CANDIDATES_SIZE];
+  static size_t validSigAlgSize = 0;
+  if (initialized == 0) {
+    ossl_SSL_CTX* ctx = ossl.ossl_SSL_CTX_new(ossl.ossl_TLS_client_method());
+    if (!ctx) {
+      return 0;
+    }
+    ossl_SSL* ssl = ossl.ossl_SSL_new(ctx);
+    if (!ssl) {
+      ossl.ossl_SSL_CTX_free(ctx);
+      return 0;
+    }
+
+    // Iterate through our hardcoded candidates and attempt to set each one.
+    for (size_t i = 0; i < CANDIDATES_SIZE; ++i) {
+      const char* candidate =	kSigAlgCandidates[i];
+
+      if (ossl.ossl_SSL_set1_sigalgs_list(ssl, candidate)) {
+        // Success: OpenSSL knows this signature_algorithm and can handle it.
+        validSigAlgNames[validSigAlgSize] = candidate;
+        validSigAlgSize++;
+      }
+    }
+
+    ossl.ossl_SSL_free(ssl);
+    ossl.ossl_SSL_CTX_free(ctx);
+    initialized = 1;
+  }
+  for(int i = 0; i < max_out && i < validSigAlgSize; i++) {
+    *out++ = validSigAlgNames[i];
+  }
+  return validSigAlgSize; // Return number of signature_algorithms found, not written
 }
 
 
