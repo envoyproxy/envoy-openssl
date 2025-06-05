@@ -189,8 +189,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
     }
   }
 
- const bool fips_mode = FIPS_mode();
-
+  const bool fips_mode = FIPS_mode();
 
   if (fips_mode) {
     if (!capabilities_.is_fips_compliant) {

@@ -132,79 +132,12 @@ static int Configure(SSL *ssl) {
 
 }  // namespace fips202205
 
-namespace wpa202304 {
-
-// See WPA version 3.1, section 3.5.
-
-static const int kGroups[] = { NID_secp384r1 };
-
-
-static const char *kSigAlgs = {
-    "rsa_pkcs1_sha384" // SSL_SIGN_RSA_PKCS1_SHA384
-     ":rsa_pkcs1_sha512" // SSL_SIGN_RSA_PKCS1_SHA512
-     ":ecdsa_secp384r1_sha384" // SSL_SIGN_ECDSA_SECP384R1_SHA384
-     ":rsa_pss_rsae_sha384" // SSL_SIGN_RSA_PSS_RSAE_SHA384
-     ":rsa_pss_rsae_sha512" // SSL_SIGN_RSA_PSS_RSAE_SHA512
-};
-
-static const char kTLS12Ciphers[] =
-    "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:"
-    "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384";
-
-static int Configure(SSL_CTX *ctx) {
- // tls13_cipher_policy field not present in OpenSSL
- // ctx->tls13_cipher_policy = ssl_compliance_policy_wpa3_192_202304;
-
-  return ossl.ossl_SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION) &&
-         ossl.ossl_SSL_CTX_set_max_proto_version(ctx, TLS1_3_VERSION) &&
-         SSL_CTX_set_strict_cipher_list(ctx, kTLS12Ciphers) &&
-         SSL_CTX_set1_group_ids(ctx, kGroups, OPENSSL_ARRAY_SIZE(kGroups)) &&
-         SSL_CTX_set_signing_algorithm_prefs(ctx, kSigAlgs) &&
-         SSL_CTX_set_verify_algorithm_prefs(ctx, kSigAlgs)
-         ;
-}
-
-static int Configure(SSL *ssl) {
-  // ssl->config->tls13_cipher_policy = ssl_compliance_policy_wpa3_192_202304;
-
-  return ossl.ossl_SSL_set_min_proto_version(ssl, TLS1_2_VERSION) &&
-         ossl.ossl_SSL_set_max_proto_version(ssl, TLS1_3_VERSION) &&
-         SSL_set_strict_cipher_list(ssl, kTLS12Ciphers) &&
-         SSL_set1_group_ids(ssl, kGroups, OPENSSL_ARRAY_SIZE(kGroups)) &&
-         SSL_set_signing_algorithm_prefs(ssl, kSigAlgs) &&
-         SSL_set_verify_algorithm_prefs(ssl, kSigAlgs)
-          ;
-}
-
-}  // namespace wpa202304
-
-namespace cnsa202407 {
-
-static int Configure(SSL_CTX *ctx) {
-  // config and tls13_cipher_policy fields not present in OpenSSL
-  // ctx->tls13_cipher_policy = ssl_compliance_policy_cnsa_202407;
-  return 1;
-}
-
-static int Configure(SSL *ssl) {
-// config and tls13_cipher_policy fields not present in OpenSSL
-//  ssl->config->tls13_cipher_policy =
-//      ssl_compliance_policy_cnsa_202407;
-  return 1;
-}
-
-}
-
 
 int SSL_CTX_set_compliance_policy(SSL_CTX *ctx,
                                   enum ssl_compliance_policy_t policy) {
   switch (policy) {
      case ssl_compliance_policy_fips_202205:
        return fips202205::Configure(ctx);
-     case ssl_compliance_policy_wpa3_192_202304:
-       return wpa202304::Configure(ctx);
-     case ssl_compliance_policy_cnsa_202407:
-       return cnsa202407::Configure(ctx);
     default:
       return 0;
   }
