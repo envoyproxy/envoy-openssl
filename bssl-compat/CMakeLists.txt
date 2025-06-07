@@ -7,8 +7,8 @@ if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
-set(OPENSSL_URL      https://github.com/openssl/openssl/archive/refs/tags/openssl-3.0.13.tar.gz)
-set(OPENSSL_URL_HASH e74504ed7035295ec7062b1da16c15b57ff2a03cd2064a28d8c39458cacc45fc)
+set(OPENSSL_URL      https://github.com/Tongsuo-Project/Tongsuo/archive/refs/tags/8.4.0.tar.gz)
+set(OPENSSL_URL_HASH 57c2741750a699bfbdaa1bbe44a5733e9c8fc65d086c210151cfbc2bbd6fc975)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -19,10 +19,16 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(bssl-compat VERSION 0.1 LANGUAGES C CXX)
 
 include(cmake/boringssl.cmake)
-include(cmake/openssl.cmake)
+# include(cmake/openssl.cmake)
+
+set(OPENSSL_URL /Download/Tongsuo)
+include(ExternalProject)
+set(OPENSSL_INSTALL_DIR /usr/local/tongsuo)
+set(OPENSSL_INCLUDE_DIR /usr/local/tongsuo/include)
+set(OPENSSL_LIBRARY_DIR /usr/local/tongsuo/lib64)
 
 add_subdirectory(prefixer)
-add_custom_command(DEPENDS prefixer OpenSSL
+add_custom_command(
                    COMMENT "Prefixing OpenSSL files"
                    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/source/ossl.c
                           ${CMAKE_CURRENT_BINARY_DIR}/include/ossl.h
@@ -75,6 +81,7 @@ add_library(bssl-compat STATIC
   source/EVP_DigestVerifyFinal.cc
   source/EVP_DigestSignFinal.cc
   source/EVP_MD_CTX_move.cc
+  source/EVP_md4.cc
   source/EVP_parse_public_key.cc
   source/EVP_PKEY_get0_EC_KEY.cc
   source/EVP_PKEY_get0_RSA.cc
@@ -154,6 +161,8 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_verify.cc
   source/SSL_CTX_use_certificate.cc
   source/SSL_CTX_use_PrivateKey.cc
+  source/SSL_CTX_use_NTLS_PrivateKey.cc
+  source/SSL_CTX_use_NTLS_certificate.cc  
   source/SSL_early_callback_ctx_extension_get.c
   source/SSL_enable_ocsp_stapling.cc
   source/SSL_error_description.cc
@@ -190,6 +199,7 @@ add_library(bssl-compat STATIC
   source/stack.c
   source/TLS_VERSION_to_string.cc
   source/TLS_with_buffers_method.cc
+  source/SSL_CTX_enable_ntls.cc
   source/X509_EXTENSION_get_data.cc
   source/X509_sign.cc
   source/X509_STORE_CTX_get0_untrusted.cc
@@ -409,7 +419,6 @@ target_add_bssl_function(bssl-compat
   EVP_MD_CTX_destroy
   EVP_MD_size
   EVP_MD_type
-  EVP_md4
   EVP_md5
   EVP_md5_sha1
   EVP_PKEY_assign_EC_KEY

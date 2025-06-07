@@ -38,6 +38,7 @@
 #include "openssl/hmac.h"
 #include "openssl/pkcs12.h"
 #include "openssl/rand.h"
+#include "openssl/ssl.h"
 
 namespace Envoy {
 namespace {
@@ -103,7 +104,12 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
     auto& ctx = tls_contexts_[i];
     ctx.ssl_ctx_.reset(SSL_CTX_new(TLS_method()));
     ssl_contexts[i] = ctx.ssl_ctx_.get();
-
+       
+    if (config.ntlsEnabled()) {  // 需要从 ContextConfig 传递这个配置  
+   	 ENVOY_LOG(info, "Enabling NTLS for SSL_CTX");  
+   	 SSL_CTX_enable_ntls(ctx.ssl_ctx_.get());  
+    }
+    
     int rc = SSL_CTX_set_app_data(ctx.ssl_ctx_.get(), this);
     RELEASE_ASSERT(rc == 1, Utility::getLastCryptoError().value_or(""));
 
@@ -204,7 +210,8 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
                                          tls_certificate.password());
       } else {
         creation_status = ctx.loadCertificateChain(tls_certificate.certificateChain(),
-                                                   tls_certificate.certificateChainPath());
+                                                   tls_certificate.certificateChainPath(),
+                                                   config.ntlsEnabled());
       }
       if (!creation_status.ok()) {
         return;
@@ -227,15 +234,15 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
         const EC_KEY* ecdsa_public_key = EVP_PKEY_get0_EC_KEY(public_key.get());
         // Since we checked the key type above, this should be valid.
         ASSERT(ecdsa_public_key != nullptr);
-        const EC_GROUP* ecdsa_group = EC_KEY_get0_group(ecdsa_public_key);
-        if (ecdsa_group == nullptr ||
-            EC_GROUP_get_curve_name(ecdsa_group) != NID_X9_62_prime256v1) {
-          creation_status = absl::InvalidArgumentError(
-              fmt::format("Failed to load certificate chain from {}, only P-256 "
-                          "ECDSA certificates are supported",
-                          ctx.cert_chain_file_path_));
-          return;
-        }
+        //const EC_GROUP* ecdsa_group = EC_KEY_get0_group(ecdsa_public_key);
+        //if (ecdsa_group == nullptr ||
+        //    EC_GROUP_get_curve_name(ecdsa_group) != NID_X9_62_prime256v1) {
+        //  creation_status = absl::InvalidArgumentError(
+        //      fmt::format("Failed to load certificate chain from {}, only P-256 "
+        //                  "ECDSA certificates are supported",
+        //                  ctx.cert_chain_file_path_));
+        //  return;
+        //}
         ctx.is_ecdsa_ = true;
       } break;
       case EVP_PKEY_RSA: {
@@ -297,7 +304,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
         // Load private key.
         creation_status =
             ctx.loadPrivateKey(tls_certificate.privateKey(), tls_certificate.privateKeyPath(),
-                               tls_certificate.password());
+                               tls_certificate.password(), config.ntlsEnabled());
         if (!creation_status.ok()) {
           return;
         }
@@ -377,7 +384,7 @@ ContextImpl::ContextImpl(Stats::Scope& scope, const Envoy::Ssl::ContextConfig& c
   // All supported protocol versions.
   //
   // Note that if a negotiated version is outside of this set, we'll issue an ENVOY_BUG.
-  stat_name_set_->rememberBuiltins({"TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3"});
+  stat_name_set_->rememberBuiltins({"TLSv1", "TLSv1.1", "TLSv1.2", "TLSv1.3", "NTLSv1.1"});
 #endif
 
   // As late as possible, run the custom SSL_CTX configuration callback on each
@@ -717,12 +724,14 @@ bool TlsContext::isCipherEnabled(uint16_t cipher_id, uint16_t client_version) co
 }
 
 absl::Status TlsContext::loadCertificateChain(const std::string& data,
-                                              const std::string& data_path) {
+                                              const std::string& data_path,
+                                              bool ntls_enabled) {
   cert_chain_file_path_ = data_path;
   bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(const_cast<char*>(data.data()), data.size()));
   RELEASE_ASSERT(bio != nullptr, "");
   cert_chain_.reset(PEM_read_bio_X509_AUX(bio.get(), nullptr, nullptr, nullptr));
-  if (cert_chain_ == nullptr || !SSL_CTX_use_certificate(ssl_ctx_.get(), cert_chain_.get())) {
+  int ntls_switch = ntls_enabled?1:0;
+  if (cert_chain_ == nullptr || !SSL_CTX_use_NTLS_certificate(ssl_ctx_.get(), cert_chain_.get(), ntls_switch)) {
     logSslErrorChain();
     return absl::InvalidArgumentError(
         absl::StrCat("Failed to load certificate chain from ", cert_chain_file_path_));
@@ -752,14 +761,14 @@ absl::Status TlsContext::loadCertificateChain(const std::string& data,
 }
 
 absl::Status TlsContext::loadPrivateKey(const std::string& data, const std::string& data_path,
-                                        const std::string& password) {
+                                        const std::string& password, bool ntls_enabled) {
   bssl::UniquePtr<BIO> bio(BIO_new_mem_buf(const_cast<char*>(data.data()), data.size()));
   RELEASE_ASSERT(bio != nullptr, "");
   bssl::UniquePtr<EVP_PKEY> pkey(
       PEM_read_bio_PrivateKey(bio.get(), nullptr, nullptr,
                               !password.empty() ? const_cast<char*>(password.c_str()) : nullptr));
-
-  if (pkey == nullptr || !SSL_CTX_use_PrivateKey(ssl_ctx_.get(), pkey.get())) {
+  int ntls_switch = ntls_enabled?1:0;
+  if (pkey == nullptr || !SSL_CTX_use_NTLS_PrivateKey(ssl_ctx_.get(), pkey.get(), ntls_switch)) {
     return absl::InvalidArgumentError(fmt::format(
         "Failed to load private key from {}, Cause: {}", data_path,
         Extensions::TransportSockets::Tls::Utility::getLastCryptoError().value_or("unknown")));

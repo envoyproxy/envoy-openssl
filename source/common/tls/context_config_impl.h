@@ -81,6 +81,7 @@ public:
     return fipsEnabledText.compare("1") == 0;
   }
 
+  bool ntlsEnabled() const override { return ntls_enabled_; }
 protected:
   ContextConfigImpl(const envoy::extensions::transport_sockets::tls::v3::CommonTlsContext& config,
                     const unsigned default_min_protocol_version,
@@ -128,6 +129,7 @@ private:
   const std::string tls_keylog_path_;
   std::unique_ptr<Network::Address::IpList> tls_keylog_local_;
   std::unique_ptr<Network::Address::IpList> tls_keylog_remote_;
+  const bool ntls_enabled_;
 };
 
 class ClientContextConfigImpl : public ContextConfigImpl, public Envoy::Ssl::ClientContextConfig {

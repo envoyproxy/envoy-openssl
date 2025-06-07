@@ -65,7 +65,7 @@ build:linux --copt=-Wno-deprecated-declarations
 build:linux --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
 build:linux --cxxopt=-fsized-deallocation --host_cxxopt=-fsized-deallocation
 build:linux --conlyopt=-fexceptions
-build:linux --fission=dbg,opt
+build:linux --fission=no
 build:linux --features=per_object_debug_info
 build:linux --action_env=BAZEL_LINKLIBS=-l%:libstdc++.a
 build:linux --action_env=BAZEL_LINKOPTS=-lm

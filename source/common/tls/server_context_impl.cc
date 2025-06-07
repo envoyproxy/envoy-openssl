@@ -423,9 +423,9 @@ bool ServerContextImpl::isClientEcdsaCapable(const SSL_CLIENT_HELLO& ssl_client_
   CBS_init(&curvelist, curvelist_data, curvelist_len);
 
   // We only support P256 ECDSA curves today.
-  if (!cbsContainsU16(curvelist, SSL_CURVE_SECP256R1)) {
-    return false;
-  }
+  //if (!cbsContainsU16(curvelist, SSL_CURVE_SECP256R1)) {
+  //  return false;
+  //}
 
   // The client must have offered an ECDSA ciphersuite that we like.
   CBS cipher_suites;

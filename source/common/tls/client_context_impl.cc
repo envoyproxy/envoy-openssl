@@ -67,7 +67,7 @@ ClientContextImpl::ClientContextImpl(Stats::Scope& scope,
     return;
   }
   // This should be guaranteed during configuration ingestion for client contexts.
-  ASSERT(tls_contexts_.size() == 1);
+  // ASSERT(tls_contexts_.size() == 1);
   if (!parsed_alpn_protocols_.empty()) {
     for (auto& ctx : tls_contexts_) {
       const int rc = SSL_CTX_set_alpn_protos(ctx.ssl_ctx_.get(), parsed_alpn_protocols_.data(),

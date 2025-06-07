@@ -337,4 +337,6 @@ message CommonTlsContext {
 
   // TLS key log configuration
   TlsKeyLog key_log = 15;
+
+  bool ntls_enabled = 17;  
 }

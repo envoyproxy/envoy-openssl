@@ -852,6 +852,7 @@ OPENSSL_EXPORT void SSL_CTX_set0_buffer_pool(SSL_CTX *ctx,
 // SSL_CTX_use_certificate sets |ctx|'s leaf certificate to |x509|. It returns
 // one on success and zero on failure.
 OPENSSL_EXPORT int SSL_CTX_use_certificate(SSL_CTX *ctx, X509 *x509);
+OPENSSL_EXPORT int SSL_CTX_use_NTLS_certificate(SSL_CTX *ctx, X509 *x509, int ntls_enabled);
 
 // SSL_use_certificate sets |ssl|'s leaf certificate to |x509|. It returns one
 // on success and zero on failure.
@@ -860,6 +861,7 @@ OPENSSL_EXPORT int SSL_use_certificate(SSL *ssl, X509 *x509);
 // SSL_CTX_use_PrivateKey sets |ctx|'s private key to |pkey|. It returns one on
 // success and zero on failure.
 OPENSSL_EXPORT int SSL_CTX_use_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey);
+OPENSSL_EXPORT int SSL_CTX_use_NTLS_PrivateKey(SSL_CTX *ctx, EVP_PKEY *pkey, int ntls_enabled);
 
 // SSL_use_PrivateKey sets |ssl|'s private key to |pkey|. It returns one on
 // success and zero on failure.
@@ -2696,6 +2698,8 @@ OPENSSL_EXPORT void SSL_set0_client_CAs(SSL *ssl,
 // It takes ownership of |name_list|.
 OPENSSL_EXPORT void SSL_CTX_set0_client_CAs(SSL_CTX *ctx,
                                             STACK_OF(CRYPTO_BUFFER) *name_list);
+
+OPENSSL_EXPORT void SSL_CTX_enable_ntls(SSL_CTX *ctx);
 
 // SSL_get_client_CA_list returns |ssl|'s client certificate CA list. If |ssl|
 // has not been configured as a client, this is the list configured by

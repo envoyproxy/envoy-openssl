@@ -145,7 +145,7 @@ ContextConfigImpl::ContextConfigImpl(
                                                 default_min_protocol_version)),
       max_protocol_version_(tlsVersionFromProto(config.tls_params().tls_maximum_protocol_version(),
                                                 default_max_protocol_version)),
-      factory_context_(factory_context), tls_keylog_path_(config.key_log().path()) {
+      factory_context_(factory_context), tls_keylog_path_(config.key_log().path()),ntls_enabled_(config.ntls_enabled()) {
   SET_AND_RETURN_IF_NOT_OK(creation_status, creation_status);
   auto list_or_error = Network::Address::IpList::create(config.key_log().local_address_range());
   SET_AND_RETURN_IF_NOT_OK(list_or_error.status(), creation_status);
@@ -314,11 +314,13 @@ const std::string ClientContextConfigImpl::DEFAULT_CIPHER_SUITES =
     "ECDHE-RSA-AES128-GCM-SHA256:"
     "ECDHE-ECDSA-AES256-GCM-SHA384:"
     "ECDHE-RSA-AES256-GCM-SHA384:"
+    "ECC-SM2-SM4-CBC-SM3:"
   :
     "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:"
     "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:"
     "ECDHE-ECDSA-AES256-GCM-SHA384:"
-    "ECDHE-RSA-AES256-GCM-SHA384:";
+    "ECDHE-RSA-AES256-GCM-SHA384:"
+    "ECC-SM2-SM4-CBC-SM3:";
 
 const std::string ClientContextConfigImpl::DEFAULT_CURVES =
   isFipsEnabled ? "P-256" : "X25519:P-256";
@@ -341,7 +343,7 @@ ClientContextConfigImpl::ClientContextConfigImpl(
                         DEFAULT_CIPHER_SUITES, DEFAULT_CURVES, factory_context, creation_status),
       server_name_indication_(config.sni()), allow_renegotiation_(config.allow_renegotiation()),
       enforce_rsa_key_usage_(PROTOBUF_GET_WRAPPED_OR_DEFAULT(config, enforce_rsa_key_usage, false)),
-      max_session_keys_(PROTOBUF_GET_WRAPPED_OR_DEFAULT(config, max_session_keys, 1)) {
+      max_session_keys_(PROTOBUF_GET_WRAPPED_OR_DEFAULT(config, max_session_keys, 1)) {    
   // BoringSSL treats this as a C string, so embedded NULL characters will not
   // be handled correctly.
   if (server_name_indication_.find('\0') != std::string::npos) {
@@ -349,12 +351,12 @@ ClientContextConfigImpl::ClientContextConfigImpl(
     return;
   }
   // TODO(PiotrSikora): Support multiple TLS certificates.
-  if ((config.common_tls_context().tls_certificates().size() +
-       config.common_tls_context().tls_certificate_sds_secret_configs().size()) > 1) {
-    creation_status = absl::InvalidArgumentError(
-        "Multiple TLS certificates are not supported for client contexts");
-    return;
-  }
+  //if ((config.common_tls_context().tls_certificates().size() +
+  //     config.common_tls_context().tls_certificate_sds_secret_configs().size()) > 1) {
+  //  creation_status = absl::InvalidArgumentError(
+  //      "Multiple TLS certificates are not supported for client contexts");
+  //  return;
+  //}
 }
 
 } // namespace Tls

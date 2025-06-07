@@ -90,9 +90,7 @@ mkdir -p "${ENVOY_DOCKER_BUILD_DIR}"
 
 export ENVOY_BUILD_IMAGE="${IMAGE_NAME}:${IMAGE_ID}"
 
-VOLUMES=(
-    -v "${ENVOY_DOCKER_BUILD_DIR}":"${BUILD_DIR_MOUNT_DEST}"
-    -v "${SOURCE_DIR}":"${SOURCE_DIR_MOUNT_DEST}")
+VOLUMES=()
 
 if [[ -n "$MOUNT_GPG_HOME" ]]; then
     VOLUMES+=(
@@ -120,7 +118,7 @@ if [[ -n "${ENVOY_DOCKER_PULL}" ]]; then
 fi
 
 # Since we specify an explicit hash, docker-run will pull from the remote repo if missing.
-docker run --rm \
+docker run --network host --rm \
        "${ENVOY_DOCKER_OPTIONS[@]}" \
        "${VOLUMES[@]}" \
        -e BUILD_DIR \

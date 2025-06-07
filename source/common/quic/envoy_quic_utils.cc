@@ -299,10 +299,10 @@ int deduceSignatureAlgorithmFromPublicKey(const EVP_PKEY* public_key, std::strin
     // Since we checked the key type above, this should be valid.
     ASSERT(ecdsa_public_key != nullptr);
     const EC_GROUP* ecdsa_group = EC_KEY_get0_group(ecdsa_public_key);
-    if (ecdsa_group == nullptr || EC_GROUP_get_curve_name(ecdsa_group) != NID_X9_62_prime256v1) {
-      *error_details = "Invalid leaf cert, only P-256 ECDSA certificates are supported";
-      break;
-    }
+    //if (ecdsa_group == nullptr || EC_GROUP_get_curve_name(ecdsa_group) != NID_X9_62_prime256v1) {
+    //  *error_details = "Invalid leaf cert, only P-256 ECDSA certificates are supported";
+    //  break;
+    //}
     // QUICHE uses SHA-256 as hash function in cert signature.
     sign_alg = SSL_SIGN_ECDSA_SECP256R1_SHA256;
   } break;

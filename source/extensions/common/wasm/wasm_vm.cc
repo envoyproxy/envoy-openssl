@@ -4,6 +4,14 @@
 #include <memory>
 
 #include "source/extensions/common/wasm/context.h"
+
+#ifdef LOG_DEBUG
+#undef LOG_DEBUG
+#endif
+#ifdef LOG_INFO
+#undef LOG_INFO
+#endif
+
 #include "source/extensions/common/wasm/ext/envoy_null_vm_wasm_api.h"
 #include "source/extensions/common/wasm/stats_handler.h"
 #include "source/extensions/common/wasm/wasm_runtime_factory.h"

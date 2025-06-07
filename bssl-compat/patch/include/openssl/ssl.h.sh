@@ -56,8 +56,10 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_CTX_check_private_key \
   --uncomment-func-decl SSL_CTX_set_tmp_ecdh \
   --uncomment-func-decl SSL_get0_next_proto_negotiated \
+  --uncomment-func-decl SSL_CTX_use_NTLS_PrivateKey \
   --uncomment-func-decl SSL_CTX_use_PrivateKey \
   --uncomment-func-decl SSL_CTX_use_PrivateKey_file \
+  --uncomment-func-decl SSL_CTX_use_NTLS_certificate \
   --uncomment-func-decl SSL_CTX_use_certificate \
   --uncomment-func-decl SSL_CTX_use_certificate_file \
   --uncomment-func-decl SSL_CTX_set1_curves_list \
@@ -197,5 +199,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_send_fatal_alert \
   --uncomment-func-decl SSL_alert_desc_string_long \
   --uncomment-func-decl SSL_CTX_get_session_cache_mode \
+  --uncomment-func-decl SSL_CTX_enable_ntls \
 
 

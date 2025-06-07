@@ -117,6 +117,8 @@ public:
    * @return the access log manager object reference
    */
   virtual AccessLog::AccessLogManager& accessLogManager() const PURE;
+
+  virtual bool ntlsEnabled() const PURE;
 };
 
 class ClientContextConfig : public virtual ContextConfig {

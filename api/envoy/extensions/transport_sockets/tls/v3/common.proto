@@ -204,6 +204,15 @@ message TlsCertificate {
   // applies to dynamic secrets, when the ``TlsCertificate`` is delivered via SDS.
   config.core.v3.DataSource private_key = 2 [(udpa.annotations.sensitive) = true];
 
+  //
+  // 
+  enum CertificateUsage {  
+    DEFAULT = 0;  
+    SIGN = 1;  
+    ENCRYPT = 2;  
+  }  
+  CertificateUsage certificate_usage = 9;
+  
   // ``Pkcs12`` data containing TLS certificate, chain, and private key.
   //
   // If ``pkcs12`` is a filesystem path, the file will be read, but no watch will
