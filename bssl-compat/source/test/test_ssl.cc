@@ -1636,3 +1636,43 @@ TEST(SSLTest, test_SSL_CTX_set_custom_verify_alert_codes) {
     ASSERT_STREQ(alert_string, static_cast<char*>(SSL_get_app_data(server_ssl.get())));
   }
 }
+
+
+TEST(SSLTest, test_SSL_get_all_cipher_names) {
+  // Get the size by passing a zero size input buffer
+  size_t size1 = SSL_get_all_cipher_names(nullptr, 0);
+  ASSERT_GT(size1, 0);
+
+  // Allocate a buffer of the size returned above
+  std::unique_ptr<const char*[]> names1(new const char*[size1]);
+
+  // Call SSL_get_all_cipher_names() with the allocated buffer
+  size_t size2 = SSL_get_all_cipher_names(names1.get(), size1);
+
+  // Check that the size returned is the same as the size we allocated
+  ASSERT_EQ(size2, size1);
+
+  // Check that the names are not null and have a non-zero length
+  for (size_t i = 0; i < size2; i++) {
+    ASSERT_NE(names1.get()[i], nullptr);
+    ASSERT_GT(strlen(names1.get()[i]), 0);
+    // printf("%s\n", names1.get()[i]);
+  }
+
+  // Allocate another buffer that is one element too short (size2 - 1)
+  std::unique_ptr<const char*[]> names2(new const char*[size2 - 1]);
+
+  // Call SSL_get_all_cipher_names() with the short buffer
+  size_t size3 = SSL_get_all_cipher_names(names2.get(), size2 - 1);
+
+  // Check that the size returned is the number of ciphers it
+  // would have returned if the buffer had been big enough.
+  ASSERT_EQ(size3, size2);
+
+  // Check that the names are not null and have a non-zero length
+  for (size_t i = 0; i < (size2 - 1); i++) {
+    ASSERT_NE(names2.get()[i], nullptr);
+    ASSERT_GT(strlen(names2.get()[i]), 0);
+    // printf("%s\n", names2.get()[i]);
+  }
+}
