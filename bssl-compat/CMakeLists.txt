@@ -162,7 +162,7 @@ add_library(bssl-compat STATIC
   source/SSL_get0_ocsp_response.c
   source/SSL_get0_peer_certificates.cc
   source/SSL_get0_peer_verify_algorithms.cc
-  source/SSL_get_all_signature_algorithm_names.c
+  source/SSL_get_all_signature_algorithm_names.cc
   source/SSL_get_all_version_names.c
   source/SSL_get_all_cipher_names.cc
   source/SSL_get_cipher_by_value.c
