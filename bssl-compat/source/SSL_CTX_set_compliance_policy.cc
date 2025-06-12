@@ -1,24 +1,9 @@
 #include <openssl/ssl.h>
-#include <iostream>
 #include <ossl.h>
+#include "iana_2_ossl_names.h"
 
 
 #define OPENSSL_ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
-
-
-int SSL_CTX_set1_group_ids(SSL_CTX *ctx, const int *group_ids,
-                           size_t num_group_ids) {
-  int ret = ossl.ossl_SSL_CTX_set1_groups (ctx, group_ids, num_group_ids);
-  std::cout << "SSL_CTX_set1_group_ids " << ret << std::endl;
-  return ret;
-}
-
-int SSL_set1_group_ids(SSL *ssl, const int *group_ids,
-                       size_t num_group_ids) {
-  int ret = ossl.ossl_SSL_set1_groups(ssl, group_ids, num_group_ids);
-  std::cout << "SSL_set1_group_ids " << ret << std::endl;
-  return ret;
-}
 
 
 int SSL_set_strict_cipher_list(SSL *ssl, const char *str) {
@@ -30,28 +15,42 @@ int SSL_set_strict_cipher_list(SSL *ssl, const char *str) {
    else {
     // TLSv1.3
      ret = ossl.ossl_SSL_set_ciphersuites(ssl, str);
-   } 
-   std::cout << "SSL_set_strict_cipher_list " << ret << std::endl; 
-}  
+   }
+   if (ret==0) {
+    return 0;
+   }
+   std::string osslstr {iana_2_ossl_names(str)};
+   STACK_OF(SSL_CIPHER)* ciphers = reinterpret_cast<STACK_OF(SSL_CIPHER)*>(ossl.ossl_SSL_get_ciphers(ssl));
+   char* dup = strdup(osslstr.c_str());
+   char* token = strtok(dup, ":+![|]");
+    while (token != NULL) {
+      std::string str1(token);
+      bool found = false;
+      for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); i++) {
+        const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers, i);
+        std::string str2(SSL_CIPHER_get_name(cipher));
+        if (str1.compare(str2) == 0) {
+          found = true;
+        }
+    }
 
-int SSL_set_signing_algorithm_prefs(SSL *ssl, const char *prefs) {
-  int ret = ossl.ossl_SSL_set1_sigalgs_list(ssl, prefs);
-  std::cout << "SSL_set_signing_algorithm_prefs " << ret << std::endl;
-  return ret;
-}
+    if (!found && str1.compare("-ALL") && str1.compare("ALL")) {
+      free(dup);
+      return 0;
+    }
+
+    token = strtok(NULL, ":[]|");
+  }
+
+  free(dup);
+  return 1;
+}  
 
 
 int SSL_set_verify_algorithm_prefs(SSL *ssl,
                                    const char *prefs) {
     // TODO: couldn't find an equivalent in OpenSSL
     return 1;
-}
-
-
-int SSL_CTX_set_signing_algorithm_prefs(SSL_CTX *ctx, const char *prefs) {
-    int ret = ossl.ossl_SSL_CTX_set1_sigalgs_list(ctx, prefs);
-    std::cout << "SSL_CTX_set_signing_algorithm_prefs " << ret << std::endl;
-    return ret;
 }
 
 
@@ -111,8 +110,8 @@ static int Configure(SSL_CTX *ctx) {
       // Encrypt-then-MAC extension is required for all CBC cipher suites and so
       // it's easier to drop them.
       SSL_CTX_set_strict_cipher_list(ctx, kTLS12Ciphers) &&
-      SSL_CTX_set1_group_ids(ctx, kGroups, OPENSSL_ARRAY_SIZE(kGroups)) &&
-      SSL_CTX_set_signing_algorithm_prefs(ctx, kSigAlgs) &&
+      ossl.ossl_SSL_CTX_set1_groups (ctx, kGroups, OPENSSL_ARRAY_SIZE(kGroups)) &&
+      ossl.ossl_SSL_CTX_set1_sigalgs_list(ctx, kSigAlgs) &&
       SSL_CTX_set_verify_algorithm_prefs(ctx, kSigAlgs);
 }
 
@@ -124,8 +123,8 @@ static int Configure(SSL *ssl) {
   return ossl.ossl_SSL_set_min_proto_version(ssl, TLS1_2_VERSION) &&
          ossl.ossl_SSL_set_max_proto_version(ssl, TLS1_3_VERSION) &&
          SSL_set_strict_cipher_list(ssl, kTLS12Ciphers) &&
-         SSL_set1_group_ids(ssl, kGroups, OPENSSL_ARRAY_SIZE(kGroups)) &&
-         SSL_set_signing_algorithm_prefs(ssl, kSigAlgs) &&
+         ossl.ossl_SSL_set1_groups(ssl, kGroups, OPENSSL_ARRAY_SIZE(kGroups)) &&
+         ossl.ossl_SSL_set1_sigalgs_list(ssl, kSigAlgs) &&
          SSL_set_verify_algorithm_prefs(ssl, kSigAlgs)
           ;
 }
