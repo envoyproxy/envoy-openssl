@@ -169,7 +169,7 @@ add_library(bssl-compat STATIC
   source/SSL_get_client_CA_list.cc
   source/SSL_get_ciphers.cc
   source/SSL_get_curve_id.c
-  source/SSL_get_curve_name.c
+  source/SSL_get_curve_name.cc
   source/SSL_get_ex_new_index.cc
   source/SSL_get_peer_cert_chain.cc
   source/SSL_get_peer_full_cert_chain.cc

@@ -1,10 +1,12 @@
 #include <openssl/ssl.h>
 #include <ossl.h>
+#include <vector>
+#include <string>
 
 struct KnownCurveCandidate {
-    int nid;
-    uint16_t group_id;
-    const char name[8];
+    int nid;             // The OpenSSL specific NID value for the curve
+    uint16_t group_id;   // TLS group ID for the curve. Defined by TLS protocol
+    const char name[22]; // The human-readable name for the curve
 };
 
 static const struct KnownCurveCandidate kCurveCandidates[] = {
@@ -28,61 +30,58 @@ static const struct KnownCurveCandidate kCurveCandidates[] = {
     {ossl_NID_secp192k1,        18, ""},
     {ossl_NID_X9_62_prime192v1, 19, "P-192"},
     {ossl_NID_secp224k1,        20, ""},
-    {ossl_NID_secp224r1,        21, "P-224"},
+    {ossl_NID_secp224r1,        SSL_GROUP_SECP224R1, "P-224"},
     {ossl_NID_secp256k1,        22, ""},
-    {ossl_NID_X9_62_prime256v1, 23, "P-256"},
-    {ossl_NID_secp384r1,        24, "P-384"},
-    {ossl_NID_secp521r1,        25, "P-521"},
+    {ossl_NID_X9_62_prime256v1, SSL_GROUP_SECP256R1, "P-256"},
+    {ossl_NID_secp384r1,        SSL_GROUP_SECP384R1, "P-384"},
+    {ossl_NID_secp521r1,        SSL_GROUP_SECP521R1, "P-521"},
     {ossl_NID_brainpoolP256r1,  26, ""},
     {ossl_NID_brainpoolP384r1,  27, ""},
     {ossl_NID_brainpoolP512r1,  28, ""},
-    {ossl_NID_X25519,           29, "X25519"},
+    {ossl_NID_X25519,           SSL_GROUP_X25519, "X25519"},
     {ossl_NID_X448,             30, ""},
     {ossl_NID_ffdhe2048,       256, ""},
     {ossl_NID_ffdhe3072,       257, ""},
     {ossl_NID_ffdhe4096,       258, ""},
     {ossl_NID_ffdhe6144,       259, ""},
-    {ossl_NID_ffdhe8192,       260, ""}
-};
+    {ossl_NID_ffdhe8192,       260, ""},
+    {ossl_NID_undef,           SSL_GROUP_X25519_MLKEM768, "X25519MLKEM768"},
+    {ossl_NID_undef,           SSL_GROUP_X25519_KYBER768_DRAFT00, "X25519Kyber768Draft00"},
+  };
 
-#define CANDIDATES_SIZE 35
+#define CANDIDATES_SIZE (sizeof(kCurveCandidates) / sizeof(kCurveCandidates[0]))
 
-size_t SSL_get_all_curve_names(const char **out, size_t max_out) {
-  static uint8_t initialized = 0;
-  static char* valid_curve_names[CANDIDATES_SIZE];
-  static size_t valid_curves_size = 0;
-  if (initialized == 0) {
-    ossl_SSL_CTX* ctx = ossl.ossl_SSL_CTX_new(TLS_client_method());
-    if (!ctx) {
-      return 0;
-    }
-    ossl_SSL* ssl = ossl.ossl_SSL_new(ctx);
-    if (!ssl) {
-      ossl.ossl_SSL_CTX_free(ctx);
-      return 0;
-    }
 
-    // Iterate through our hardcoded candidates and attempt to set each one.
-    for (size_t i = 0; i < CANDIDATES_SIZE; ++i) {
-      const struct KnownCurveCandidate* candidate = &kCurveCandidates[i];
-      int nids[] = {candidate->nid};
-      size_t nids_len = 1;
+static std::vector<std::string> init_all_curve_names() {
+  std::vector<std::string> names;
 
-      if (ossl.ossl_SSL_set1_groups(ssl, nids, nids_len)) {
-        // Success: OpenSSL knows this curve and can handle it.
-        valid_curve_names[valid_curves_size] = candidate->name;
-        valid_curves_size++;
+  bssl::UniquePtr<SSL_CTX> ctx(SSL_CTX_new(TLS_client_method()));
+  if (ctx) {
+    bssl::UniquePtr<SSL> ssl(SSL_new(ctx.get()));
+    if (ssl) {
+      for (size_t i = 0; i < CANDIDATES_SIZE; ++i) {
+        if (ossl.ossl_SSL_set1_groups_list(ssl.get(), kCurveCandidates[i].name)) {
+          // Success: OpenSSL knows this curve and can handle it.
+          names.push_back(kCurveCandidates[i].name);
+        }
       }
     }
+  }
 
-    ossl.ossl_SSL_free(ssl);
-    ossl.ossl_SSL_CTX_free(ctx);
-    initialized = 1;
+  return names;
+}
+
+
+size_t SSL_get_all_curve_names(const char **out, size_t max_out) {
+  static std::vector<std::string> names = init_all_curve_names();
+
+  if (out && max_out) {
+    for(int i = 0; i < max_out && i < names.size(); i++) {
+      out[i] = names[i].c_str();
+    }
   }
-  for(int i = 0; i < max_out && i < valid_curves_size; i++) {
-    *out++ = valid_curve_names[i];
-  }
-  return valid_curves_size; // Return number of curves found, not written
+
+  return names.size(); // Return number of curves found, not written
 }
 
 /*
