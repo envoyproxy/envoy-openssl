@@ -6,59 +6,6 @@
 #define OPENSSL_ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
 
 
-int SSL_set_strict_cipher_list(SSL *ssl, const char *str) {
-  int ret;
-   if(SSL_version(ssl) <= TLS1_2_VERSION) {
-     // TLSv1.2 and below
-     ret = ossl.ossl_SSL_set_cipher_list(ssl, str);  
-   }
-   else {
-    // TLSv1.3
-     ret = ossl.ossl_SSL_set_ciphersuites(ssl, str);
-   }
-   if (ret==0) {
-    return 0;
-   }
-   std::string osslstr {iana_2_ossl_names(str)};
-   STACK_OF(SSL_CIPHER)* ciphers = reinterpret_cast<STACK_OF(SSL_CIPHER)*>(ossl.ossl_SSL_get_ciphers(ssl));
-   char* dup = strdup(osslstr.c_str());
-   char* token = strtok(dup, ":+![|]");
-    while (token != NULL) {
-      std::string str1(token);
-      bool found = false;
-      for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); i++) {
-        const SSL_CIPHER* cipher = sk_SSL_CIPHER_value(ciphers, i);
-        std::string str2(SSL_CIPHER_get_name(cipher));
-        if (str1.compare(str2) == 0) {
-          found = true;
-        }
-    }
-
-    if (!found && str1.compare("-ALL") && str1.compare("ALL")) {
-      free(dup);
-      return 0;
-    }
-
-    token = strtok(NULL, ":[]|");
-  }
-
-  free(dup);
-  return 1;
-}  
-
-
-int SSL_set_verify_algorithm_prefs(SSL *ssl,
-                                   const char *prefs) {
-    // TODO: couldn't find an equivalent in OpenSSL
-    return 1;
-}
-
-
-int SSL_CTX_set_verify_algorithm_prefs(SSL_CTX *ctx, const char *prefs) {
-  // TODO: couldn't find an equivalent in OpenSSL
-  return 1;
-}
-
 namespace fips202205 {
 
 // (References are to SP 800-52r2):
@@ -111,22 +58,7 @@ static int Configure(SSL_CTX *ctx) {
       // it's easier to drop them.
       SSL_CTX_set_strict_cipher_list(ctx, kTLS12Ciphers) &&
       ossl.ossl_SSL_CTX_set1_groups (ctx, kGroups, OPENSSL_ARRAY_SIZE(kGroups)) &&
-      ossl.ossl_SSL_CTX_set1_sigalgs_list(ctx, kSigAlgs) &&
-      SSL_CTX_set_verify_algorithm_prefs(ctx, kSigAlgs);
-}
-
-static int Configure(SSL *ssl) {
-  // tls13_cipher_policy field not present in OpenSSL
- //  ssl->config->tls13_cipher_policy = ssl_compliance_policy_fips_202205;
-
-  // See |Configure(SSL_CTX)|, above, for reasoning.
-  return ossl.ossl_SSL_set_min_proto_version(ssl, TLS1_2_VERSION) &&
-         ossl.ossl_SSL_set_max_proto_version(ssl, TLS1_3_VERSION) &&
-         SSL_set_strict_cipher_list(ssl, kTLS12Ciphers) &&
-         ossl.ossl_SSL_set1_groups(ssl, kGroups, OPENSSL_ARRAY_SIZE(kGroups)) &&
-         ossl.ossl_SSL_set1_sigalgs_list(ssl, kSigAlgs) &&
-         SSL_set_verify_algorithm_prefs(ssl, kSigAlgs)
-          ;
+      ossl.ossl_SSL_CTX_set1_sigalgs_list(ctx, kSigAlgs);
 }
 
 }  // namespace fips202205
