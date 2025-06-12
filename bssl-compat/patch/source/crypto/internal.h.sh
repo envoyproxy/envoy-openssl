@@ -9,5 +9,5 @@ uncomment.sh "$1" --comment \
   --uncomment-func-impl OPENSSL_memmove \
   --uncomment-func-impl OPENSSL_memset \
   --uncomment-macro OPENSSL_ARRAY_SIZE \
-  --uncomment-typedef CRYPTO_atomic_u32
+
 

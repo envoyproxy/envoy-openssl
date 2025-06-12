@@ -113,6 +113,7 @@ static int ssl_ctx_client_hello_cb(SSL *ssl, int *alert, void *arg) {
     case ssl_select_cert_success: return ossl_SSL_CLIENT_HELLO_SUCCESS;
     case ssl_select_cert_retry:   return ossl_SSL_CLIENT_HELLO_RETRY;
     case ssl_select_cert_error:   return ossl_SSL_CLIENT_HELLO_ERROR;
+    case ssl_select_cert_disable_ech: return ossl_SSL_CLIENT_HELLO_RETRY;
   };
 }
 
