@@ -42,6 +42,7 @@ add_library(bssl-compat STATIC
   source/BASIC_CONSTRAINTS_free.cc
   source/BASIC_CONSTRAINTS_new.cc
   source/BIO_free.cc
+  source/BIO_gets.c
   source/BIO_mem_contents.cc
   source/BIO_meth_set_create.cc
   source/BIO_meth_set_ctrl.cc
@@ -349,7 +350,6 @@ target_add_bssl_function(bssl-compat
   BIO_new_fd
   BIO_new_fp
   BIO_new_socket
-  BIO_gets
   BIO_new_mem_buf
   BIO_puts
   BIO_read
