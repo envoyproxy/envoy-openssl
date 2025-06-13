@@ -121,7 +121,6 @@ add_library(bssl-compat STATIC
   source/RSA_decrypt.cc
   source/RSA_encrypt.cc
   source/RSA_generate_key_ex.cc
-  source/RSA_new_public_key.c
   source/RSA_private_key_from_bytes.cc
   source/RSA_public_key_from_bytes.cc
   source/RSA_sign_pss_mgf1.cc
