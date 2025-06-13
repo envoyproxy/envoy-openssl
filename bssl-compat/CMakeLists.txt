@@ -99,6 +99,7 @@ add_library(bssl-compat STATIC
   source/log.h
   source/NAME_CONSTRAINTS_free.cc
   source/NAME_CONSTRAINTS_new.cc
+  source/OPENSSL_sk_num.c
   source/ossl.c
   source/override.h
   source/override.cc
@@ -481,7 +482,6 @@ target_add_bssl_function(bssl-compat
   OPENSSL_init_ssl
   OPENSSL_sk_free
   OPENSSL_sk_new_null
-  OPENSSL_sk_num
   OPENSSL_sk_pop
   OPENSSL_sk_push
   OPENSSL_sk_value
