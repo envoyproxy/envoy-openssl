@@ -603,7 +603,6 @@ target_add_bssl_function(bssl-compat
   TLS_method
   TLS_server_method
   X509_add1_ext_i2d
-  X509_check_purpose
   X509_cmp
   X509_CRL_cmp
   X509_CRL_dup
