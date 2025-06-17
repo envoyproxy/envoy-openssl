@@ -150,7 +150,6 @@ add_library(bssl-compat STATIC
   source/SSL_CTX_set_tlsext_ticket_key_cb.cc
   source/SSL_CTX_set_tlsext_ticket_keys.cc
   source/SSL_CTX_set_verify_algorithm_prefs.cc
-  source/SSL_CTX_set_verify_depth.cc
   source/SSL_CTX_set_keylog_callback.cc
   source/SSL_CTX_set_next_proto_select_cb.cc
   source/SSL_CTX_set_verify.cc
@@ -208,6 +207,7 @@ add_library(bssl-compat STATIC
   source/X509_STORE_CTX_set0_crls.cc
   source/X509_STORE_CTX_set0_trusted_stack.cc
   source/X509_STORE_CTX_set_verify_cb.cc
+  source/X509_verify_cert.c
   source/X509_verify_cert_error_string.cc
   source/X509_VERIFY_PARAM_set_time_posix.cc
 )
@@ -546,6 +546,7 @@ target_add_bssl_function(bssl-compat
   SSL_CTX_set_session_id_context
   SSL_CTX_set_timeout
   SSL_CTX_set_tlsext_servername_arg
+  SSL_CTX_set_verify_depth
   SSL_CTX_set1_curves_list
   SSL_CTX_set1_sigalgs_list
   SSL_CTX_use_certificate_chain_file
@@ -674,7 +675,6 @@ target_add_bssl_function(bssl-compat
   X509_STORE_set_verify_cb
   X509_up_ref
   X509_verify
-  X509_verify_cert
   X509_VERIFY_PARAM_clear_flags
   X509_VERIFY_PARAM_get_flags
   X509_VERIFY_PARAM_set_flags
