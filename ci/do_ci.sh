@@ -3,6 +3,7 @@
 # Run a CI build/test target, e.g. docs, asan.
 
 set -e
+set -x
 
 # TODO(phlax): Clarify and/or integrate SRCDIR and ENVOY_SRCDIR
 export SRCDIR="${SRCDIR:-$PWD}"
