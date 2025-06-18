@@ -765,14 +765,16 @@ set(utests-source-list
 ################################################################################
 # Unit Tests built on bssl-compat
 ################################################################################
-add_executable(utests-bssl-compat ${utests-source-list})
+add_executable(utests-bssl-compat ${utests-source-list} source/test/main.cc)
 target_add_bssl_source(utests-bssl-compat ${utests-bssl-source-list})
 set_source_files_properties(source/extra/err_extra.c PROPERTIES COMPILE_FLAGS -Wno-deprecated-declarations)
 # Add env variable SANITIZE_OPTIONS for optional sanitizers
 target_link_options(utests-bssl-compat PRIVATE "$ENV{SANITIZE_OPTIONS}" )
-target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest_main bssl-compat)
+target_link_libraries(utests-bssl-compat PRIVATE GTest::gtest bssl-compat)
 set_target_properties(utests-bssl-compat PROPERTIES BUILD_RPATH "${OPENSSL_LIBRARY_DIR}")
 gtest_discover_tests(utests-bssl-compat)
+install(TARGETS utests-bssl-compat DESTINATION bin)
+
 ################################################################################
 # Unit Tests built on BoringSSL
 ################################################################################
@@ -785,4 +787,5 @@ if(BUILD_BORINGSSL)
   target_link_libraries(utests-boring PRIVATE BoringSSL::SSL BoringSSL::Crypto)
   target_link_libraries(utests-boring PRIVATE GTest::gtest_main)
   gtest_discover_tests(utests-boring)
+  install(TARGETS utests-boring DESTINATION bin)
 endif(BUILD_BORINGSSL)
