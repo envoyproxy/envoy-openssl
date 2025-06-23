@@ -117,6 +117,7 @@ RUNTIME_GUARD(envoy_restart_features_skip_backing_cluster_check_for_sds);
 RUNTIME_GUARD(envoy_restart_features_use_eds_cache_for_ads);
 RUNTIME_GUARD(envoy_restart_features_use_fast_protobuf_hash);
 RUNTIME_GUARD(envoy_reloadable_features_enable_intermediate_ca);
+RUNTIME_GUARD(envoy_restart_features_validate_http3_pseudo_headers);
 
 // Begin false flags. Most of them should come with a TODO to flip true.
 
