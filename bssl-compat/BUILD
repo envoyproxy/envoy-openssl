@@ -15,7 +15,8 @@ cmake(
     visibility = ["//visibility:public"],
     generate_crosstool_file = False,
     out_binaries = ["utests-bssl-compat"],
-    build_args = [ "-j" ]
+    build_args = [ "-j" ],
+    deps = ["@openssl//:openssl"],
 )
 
 filegroup(

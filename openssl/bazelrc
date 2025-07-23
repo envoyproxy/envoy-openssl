@@ -23,5 +23,3 @@ build:ppc --//source/extensions/filters/common/lua:luajit2=1 --linkopt=-fuse-ld=
 
 common --action_env=Clang_DIR=/opt/llvm
 common --action_env=LLVM_DIR=/opt/llvm
-common --action_env=LD_LIBRARY_PATH=/opt/openssl3.0/lib64
-test --test_env=LD_LIBRARY_PATH=/opt/openssl3.0/lib64

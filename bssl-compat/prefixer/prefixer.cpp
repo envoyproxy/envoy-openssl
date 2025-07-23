@@ -265,12 +265,9 @@ class MyFrontendAction: public clang::ASTFrontendAction {
       if (prefixable(token.getLocation())) {
         std::string name = pp.getSpelling(token);
         m_identifiers.insert(name);
-        if (name == "SHLIB_VERSION_NUMBER") {
+        if (name == "OPENSSL_VERSION_MAJOR") {
           const auto &token = directive->getMacroInfo()->getReplacementToken(0);
           m_shlibversion = std::string(token.getLiteralData(), token.getLength());
-          // Remove the quotation marks.
-          m_shlibversion = m_shlibversion.substr(1, m_shlibversion.size() - 1);
-          m_shlibversion.pop_back();
         }
       }
     }
@@ -438,9 +435,10 @@ void MyFrontendAction::EndSourceFileAction() {
     std::map<std::string,std::vector<Function>> funcmap;
 
     for(const auto &f : m_functions) {
-      std::string header = f.getHeader(srcmgr);
+      std::filesystem::path header = f.getHeader(srcmgr);
+      header = header.lexically_relative(opt::incdir());
       if(funcmap.find(header) == funcmap.end()) {
-        hstr << "#include \"" << header <<"\"" << std::endl;
+        hstr << "#include \"" << header.string() <<"\"" << std::endl;
       }
       funcmap[header].push_back(f);
     }
@@ -711,7 +709,7 @@ int main(int argc, const char **argv) {
           globflags |= GLOB_APPEND;
         }
         for (auto i = 0; i < globbuf.gl_pathc; i++) {
-          auto p = std::filesystem::proximate(globbuf.gl_pathv[i], srcpath);
+          auto p = std::filesystem::path(globbuf.gl_pathv[i]).lexically_relative(srcpath);
           opt::headers[p] = true;
         }
         globfree (&globbuf);
@@ -725,7 +723,7 @@ int main(int argc, const char **argv) {
           globflags |= GLOB_APPEND;
         }
         for (auto i = 0; i < globbuf.gl_pathc; i++) {
-          auto p = std::filesystem::proximate(globbuf.gl_pathv[i], srcpath);
+          auto p = std::filesystem::path(globbuf.gl_pathv[i]).lexically_relative(srcpath);
           opt::headers[p] = false;
         }
         globfree (&globbuf);
@@ -756,6 +754,8 @@ int main(int argc, const char **argv) {
             std::filesystem::remove(dsthdr);
           }
           std::filesystem::copy_file(srcpath / hdr, dsthdr);
+          std::filesystem::permissions(dsthdr, std::filesystem::perms::owner_write |
+                                               std::filesystem::perms::owner_read);
         }
       }
 
