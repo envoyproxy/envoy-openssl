@@ -257,11 +257,6 @@ sh_binary(
 envoy_directory_genrule(
     name = "corpus_from_config_impl",
     testonly = 1,
-    srcs = [
-        # This is deliberately in srcs, since we run into host/target confusion
-        # otherwise in oss-fuzz builds.
-        ":config_impl_test_static",
-    ],
     cmd = " ".join([
         "$(location corpus_from_config_impl_sh)",
         "$(location //test/common/router:config_impl_test_static)",
@@ -270,7 +265,10 @@ envoy_directory_genrule(
         "//bazel:engflow_rbe_x86_64": {"Pool": "6gig"},
         "//conditions:default": {},
     }),
-    tools = [":corpus_from_config_impl_sh"],
+    tools = [
+        ":config_impl_test_static",
+        ":corpus_from_config_impl_sh",
+    ],
 )
 
 filegroup(

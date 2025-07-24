@@ -23,3 +23,6 @@ build:ppc --//source/extensions/filters/common/lua:luajit2=1 --linkopt=-fuse-ld=
 
 common --action_env=Clang_DIR=/opt/llvm
 common --action_env=LLVM_DIR=/opt/llvm
+
+build --verbose_failures
+build --keep_going
