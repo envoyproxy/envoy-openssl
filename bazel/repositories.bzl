@@ -777,6 +777,8 @@ def _com_github_google_quiche():
         name = "com_github_google_quiche",
         patch_cmds = ["find quiche/ -type f -name \"*.bazel\" -delete"],
         build_file = "@envoy//bazel/external:quiche.BUILD",
+        patches = ["@envoy//bazel/external:quiche-s390x.patch"],
+        patch_args = ["-p1"],
     )
 
 def _com_googlesource_googleurl():
@@ -796,8 +798,12 @@ def _com_github_grpc_grpc():
     external_http_archive(
         name = "com_github_grpc_grpc",
         patch_args = ["-p1"],
-        patches = ["@envoy//bazel:grpc.patch"],
-        repo_mapping = {"@openssl": "@boringssl"},
+        patches = [
+            "@envoy//bazel:grpc.patch",
+            "@envoy//bazel:grpc-s390x.patch",
+        ],
+        # Needed until grpc updates its naming (v1.62.0)
+        repo_mapping = {"@com_github_cncf_udpa": "@com_github_cncf_xds"},
     )
     external_http_archive(
         "build_bazel_rules_apple",
@@ -876,6 +882,7 @@ def _proxy_wasm_cpp_host():
         patch_args = ["-p1"],
         patches = [
             "@envoy//bazel:proxy_wasm_cpp_host.patch",
+	     "@envoy//bazel:proxy_wasm_cpp_host-s390x.patch",
         ],
     )
 
@@ -1035,7 +1042,10 @@ def _foreign_cc_dependencies():
     external_http_archive(
         name = "rules_foreign_cc",
         patch_args = ["-p1"],
-        patches = ["@envoy//bazel:rules_foreign_cc.patch"],
+        patches = [
+           "@envoy//bazel:rules_foreign_cc.patch",
+           "@envoy//bazel:rules_foreign_cc-s390x.patch",
+        ],
     )
 
 def _com_github_maxmind_libmaxminddb():
