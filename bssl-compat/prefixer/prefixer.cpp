@@ -499,12 +499,12 @@ void MyFrontendAction::EndSourceFileAction() {
          << "}" << std::endl
          << std::endl
          << "static void " << opt::prefix << "_init(void) {" << std::endl
-         << "  if((libcrypto = dlopen(LIBCRYPTO_SO, RTLD_NOW | RTLD_LOCAL)) == NULL) {" << std::endl
+         << "  if((libcrypto = dlopen(LIBCRYPTO_SO, RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND)) == NULL) {" << std::endl
          << "    fprintf(stderr, \"dlopen(%s) : %s\\n\", LIBCRYPTO_SO, dlerror());" << std::endl
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
          << std::endl
-         << "  if((libssl = dlopen(LIBSSL_SO, RTLD_NOW | RTLD_LOCAL)) == NULL) {" << std::endl
+         << "  if((libssl = dlopen(LIBSSL_SO, RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND)) == NULL) {" << std::endl
          << "    fprintf(stderr, \"dlopen(%s) : %s\\n\", LIBSSL_SO, dlerror());" << std::endl
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
