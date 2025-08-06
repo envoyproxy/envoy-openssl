@@ -1,16 +1,5 @@
 licenses(["notice"])  # Apache 2
 
-#cmake(
-#    name = "bssl-compat",
-#    lib_source = ":srcs",
-#    out_shared_libs = [],
-#    out_static_libs = ["libbssl-compat.a"],
-#    visibility = ["//visibility:public"],
-#    generate_crosstool_file = False,
-#    out_binaries = ["utests-bssl-compat"],
-#    build_args = [ "-j" ]
-#)
-
 filegroup(
     name = "bssl-compat-utests-bssl-compat",
     srcs = [":bssl-compat"],
@@ -176,7 +165,7 @@ genrule(
     cmd = """ \
       LD_LIBRARY_PATH=/opt/llvm/lib/ \
       $(location //bssl-compat/prefixer:prefixer) \
-      --src-path /usr/local/openssl-3.0.8/include/ \
+      --src-path /opt/openssl3.0/include/ \
       --src-incl "openssl/*.h" \
       --src-skip openssl/asn1_mac.h \
       --src-skip "openssl/opensslconf-*.h" \
@@ -204,7 +193,7 @@ genrule(
       "source/crypto/bytestring/internal.h",
       "source/crypto/chacha/internal.h",
       "source/crypto/cipher_extra/internal.h",
-      "source/crypto/conf/conf_def.h",
+      ##"source/crypto/conf/conf_def.h",
       "source/crypto/conf/internal.h",
       "source/crypto/cpu_arm_linux.h",
       "source/crypto/curve25519/curve25519_tables.h",
@@ -227,10 +216,10 @@ genrule(
       "source/crypto/fipsmodule/ec/p256-nistz.h",
       "source/crypto/fipsmodule/ec/p256_table.h",
       "source/crypto/fipsmodule/ecdsa/internal.h",
-      "source/crypto/fipsmodule/md5/internal.h",
+      #"source/crypto/fipsmodule/md5/internal.h",
       "source/crypto/fipsmodule/modes/internal.h",
-      "source/crypto/fipsmodule/rand/fork_detect.h",
-      "source/crypto/fipsmodule/rand/getrandom_fillin.h",
+      #"source/crypto/fipsmodule/rand/fork_detect.h",
+      #"source/crypto/fipsmodule/rand/getrandom_fillin.h",
       "source/crypto/fipsmodule/rand/internal.h",
       "source/crypto/fipsmodule/rsa/internal.h",
       "source/crypto/fipsmodule/service_indicator/internal.h",
@@ -251,8 +240,8 @@ genrule(
       "source/crypto/test/wycheproof_util.h",
       "source/crypto/trust_token/internal.h",
       "source/crypto/x509/internal.h",
-      "source/crypto/x509v3/ext_dat.h",
-      "source/crypto/x509v3/internal.h",
+      #"source/crypto/x509v3/ext_dat.h",
+      #"source/crypto/x509v3/internal.h",
       ],
     cmd = """
       #!/bin/bash
@@ -285,6 +274,7 @@ genrule(
       "include/openssl/asn1t.h",
       "include/openssl/base64.h",
       "include/openssl/base.h",
+      "include/openssl/bcm_public.h",
       "include/openssl/bio.h",
       "include/openssl/blake2.h",
       "include/openssl/blowfish.h",
@@ -351,12 +341,14 @@ genrule(
       "include/openssl/ssl3.h",
       "include/openssl/ssl.h",
       "include/openssl/stack.h",
+      "include/openssl/target.h",
       "include/openssl/thread.h",
       "include/openssl/tls1.h",
       "include/openssl/trust_token.h",
       "include/openssl/type_check.h",
       "include/openssl/x509.h",
       "include/openssl/x509v3.h",
+      "include/openssl/x509v3_errors.h",
       "include/openssl/x509_vfy.h",
       ],
     cmd = """
@@ -581,7 +573,6 @@ genrule(
       "source/SSL_CTX_add_extra_chain_cert.c",
       "source/SSL_CTX_check_private_key.c",
       "source/SSL_CTX_set_tmp_ecdh.c",
-      "source/SSL_get0_next_proto_negotiated.c",
       "source/SSL_CTX_free.c",
       "source/SSL_CTX_get_cert_store.c",
       "source/SSL_CTX_set_cert_store.c",
@@ -594,6 +585,7 @@ genrule(
       "source/SSL_CTX_new.c",
       "source/SSL_CTX_set_alpn_protos.c",
       "source/SSL_CTX_set_cipher_list.c",
+      "source/SSL_CTX_set_compliance_policy",
       "source/SSL_CTX_set_ex_data.c",
       "source/SSL_CTX_set_max_proto_version.c",
       "source/SSL_CTX_set_min_proto_version.c",
@@ -621,6 +613,7 @@ genrule(
       "source/SSL_get_wbio.c",
       "source/SSL_get_rbio.c",
       "source/SSL_get0_alpn_selected.c",
+      "source/SSL_get0_next_proto_negotiated.c",
       "source/SSL_get1_session.c",
       "source/SSL_is_server.c",
       "source/SSL_is_init_finished.c",
@@ -718,12 +711,9 @@ genrule(
       "source/X509_STORE_new.c",
       "source/X509_STORE_up_ref.c",
       "source/X509_STORE_set_flags.c",
-      "source/X509_STORE_set_get_crl.c",
-      "source/X509_STORE_set_check_crl.c",
       "source/X509_STORE_set_verify_cb.c",
       "source/X509_up_ref.c",
       "source/X509_verify.c",
-      "source/X509_verify_cert.c",
       "source/X509_VERIFY_PARAM_clear_flags.c",
       "source/X509_VERIFY_PARAM_get_flags.c",
       "source/X509_VERIFY_PARAM_set_flags.c",
@@ -774,9 +764,7 @@ cc_library(
     "//bssl-compat:bssl_gen_crypto_sources",
     "//bssl-compat:bssl_gen_crypto_headers",
     "//bssl-compat:bssl_gen_sources",
-    "@openssl//:openssl-lib",
-    #"//bssl-compat:boringssl_ssl",
-    #"//bssl-compat:boringssl_crypto",
+    "//bssl-compat/third_party/openssl:openssl",
 
   ],
   visibility = [

@@ -9,8 +9,8 @@ cc_library(
     ]),
     srcs = [
       "lib/libclang-cpp.so",
-      "lib/libclang-cpp.so.14",
-      "lib/libclang.so.13",
+      "lib/libclang-cpp.so.18.1",
+      "lib/libclang.so.18.1",
       "lib/libclangAST.a",
       "lib/libclangFrontend.a",
       "lib/libclangTooling.a",
@@ -18,6 +18,5 @@ cc_library(
       "lib/libclangLex.a",
     ],
     includes = ["include"],
-    linkopts = ["-Llib", "-lclang"],
     visibility = ["//visibility:public"],
 )

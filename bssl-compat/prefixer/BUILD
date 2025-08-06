@@ -3,7 +3,7 @@ cc_binary(
     srcs = ["prefixer.cpp"],
     copts = [
         "-DLLVM_LIBRARY_DIR=\\\"/opt/llvm/lib/\\\"",
-        "-DLLVM_VERSION_STRING=\"14.0.0\"",
+        "-DLLVM_VERSION_STRING=\"18.1.0\"",
         "-fno-rtti",
     ],
     linkopts = [

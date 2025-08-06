@@ -20,9 +20,9 @@ FUNC_NAME="${1?"FUNC_NAME not specified"}"
 CC_FILE="${2?"CC_FILE not specified"}"
 
 
-function error {
-    cmake -E cmake_echo_color --red "$1"
-    exit 1
+function error() {
+  printf '\033[0;31m%s\033[0m\n' "$1" >&2
+  exit 1
 }
 
 INCLUDE_DIR="$TOP_DIR/third_party/boringssl/src/include"
