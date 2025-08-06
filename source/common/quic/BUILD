@@ -591,7 +591,7 @@ envoy_cc_library(
     deps = [
         "//source/common/common:assert_lib",
         "@com_github_google_quiche//:quic_core_session_lib",
-    ]),
+    ],
 )
 
 envoy_cc_library(
