@@ -141,3 +141,4 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex-range 'typedef struct otherName_st.*' '.*OTHERNAME;' \
   --uncomment-regex-range 'typedef struct EDIPartyName_st.*' '.*EDIPARTYNAME;' \
   --uncomment-func-decl NAME_CONSTRAINTS_new \
+  --uncomment-func-decl X509_PUBKEY_get0_param
