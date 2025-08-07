@@ -75,6 +75,7 @@ add_library(bssl-compat STATIC
   source/EVP_DecodedLength.c
   source/EVP_DigestVerifyFinal.cc
   source/EVP_DigestSignFinal.cc
+  source/EVP_MD_CTX_init.cc
   source/EVP_MD_CTX_move.cc
   source/EVP_parse_public_key.cc
   source/EVP_PKEY_get0_EC_KEY.cc
@@ -421,6 +422,7 @@ target_add_bssl_function(bssl-compat
   EVP_DecryptFinal_ex
   EVP_DecryptInit_ex
   EVP_DecryptUpdate
+  EVP_Digest
   EVP_DigestFinal
   EVP_DigestFinal_ex
   EVP_DigestInit
@@ -431,6 +433,7 @@ target_add_bssl_function(bssl-compat
   EVP_DigestVerify
   EVP_DigestVerifyUpdate
   EVP_DigestVerifyInit
+  EVP_get_digestbyname
   EVP_EncryptFinal_ex
   EVP_EncryptInit_ex
   EVP_EncryptUpdate
@@ -455,11 +458,15 @@ target_add_bssl_function(bssl-compat
   EVP_PKEY_get_raw_public_key
   EVP_PKEY_new
   EVP_PKEY_set1_RSA
+  EVP_PKEY_size
   EVP_sha1
   EVP_sha224
   EVP_sha256
   EVP_sha384
   EVP_sha512
+  EVP_SignInit_ex
+  EVP_SignUpdate
+  EVP_SignFinal
   GENERAL_NAME_set0_value
   HMAC
   HMAC_CTX_free
@@ -521,6 +528,7 @@ target_add_bssl_function(bssl-compat
   SSL_CIPHER_get_id
   SSL_CIPHER_get_name
   SSL_CIPHER_standard_name
+  SSL_CIPHER_get_version
   SSL_connect
   SSL_CTX_add_extra_chain_cert
   SSL_CTX_check_private_key
@@ -565,6 +573,7 @@ target_add_bssl_function(bssl-compat
   SSL_get_version
   SSL_get_wbio
   SSL_get_rbio
+  SSL_get_verify_result
   SSL_get0_alpn_selected
   SSL_get1_session
   SSL_is_server
@@ -649,6 +658,7 @@ target_add_bssl_function(bssl-compat
   X509_NAME_print_ex
   X509_new
   X509_PUBKEY_get
+  X509_PUBKEY_get0_param
   X509_set_issuer_name
   X509_set_subject_name
   X509_set_pubkey

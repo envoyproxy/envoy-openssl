@@ -62,3 +62,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(EVP_MD_CTX' \
   --sed "/^\/\/ using ScopedEVP_MD_CTX/ e cat $MYTMPDIR/ScopedEVP_MD_CTX.h" \
   --uncomment-func-decl EVP_MD_nid \
+  --uncomment-func-decl EVP_Digest \
+  --uncomment-func-decl EVP_MD_CTX_init \
+  --uncomment-func-decl EVP_get_digestbyname
