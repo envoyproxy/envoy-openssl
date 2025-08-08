@@ -81,7 +81,8 @@ public:
 
   absl::StatusOr<Ssl::CertificateValidationContextConfigPtr> getCombinedValidationContextConfig(
       const envoy::extensions::transport_sockets::tls::v3::CertificateValidationContext&
-          dynamic_cvc);
+          dynamic_cvc,
+      const std::string& name);
   static bool getFipsEnabled() {
     std::ifstream file("/proc/sys/crypto/fips_enabled");
     if (file.fail()) {
