@@ -93,19 +93,22 @@ const unsigned ServerContextConfigImpl::DEFAULT_MIN_VERSION = TLS1_VERSION;
 const unsigned ServerContextConfigImpl::DEFAULT_MAX_VERSION = TLS1_3_VERSION;
 
 const std::string ServerContextConfigImpl::DEFAULT_CIPHER_SUITES =
-  isFipsEnabled ?
-    "ECDHE-ECDSA-AES128-GCM-SHA256:"
-    "ECDHE-RSA-AES128-GCM-SHA256:"
-    "ECDHE-ECDSA-AES256-GCM-SHA384:"
-    "ECDHE-RSA-AES256-GCM-SHA384:"
-  :
     "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:"
     "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:"
     "ECDHE-ECDSA-AES256-GCM-SHA384:"
     "ECDHE-RSA-AES256-GCM-SHA384:";
 
+const std::string ServerContextConfigImpl::DEFAULT_CIPHER_SUITES_FIPS =
+    "ECDHE-ECDSA-AES128-GCM-SHA256:"
+    "ECDHE-RSA-AES128-GCM-SHA256:"
+    "ECDHE-ECDSA-AES256-GCM-SHA384:"
+    "ECDHE-RSA-AES256-GCM-SHA384:";
+
 const std::string ServerContextConfigImpl::DEFAULT_CURVES =
-  isFipsEnabled ? "P-256" : "X25519:P-256";
+  "X25519:P-256";
+
+const std::string ServerContextConfigImpl::DEFAULT_CURVES_FIPS =
+  "P-256" ; 
 
 absl::StatusOr<std::unique_ptr<ServerContextConfigImpl>> ServerContextConfigImpl::create(
     const envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext& config,

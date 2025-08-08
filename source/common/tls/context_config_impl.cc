@@ -28,7 +28,16 @@ namespace {
 
 static const bool isFipsEnabled = ContextConfigImpl::getFipsEnabled();
 
-std::vector<Secret::TlsCertificateConfigProviderSharedPtr> getTlsCertificateConfigProviders(
+std::string generateCertificateHash(const std::string& cert_data) {
+  Buffer::OwnedImpl buffer(cert_data);
+
+  // Calculate SHA-256 hash of cert data and take first 8 chars
+  auto hash = Hex::encode(Envoy::Common::Crypto::UtilitySingleton::get().getSha256Digest(buffer));
+
+  return hash.substr(0, 8);
+}
+
+std::vector<TlsCertificateConfigProviderSharedPtrWithName> getTlsCertificateConfigProviders(
     const envoy::extensions::transport_sockets::tls::v3::CommonTlsContext& config,
     Server::Configuration::TransportSocketFactoryContext& factory_context,
     absl::Status& creation_status) {
@@ -371,19 +380,22 @@ const unsigned ClientContextConfigImpl::DEFAULT_MIN_VERSION = TLS1_2_VERSION;
 const unsigned ClientContextConfigImpl::DEFAULT_MAX_VERSION = TLS1_2_VERSION;
 
 const std::string ClientContextConfigImpl::DEFAULT_CIPHER_SUITES =
-  isFipsEnabled ?
-    "ECDHE-ECDSA-AES128-GCM-SHA256:"
-    "ECDHE-RSA-AES128-GCM-SHA256:"
-    "ECDHE-ECDSA-AES256-GCM-SHA384:"
-    "ECDHE-RSA-AES256-GCM-SHA384:"
-  :
     "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:"
     "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:"
     "ECDHE-ECDSA-AES256-GCM-SHA384:"
     "ECDHE-RSA-AES256-GCM-SHA384:";
 
+const std::string ClientContextConfigImpl::DEFAULT_CIPHER_SUITES_FIPS =
+    "ECDHE-ECDSA-AES128-GCM-SHA256:"
+    "ECDHE-RSA-AES128-GCM-SHA256:"
+    "ECDHE-ECDSA-AES256-GCM-SHA384:"
+    "ECDHE-RSA-AES256-GCM-SHA384:";
+
 const std::string ClientContextConfigImpl::DEFAULT_CURVES =
-  isFipsEnabled ? "P-256" : "X25519:P-256";
+  "X25519:P-256";
+
+const std::string ClientContextConfigImpl::DEFAULT_CURVES_FIPS =
+  "P-256";
 
 absl::StatusOr<std::unique_ptr<ClientContextConfigImpl>> ClientContextConfigImpl::create(
     const envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext& config,
