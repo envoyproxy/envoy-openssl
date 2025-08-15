@@ -84,10 +84,8 @@ public:
    * @param name supplies the scope's namespace prefix.
    * @param evictable whether unused metrics can be deleted from the scope caches. This requires
    * that the metrics are not stored by reference.
-   * @param limits metric limits for counters, gauges and histograms allowed in this scope.
    */
-  virtual ScopeSharedPtr createScope(const std::string& name, bool evictable = false,
-                                     const ScopeStatsLimitSettings& limits = {}) PURE;
+  virtual ScopeSharedPtr createScope(const std::string& name, bool evictable = false) PURE;
 
   /**
    * Allocate a new scope. NOTE: The implementation should correctly handle overlapping scopes
@@ -97,10 +95,8 @@ public:
    * @param name supplies the scope's namespace prefix.
    * @param evictable whether unused metrics can be deleted from the scope caches. This requires
    * that the metrics are not stored by reference.
-   * @param limits metric limits for counters, gauges and histograms allowed in this scope.
    */
-  virtual ScopeSharedPtr scopeFromStatName(StatName name, bool evictable = false,
-                                           const ScopeStatsLimitSettings& limits = {}) PURE;
+  virtual ScopeSharedPtr scopeFromStatName(StatName name, bool evictable = false) PURE;
 
   /**
    * Creates a Counter from the stat name. Tag extraction will be performed on the name.

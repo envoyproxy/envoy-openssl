@@ -154,17 +154,15 @@ std::vector<CounterSharedPtr> ThreadLocalStoreImpl::counters() const {
   return ret;
 }
 
-ScopeSharedPtr ThreadLocalStoreImpl::ScopeImpl::createScope(const std::string& name, bool evictable,
-                                                            const ScopeStatsLimitSettings& limits) {
+ScopeSharedPtr ThreadLocalStoreImpl::ScopeImpl::createScope(const std::string& name,
+                                                            bool evictable) {
   StatNameManagedStorage stat_name_storage(Utility::sanitizeStatsName(name), symbolTable());
-  return scopeFromStatName(stat_name_storage.statName(), evictable, limits);
+  return scopeFromStatName(stat_name_storage.statName(), evictable);
 }
 
-ScopeSharedPtr
-ThreadLocalStoreImpl::ScopeImpl::scopeFromStatName(StatName name, bool evictable,
-                                                   const ScopeStatsLimitSettings& limits) {
+ScopeSharedPtr ThreadLocalStoreImpl::ScopeImpl::scopeFromStatName(StatName name, bool evictable) {
   SymbolTable::StoragePtr joined = symbolTable().join({prefix_.statName(), name});
-  auto new_scope = std::make_shared<ScopeImpl>(parent_, StatName(joined.get()), evictable, limits);
+  auto new_scope = std::make_shared<ScopeImpl>(parent_, StatName(joined.get()), evictable);
   parent_.addScope(new_scope);
   return new_scope;
 }
@@ -398,8 +396,8 @@ void ThreadLocalStoreImpl::clearHistogramsFromCaches() {
 }
 
 ThreadLocalStoreImpl::ScopeImpl::ScopeImpl(ThreadLocalStoreImpl& parent, StatName prefix,
-                                           bool evictable, const ScopeStatsLimitSettings& limits)
-    : scope_id_(parent.next_scope_id_++), parent_(parent), evictable_(evictable), limits_(limits),
+                                           bool evictable)
+    : scope_id_(parent.next_scope_id_++), parent_(parent), evictable_(evictable),
       prefix_(prefix, parent.alloc_.symbolTable()),
       central_cache_(new CentralCacheEntry(parent.alloc_.symbolTable())) {
   parent_.ensureOverflowStats(limits_);

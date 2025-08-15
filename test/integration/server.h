@@ -77,15 +77,13 @@ public:
   TestScopeWrapper(Thread::MutexBasicLockable& lock, ScopeSharedPtr wrapped_scope, Store& store)
       : lock_(lock), wrapped_scope_(wrapped_scope), store_(store) {}
 
-  ScopeSharedPtr createScope(const std::string& name, bool evictable,
-                             const ScopeStatsLimitSettings& limits) override {
+  ScopeSharedPtr createScope(const std::string& name, bool) override {
     Thread::LockGuard lock(lock_);
     return std::make_shared<TestScopeWrapper>(
         lock_, wrapped_scope_->createScope(name, evictable, limits), store_);
   }
 
-  ScopeSharedPtr scopeFromStatName(StatName name, bool evictable,
-                                   const ScopeStatsLimitSettings& limits) override {
+  ScopeSharedPtr scopeFromStatName(StatName name, bool) override {
     Thread::LockGuard lock(lock_);
     return std::make_shared<TestScopeWrapper>(
         lock_, wrapped_scope_->scopeFromStatName(name, evictable, limits), store_);
