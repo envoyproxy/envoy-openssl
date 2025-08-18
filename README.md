@@ -120,3 +120,4 @@ To ensure that envoy loads the OpenSSL 3.0.x libraries, their path needs to be p
 $ LD_LIBRARY_PATH=$OPENSSL_ROOT_DIR/lib64:$LD_LIBRARY_PATH /build/envoy/x64/source/exe/envoy/envoy --version
 /build/envoy/x64/source/exe/envoy/envoy  version: dcd3e1c50ace27b14441fc8b28650b62c0bf2dd2/1.26.8-dev/Modified/DEBUG/BoringSSL
 ```
+
