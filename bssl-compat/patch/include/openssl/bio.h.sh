@@ -73,4 +73,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl BIO_new_fd \
   --uncomment-macro BIO_TYPE_DESCRIPTOR \
   --uncomment-macro BIO_TYPE_SOURCE_SINK \
+  --uncomment-typedef BIO_info_cb \
+  --uncomment-func-decl BIO_wpending \
+  --uncomment-macro BIO_CTRL_WPENDING \
   

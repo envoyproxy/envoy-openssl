@@ -15,6 +15,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex '.*Span<T>::npos' \
   --uncomment-func-impl MakeSpan \
   --uncomment-func-impl MakeSpan \
+  --uncomment-func-impl MakeSpan \
   --uncomment-func-impl MakeConstSpan \
   --uncomment-func-impl MakeConstSpan \
   --uncomment-func-impl MakeConstSpan \

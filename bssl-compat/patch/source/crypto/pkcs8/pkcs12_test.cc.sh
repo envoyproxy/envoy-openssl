@@ -6,7 +6,6 @@ uncomment.sh "$1" --comment \
   --uncomment-regex '#include' \
   --uncomment-regex 'static .* kPassword\[\] = ' \
   --uncomment-regex 'static .* kUnicodePassword\[\] = ' \
-  --uncomment-func-impl StringToBytes \
   --uncomment-static-func-impl TestImpl \
   --uncomment-func-impl TestCompat \
   --uncomment-gtest-func PKCS12Test TestOpenSSL \

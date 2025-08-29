@@ -1,17 +1,16 @@
-/* Copyright (c) 2023, Google Inc.
- *
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
+// Copyright 2023 The BoringSSL Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 //! Definitions of NIST elliptic curves.
 //!
@@ -102,6 +101,8 @@ impl Point {
 
     /// Construct a point by multipling the curve's base point by the given
     /// scalar.
+    ///
+    /// Safety: `scalar` must be a valid pointer.
     unsafe fn from_scalar(group: Group, scalar: *const bssl_sys::BIGNUM) -> Option<Self> {
         let point = Self::new(group);
         // Safety: the members of `point` are valid by construction. `scalar`
@@ -334,9 +335,11 @@ impl Key {
         let mut ptr: *mut u8 = null_mut();
         // Safety: `self.0` is valid by construction. If this returns non-zero
         // then ptr holds ownership of a buffer.
-        let len = unsafe { bssl_sys::EC_KEY_priv2buf(self.0, &mut ptr) };
-        assert!(len != 0);
-        Buffer { ptr, len }
+        unsafe {
+            let len = bssl_sys::EC_KEY_priv2buf(self.0, &mut ptr);
+            assert!(len != 0);
+            Buffer::new(ptr, len)
+        }
     }
 
     /// Parses an ECPrivateKey structure (from RFC 5915).
