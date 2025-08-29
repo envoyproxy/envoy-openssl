@@ -1,17 +1,16 @@
-/* Copyright (c) 2023, Google Inc.
- *
- * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
- * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
- * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
+// Copyright 2023 The BoringSSL Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 #![deny(
     missing_docs,
@@ -27,6 +26,9 @@
 
 extern crate alloc;
 extern crate core;
+
+#[cfg(feature = "mlalgs")]
+use alloc::boxed::Box;
 
 use alloc::vec::Vec;
 use core::ffi::c_void;
@@ -48,7 +50,12 @@ pub mod ed25519;
 pub mod hkdf;
 pub mod hmac;
 pub mod hpke;
+#[cfg(feature = "mlalgs")]
+pub mod mldsa;
+#[cfg(feature = "mlalgs")]
+pub mod mlkem;
 pub mod rsa;
+pub mod slhdsa;
 pub mod x25519;
 
 mod scoped;
@@ -240,6 +247,39 @@ where
     }
 }
 
+/// Returns a boxed BoringSSL structure that is initialized by some function.
+/// Requires that the given function completely initializes the value.
+///
+/// Safety: the argument must fully initialize the pointed-to `T`.
+#[cfg(feature = "mlalgs")]
+unsafe fn initialized_boxed_struct<T, F>(init: F) -> Box<T>
+where
+    F: FnOnce(*mut T),
+{
+    let mut out_uninit = Box::new(core::mem::MaybeUninit::<T>::uninit());
+    init(out_uninit.as_mut_ptr());
+    unsafe { out_uninit.assume_init() }
+}
+
+/// Returns a boxed BoringSSL structure that is initialized by some function.
+/// Requires that the given function completely initializes the value or else
+/// returns false.
+///
+/// Safety: the argument must fully initialize the pointed-to `T` if it returns
+/// true. If it returns false then there are no safety requirements.
+#[cfg(feature = "mlalgs")]
+unsafe fn initialized_boxed_struct_fallible<T, F>(init: F) -> Option<Box<T>>
+where
+    F: FnOnce(*mut T) -> bool,
+{
+    let mut out_uninit = Box::new(core::mem::MaybeUninit::<T>::uninit());
+    if init(out_uninit.as_mut_ptr()) {
+        Some(unsafe { out_uninit.assume_init() })
+    } else {
+        None
+    }
+}
+
 /// Wrap a closure that initializes an output buffer and return that buffer as
 /// an array. Requires that the closure fully initialize the given buffer.
 ///
@@ -286,6 +326,9 @@ where
 
 /// Wrap a closure that writes at most `max_output` bytes to fill a vector.
 /// It must return the number of bytes written.
+///
+/// Safety: `F` must not write more than `max_output` bytes and must return
+/// the number of bytes written.
 #[allow(clippy::unwrap_used)]
 unsafe fn with_output_vec<F>(max_output: usize, func: F) -> Vec<u8>
 where
@@ -301,6 +344,9 @@ where
 
 /// Wrap a closure that writes at most `max_output` bytes to fill a vector.
 /// If successful, it must return the number of bytes written.
+///
+/// Safety: `F` must not write more than `max_output` bytes and must return
+/// the number of bytes written or else return `None` to indicate failure.
 unsafe fn with_output_vec_fallible<F>(max_output: usize, func: F) -> Option<Vec<u8>>
 where
     F: FnOnce(*mut u8) -> Option<usize>,
@@ -327,8 +373,15 @@ where
 pub struct Buffer {
     // This pointer is always allocated by BoringSSL and must be freed using
     // `OPENSSL_free`.
-    pub(crate) ptr: *mut u8,
-    pub(crate) len: usize,
+    ptr: *mut u8,
+    len: usize,
+}
+
+impl Buffer {
+    /// Safety: `ptr` must point to `len` bytes, allocated by BoringSSL.
+    unsafe fn new(ptr: *mut u8, len: usize) -> Buffer {
+        Buffer { ptr, len }
+    }
 }
 
 impl AsRef<[u8]> for Buffer {
@@ -348,6 +401,14 @@ impl Drop for Buffer {
         unsafe {
             bssl_sys::OPENSSL_free(self.ptr as *mut core::ffi::c_void);
         }
+    }
+}
+
+#[cfg(feature = "mlalgs")]
+fn as_cbs(buf: &[u8]) -> bssl_sys::CBS {
+    bssl_sys::CBS {
+        data: buf.as_ffi_ptr(),
+        len: buf.len(),
     }
 }
 
@@ -398,7 +459,32 @@ fn cbb_to_buffer<F: FnOnce(*mut bssl_sys::CBB)>(initial_capacity: usize, func: F
 
     // Safety: `ptr` is on the BoringSSL heap and ownership is returned by
     // `CBB_finish`.
-    Buffer { ptr, len }
+    unsafe { Buffer::new(ptr, len) }
+}
+
+#[cfg(feature = "mlalgs")]
+/// Calls `func` with a `CBB` pointer that has been initialized to a vector
+/// of `len` bytes. That function must write exactly `len` bytes to the
+/// `CBB`. Those bytes are then returned as a vector.
+#[allow(clippy::unwrap_used)]
+fn cbb_to_vec<F: FnOnce(*mut bssl_sys::CBB)>(len: usize, func: F) -> Vec<u8> {
+    let mut boxed = Box::new_uninit_slice(len);
+    // Safety: type checking ensures that `cbb` is the correct size.
+    let mut cbb = unsafe {
+        initialized_struct_fallible(|cbb| {
+            bssl_sys::CBB_init_fixed(cbb, boxed.as_mut_ptr() as *mut u8, len) == 1
+        })
+    }
+    // `CBB_init_fixed` never fails and does not allocate.
+    .unwrap();
+
+    func(&mut cbb);
+
+    unsafe {
+        assert_eq!(bssl_sys::CBB_len(&cbb), len);
+        // `boxed` has been fully written, as checked on the previous line.
+        boxed.assume_init().into()
+    }
 }
 
 /// Used to prevent external implementations of internal traits.

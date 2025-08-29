@@ -213,3 +213,6 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_CTX_set_compliance_policy \
   --uncomment-func-decl SSL_get_verify_result \
   --uncomment-func-decl SSL_CIPHER_get_version \
+  --uncomment-func-decl SSL_set0_CA_names \
+  --uncomment-func-decl SSL_clear \
+  --uncomment-macro DTLS1_3_VERSION \

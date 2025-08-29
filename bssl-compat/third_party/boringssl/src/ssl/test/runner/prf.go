@@ -6,6 +6,7 @@ package runner
 
 import (
 	"crypto"
+	"crypto/hkdf"
 	"crypto/hmac"
 	"crypto/md5"
 	"crypto/sha1"
@@ -14,7 +15,6 @@ import (
 	"hash"
 
 	"golang.org/x/crypto/cryptobyte"
-	"golang.org/x/crypto/hkdf"
 )
 
 // copyHash returns a copy of |h|, which must be an instance of |hashType|.
@@ -258,8 +258,8 @@ func (h *finishedHash) Write(msg []byte) (n int, err error) {
 // handshake message with a TLS header. In DTLS, the header is rewritten to a
 // DTLS header with |seqno| as the sequence number.
 func (h *finishedHash) WriteHandshake(msg []byte, seqno uint16) {
-	if h.isDTLS {
-		// This is somewhat hacky. DTLS hashes a slightly different format.
+	if h.isDTLS && h.version <= VersionTLS12 {
+		// This is somewhat hacky. DTLS <= 1.2 hashes a slightly different format. (DTLS 1.3 uses the same format as TLS.)
 		// First, the TLS header.
 		h.Write(msg[:4])
 		// Then the sequence number and reassembled fragment offset (always 0).
@@ -341,7 +341,11 @@ func (h *finishedHash) zeroSecret() []byte {
 
 // addEntropy incorporates ikm into the running TLS 1.3 secret with HKDF-Expand.
 func (h *finishedHash) addEntropy(ikm []byte) {
-	h.secret = hkdf.Extract(h.suite.hash().New, ikm, h.secret)
+	var err error
+	h.secret, err = hkdf.Extract(h.suite.hash().New, ikm, h.secret)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (h *finishedHash) nextSecret() {
@@ -371,9 +375,9 @@ func hkdfExpandLabel(hash crypto.Hash, secret, label, hashValue []byte, length i
 	x = x[len(label):]
 	x[0] = byte(len(hashValue))
 	copy(x[1:], hashValue)
-	ret := make([]byte, length)
-	if n, err := hkdf.Expand(hash.New, secret, hkdfLabel).Read(ret); err != nil || n != length {
-		panic("hkdfExpandLabel: hkdf.Expand unexpectedly failed")
+	ret, err := hkdf.Expand(hash.New, secret, string(hkdfLabel), length)
+	if err != nil {
+		panic(err)
 	}
 	return ret
 }
@@ -410,11 +414,14 @@ func (h *finishedHash) deriveSecret(label []byte) []byte {
 	return hkdfExpandLabel(h.suite.hash(), h.secret, label, h.appendContextHashes(nil), h.hash.Size(), h.isDTLS)
 }
 
-// echConfirmation computes the ECH accept confirmation signal, as defined in
-// sections 7.2 and 7.2.1 of draft-ietf-tls-esni-13. The transcript hash is
+// echAcceptConfirmation computes the ECH accept confirmation signal, as defined
+// in sections 7.2 and 7.2.1 of draft-ietf-tls-esni-13. The transcript hash is
 // computed by concatenating |h| with |extraMessages|.
 func (h *finishedHash) echAcceptConfirmation(clientRandom, label, extraMessages []byte) []byte {
-	secret := hkdf.Extract(h.suite.hash().New, clientRandom, h.zeroSecret())
+	secret, err := hkdf.Extract(h.suite.hash().New, clientRandom, h.zeroSecret())
+	if err != nil {
+		panic(err)
+	}
 	hashCopy := copyHash(h.hash, h.suite.hash())
 	hashCopy.Write(extraMessages)
 	return hkdfExpandLabel(h.suite.hash(), secret, label, hashCopy.Sum(nil), echAcceptConfirmationLength, h.isDTLS)
@@ -466,8 +473,8 @@ func updateTrafficSecret(hash crypto.Hash, version uint16, secret []byte, isDTLS
 	return hkdfExpandLabel(hash, secret, applicationTrafficLabel, nil, hash.Size(), isDTLS)
 }
 
-func computePSKBinder(psk []byte, version uint16, label []byte, cipherSuite *cipherSuite, clientHello, helloRetryRequest, truncatedHello []byte) []byte {
-	finishedHash := newFinishedHash(version, false, cipherSuite)
+func computePSKBinder(psk []byte, version uint16, isDTLS bool, label []byte, cipherSuite *cipherSuite, clientHello, helloRetryRequest, truncatedHello []byte) []byte {
+	finishedHash := newFinishedHash(version, isDTLS, cipherSuite)
 	finishedHash.addEntropy(psk)
 	binderKey := finishedHash.deriveSecret(label)
 	finishedHash.Write(clientHello)

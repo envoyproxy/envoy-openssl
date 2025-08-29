@@ -1,26 +1,34 @@
---- a/source/ssl/ssl_test.cc
-+++ b/source/ssl/ssl_test.cc
-@@ -85,13 +85,19 @@
- // static const size_t kTicketKeyLen = 48;
+--- a/source/ssl/ssl_test.cc	2025-08-28 11:09:06.338911419 +0200
++++ b/source/ssl/ssl_test.cc	2025-08-28 17:49:04.355472491 +0200
+@@ -23,7 +23,6 @@
+ #include <utility>
+ #include <vector>
+ 
+-#include <gmock/gmock.h>
+ #include <gtest/gtest.h>
+ 
+ #include <openssl/aead.h>
+@@ -84,13 +83,19 @@
+ static const size_t kTicketKeyLen = 48;
  
  static const VersionParam kAllVersions[] = {
 +#ifndef BSSL_COMPAT // OpenSSL 3.0.x no longer supports TLS 1.0 or TLS1.1
      {TLS1_VERSION, VersionParam::is_tls, "TLS1"},
      {TLS1_1_VERSION, VersionParam::is_tls, "TLS1_1"},
-+#endif
++#endif    
      {TLS1_2_VERSION, VersionParam::is_tls, "TLS1_2"},
      {TLS1_3_VERSION, VersionParam::is_tls, "TLS1_3"},
 +#ifndef BSSL_COMPAT // OpenSSL 3.0.x no longer supports DTLS 1.0
      {DTLS1_VERSION, VersionParam::is_dtls, "DTLS1"},
 +#endif
      {DTLS1_2_VERSION, VersionParam::is_dtls, "DTLS1_2"},
-+#ifdef DTLS1_3_EXPERIMENTAL_VERSION
-     {DTLS1_3_EXPERIMENTAL_VERSION, VersionParam::is_dtls, "DTLS1_3"},
++#ifdef DTLS1_3_EXPERIMENTAL_VERSION    
+     {DTLS1_3_VERSION, VersionParam::is_dtls, "DTLS1_3"},
 +#endif // DTLS1_3_EXPERIMENTAL_VERSION
  };
  
- // struct ExpectedCipher {
-@@ -1169,6 +1175,7 @@
+ struct ExpectedCipher {
+@@ -984,6 +989,7 @@
      int auth_nid;
      int prf_nid;
    } kTests[] = {
@@ -28,7 +36,7 @@
        {
            SSL3_CK_RSA_DES_192_CBC3_SHA,
            "TLS_RSA_WITH_3DES_EDE_CBC_SHA",
-@@ -1178,6 +1185,7 @@
+@@ -993,6 +999,7 @@
            NID_auth_rsa,
            NID_md5_sha1,
        },
@@ -36,23 +44,23 @@
        {
            TLS1_CK_RSA_WITH_AES_128_SHA,
            "TLS_RSA_WITH_AES_128_CBC_SHA",
-@@ -1682,7 +1690,11 @@
-     if (client_err != SSL_ERROR_NONE &&
-         client_err != SSL_ERROR_WANT_READ &&
-         client_err != SSL_ERROR_WANT_WRITE &&
-+#ifdef SSL_ERROR_PENDING_TICKET
+@@ -1540,7 +1547,11 @@
+     if (client_err != SSL_ERROR_NONE &&        //
+         client_err != SSL_ERROR_WANT_READ &&   //
+         client_err != SSL_ERROR_WANT_WRITE &&  //
++#ifdef SSL_ERROR_PENDING_TICKET   
          client_err != SSL_ERROR_PENDING_TICKET) {
 +#else
 +        true) {
-+#endif
++#endif      
        fprintf(stderr, "Client error: %s\n", SSL_error_description(client_err));
        return false;
      }
-@@ -1692,7 +1704,11 @@
-     if (server_err != SSL_ERROR_NONE &&
-         server_err != SSL_ERROR_WANT_READ &&
-         server_err != SSL_ERROR_WANT_WRITE &&
-+#ifdef SSL_ERROR_PENDING_TICKET
+@@ -1550,7 +1561,11 @@
+     if (server_err != SSL_ERROR_NONE &&        //
+         server_err != SSL_ERROR_WANT_READ &&   //
+         server_err != SSL_ERROR_WANT_WRITE &&  //
++#ifdef SSL_ERROR_PENDING_TICKET         
          server_err != SSL_ERROR_PENDING_TICKET) {
 +#else
 +        true) {
@@ -60,7 +68,7 @@
        fprintf(stderr, "Server error: %s\n", SSL_error_description(server_err));
        return false;
      }
-@@ -1780,7 +1796,12 @@
+@@ -1639,7 +1654,12 @@
      return false;
    }
    if (config.early_data) {
@@ -73,7 +81,7 @@
    }
    if (config.session) {
      SSL_set_session(client.get(), config.session);
-@@ -1790,14 +1811,25 @@
+@@ -1649,18 +1669,29 @@
      return false;
    }
    if (!config.verify_hostname.empty()) {
@@ -88,6 +96,10 @@
 +#endif
    }
  
+   if (config.ca_names) {
+     SSL_set0_CA_names(client.get(), config.ca_names);
+   }
+ 
 +#ifndef BSSL_COMPAT
    SSL_set_shed_handshake_config(client.get(), shed_handshake_config);
    SSL_set_shed_handshake_config(server.get(), shed_handshake_config);
@@ -99,24 +111,24 @@
  
    if (!CompleteHandshakes(client.get(), server.get())) {
      return false;
-@@ -3410,12 +3442,16 @@
+@@ -3518,12 +3549,15 @@
    // However, for historical reasons, the X509 chain includes the leaf on the
    // client, but does not on the server.
    EXPECT_EQ(sk_X509_num(SSL_get_peer_cert_chain(client_.get())), 1u);
 +#ifndef BSSL_COMPAT // Envoy doesn't need SSL_get0_peer_certificates() so skip this
    EXPECT_EQ(sk_CRYPTO_BUFFER_num(SSL_get0_peer_certificates(client_.get())),
              1u);
+-
 +#endif
- 
    EXPECT_EQ(sk_X509_num(SSL_get_peer_cert_chain(server_.get())), 0u);
-+#ifndef BSSL_COMPAT // Envoy doesn't need SSL_get0_peer_certificates() so skip this
++#ifndef BSSL_COMPAT // Envoy doesn't need SSL_get0_peer_certificates() so skip this  
    EXPECT_EQ(sk_CRYPTO_BUFFER_num(SSL_get0_peer_certificates(server_.get())),
              1u);
 +#endif
  }
  
  TEST_P(SSLVersionTest, NoPeerCertificate) {
-@@ -3428,7 +3464,9 @@
+@@ -3536,7 +3570,9 @@
    // Server should not see a peer certificate.
    bssl::UniquePtr<X509> peer(SSL_get_peer_certificate(server_.get()));
    ASSERT_FALSE(peer);
@@ -125,57 +137,4 @@
 +#endif
  }
  
- // TEST_P(SSLVersionTest, RetainOnlySHA256OfCerts) {
-@@ -3635,11 +3673,13 @@
- #ifdef BSSL_COMPAT
- GTEST_SKIP() << "TODO: Investigate failure on BSSL_COMPAT";
- #endif
-+#ifdef DTLS1_3_EXPERIMENTAL_VERSION
-   if (version() == DTLS1_3_EXPERIMENTAL_VERSION) {
-     // TODO(crbug.com/boringssl/715): Enable the rest of this test for DTLS 1.3
-     // once it supports NewSessionTickets.
-     return;
-   }
-+#endif // DTLS1_3_EXPERIMENTAL_VERSION
-   static const uint8_t kContext1[] = {1};
-   static const uint8_t kContext2[] = {2};
- 
-@@ -4145,8 +4185,10 @@
-       return "DTLSv1";
-     case DTLS1_2_VERSION:
-       return "DTLSv1.2";
-+#ifdef DTLS1_3_EXPERIMENTAL_VERSION
-     case DTLS1_3_EXPERIMENTAL_VERSION:
-       return "DTLSv1.3";
-+#endif // DTLS1_3_EXPERIMENTAL_VERSION
-     default:
-       return "???";
-   }
-@@ -4612,11 +4654,13 @@
-   bssl::UniquePtr<SSL_SESSION> session =
-       CreateClientSession(client_ctx_.get(), server_ctx_.get(), config);
- 
-+#ifdef DTLS1_3_EXPERIMENTAL_VERSION
-   if (version() == DTLS1_3_EXPERIMENTAL_VERSION) {
-     // TODO(crbug.com/boringssl/715): Enable the rest of this test for DTLS 1.3
-     // once it supports NewSessionTickets.
-     return;
-   }
-+#endif // DTLS1_3_EXPERIMENTAL_VERSION
-   // If the client resumes a session with a different name, |SSL_get_servername|
-   // must return the new name.
-   ASSERT_TRUE(session);
-@@ -8059,11 +8103,13 @@
- #ifdef BSSL_COMPAT
- GTEST_SKIP() << "TODO: Investigate failure on BSSL_COMPAT";
- #endif
-+#ifdef DTLS1_3_EXPERIMENTAL_VERSION
-   if (version() == DTLS1_3_EXPERIMENTAL_VERSION) {
-     // TODO(crbug.com/boringssl/715): Enable the rest of this test for DTLS 1.3
-     // once it supports NewSessionTickets.
-     return;
-   }
-+#endif // DTLS1_3_EXPERIMENTAL_VERSION
-   uint8_t key[48];
-   RAND_bytes(key, sizeof(key));
- 
+ TEST_P(SSLVersionTest, RetainOnlySHA256OfCerts) {

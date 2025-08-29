@@ -55,6 +55,7 @@ add_library(bssl-compat STATIC
   source/BIO_read_asn1.c
   source/BIO_snprintf.cc
   source/BIO_vfree.cc
+  source/BIO_wpending.c
   source/BN_cmp_word.cc
   source/BN_bn2hex.cc
   source/BN_bin2bn.cc
@@ -127,6 +128,7 @@ add_library(bssl-compat STATIC
   source/RSA_sign_pss_mgf1.cc
   source/SHA256.cc
   source/SSL_add_file_cert_subjects_to_stack.cc
+  source/SSL_set0_CA_names.cc
   source/SSL_CIPHER_get_kx_nid.cc
   source/SSL_CIPHER_get_min_version.cc
   source/SSL_CIPHER_get_prf_nid.cc
@@ -303,9 +305,7 @@ target_add_bssl_include(bssl-compat
   include/openssl/x509v3.h
   include/openssl/x509v3_errors.h
   include/openssl/x509_vfy.h
-  include/openssl/experimental/dilithium.h
   include/openssl/experimental/kyber.h
-  include/openssl/experimental/spx.h
   include/openssl/pki/certificate.h 
   include/openssl/pki/signature_verify_cache.h
   include/openssl/pki/verify_error.h
@@ -521,6 +521,7 @@ target_add_bssl_function(bssl-compat
   SSL_accept
   SSL_accept
   SSL_alert_desc_string_long
+  SSL_clear
   SSL_CIPHER_get_auth_nid
   SSL_CIPHER_get_cipher_nid
   SSL_CIPHER_get_digest_nid
@@ -694,9 +695,9 @@ target_add_bssl_function(bssl-compat
 
 target_add_bssl_source(bssl-compat
   source/crypto/internal.h
-  source/crypto/mem.c
-  source/crypto/bytestring/cbs.c
-  source/crypto/bytestring/cbb.c
+  source/crypto/mem.cc
+  source/crypto/bytestring/cbs.cc
+  source/crypto/bytestring/cbb.cc
   source/ssl/ssl_x509.cc
 )
 target_compile_definitions(bssl-compat PUBLIC ossl_OPENSSL_SUPPRESS_DEPRECATED)
@@ -728,12 +729,12 @@ enable_testing()
 set(utests-bssl-source-list
   # Tests copied/patched from BoringSSL
   source/crypto/bio/bio_test.cc
-  source/crypto/digest_extra/digest_test.cc
+  source/crypto/digest/digest_test.cc
   source/crypto/err/err_test.cc
-  source/crypto/hmac_extra/hmac_test.cc
+  source/crypto/hmac/hmac_test.cc
   source/crypto/pkcs8/pkcs12_test.cc
-  source/crypto/rand_extra/rand_test.cc
-  source/crypto/rsa_extra/rsa_test.cc
+  source/crypto/rand/rand_test.cc
+  source/crypto/rsa/rsa_test.cc
   source/crypto/stack/stack_test.cc
   source/crypto/test/file_test_gtest.cc
   source/crypto/test/file_test.cc
