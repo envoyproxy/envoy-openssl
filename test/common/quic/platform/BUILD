@@ -24,6 +24,7 @@ envoy_cc_test(
     }),
     data = ["//test/common/tls/test_data:certs"],
     rbe_pool = "6gig",
+    tags = ["nofips"],
     deps = [
         "//source/common/memory:stats_lib",
         "//source/common/quic/platform:quiche_flags_impl_lib",
