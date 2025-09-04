@@ -248,7 +248,7 @@ OPENSSL_EXPORT int EVP_add_digest(const EVP_MD *digest);
 
 // EVP_get_digestbyname returns an |EVP_MD| given a human readable name in
 // |name|, or NULL if the name is unknown.
-OPENSSL_EXPORT const EVP_MD *EVP_get_digestbyname(const char *name);
+OPENSSL_EXPORT const EVP_MD *EVP_get_digestbyname(const char *);
 
 // EVP_dss1 returns the value of EVP_sha1(). This was provided by OpenSSL to
 // specifiy the original DSA signatures, which were fixed to use SHA-1. Note,
