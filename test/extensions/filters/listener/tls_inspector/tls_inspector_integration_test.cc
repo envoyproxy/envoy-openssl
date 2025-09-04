@@ -24,7 +24,7 @@ namespace {
 
 class LargeBufferListenerFilter : public Network::ListenerFilter {
 public:
-  static constexpr int BUFFER_SIZE = 512;
+  static constexpr int BUFFER_SIZE = 256;
   // Network::ListenerFilter
   Network::FilterStatus onAccept(Network::ListenerFilterCallbacks&) override {
     ENVOY_LOG_MISC(debug, "LargeBufferListenerFilter::onAccept");
@@ -369,7 +369,7 @@ TEST_P(TlsInspectorIntegrationTest, RequestedBufferSizeCanStartBig) {
       1);
   auto bytes_processed = static_cast<int>(
       TestUtility::readSampleSum(test_server_->server().dispatcher(), *bytes_processed_histogram));
-  EXPECT_EQ(bytes_processed, 515);
+  EXPECT_EQ(bytes_processed, 385);
   // Double check that the test is effective by ensuring that the
   // LargeBufferListenerFilter::BUFFER_SIZE is smaller than the client hello.
   EXPECT_GT(bytes_processed, LargeBufferListenerFilter::BUFFER_SIZE);
