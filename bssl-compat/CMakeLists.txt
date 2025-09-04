@@ -76,6 +76,7 @@ add_library(bssl-compat STATIC
   source/EVP_DecodedLength.c
   source/EVP_DigestVerifyFinal.cc
   source/EVP_DigestSignFinal.cc
+  source/EVP_get_digestbyname.cc
   source/EVP_MD_CTX_init.cc
   source/EVP_MD_CTX_move.cc
   source/EVP_parse_public_key.cc
@@ -433,7 +434,6 @@ target_add_bssl_function(bssl-compat
   EVP_DigestVerify
   EVP_DigestVerifyUpdate
   EVP_DigestVerifyInit
-  EVP_get_digestbyname
   EVP_EncryptFinal_ex
   EVP_EncryptInit_ex
   EVP_EncryptUpdate
