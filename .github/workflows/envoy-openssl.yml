@@ -32,5 +32,4 @@ jobs:
         ENVOY_RBE: 1
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         ENVOY_STDLIB: libstdc++
-        IMAGE_NAME: quay.io/jwendell/envoy-build-ubuntu
-        IMAGE_ID: openssl-f94a38f62220a2b017878b790b6ea98a0f6c5f9c
+        ENVOY_BUILD_IMAGE: quay.io/jwendell/envoy-build-ubuntu:openssl-f94a38f62220a2b017878b790b6ea98a0f6c5f9c
