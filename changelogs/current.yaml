@@ -1,8 +1,7 @@
-date: May 7, 2025
+date: September 2, 2025
 
 bug_fixes:
-- area: url_template
+- area: oauth2
   change: |
-    Included the asterisk ``*`` in the match pattern when using the * or ** operators in the URL template.
-    This behavioral change can be temporarily reverted by setting runtime guard
-    ``envoy.reloadable_features.uri_template_match_on_asterisk`` to ``false``.
+    Fixed an issue where cookies prefixed with ``__Secure-`` or ``__Host-`` were not receiving a
+    Secure attribute (`CVE-2025-55162 <https://github.com/envoyproxy/envoy/security/advisories/GHSA-95j4-hw7f-v2rh>`_).
