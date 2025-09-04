@@ -67,6 +67,8 @@ class SpanBase {
   friend bool operator!=(Span<T> lhs, Span<T> rhs) { return !(lhs == rhs); }
 };
 
+// Heuristically test whether C is a container type that can be converted into
+// a Span<T> by checking for data() and size() member functions.
 template <typename C, typename T>
 using EnableIfContainer = std::enable_if_t<
     std::is_convertible_v<decltype(std::declval<C>().data()), T *> &&

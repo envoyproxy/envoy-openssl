@@ -9,7 +9,8 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex 'inline constexpr.*' \
   --uncomment-regex '    typename\s[TC=].*' \
   --uncomment-class-fwd Span \
-  --uncomment-regex-range 'namespace internal {' '.\s\s..\snamespace\sinternal' \
+  --uncomment-regex-range 'namespace internal {' '};'\
+  --uncomment-regex-range 'using EnableIfContainer' '.\s\s..\snamespace\sinternal'\
   --uncomment-class Span \
   --uncomment-regex 'Span(.*' \
   --uncomment-regex '.*Span<T>::npos' \
