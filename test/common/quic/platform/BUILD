@@ -50,7 +50,6 @@ envoy_cc_test(
 envoy_quiche_platform_impl_cc_test_library(
     name = "quiche_expect_bug_impl_lib",
     hdrs = ["quiche_expect_bug_impl.h"],
-    tags = ["nofips"],
     deps = [
         "@com_github_google_quiche//:quic_platform_base",
     ],
@@ -59,7 +58,6 @@ envoy_quiche_platform_impl_cc_test_library(
 envoy_quiche_platform_impl_cc_test_library(
     name = "quiche_thread_impl_lib",
     hdrs = ["quiche_thread_impl.h"],
-    tags = ["nofips"],
     deps = [
         "//envoy/thread:thread_interface",
         "//source/common/common:assert_lib",
@@ -71,7 +69,6 @@ envoy_quiche_platform_impl_cc_test_library(
     name = "quiche_test_output_impl_lib",
     srcs = ["quiche_test_output_impl.cc"],
     hdrs = ["quiche_test_output_impl.h"],
-    tags = ["nofips"],
     deps = [
         "//test/test_common:file_system_for_test_lib",
         "@com_github_google_quiche//:quic_platform_base",

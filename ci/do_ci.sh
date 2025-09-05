@@ -18,7 +18,6 @@ echo "building for ${ENVOY_BUILD_ARCH}"
 
 cd "${SRCDIR}"
 
-
 if [[ "${ENVOY_BUILD_ARCH}" == "x86_64" ]]; then
   BUILD_ARCH_DIR="/linux/amd64"
 elif [[ "${ENVOY_BUILD_ARCH}" == "aarch64" ]]; then
@@ -325,6 +324,27 @@ case $CI_TARGET in
         # fi
         ;;
 
+    cache-create)
+        if [[ -z "${ENVOY_CACHE_TARGETS}" ]]; then
+            echo "ENVOY_CACHE_TARGETS not set" >&2
+            exit 1
+        fi
+        if [[ -z "${ENVOY_CACHE_ROOT}" ]]; then
+            echo "ENVOY_CACHE_ROOT not set" >&2
+            exit 1
+        fi
+        BAZEL_BUILD_OPTIONS=()
+        setup_clang_toolchain
+        echo "Fetching cache: ${ENVOY_CACHE_TARGETS}"
+        bazel --output_user_root="${ENVOY_CACHE_ROOT}" \
+              --output_base="${ENVOY_CACHE_ROOT}/base" \
+              aquery "deps(${ENVOY_CACHE_TARGETS})" \
+              --repository_cache="${ENVOY_REPOSITORY_CACHE}" \
+              "${BAZEL_BUILD_OPTIONS[@]}" \
+              "${BAZEL_BUILD_EXTRA_OPTIONS[@]}" \
+              > /dev/null
+        ;;
+
     format-api|check_and_fix_proto_format)
         setup_clang_toolchain
         echo "Check and fix proto format ..."
@@ -472,11 +492,12 @@ case $CI_TARGET in
         # Using todays date as an action_env expires the NIST cache daily, which is the update frequency
         TODAY_DATE=$(date -u -I"date")
         export TODAY_DATE
+        # TODO(phlax): Re-enable cve tests
         bazel run "${BAZEL_BUILD_OPTIONS[@]}" //tools/dependency:check \
               --//tools/dependency:preload_cve_data \
               --action_env=TODAY_DATE \
               -- -v warn \
-                 -c cves release_dates releases
+                 -c release_dates releases
         # Run dependabot tests
         echo "Check dependabot ..."
         bazel run "${BAZEL_BUILD_OPTIONS[@]}" \
@@ -560,6 +581,8 @@ case $CI_TARGET in
         fi
         ENVOY_ARCH_DIR="$(dirname "${ENVOY_BUILD_DIR}")"
         ENVOY_TARBALL_DIR="${ENVOY_TARBALL_DIR:-${ENVOY_ARCH_DIR}}"
+        ENVOY_OCI_DIR="${ENVOY_BUILD_DIR}/${ENVOY_OCI_DIR}"
+        export ENVOY_OCI_DIR
         _PLATFORMS=()
         PLATFORM_NAMES=(
             x64:linux/amd64
@@ -585,12 +608,12 @@ case $CI_TARGET in
         fi
         PLATFORMS="$(IFS=, ; echo "${_PLATFORMS[*]}")"
         export DOCKER_PLATFORM="$PLATFORMS"
-        if [[ -z "${DOCKERHUB_PASSWORD}" && "${#_PLATFORMS[@]}" -eq 1 && -z $ENVOY_DOCKER_SAVE_IMAGE ]]; then
-            # if you are not pushing the images and there is only one platform
-            # then load to Docker (ie local build)
+        if [[ -z "$ENVOY_DOCKER_SAVE_IMAGE" ]]; then
+            # if you are not saving the images as OCI then load to Docker (ie local build)
             export DOCKER_LOAD_IMAGES=1
         fi
-        "${ENVOY_SRCDIR}/ci/docker_ci.sh"
+        echo "BUILDING FOR: ${PLATFORMS}"
+        "${ENVOY_SRCDIR}/distribution/docker/build.sh"
         ;;
 
     dockerhub-publish)
@@ -852,6 +875,11 @@ case $CI_TARGET in
         bazel run "${BAZEL_BUILD_OPTIONS[@]}" \
               //distribution:verify_packages \
               "$PACKAGE_BUILD"
+        ;;
+
+    verify-distroless)
+        docker build -f ci/Dockerfile-distroless-testing -t distroless-testing .
+        docker run --rm distroless-testing
         ;;
 
     verify_examples)
