@@ -33,6 +33,4 @@ jobs:
           --config=remote-ci
         ENVOY_RBE: 1
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        ENVOY_STDLIB: libstdc++
-        IMAGE_NAME: quay.io/jwendell/envoy-build-ubuntu
-        IMAGE_ID: openssl-cb86d91cf406995012e330ab58830e6ee10240cb
+        ENVOY_BUILD_IMAGE: quay.io/jwendell/envoy-build-ubuntu:openssl-f4a881a1205e8e6db1a57162faf3df7aed88eae8
