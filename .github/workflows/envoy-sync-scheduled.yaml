@@ -14,16 +14,15 @@ concurrency:
 jobs:
   sync:
     if: github.repository == 'envoyproxy/envoy-openssl'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
         branch_name:
-          - release/v1.32
-          - release/v1.28
+          - release/v1.34
     steps:
     - id: appauth
-      uses: envoyproxy/toolshed/gh-actions/appauth@actions-v0.2.35
+      uses: envoyproxy/toolshed/gh-actions/appauth@actions-v0.3.23
       with:
         key: ${{ secrets.ENVOY_CI_UPDATE_BOT_KEY }}
         app_id: ${{ secrets.ENVOY_CI_UPDATE_APP_ID }}
