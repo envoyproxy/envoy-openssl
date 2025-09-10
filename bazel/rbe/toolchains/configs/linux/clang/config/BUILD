@@ -46,6 +46,7 @@ platform(
     exec_properties = {
         "container-image": "docker://quay.io/jwendell/envoy-build-ubuntu@sha256:de2689a4c97657764e27050ffbee3c6330a81bf3cd52ede2a4efeff5bce86958",
         "OSFamily": "Linux",
+        "cache-silo-key": "envoy-openssl",
     },
     parents = ["@local_config_platform//:host"],
 )
