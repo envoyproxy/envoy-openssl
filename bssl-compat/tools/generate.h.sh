@@ -54,7 +54,8 @@ PATCH_FILE="$PATCH_DIR/$DST_FILE.patch"
 GEN_APPLIED_PATCH="$CMAKE_CURRENT_BINARY_DIR/$DST_FILE.2.applied.patch"
 if [ -f "$PATCH_FILE" ]; then
     patch -s -f "$GEN_APPLIED_SCRIPT" "$PATCH_FILE" -o "$GEN_APPLIED_PATCH"
-    cp "$GEN_APPLIED_PATCH" "$GEN_APPLIED_SCRIPT"
+else
+    cp "$GEN_APPLIED_SCRIPT" "$GEN_APPLIED_PATCH"
 fi
 
 
@@ -63,14 +64,13 @@ fi
 # =================================
 #
 if [ -f "$PATCH_SCRIPT" ]; then
-    PATH="$(dirname "$0"):$PATH" "$PATCH_SCRIPT" "$GEN_APPLIED_SCRIPT"
+    PATH="$(dirname "$0"):$PATH" "$PATCH_SCRIPT" "$GEN_APPLIED_PATCH"
 else # Comment out the whole file contents
-    "$(dirname "$0")/uncomment.sh" "$GEN_APPLIED_SCRIPT" --comment
+    "$(dirname "$0")/uncomment.sh" "$GEN_APPLIED_PATCH" --comment
 fi
 
 #
 # Copy result to the destination
 # ==============================
 #
-cp "$GEN_APPLIED_SCRIPT" "$CMAKE_CURRENT_BINARY_DIR/$DST_FILE"
-
+cp "$GEN_APPLIED_PATCH" "$CMAKE_CURRENT_BINARY_DIR/$DST_FILE"
