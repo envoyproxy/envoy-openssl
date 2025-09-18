@@ -15,6 +15,7 @@ concurrency:
 jobs:
   openssl:
     runs-on: ubuntu-22.04
+    timeout-minutes: 180
     permissions:
       contents: read
       packages: read
@@ -25,7 +26,7 @@ jobs:
       uses: envoyproxy/toolshed/gh-actions/diskspace@actions-v0.3.23
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
     - run: |
-        ./ci/run_envoy_docker.sh './ci/do_ci.sh dev //test/...'
+        ./ci/run_envoy_docker.sh './ci/do_ci.sh gcc //test/...'
       env:
         BAZEL_BUILD_EXTRA_OPTIONS: >-
           --config=remote-envoy-engflow
