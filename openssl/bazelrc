@@ -1,7 +1,7 @@
 # This file is sourced from %workspace%/.bazelrc, and includes additional
 # configuration specific to building envoy on openssl/bssl-compat
 
-build:clang --linkopt=-latomic
+#build:clang --linkopt=-latomic
 
 test --test_env=ENVOY_IP_TEST_VERSIONS=v4only
 
@@ -24,4 +24,5 @@ build:ppc --//source/extensions/filters/common/lua:luajit2=1 --linkopt=-fuse-ld=
 common --action_env=Clang_DIR=/opt/llvm
 common --action_env=LLVM_DIR=/opt/llvm
 common --action_env=LD_LIBRARY_PATH=/opt/openssl3.0/lib64
+common --action_env=OPENSSL_ROOT_DIR=/opt/openssl3.0
 test --test_env=LD_LIBRARY_PATH=/opt/openssl3.0/lib64
