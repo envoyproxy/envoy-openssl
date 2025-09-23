@@ -52,10 +52,12 @@ add_library(bssl-compat STATIC
   source/BIO_new_bio_pair.cc
   source/BIO_pending.cc
   source/BIO_printf.cc
+  source/BIO_read.cc
   source/BIO_read_asn1.c
   source/BIO_snprintf.cc
   source/BIO_vfree.cc
   source/BIO_wpending.c
+  source/BIO_write.cc
   source/BN_cmp_word.cc
   source/BN_bn2hex.cc
   source/BN_bin2bn.cc
@@ -354,7 +356,6 @@ target_add_bssl_function(bssl-compat
   BIO_new_socket
   BIO_new_mem_buf
   BIO_puts
-  BIO_read
   BIO_read_filename
   BIO_reset
   BIO_get_mem_data
@@ -373,7 +374,6 @@ target_add_bssl_function(bssl-compat
   BIO_shutdown_wr
   BIO_up_ref
   BIO_free_all
-  BIO_write
   BN_add_word
   BN_add_word
   BN_add_word
