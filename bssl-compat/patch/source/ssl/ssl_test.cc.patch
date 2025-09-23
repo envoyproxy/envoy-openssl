@@ -1,5 +1,5 @@
---- a/source/ssl/ssl_test.cc	2025-08-28 11:09:06.338911419 +0200
-+++ b/source/ssl/ssl_test.cc	2025-08-28 17:49:04.355472491 +0200
+--- a/source/ssl/ssl_test.cc
++++ b/source/ssl/ssl_test.cc
 @@ -23,7 +23,6 @@
  #include <utility>
  #include <vector>
@@ -138,3 +138,16 @@
  }
  
  TEST_P(SSLVersionTest, RetainOnlySHA256OfCerts) {
+@@ -4228,7 +4264,11 @@
+   ASSERT_TRUE(CreateClientAndServer(&client_, &server_, client_ctx_.get(),
+                                     server_ctx_.get()));
+   // Before the handshake, |SSL_version| reports some placeholder value.
+-  const uint16_t placeholder = is_dtls() ? DTLS1_2_VERSION : TLS1_2_VERSION;
++#ifdef BSSL_COMPAT // Default versions are different when running on OpenSSL
++  const uint16_t placeholder = is_dtls() ? DTLS1_2_VERSION : TLS1_3_VERSION;
++#else
++  const uint16_t placeholder = is_dtls() ? DTLS1_3_VERSION : TLS1_3_VERSION;
++#endif
+   EXPECT_EQ(SSL_version(client_.get()), placeholder);
+   EXPECT_EQ(SSL_version(server_.get()), placeholder);
+ 
