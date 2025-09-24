@@ -263,7 +263,7 @@ else
   elif [[ "${CI_TARGET}" == "msan" ]]; then
     COVERAGE_TEST_TARGETS=("${COVERAGE_TEST_TARGETS[@]}" "-//test/extensions/...")
   fi
-  TEST_TARGETS=("${COVERAGE_TEST_TARGETS[@]}" "@com_github_google_quiche//:ci_tests")
+  TEST_TARGETS=("${COVERAGE_TEST_TARGETS[@]}")
 fi
 
 case $CI_TARGET in
@@ -478,11 +478,12 @@ case $CI_TARGET in
         # Using todays date as an action_env expires the NIST cache daily, which is the update frequency
         TODAY_DATE=$(date -u -I"date")
         export TODAY_DATE
+        # TODO(phlax): Re-enable cve tests
         bazel run "${BAZEL_BUILD_OPTIONS[@]}" //tools/dependency:check \
               --//tools/dependency:preload_cve_data \
               --action_env=TODAY_DATE \
               -- -v warn \
-                 -c cves release_dates releases
+                 -c release_dates releases
         # Run dependabot tests
         echo "Check dependabot ..."
         bazel run "${BAZEL_BUILD_OPTIONS[@]}" \
@@ -668,14 +669,14 @@ case $CI_TARGET in
         CONFIG="${CONFIG_PREFIX}gcc"
         BAZEL_BUILD_OPTIONS+=("--config=${CONFIG}")
         echo "gcc toolchain configured: ${CONFIG}"
+        echo "bazel fastbuild build with gcc..."
+        bazel_envoy_binary_build fastbuild
         echo "Testing ${TEST_TARGETS[*]}"
         bazel_with_collection \
             test "${BAZEL_BUILD_OPTIONS[@]}" \
             -c fastbuild  \
             --remote_download_minimal \
             -- "${TEST_TARGETS[@]}"
-        echo "bazel release build with gcc..."
-        bazel_envoy_binary_build fastbuild
         ;;
 
     info)

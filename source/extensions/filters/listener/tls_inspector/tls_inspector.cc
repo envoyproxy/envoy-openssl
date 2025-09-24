@@ -95,7 +95,7 @@ Config::Config(
 
         // Return an error to stop the handshake; we have what we wanted already.
         *out_alert = SSL_AD_USER_CANCELLED;
-        return SSL_TLSEXT_ERR_ALERT_FATAL;
+        return SSL_TLSEXT_ERR_OK;
       });
 }
 
@@ -194,15 +194,15 @@ ParseState Filter::parseClientHello(const void* data, size_t len,
   ParseState state = [this, ret]() {
     switch (SSL_get_error(ssl_.get(), ret)) {
     case SSL_ERROR_WANT_READ:
-      if (read_ == maxConfigReadBytes()) {
+      if (read_ >= maxConfigReadBytes()) {
         // We've hit the specified size limit. This is an unreasonably large ClientHello;
         // indicate failure.
         config_->stats().client_hello_too_large_.inc();
         return ParseState::Error;
       }
-      if (read_ == requested_read_bytes_) {
+      if (read_ >= requested_read_bytes_) {
         // Double requested bytes up to the maximum configured.
-        requested_read_bytes_ = std::min<uint32_t>(2 * requested_read_bytes_, maxConfigReadBytes());
+        requested_read_bytes_ = std::min<uint32_t>(2 * read_, maxConfigReadBytes());
       }
       return ParseState::Continue;
     case SSL_ERROR_SSL:
