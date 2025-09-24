@@ -37,6 +37,9 @@ PATCH_DIR="$CMAKE_CURRENT_SOURCE_DIR/patch"
 mkdir -p "$(dirname "$CMAKE_CURRENT_BINARY_DIR/$DST_FILE")"
 
 
+GEN_APPLIED_SCRIPT_FOR_PATCH="$CMAKE_CURRENT_BINARY_DIR/$DST_FILE.applied.script"
+cp "$SRC_DIR/$SRC_FILE" "$GEN_APPLIED_SCRIPT_FOR_PATCH"
+
 #
 # Apply patch file from $PATCH_DIR
 # ================================
@@ -44,7 +47,7 @@ mkdir -p "$(dirname "$CMAKE_CURRENT_BINARY_DIR/$DST_FILE")"
 PATCH_FILE="$PATCH_DIR/$DST_FILE.patch"
 GEN_APPLIED_PATCH="$CMAKE_CURRENT_BINARY_DIR/$DST_FILE.1.applied.patch"
 if [ -f "$PATCH_FILE" ]; then
-    patch -s -f "$SRC_DIR/$SRC_FILE" "$PATCH_FILE" -o "$GEN_APPLIED_PATCH"
+    patch -s -f "$GEN_APPLIED_SCRIPT_FOR_PATCH" "$PATCH_FILE" -o "$GEN_APPLIED_PATCH"
 else
     cp "$SRC_DIR/$SRC_FILE" "$GEN_APPLIED_PATCH"
 fi
