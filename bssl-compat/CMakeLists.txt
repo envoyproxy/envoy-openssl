@@ -520,6 +520,7 @@ target_add_bssl_function(bssl-compat
   SSL_CIPHER_get_handshake_digest
   SSL_CIPHER_get_id
   SSL_CIPHER_get_name
+  SSL_CIPHER_get_version
   SSL_CIPHER_standard_name
   SSL_connect
   SSL_CTX_add_extra_chain_cert
