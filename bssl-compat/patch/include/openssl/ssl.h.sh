@@ -91,6 +91,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_CTX_free \
   --uncomment-func-decl SSL_CTX_add_extra_chain_cert \
   --uncomment-func-decl SSL_CIPHER_get_name \
+  --uncomment-func-decl SSL_CIPHER_get_version \
   --uncomment-func-decl SSL_CIPHER_get_id \
   --uncomment-func-decl SSL_CIPHER_get_auth_nid \
   --uncomment-func-decl SSL_CTX_set_select_certificate_cb \
