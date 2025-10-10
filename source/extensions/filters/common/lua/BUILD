@@ -58,10 +58,12 @@ envoy_cc_library(
     hdrs = ["protobuf_converter.h"],
     deps = [
         ":lua_lib",
-        "//bazel/foreign_cc:luajit",
         "//source/common/protobuf",
         "//source/common/protobuf:create_reflectable_message_lib",
         "//source/common/protobuf:utility_lib",
         "@com_google_absl//absl/strings",
-    ],
+    ] + select({
+        ":with_luajit2": ["//bazel/foreign_cc:luajit2"],
+        "//conditions:default": ["//bazel/foreign_cc:luajit"],
+    }),
 )
