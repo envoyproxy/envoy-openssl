@@ -27,6 +27,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl ASN1_TIME_adj \
   --uncomment-func-decl ASN1_OBJECT_free \
   --uncomment-func-decl ASN1_ENUMERATED_to_BN \
+  --uncomment-func-decl i2d_ASN1_OCTET_STRING \
   --uncomment-macro DECLARE_ASN1_FUNCTIONS \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(ASN1_OBJECT' \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(ASN1_STRING' \

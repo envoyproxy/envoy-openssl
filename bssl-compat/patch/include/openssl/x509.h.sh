@@ -8,6 +8,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_free \
   --uncomment-func-decl d2i_X509 \
   --uncomment-func-decl i2d_X509 \
+  --uncomment-func-decl i2d_X509_NAME \
   --uncomment-macro-redef 'X509_VERSION_[123]' \
   --uncomment-func-decl X509_get0_notBefore \
   --uncomment-func-decl X509_get0_notAfter \
@@ -86,6 +87,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_VERIFY_PARAM_set1 \
   --uncomment-func-decl X509_VERIFY_PARAM_set_flags \
   --uncomment-func-decl X509_VERIFY_PARAM_clear_flags \
+  --uncomment-func-decl X509_VERIFY_PARAM_set_depth \
   --uncomment-func-decl X509_VERIFY_PARAM_set_time_posix \
   --uncomment-func-decl X509_NAME_oneline \
   --uncomment-func-decl X509_CRL_get_issuer \
@@ -94,6 +96,11 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl X509_STORE_set_check_crl \
   --uncomment-func-decl X509_STORE_set_get_crl \
   --uncomment-func-decl X509_CRL_dup \
+  --uncomment-func-decl X509_CRL_verify \
+  --uncomment-func-decl X509_get_ext_by_NID \
+  --uncomment-func-decl X509_CRL_get0_by_cert \
+  --uncomment-func-decl X509_CRL_get_ext \
+  --uncomment-func-decl X509_CRL_get_ext_by_NID \
   --uncomment-func-decl X509_get_ext_count \
   --uncomment-func-decl X509_EXTENSION_get_object \
   --uncomment-typedef X509_STORE_CTX_get_crl_fn \
