@@ -1,11 +1,22 @@
-date: September 3, 2025
+date: Pending
+
+behavior_changes:
+# *Changes that are expected to cause an incompatibility if applicable; deployment changes are likely required*
+
+minor_behavior_changes:
+# *Changes that may cause incompatibilities for some users, but should not for most*
 
 bug_fixes:
 # *Changes expected to improve the state of the world and are unlikely to have negative effects*
-- area: http
+- area: dependency
   change: |
-    Fixed a bug where the ``response_headers_to_add`` may be processed multiple times for the local responses from
-    the router filter.
+    Resolve dependency CVEs:
+    - CVE-2025-0913: fips/go
+    - CVE-2024-25176: luajit
+    - CVE-2024-25177: luajit
+    - CVE-2024-25178: luajit
+    - CVE-2025-27817: kafka
+    - CVE-2025-27818: kafka.
 
 removed_config_or_runtime:
 # *Normally occurs at the end of the* :ref:`deprecation period <deprecated>`
