@@ -135,6 +135,8 @@ def envoy_dependencies(skip_targets = []):
     # Setup external Bazel rules
     _foreign_cc_dependencies()
 
+    _openssl()
+
     # Binding to an alias pointing to the bssl-compat layer
     native.bind(
         name = "ssl",
@@ -298,6 +300,12 @@ def _aws_lc():
     external_http_archive(
         name = "aws_lc",
         build_file = "@envoy//bazel/external:aws_lc.BUILD",
+    )
+
+def _openssl():
+    external_http_archive(
+        name = "openssl",
+        build_file = "@envoy//bazel/external:openssl.BUILD",
     )
 
 def _com_github_openhistogram_libcircllhist():
