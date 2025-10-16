@@ -1,0 +1,66 @@
+name: Auto-merge Bot PRs
+
+on:
+  workflow_run:
+    workflows: ["OpenSSL testing"]
+    types:
+    - completed
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  enable-auto-merge:
+    if: |
+      github.repository == 'envoyproxy/envoy-openssl'
+      && github.event.workflow_run.conclusion == 'success'
+      && github.event.workflow_run.repository.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Get PR info
+      id: pr
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const prs = context.payload.workflow_run.pull_requests;
+          if (prs.length === 0) {
+            core.setFailed("No pull request associated with this workflow_run.");
+            return;
+          }
+          const prNumber = prs[0].number;
+          const { data: pr } = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber
+          });
+          core.setOutput("pr_number", pr.number);
+          core.setOutput("pr_author", pr.user.login);
+          core.setOutput("labels", pr.labels.map(l => l.name).join(","));
+
+    - name: Enable auto-merge
+      if: |
+        contains(steps.pr.outputs.labels, 'auto-merge') &&
+        steps.pr.outputs.pr_author == 'update-openssl-envoy'
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const prId = (await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: ${{ steps.pr.outputs.pr_number }}
+          })).data.node_id;
+
+          await github.graphql(`
+            mutation($prId: ID!) {
+              enablePullRequestAutoMerge(input: {
+                pullRequestId: $prId,
+                mergeMethod: MERGE
+              }) {
+                pullRequest { id }
+              }
+            }
+          `, { prId });
