@@ -14,7 +14,7 @@
  *
  * 1. **Bazel build/test environment** (When RUNFILES_DIR & TEST_WORKSPACE are set):
  *    - OpenSSL libraries are built by Bazel and put in the runfiles directory as data dependencies
- *    - Libraries are loaded from: $RUNFILES_DIR/$TEST_WORKSPACE/external/openssl/openssl/lib64/
+ *    - Libraries are loaded from: $RUNFILES_DIR/$TEST_WORKSPACE/external/openssl/openssl/lib/
  *    - Ensures the tests always use the correct Bazel-built libs, rather than libs from elsewhere
  *
  * 2. **Production/system environment** (When RUNFILES_DIR & TEST_WORKSPACE are not set):
@@ -37,7 +37,7 @@ void* ossl_dlopen(const char* name) {
     char fullpath[PATH_MAX];
     snprintf(fullpath, sizeof(fullpath), "%s/%s/%s/%s",
               runfiles_dir, test_workspace,
-              "external/openssl/openssl/lib64", name);
+              "external/openssl/openssl/lib", name);
     handle = dlopen(fullpath, RTLD_NOW | RTLD_LOCAL | RTLD_DEEPBIND);
   }
   else {

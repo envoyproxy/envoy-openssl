@@ -13,9 +13,10 @@ configure_make(
     lib_source = ":all",
     configure_in_place = True,
     configure_command = "Configure",
+    configure_options = ["--libdir=lib"],
     targets = ["build_sw", "install_sw"],
     args = ["-j"],
-    out_lib_dir = "lib64",
+    out_lib_dir = "lib",
     out_shared_libs = ["libssl.so.3", "libcrypto.so.3"],
     visibility = ["//visibility:public"],
 )
