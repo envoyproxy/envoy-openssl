@@ -8,7 +8,7 @@ on:
 
 permissions:
   pull-requests: write
-  contents: read
+  contents: write
 
 jobs:
   enable-auto-merge:
@@ -54,25 +54,17 @@ jobs:
           echo "::notice title=Skip reason::Label 'auto-merge' not found"
         fi
 
-    - name: Enable auto-merge
+    - name: Merge PR
       if: ${{ steps.pr.outputs.skip != 'true' && contains(steps.pr.outputs.labels, 'auto-merge') && steps.pr.outputs.pr_author == 'update-openssl-envoy[bot]' }}
       uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const prId = (await github.rest.pulls.get({
+          const prNumber = parseInt('${{ steps.pr.outputs.pr_number }}');
+          await github.rest.pulls.merge({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            pull_number: ${{ steps.pr.outputs.pr_number }}
-          })).data.node_id;
-
-          await github.graphql(`
-            mutation($prId: ID!) {
-              enablePullRequestAutoMerge(input: {
-                pullRequestId: $prId,
-                mergeMethod: MERGE
-              }) {
-                pullRequest { id }
-              }
-            }
-          `, { prId });
+            pull_number: prNumber,
+            merge_method: 'merge'
+          });
+          core.notice(`✅ PR #${prNumber} merged automatically.`);
