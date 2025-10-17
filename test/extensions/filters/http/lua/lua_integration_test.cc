@@ -50,14 +50,15 @@ public:
     return ret;
   }
 
-  void initializeFilter(const std::string& filter_config, const std::string& domain = "*") {
+  void initializeFilter(const std::string& filter_config, const std::string& domain = "*",
+                        bool test_large_body = false) {
     config_helper_.prependFilter(filter_config, testing_downstream_filter_);
 
     // Create static clusters.
     createClusters();
 
     config_helper_.addConfigModifier(
-        [domain](
+        [domain, test_large_body, this](
             envoy::extensions::filters::network::http_connection_manager::v3::HttpConnectionManager&
                 hcm) {
           hcm.mutable_route_config()
@@ -74,6 +75,10 @@ public:
               new_route->mutable_response_headers_to_add()->Add()->mutable_header();
           response_header->set_key("fake_header");
           response_header->set_value("fake_value");
+          if (downstream_protocol_ == Http::CodecType::HTTP2 && test_large_body) {
+            hcm.mutable_http2_protocol_options()->mutable_initial_stream_window_size()->set_value(
+                16 * 1024 * 1024);
+          }
 
           const std::string key = "envoy.filters.http.lua";
           const std::string yaml =
@@ -248,6 +253,23 @@ public:
 
   void testRewriteResponseWithoutUpstreamBody(const std::string& code, bool enable_wrap_body) {
     expectResponseBodyRewrite(code, true, enable_wrap_body);
+  }
+
+  IntegrationStreamDecoderPtr initializeAndSendRequest(const std::string& code) {
+    initializeFilter(code, "*", true);
+    codec_client_ = makeHttpConnection(makeClientConnection(lookupPort("http")));
+    Http::TestRequestHeaderMapImpl request_headers{{":method", "POST"},
+                                                   {":path", "/test/long/url"},
+                                                   {":scheme", "http"},
+                                                   {":authority", "foo.lyft.com"},
+                                                   {"x-forwarded-for", "10.0.0.1"}};
+
+    auto encoder_decoder = codec_client_->startRequest(request_headers);
+    Buffer::OwnedImpl request_data("done");
+    encoder_decoder.first.encodeData(request_data, true);
+    waitForNextUpstreamRequest();
+
+    return std::move(encoder_decoder.second);
   }
 
   void cleanup() {
@@ -1274,6 +1296,41 @@ typed_config:
 )EOF";
 
   testRewriteResponse(FILTER_AND_CODE);
+}
+
+// Rewrite response buffer to a huge body.
+TEST_P(LuaIntegrationTest, RewriteResponseToHugeBody) {
+  const std::string FILTER_AND_CODE =
+      R"EOF(
+name: lua
+typed_config:
+  "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+  default_source_code:
+    inline_string: |
+      function envoy_on_response(response_handle)
+        -- Default HTTP2 body buffer limit is 16MB for now. To set
+        -- a 16MB+ body to ensure both HTTP1 and HTTP2 will hit the limit.
+        local huge_body = string.rep("a", 1024 * 1024 * 16 + 1) -- 16MB + 1
+        local content_length = response_handle:body():setBytes(huge_body)
+        response_handle:logTrace(content_length)
+      end
+)EOF";
+
+  auto response = initializeAndSendRequest(FILTER_AND_CODE);
+
+  Http::TestResponseHeaderMapImpl response_headers{{":status", "200"}, {"foo", "bar"}};
+  upstream_request_->encodeHeaders(response_headers, false);
+  Buffer::OwnedImpl response_data1("good");
+  upstream_request_->encodeData(response_data1, false);
+  Buffer::OwnedImpl response_data2("bye");
+  upstream_request_->encodeData(response_data2, true);
+
+  ASSERT_TRUE(response->waitForEndStream());
+  ASSERT_TRUE(response->complete());
+
+  EXPECT_EQ(response->headers().getStatusValue(), "500");
+
+  cleanup();
 }
 
 // Rewrite response buffer, without original upstream response body
