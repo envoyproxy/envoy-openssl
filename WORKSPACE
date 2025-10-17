@@ -5,6 +5,7 @@ local_repository(
     path = "bssl-compat",
 )
 
+
 load("//bazel:api_binding.bzl", "envoy_api_binding")
 
 envoy_api_binding()
