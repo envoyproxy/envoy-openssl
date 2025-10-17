@@ -40,10 +40,19 @@ jobs:
           core.setOutput("pr_author", pr.user.login);
           core.setOutput("labels", pr.labels.map(l => l.name).join(","));
 
+    - name: Print info
+      run: |
+        echo "PR author: ${{ steps.pr.outputs.pr_author }}"
+        echo "Labels: ${{ steps.pr.outputs.labels }}"
+        if [[ "${{ steps.pr.outputs.pr_author }}" != "update-openssl-envoy" ]]; then
+          echo "::notice title=Skip reason::PR author is not update-openssl-envoy"
+        fi
+        if [[ "${{ steps.pr.outputs.labels }}" != *"auto-merge"* ]]; then
+          echo "::notice title=Skip reason::Label 'auto-merge' not found"
+        fi
+
     - name: Enable auto-merge
-      if: |
-        contains(steps.pr.outputs.labels, 'auto-merge') &&
-        steps.pr.outputs.pr_author == 'update-openssl-envoy'
+      if: ${{ contains(steps.pr.outputs.labels, 'auto-merge') && steps.pr.outputs.pr_author == 'update-openssl-envoy' }}
       uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
