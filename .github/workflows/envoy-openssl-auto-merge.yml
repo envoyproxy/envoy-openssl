@@ -47,15 +47,15 @@ jobs:
       run: |
         echo "PR author: ${{ steps.pr.outputs.pr_author }}"
         echo "Labels: ${{ steps.pr.outputs.labels }}"
-        if [[ "${{ steps.pr.outputs.pr_author }}" != "update-openssl-envoy" ]]; then
-          echo "::notice title=Skip reason::PR author is not update-openssl-envoy"
+        if [[ "${{ steps.pr.outputs.pr_author }}" != "update-openssl-envoy[bot]" ]]; then
+          echo "::notice title=Skip reason::PR author is not update-openssl-envoy[bot]"
         fi
         if [[ "${{ steps.pr.outputs.labels }}" != *"auto-merge"* ]]; then
           echo "::notice title=Skip reason::Label 'auto-merge' not found"
         fi
 
     - name: Enable auto-merge
-      if: ${{ steps.pr.outputs.skip != 'true' && contains(steps.pr.outputs.labels, 'auto-merge') && steps.pr.outputs.pr_author == 'update-openssl-envoy' }}
+      if: ${{ steps.pr.outputs.skip != 'true' && contains(steps.pr.outputs.labels, 'auto-merge') && steps.pr.outputs.pr_author == 'update-openssl-envoy[bot]' }}
       uses: actions/github-script@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
