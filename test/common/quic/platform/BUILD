@@ -2,6 +2,7 @@ load(
     "//bazel:envoy_build_system.bzl",
     "envoy_cc_test",
     "envoy_package",
+    "envoy_select_enable_http3",
 )
 load(
     "quiche.bzl",
@@ -24,7 +25,7 @@ envoy_cc_test(
     }),
     data = ["//test/common/tls/test_data:certs"],
     rbe_pool = "6gig",
-    deps = [
+    deps = envoy_select_enable_http3([
         "//source/common/memory:stats_lib",
         "//source/common/quic/platform:quiche_flags_impl_lib",
         "//test/common/buffer:utility_lib",
@@ -43,7 +44,7 @@ envoy_cc_test(
         "@com_github_google_quiche//:quic_platform_thread",
         "@com_github_google_quiche//:quiche_common_mem_slice_storage",
         "@com_github_google_quiche//:quiche_common_platform_system_event_loop",
-    ],
+    ]),
 )
 
 envoy_quiche_platform_impl_cc_test_library(
