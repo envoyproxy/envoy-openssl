@@ -36,13 +36,27 @@ TEST_F(IoHandleBioTest, WriteError) {
 }
 
 TEST_F(IoHandleBioTest, TestMiscApis) {
-  EXPECT_EQ(BIO_read(bio_, nullptr, 0), 0);
+  // EXPECT_EQ(bio_->method->destroy(nullptr), 0);
+  // EXPECT_EQ(bio_->method->bread(nullptr, nullptr, 0), 0);
 
-  int ret = BIO_reset(bio_);
+  EXPECT_DEATH(BIO_ctrl(bio_, BIO_C_GET_FD, 0, nullptr), "should not be called");
+  EXPECT_DEATH(BIO_ctrl(bio_, BIO_C_SET_FD, 0, nullptr), "should not be called");
+
+  int ret = BIO_ctrl(bio_, BIO_CTRL_RESET, 0, nullptr);
   EXPECT_EQ(ret, 0);
 
-  ret = BIO_flush(bio_);
+  ret = BIO_ctrl(bio_, BIO_CTRL_FLUSH, 0, nullptr);
   EXPECT_EQ(ret, 1);
+
+  ret = BIO_ctrl(bio_, BIO_CTRL_SET_CLOSE, 1, nullptr);
+  EXPECT_EQ(ret, 1);
+
+  ret = BIO_ctrl(bio_, BIO_CTRL_GET_CLOSE, 0, nullptr);
+  EXPECT_EQ(ret, 1);
+
+  EXPECT_CALL(io_handle_, close())
+      .WillOnce(Return(testing::ByMove(Api::IoCallUint64Result{0, Api::IoError::none()})));
+  BIO_set_init(bio_, 1);
 }
 
 } // namespace Tls

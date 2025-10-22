@@ -596,10 +596,10 @@ void TlsInspectorTest::testJA4(const std::string& expected_ja4, const std::strin
 }
 
 const absl::flat_hash_map<uint16_t, std::string> basic_test_version_to_ja4_ = {
-    {TLS1_VERSION, "t10i040500_cefcabfea53d_950472255fe9"},
-    {TLS1_1_VERSION, "t11i040500_cefcabfea53d_950472255fe9"},
-    {TLS1_2_VERSION, "t12i100600_a8cf61a50a39_0f3b2bcde21d"},
-    {TLS1_3_VERSION, "t13i030500_55b375c5d22e_678be4e4848e"}};
+    {TLS1_VERSION, "t10i130500_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_1_VERSION, "t11i130500_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_2_VERSION, "t12i560600_e50dfccbdbbc_e7e480e5a997"},
+    {TLS1_3_VERSION, "t13i040900_16476d049b0b_78f1d400d464"}};
 
 TEST_P(TlsInspectorTest, JA4Basic) {
   const uint16_t min_version = std::get<0>(GetParam());
@@ -607,17 +607,17 @@ TEST_P(TlsInspectorTest, JA4Basic) {
 
   std::string expected_value = (min_version == Config::TLS_MIN_SUPPORTED_VERSION &&
                                 max_version == Config::TLS_MAX_SUPPORTED_VERSION)
-                                   ? "t13i130900_f57a46bbacb6_78e6aca7449b"
+                                   ? "t13i590900_1fa906e7e9df_1f22a2ca17c4"
                                    : basic_test_version_to_ja4_.at(min_version);
 
   testJA4(expected_value);
 }
 
 const absl::flat_hash_map<uint16_t, std::string> sni_test_version_to_ja4_ = {
-    {TLS1_VERSION, "t10d040600_cefcabfea53d_950472255fe9"},
-    {TLS1_1_VERSION, "t11d040600_cefcabfea53d_950472255fe9"},
-    {TLS1_2_VERSION, "t12d100700_a8cf61a50a39_0f3b2bcde21d"},
-    {TLS1_3_VERSION, "t13d030600_55b375c5d22e_678be4e4848e"}};
+    {TLS1_VERSION, "t10d130600_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_1_VERSION, "t11d130600_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_2_VERSION, "t12d560700_e50dfccbdbbc_e7e480e5a997"},
+    {TLS1_3_VERSION, "t13d041000_16476d049b0b_78f1d400d464"}};
 
 TEST_P(TlsInspectorTest, JA4WithSNI) {
   const uint16_t min_version = std::get<0>(GetParam());
@@ -625,17 +625,17 @@ TEST_P(TlsInspectorTest, JA4WithSNI) {
 
   std::string expected_value = (min_version == Config::TLS_MIN_SUPPORTED_VERSION &&
                                 max_version == Config::TLS_MAX_SUPPORTED_VERSION)
-                                   ? "t13d131000_f57a46bbacb6_78e6aca7449b"
+                                   ? "t13d591000_1fa906e7e9df_1f22a2ca17c4"
                                    : sni_test_version_to_ja4_.at(min_version);
 
   testJA4(expected_value, "example.com");
 }
 
 const absl::flat_hash_map<uint16_t, std::string> alpn_test_version_to_ja4_ = {
-    {TLS1_VERSION, "t10i0406h2_cefcabfea53d_950472255fe9"},
-    {TLS1_1_VERSION, "t11i0406h2_cefcabfea53d_950472255fe9"},
-    {TLS1_2_VERSION, "t12i1007h2_a8cf61a50a39_0f3b2bcde21d"},
-    {TLS1_3_VERSION, "t13i0306h2_55b375c5d22e_678be4e4848e"}};
+    {TLS1_VERSION, "t10i1306h2_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_1_VERSION, "t11i1306h2_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_2_VERSION, "t12i5607h2_e50dfccbdbbc_e7e480e5a997"},
+    {TLS1_3_VERSION, "t13i0410h2_16476d049b0b_78f1d400d464"}};
 
 TEST_P(TlsInspectorTest, JA4WithALPN) {
   const uint16_t min_version = std::get<0>(GetParam());
@@ -643,17 +643,17 @@ TEST_P(TlsInspectorTest, JA4WithALPN) {
 
   std::string expected_value = (min_version == Config::TLS_MIN_SUPPORTED_VERSION &&
                                 max_version == Config::TLS_MAX_SUPPORTED_VERSION)
-                                   ? "t13i1310h2_f57a46bbacb6_78e6aca7449b"
+                                   ? "t13i5910h2_1fa906e7e9df_1f22a2ca17c4"
                                    : alpn_test_version_to_ja4_.at(min_version);
 
   testJA4(expected_value, "", "\x02h2\x08http/1.1");
 }
 
 const absl::flat_hash_map<uint16_t, std::string> alpn_sni_test_version_to_ja4_ = {
-    {TLS1_VERSION, "t10d0407h2_cefcabfea53d_950472255fe9"},
-    {TLS1_1_VERSION, "t11d0407h2_cefcabfea53d_950472255fe9"},
-    {TLS1_2_VERSION, "t12d1008h2_a8cf61a50a39_0f3b2bcde21d"},
-    {TLS1_3_VERSION, "t13d0307h2_55b375c5d22e_678be4e4848e"}};
+    {TLS1_VERSION, "t10d1307h2_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_1_VERSION, "t11d1307h2_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_2_VERSION, "t12d5608h2_e50dfccbdbbc_e7e480e5a997"},
+    {TLS1_3_VERSION, "t13d0411h2_16476d049b0b_78f1d400d464"}};
 
 TEST_P(TlsInspectorTest, JA4WithSNIAndALPN) {
   const uint16_t min_version = std::get<0>(GetParam());
@@ -661,17 +661,17 @@ TEST_P(TlsInspectorTest, JA4WithSNIAndALPN) {
 
   std::string expected_value = (min_version == Config::TLS_MIN_SUPPORTED_VERSION &&
                                 max_version == Config::TLS_MAX_SUPPORTED_VERSION)
-                                   ? "t13d1312h2_f57a46bbacb6_ef7df7f74e48"
+                                   ? "t13d5911h2_1fa906e7e9df_1f22a2ca17c4"
                                    : alpn_sni_test_version_to_ja4_.at(min_version);
 
   testJA4(expected_value, "example.com", "\x02h2\x08http/1.1");
 }
 
 const absl::flat_hash_map<uint16_t, std::string> alpn_single_char_test_version_to_ja4_ = {
-    {TLS1_VERSION, "t10i0406hh_cefcabfea53d_950472255fe9"},
-    {TLS1_1_VERSION, "t11i0406hh_cefcabfea53d_950472255fe9"},
-    {TLS1_2_VERSION, "t12i1007hh_a8cf61a50a39_0f3b2bcde21d"},
-    {TLS1_3_VERSION, "t13i0306hh_55b375c5d22e_678be4e4848e"}};
+    {TLS1_VERSION, "t10i1306hh_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_1_VERSION, "t11i1306hh_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_2_VERSION, "t12i5607hh_e50dfccbdbbc_e7e480e5a997"},
+    {TLS1_3_VERSION, "t13i0410hh_16476d049b0b_78f1d400d464"}};
 
 TEST_P(TlsInspectorTest, JA4WithSingleCharacterALPN) {
   const uint16_t min_version = std::get<0>(GetParam());
@@ -684,17 +684,17 @@ TEST_P(TlsInspectorTest, JA4WithSingleCharacterALPN) {
 
   std::string expected_ja4 = (min_version == Config::TLS_MIN_SUPPORTED_VERSION &&
                               max_version == Config::TLS_MAX_SUPPORTED_VERSION)
-                                 ? "t13i1310hh_f57a46bbacb6_78e6aca7449b" // same char repeated
+                                 ? "t13i5910hh_1fa906e7e9df_1f22a2ca17c4" // same char repeated
                                  : alpn_single_char_test_version_to_ja4_.at(min_version);
 
   testJA4(expected_ja4, "", alpn);
 }
 
 const absl::flat_hash_map<uint16_t, std::string> no_alpn_test_version_to_ja4_ = {
-    {TLS1_VERSION, "t10i040500_cefcabfea53d_950472255fe9"},
-    {TLS1_1_VERSION, "t11i040500_cefcabfea53d_950472255fe9"},
-    {TLS1_2_VERSION, "t12i100600_a8cf61a50a39_0f3b2bcde21d"},
-    {TLS1_3_VERSION, "t13i030500_55b375c5d22e_678be4e4848e"}};
+    {TLS1_VERSION, "t10i130500_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_1_VERSION, "t11i130500_dcdf5333bb11_195413a0cc0f"},
+    {TLS1_2_VERSION, "t12i560600_e50dfccbdbbc_e7e480e5a997"},
+    {TLS1_3_VERSION, "t13i040900_16476d049b0b_78f1d400d464"}};
 
 TEST_P(TlsInspectorTest, JA4WithEmptyALPN) {
   const uint16_t min_version = std::get<0>(GetParam());
@@ -706,7 +706,7 @@ TEST_P(TlsInspectorTest, JA4WithEmptyALPN) {
 
   std::string expected_ja4 = (min_version == Config::TLS_MIN_SUPPORTED_VERSION &&
                               max_version == Config::TLS_MAX_SUPPORTED_VERSION)
-                                 ? "t13i130900_f57a46bbacb6_78e6aca7449b" // "00" for empty ALPN
+                                 ? "t13i590900_1fa906e7e9df_1f22a2ca17c4" // "00" for empty ALPN
                                  : no_alpn_test_version_to_ja4_.at(min_version);
 
   testJA4(expected_ja4, "", alpn);
@@ -773,7 +773,7 @@ TEST_P(TlsInspectorTest, JA4VersionFallback) {
   mockSysCallForPeek(client_hello);
 
   // Should fall back to ClientHello version field
-  std::string expected_ja4 = "t12i100600_a8cf61a50a39_0f3b2bcde21d";
+  std::string expected_ja4 = "t12i560600_e50dfccbdbbc_e7e480e5a997";
   EXPECT_CALL(socket_, setJA4Hash(absl::string_view(expected_ja4)));
   EXPECT_CALL(socket_, setDetectedTransportProtocol(absl::string_view("tls")));
   EXPECT_CALL(socket_, detectedTransportProtocol()).Times(::testing::AnyNumber());
@@ -821,10 +821,10 @@ TEST_P(TlsInspectorTest, JA4EmptyExtensionsList) {
 }
 
 const absl::flat_hash_map<uint16_t, std::string> max_ciphers_test_version_to_ja4_ = {
-    {TLS1_VERSION, "t10i990500_f254cf4fa23b_950472255fe9"},
-    {TLS1_1_VERSION, "t11i990500_f254cf4fa23b_950472255fe9"},
-    {TLS1_2_VERSION, "t12i990600_f254cf4fa23b_0f3b2bcde21d"},
-    {TLS1_3_VERSION, "t13i990500_b33cacf22aea_678be4e4848e"}};
+    {TLS1_VERSION, "t10i990500_f254cf4fa23b_195413a0cc0f"},
+    {TLS1_1_VERSION, "t11i990500_f254cf4fa23b_195413a0cc0f"},
+    {TLS1_2_VERSION, "t12i990600_f254cf4fa23b_e7e480e5a997"},
+    {TLS1_3_VERSION, "t13i990900_b33cacf22aea_78f1d400d464"}};
 
 TEST_P(TlsInspectorTest, JA4MaxValuesCiphers) {
   const uint16_t min_version = std::get<0>(GetParam());
@@ -941,7 +941,7 @@ TEST_P(TlsInspectorTest, JA4MaxValuesCiphers) {
   // Set up proper expectations for socket calls
   std::string expected_ja4 = (min_version == Config::TLS_MIN_SUPPORTED_VERSION &&
                               max_version == Config::TLS_MAX_SUPPORTED_VERSION)
-                                 ? "t13i990900_b33cacf22aea_78e6aca7449b"
+                                 ? "t13i990900_b33cacf22aea_1f22a2ca17c4"
                                  : max_ciphers_test_version_to_ja4_.at(min_version);
 
   EXPECT_CALL(socket_, setDetectedTransportProtocol(absl::string_view("tls")));
