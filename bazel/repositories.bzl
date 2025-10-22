@@ -3,7 +3,8 @@ load("@envoy_api//bazel:envoy_http_archive.bzl", "envoy_http_archive")
 load("@envoy_api//bazel:external_deps.bzl", "load_repository_locations")
 load(":repository_locations.bzl", "PROTOC_VERSIONS", "REPOSITORY_LOCATIONS_SPEC")
 
-PPC_SKIP_TARGETS = ["envoy.string_matcher.lua", "envoy.filters.http.lua", "envoy.router.cluster_specifier_plugin.lua"]
+# ppc64le uses luajit2 so http.lua can be built
+PPC_SKIP_TARGETS = []
 
 WINDOWS_SKIP_TARGETS = [
     "envoy.extensions.http.cache.file_system_http_cache",
@@ -102,7 +103,12 @@ def _go_deps(skip_targets):
     # Keep the skip_targets check around until Istio Proxy has stopped using
     # it to exclude the Go rules.
     if "io_bazel_rules_go" not in skip_targets:
-        external_http_archive(name = "io_bazel_rules_go")
+        external_http_archive(
+            name = "io_bazel_rules_go",
+            # TODO(wrowe, sunjayBhatia): remove when Windows RBE supports batch file invocation
+            patch_args = ["-p1"],
+            patches = ["@envoy//bazel:rules_go.patch"],
+        )
         external_http_archive("bazel_gazelle")
 
 def _rust_deps():
@@ -129,13 +135,17 @@ def envoy_dependencies(skip_targets = []):
     # Setup external Bazel rules
     _foreign_cc_dependencies()
 
-    # BoringSSL:
-    # - BoringSSL FIPS from @boringssl_fips//:ssl,
-    # - non-FIPS BoringSSL from @boringssl//:ssl.
-    # SSL/crypto dependencies are resolved via EXTERNAL_DEPS_MAP in envoy_internal.bzl
-    _boringssl()
-    _boringssl_fips()
-    _aws_lc()
+    _openssl()
+
+    # Binding to an alias pointing to the bssl-compat layer
+    native.bind(
+        name = "ssl",
+        actual = "@envoy//bssl-compat:ssl",
+    )
+    native.bind(
+        name = "crypto",
+        actual = "@envoy//bssl-compat:crypto",
+    )
 
     # The long repo names (`com_github_fmtlib_fmt` instead of `fmtlib`) are
     # semi-standard in the Bazel community, intended to avoid both duplicate
@@ -170,6 +180,7 @@ def envoy_dependencies(skip_targets = []):
     _com_github_jbeder_yaml_cpp()
     _com_github_libevent_libevent()
     _com_github_luajit_luajit()
+    _com_github_luajit2_luajit2()
     _com_github_nghttp2_nghttp2()
     _com_github_msgpack_cpp()
     _com_github_skyapm_cpp2sky()
@@ -288,6 +299,12 @@ def _aws_lc():
     external_http_archive(
         name = "aws_lc",
         build_file = "@envoy//bazel/external:aws_lc.BUILD",
+    )
+
+def _openssl():
+    external_http_archive(
+        name = "openssl",
+        build_file = "@envoy//bazel/external:openssl.BUILD",
     )
 
 def _com_github_openhistogram_libcircllhist():
@@ -670,6 +687,7 @@ def _v8():
             "@envoy//bazel:v8_ppc64le.patch",
             # https://issues.chromium.org/issues/423403090
             "@envoy//bazel:v8_python.patch",
+            "@envoy//bazel:v8-ppc64le.patch",
         ],
         patch_args = ["-p1"],
         patch_cmds = [
@@ -727,6 +745,8 @@ def _com_github_google_quiche():
         name = "com_github_google_quiche",
         patch_cmds = ["find quiche/ -type f -name \"*.bazel\" -delete"],
         build_file = "@envoy//bazel/external:quiche.BUILD",
+        patches = ["@envoy//bazel/external:quiche-s390x.patch"],
+        patch_args = ["-p1"],
     )
 
 def _googleurl():
@@ -746,8 +766,12 @@ def _com_github_grpc_grpc():
     external_http_archive(
         name = "com_github_grpc_grpc",
         patch_args = ["-p1"],
-        patches = ["@envoy//bazel:grpc.patch"],
-        repo_mapping = {"@openssl": "@boringssl"},
+        patches = [
+            "@envoy//bazel:grpc.patch",
+            "@envoy//bazel:grpc-s390x.patch",
+        ],
+        # Needed until grpc updates its naming (v1.62.0)
+        repo_mapping = {"@com_github_cncf_udpa": "@com_github_cncf_xds"},
     )
     external_http_archive(
         "build_bazel_rules_apple",
@@ -779,6 +803,7 @@ def _proxy_wasm_cpp_host():
         patch_args = ["-p1"],
         patches = [
             "@envoy//bazel:proxy_wasm_cpp_host.patch",
+	     "@envoy//bazel:proxy_wasm_cpp_host-s390x.patch",
         ],
     )
 
@@ -802,6 +827,25 @@ def _com_github_luajit_luajit():
         build_file_content = BUILD_ALL_CONTENT,
         patches = ["@envoy//bazel/foreign_cc:luajit.patch"],
         patch_args = ["-p1"],
+    )
+
+    native.bind(
+        name = "luajit",
+        actual = "@envoy//bazel/foreign_cc:luajit",
+    )
+
+def _com_github_luajit2_luajit2():
+    external_http_archive(
+        name = "com_github_luajit2_luajit2",
+        build_file_content = BUILD_ALL_CONTENT,
+        patches = ["@envoy//bazel/foreign_cc:luajit2.patch"],
+        patch_args = ["-p1"],
+        patch_cmds = ["chmod u+x build.py"],
+    )
+
+    native.bind(
+        name = "luajit2",
+        actual = "@envoy//bazel/foreign_cc:luajit2",
     )
 
 def _com_github_google_tcmalloc():
@@ -909,8 +953,11 @@ def _rules_ruby():
 def _foreign_cc_dependencies():
     external_http_archive(
         name = "rules_foreign_cc",
-        patches = ["@envoy//bazel:rules_foreign_cc.patch"],
         patch_args = ["-p1"],
+        patches = [
+           "@envoy//bazel:rules_foreign_cc.patch",
+           "@envoy//bazel:rules_foreign_cc-s390x.patch",
+        ],
     )
 
 def _com_github_maxmind_libmaxminddb():
@@ -918,3 +965,8 @@ def _com_github_maxmind_libmaxminddb():
         name = "com_github_maxmind_libmaxminddb",
         build_file_content = BUILD_ALL_CONTENT,
     )
+    native.bind(
+        name = "maxmind",
+        actual = "@envoy//bazel/foreign_cc:maxmind_linux",
+    )
+
