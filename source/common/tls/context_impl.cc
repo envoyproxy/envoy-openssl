@@ -182,7 +182,9 @@ ContextImpl::ContextImpl(
         // even request client certs. So, instead, we should configure a callback to skip
         // validation and always supply the callback to boring SSL.
         SSL_CTX_set_custom_verify(ctx, verify_mode, customVerifyCallback);
+#if 0  // Disabled as not implememnted in the bSSL layer
         SSL_CTX_set_reverify_on_resume(ctx, /*reverify_on_resume_enabled)=*/1);
+#endif
       }
     }
   }
@@ -324,6 +326,7 @@ ContextImpl::ContextImpl(
   parsed_alpn_protocols_ = parseAlpnProtocols(config.alpnProtocols(), creation_status);
   SET_AND_RETURN_IF_NOT_OK(creation_status, creation_status);
 
+  
   // Register stat names based on lists reported by BoringSSL.
   std::vector<const char*> list(SSL_get_all_cipher_names(nullptr, 0));
   SSL_get_all_cipher_names(list.data(), list.size());
@@ -333,6 +336,7 @@ ContextImpl::ContextImpl(
   SSL_get_all_curve_names(list.data(), list.size());
   stat_name_set_->rememberBuiltins(list);
 
+  
   list.resize(SSL_get_all_signature_algorithm_names(nullptr, 0));
   SSL_get_all_signature_algorithm_names(list.data(), list.size());
   stat_name_set_->rememberBuiltins(list);
@@ -362,6 +366,7 @@ ContextImpl::ContextImpl(
     }
   }
 
+         
   // Compliance policy must be applied last to have a defined behavior.
   if (const auto policy = config.compliancePolicy(); policy.has_value()) {
     switch (policy.value()) {
@@ -565,9 +570,11 @@ void ContextImpl::logHandshake(SSL* ssl) const {
   // Increment the `was_key_usage_invalid_` stats to indicate the given cert would have triggered an
   // error but is allowed because the enforcement that rsa key usage and tls usage need to be
   // matched has been disabled.
+#if 0  // Disabled as SSL_was_key_usage_invalid() is not implememnted in the bSSL layer
   if (SSL_was_key_usage_invalid(ssl)) {
     stats_.was_key_usage_invalid_.inc();
   }
+#endif
 }
 
 std::vector<Ssl::PrivateKeyMethodProviderSharedPtr> ContextImpl::getPrivateKeyMethodProviders() {
