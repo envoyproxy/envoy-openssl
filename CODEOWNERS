@@ -450,3 +450,7 @@ extensions/upstreams/tcp @ggreenway @mattklein123
 /contrib/tap_sinks/ @coolg92003 @yiyibaoguo
 /contrib/peak_ewma/filters/http/ @rroblak @UNOWNED
 /contrib/peak_ewma/load_balancing_policies/ @rroblak @UNOWNED
+
+# OpenSSL FIXME: Maybe create another group "owners"?
+/bssl-compat/ @envoyproxy/envoy-openssl-sync
+/openssl/ @envoyproxy/envoy-openssl-sync
