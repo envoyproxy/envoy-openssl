@@ -436,11 +436,11 @@ envoy_cc_test_library(
     name = "envoy_quic_h3_fuzz_helper_lib",
     srcs = envoy_select_enable_http3(["envoy_quic_h3_fuzz_helper.cc"]),
     hdrs = ["envoy_quic_h3_fuzz_helper.h"],
-    deps = [
+    deps = envoy_select_enable_http3([
         ":envoy_quic_h3_fuzz_proto_cc_proto",
         "//source/common/common:assert_lib",
         "@com_github_google_quiche//:quic_test_tools_test_utils_lib",
-    ],
+    ]),
 )
 
 envoy_cc_fuzz_test(
