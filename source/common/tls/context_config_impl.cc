@@ -14,10 +14,12 @@
 #include "source/common/protobuf/utility.h"
 #include "source/common/secret/sds_api.h"
 #include "source/common/ssl/certificate_validation_context_config_impl.h"
+#include "source/common/ssl/ssl.h"
 #include "source/common/tls/ssl_handshaker.h"
 
 #include "openssl/crypto.h"
 #include "openssl/ssl.h"
+
 
 namespace Envoy {
 namespace Extensions {
@@ -380,8 +382,8 @@ const unsigned ClientContextConfigImpl::DEFAULT_MIN_VERSION = TLS1_2_VERSION;
 const unsigned ClientContextConfigImpl::DEFAULT_MAX_VERSION = TLS1_2_VERSION;
 
 const std::string ClientContextConfigImpl::DEFAULT_CIPHER_SUITES =
-    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:"
-    "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:"
+    SSL_SELECT("[ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305]:", "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:")
+    SSL_SELECT("[ECDHE-RSA-AES128-GCM-SHA256|ECDHE-RSA-CHACHA20-POLY1305]:", "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:")
     "ECDHE-ECDSA-AES256-GCM-SHA384:"
     "ECDHE-RSA-AES256-GCM-SHA384:";
 
@@ -391,11 +393,10 @@ const std::string ClientContextConfigImpl::DEFAULT_CIPHER_SUITES_FIPS =
     "ECDHE-ECDSA-AES256-GCM-SHA384:"
     "ECDHE-RSA-AES256-GCM-SHA384:";
 
-const std::string ClientContextConfigImpl::DEFAULT_CURVES =
-  "X25519:P-256";
+const std::string ClientContextConfigImpl::DEFAULT_CURVES = "X25519:"
+                                                            "P-256";
 
-const std::string ClientContextConfigImpl::DEFAULT_CURVES_FIPS =
-  "P-256";
+const std::string ClientContextConfigImpl::DEFAULT_CURVES_FIPS = "P-256";
 
 absl::StatusOr<std::unique_ptr<ClientContextConfigImpl>> ClientContextConfigImpl::create(
     const envoy::extensions::transport_sockets::tls::v3::UpstreamTlsContext& config,

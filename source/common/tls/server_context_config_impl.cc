@@ -15,6 +15,7 @@
 #include "source/common/ssl/certificate_validation_context_config_impl.h"
 #include "source/common/tls/default_tls_certificate_selector.h"
 #include "source/common/tls/ssl_handshaker.h"
+#include "source/common/ssl/ssl.h"
 
 #include "openssl/crypto.h"
 #include "openssl/ssl.h"
@@ -88,13 +89,13 @@ bool getStatelessSessionResumptionDisabled(
 
 static const bool isFipsEnabled = ContextConfigImpl::getFipsEnabled();
 
-const unsigned ServerContextConfigImpl::DEFAULT_MIN_VERSION = TLS1_VERSION;
+const unsigned ServerContextConfigImpl::DEFAULT_MIN_VERSION = SSL_SELECT(TLS1_2_VERSION, TLS1_VERSION);
 
 const unsigned ServerContextConfigImpl::DEFAULT_MAX_VERSION = TLS1_3_VERSION;
 
 const std::string ServerContextConfigImpl::DEFAULT_CIPHER_SUITES =
-    "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:"
-    "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:"
+    SSL_SELECT("[ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305]:", "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-CHACHA20-POLY1305:")
+    SSL_SELECT("[ECDHE-RSA-AES128-GCM-SHA256|ECDHE-RSA-CHACHA20-POLY1305]:", "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-CHACHA20-POLY1305:")
     "ECDHE-ECDSA-AES256-GCM-SHA384:"
     "ECDHE-RSA-AES256-GCM-SHA384:";
 
