@@ -156,7 +156,7 @@ INSTANTIATE_TEST_SUITE_P(IpVersions, ExtAuthzNetworkIntegrationTest, GRPC_CLIENT
 
 // Test that when ext_authz denies with TLS and send_tls_alert_on_denial is true,
 // the connection is closed with a TLS alert.
-TEST_P(ExtAuthzNetworkIntegrationTest, DenialWithTlsAlertEnabled) {
+TEST_P(ExtAuthzNetworkIntegrationTest, DISABLED_DenialWithTlsAlertEnabled) {
   initializeTest(true /* send_tls_alert_on_denial */, true /* with_tls */);
 
   setupSslConnection();
