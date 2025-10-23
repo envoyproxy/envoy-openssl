@@ -20,6 +20,13 @@ def envoy_select_boringssl(if_fips, default = None, if_disabled = None):
         "//conditions:default": default or [],
     })
 
+# Selects the given values based on the SSL backend (BoringSSL or OpenSSL).
+def envoy_select_ssl(if_openssl, if_boringssl = None, repository = ""):
+    return select({
+        repository + "//bazel:ssl_openssl": if_openssl,
+        "//conditions:default": if_boringssl or [],
+    })
+
 # Selects the given values if Google gRPC is enabled in the current build.
 def envoy_select_google_grpc(xs, repository = ""):
     return select({
