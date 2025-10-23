@@ -93,7 +93,8 @@ RUNTIME_GUARD(envoy_restart_features_move_locality_schedulers_to_lb);
 RUNTIME_GUARD(envoy_restart_features_raise_file_limits);
 RUNTIME_GUARD(envoy_restart_features_skip_backing_cluster_check_for_sds);
 RUNTIME_GUARD(envoy_restart_features_use_eds_cache_for_ads);
-RUNTIME_GUARD(envoy_restart_features_validate_http3_pseudo_headers);
+RUNTIME_GUARD(envoy_restart_features_use_fast_protobuf_hash);
+RUNTIME_GUARD(envoy_reloadable_features_enable_intermediate_ca);
 
 // Begin false flags. Most of them should come with a TODO to flip true.
 
