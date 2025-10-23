@@ -135,16 +135,20 @@ def envoy_dependencies(skip_targets = []):
     # Setup external Bazel rules
     _foreign_cc_dependencies()
 
+    # Load both SSL backends - the actual one used is selected via --define=ssl=<boringssl|openssl>
+    _boringssl()
+    _boringssl_fips()
     _openssl()
 
-    # Binding to an alias pointing to the bssl-compat layer
+    # Binding to an alias that selects between BoringSSL and OpenSSL via bssl-compat
+    # The selection is made in //bazel:boringssl and //bazel:boringcrypto aliases
     native.bind(
         name = "ssl",
-        actual = "@envoy//bssl-compat:ssl",
+        actual = "@envoy//bazel:boringssl",
     )
     native.bind(
         name = "crypto",
-        actual = "@envoy//bssl-compat:crypto",
+        actual = "@envoy//bazel:boringcrypto",
     )
 
     # The long repo names (`com_github_fmtlib_fmt` instead of `fmtlib`) are

@@ -27,6 +27,7 @@
 #include "test/test_common/registry.h"
 #include "test/test_common/test_runtime.h"
 #include "test/test_common/utility.h"
+#include "source/common/ssl/ssl.h"
 
 #include "absl/strings/match.h"
 #include "absl/time/clock.h"
@@ -55,7 +56,7 @@ INSTANTIATE_TEST_SUITE_P(IpVersions, SslIntegrationTest,
 // Test that Envoy behaves correctly when receiving an SSLAlert for an unspecified code. The codes
 // are defined in the standard, and assigned codes have a string associated with them in BoringSSL,
 // which is included in logs. For an unknown code, verify that no crash occurs.
-TEST_P(SslIntegrationTest, DISABLED_UnknownSslAlert) {
+BORINGSSL_TEST_P(SslIntegrationTest, UnknownSslAlert) {
   initialize();
   Network::ClientConnectionPtr connection = makeSslClientConnection({});
   ConnectionStatusCallbacks callbacks;
@@ -387,7 +388,7 @@ TEST_P(SslIntegrationTest, LogPeerIpSanUnsupportedIpVersion) {
 }
 
 // This test is disabled because it uses the timed_cert_validator which we don't support.
-TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationSucceeds) {
+BORINGSSL_TEST_P(SslIntegrationTest, AsyncCertValidationSucceeds) {
   // Config client to use an async cert validator which defer the actual validation by 5ms.
   auto custom_validator_config = std::make_unique<envoy::config::core::v3::TypedExtensionConfig>(
       envoy::config::core::v3::TypedExtensionConfig());
@@ -418,7 +419,7 @@ typed_config:
 }
 
 // This test is disabled because it uses the timed_cert_validator which we don't support.
-TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationSucceedsWithLocalAddress) {
+BORINGSSL_TEST_P(SslIntegrationTest, AsyncCertValidationSucceedsWithLocalAddress) {
   auto custom_validator_config = std::make_unique<envoy::config::core::v3::TypedExtensionConfig>(
       envoy::config::core::v3::TypedExtensionConfig());
   TestUtility::loadFromYaml(TestEnvironment::substitute(R"EOF(
@@ -472,7 +473,7 @@ typed_config:
 }
 
 // This test is disabled because it uses the timed_cert_validator which we don't support.
-TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationAfterTearDown) {
+BORINGSSL_TEST_P(SslIntegrationTest, AsyncCertValidationAfterTearDown) {
   auto custom_validator_config = std::make_unique<envoy::config::core::v3::TypedExtensionConfig>(
       envoy::config::core::v3::TypedExtensionConfig());
   TestUtility::loadFromYaml(TestEnvironment::substitute(R"EOF(
@@ -522,7 +523,7 @@ typed_config:
 }
 
 // This test is disabled because it uses the timed_cert_validator which we don't support.
-TEST_P(SslIntegrationTest, DISABLED_AsyncCertValidationAfterSslShutdown) {
+BORINGSSL_TEST_P(SslIntegrationTest, AsyncCertValidationAfterSslShutdown) {
   auto custom_validator_config = std::make_unique<envoy::config::core::v3::TypedExtensionConfig>(
       envoy::config::core::v3::TypedExtensionConfig());
   TestUtility::loadFromYaml(TestEnvironment::substitute(R"EOF(
@@ -1321,7 +1322,7 @@ typed_config:
   EXPECT_EQ(test_server_->counter("aysnc_cert_selection.cert_selection_sync")->value(), 1);
 }
 
-TEST_P(SslIntegrationTest, DISABLED_AsyncCertSelectorSucceeds) {
+BORINGSSL_TEST_P(SslIntegrationTest, AsyncCertSelectorSucceeds) {
   tls_cert_selector_yaml_ = R"EOF(
 name: test-tls-context-provider
 typed_config:
@@ -1339,7 +1340,7 @@ typed_config:
             1);
 }
 
-TEST_P(SslIntegrationTest, DISABLED_AsyncSleepCertSelectorSucceeds) {
+BORINGSSL_TEST_P(SslIntegrationTest, AsyncSleepCertSelectorSucceeds) {
   tls_cert_selector_yaml_ = R"EOF(
 name: test-tls-context-provider
 typed_config:
@@ -1357,7 +1358,7 @@ typed_config:
             1);
 }
 
-TEST_P(SslIntegrationTest, DISABLED_AsyncSleepCertSelectionAfterTearDown) {
+BORINGSSL_TEST_P(SslIntegrationTest, AsyncSleepCertSelectionAfterTearDown) {
   tls_cert_selector_yaml_ = R"EOF(
 name: test-tls-context-provider
 typed_config:
@@ -1388,7 +1389,7 @@ typed_config:
                                  TestUtility::DefaultTimeout, dispatcher_.get());
 }
 
-TEST_P(SslIntegrationTest, DISABLED_AsyncCertSelectionAfterSslShutdown) {
+BORINGSSL_TEST_P(SslIntegrationTest, AsyncCertSelectionAfterSslShutdown) {
   tls_cert_selector_yaml_ = R"EOF(
 name: test-tls-context-provider
 typed_config:
