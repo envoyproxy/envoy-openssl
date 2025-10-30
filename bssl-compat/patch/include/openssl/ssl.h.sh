@@ -16,6 +16,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl SSL_set_tlsext_host_name \
   --uncomment-func-decl SSL_set_session \
   --uncomment-func-decl SSL_set_quiet_shutdown \
+  --uncomment-func-decl SSL_get_quiet_shutdown \
   --uncomment-func-decl SSL_set_fd \
   --uncomment-func-decl SSL_set_ex_data \
   --uncomment-func-decl SSL_set_connect_state \

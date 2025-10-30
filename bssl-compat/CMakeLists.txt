@@ -80,6 +80,7 @@ add_library(bssl-compat STATIC
   source/EVP_MD_CTX_init.cc
   source/EVP_MD_CTX_move.cc
   source/EVP_parse_public_key.cc
+  source/EVP_parse_private_key.cc
   source/EVP_PKEY_get0_EC_KEY.cc
   source/EVP_PKEY_get0_RSA.cc
   source/EVP_PKEY_get1_EC_KEY.cc
@@ -426,6 +427,7 @@ target_add_bssl_function(bssl-compat
   EVP_DigestFinal_ex
   EVP_DigestInit
   EVP_DigestInit_ex
+  EVP_DigestSign
   EVP_DigestSignInit
   EVP_DigestSignUpdate
   EVP_DigestUpdate
@@ -457,6 +459,7 @@ target_add_bssl_function(bssl-compat
   EVP_PKEY_new
   EVP_PKEY_set1_RSA
   EVP_PKEY_size
+  EVP_PKEY_bits
   EVP_sha1
   EVP_sha224
   EVP_sha256
@@ -594,6 +597,7 @@ target_add_bssl_function(bssl-compat
   SSL_set_ex_data
   SSL_set_fd
   SSL_set_quiet_shutdown
+  SSL_get_quiet_shutdown
   SSL_set_session
   SSL_set_session_id_context
   SSL_set_SSL_CTX
