@@ -489,6 +489,16 @@ config_setting(
     values = {"define": "boringssl=disabled"},
 )
 
+config_setting(
+    name = "ssl_openssl",
+    values = {"define": "ssl=openssl"},
+)
+
+config_setting(
+    name = "ssl_boringssl",
+    values = {"define": "ssl=boringssl"},
+)
+
 selects.config_setting_group(
     name = "boringssl_fips_x86",
     match_all = [
@@ -551,15 +561,21 @@ config_setting(
     values = {"define": "uhv=enabled"},
 )
 
-# Alias pointing to the selected version of BoringSSL:
+# Alias pointing to the selected SSL implementation (BoringSSL or OpenSSL via bssl-compat):
 alias(
     name = "boringssl",
-    actual = "@envoy//bssl-compat:ssl"
+    actual = select({
+        ":ssl_openssl": "@bssl-compat//:ssl",
+        "//conditions:default": "@boringssl//:ssl",
+    }),
 )
 
 alias(
     name = "boringcrypto",
-    actual = "@envoy//bssl-compat:crypto"
+    actual = select({
+        ":ssl_openssl": "@bssl-compat//:crypto",
+        "//conditions:default": "@boringssl//:crypto",
+    }),
 )
 
 config_setting(

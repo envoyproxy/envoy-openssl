@@ -15,9 +15,7 @@ envoy_package()
 
 envoy_cc_test(
     name = "quic_platform_test",
-    srcs = envoy_select_enable_http3({
-        "//bazel:linux": ["quic_platform_test.cc"],
-    }),
+    srcs = envoy_select_enable_http3(["quic_platform_test.cc"]),
     copts = select({
         "//bazel:windows_x86_64": [],
         "//conditions:default": ["-Wno-unused-parameter"],
