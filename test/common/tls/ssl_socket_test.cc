@@ -65,7 +65,10 @@
 #include "gtest/gtest.h"
 #include "openssl/crypto.h"
 #include "openssl/ssl.h"
+
+#ifdef ENVOY_SSL_OPENSSL
 #include <ossl/openssl/provider.h>
+#endif
 
 using testing::_;
 using testing::ContainsRegex;
@@ -3046,6 +3049,7 @@ TEST_P(SslSocketTest, CertificatesWithPassword) {
 }
 
 TEST_P(SslSocketTest, Pkcs12CertificatesWithPassword) {
+  #ifdef ENVOY_SSL_OPENSSL
   // The password_protected_certkey.p12 used in this test, uses the "RC2-40-CBC"
   // encryption algorithm, which OpenSSL considers legacy and insecure.
   // Therefore, to get this test to pass, we need to temporarily load OpenSSL's
@@ -3056,7 +3060,7 @@ TEST_P(SslSocketTest, Pkcs12CertificatesWithPassword) {
   std::unique_ptr<ossl_OSSL_PROVIDER,void(*)(ossl_OSSL_PROVIDER*)> default_provider(
                       ossl_OSSL_PROVIDER_load(nullptr, "default"),
                       [](ossl_OSSL_PROVIDER *p){ ossl_OSSL_PROVIDER_unload(p); });
-
+  #endif
   envoy::config::listener::v3::Listener listener;
   envoy::config::listener::v3::FilterChain* filter_chain = listener.add_filter_chains();
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;

@@ -82,13 +82,18 @@ envoy_cc_library(
     name = "quic_stat_names_lib",
     srcs = ["quic_stat_names.cc"],
     hdrs = ["quic_stat_names.h"],
-    tags = ["nofips"],
-    deps = [
-        "//envoy/stats:stats_interface",
-        "//source/common/stats:symbol_table_lib",
-        "@com_github_google_quiche//:quic_core_error_codes_lib",
-        "@com_github_google_quiche//:quic_core_types_lib",
-    ],
+    deps = select({
+        "//bazel:disable_http3": [
+            "//envoy/stats:stats_interface",
+            "//source/common/stats:symbol_table_lib",
+        ],
+        "//conditions:default": [
+            "//envoy/stats:stats_interface",
+            "//source/common/stats:symbol_table_lib",
+            "@com_github_google_quiche//:quic_core_error_codes_lib",
+            "@com_github_google_quiche//:quic_core_types_lib",
+        ],
+    }),
 )
 
 envoy_cc_library(
@@ -603,13 +608,12 @@ envoy_cc_library(
 
 envoy_cc_library(
     name = "send_buffer_monitor_lib",
-    srcs = ["send_buffer_monitor.cc"],
-    hdrs = ["send_buffer_monitor.h"],
-    tags = ["nofips"],
-    deps = [
+    srcs = envoy_select_enable_http3(["send_buffer_monitor.cc"]),
+    hdrs = envoy_select_enable_http3(["send_buffer_monitor.h"]),
+    deps = envoy_select_enable_http3([
         "//source/common/common:assert_lib",
         "@com_github_google_quiche//:quic_core_session_lib",
-    ],
+    ]),
 )
 
 envoy_cc_library(
@@ -705,13 +709,13 @@ envoy_cc_library(
 
 envoy_cc_library(
     name = "cert_compression_lib",
-    srcs = ["cert_compression.cc"],
-    hdrs = ["cert_compression.h"],
+    srcs = envoy_select_enable_http3(["cert_compression.cc"]),
+    hdrs = envoy_select_enable_http3(["cert_compression.h"]),
     external_deps = ["ssl"],
-    deps = [
+    deps = envoy_select_enable_http3([
         "//bazel/foreign_cc:zlib",
         "//source/common/common:assert_lib",
         "//source/common/common:logger_lib",
         "//source/common/runtime:runtime_lib",
-    ],
+    ]),
 )
