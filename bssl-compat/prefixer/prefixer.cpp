@@ -23,6 +23,7 @@ namespace opt {
   static std::set<std::string>    srcpaths;
   static std::set<std::string>    srcincl;
   static std::set<std::string>    srcskip;
+  static std::set<std::string>    includes;
   static std::filesystem::path    output  = std::filesystem::current_path();
   static std::string              prefix  = "ossl";
   static bool                     verbose = false;
@@ -400,13 +401,11 @@ class CompilationDatabase : public clang::tooling::CompilationDatabase
       std::vector<std::string> cmdline = {
           "dummy",
           std::string("-I") + opt::incdir().string(),
-          // Some versions of clang ship with the full version string in the include path, others only with the major version number.
-          "-I" LLVM_LIBRARY_DIR "/clang/" LLVM_VERSION_STRING "/include/",
-          "-I" LLVM_LIBRARY_DIR "/clang/" + std::to_string(LLVM_VERSION_MAJOR) + "/include/",
-          // RHEL ships with a different path for the Clang headers
-          "-I/usr/lib/clang/" + std::to_string(LLVM_VERSION_MAJOR) + "/include",
-          file.str()
       };
+      for (const auto &inc : opt::includes) {
+        cmdline.push_back(std::string("-I") + inc);
+      }
+      cmdline.push_back(file.str());
       return { clang::tooling::CompileCommand(".", file, cmdline, "") };
     }
 };
@@ -638,6 +637,7 @@ static bool usage(int exitcode) {
             << "  --src-path <path>       Directory containing the openssl headers e.g. /usr/include" << std::endl
             << "  --src-incl <pattern>    Header files to be prefixed e.g. openssl/*.h" << std::endl
             << "  --src-skip <pattern>    Header files to be skipped e.g. openssl/asn1_mac.h" << std::endl
+            << "  --include <path>        Directory to search for #includes" << std::endl
             << "  --prefix <string>       The prefix to be applied to functions, types & macros" << std::endl
             << "  --output <path>         Output directory for generated files" << std::endl
             << "  --verbose               Print more info about what's being done" << std::endl
@@ -681,11 +681,14 @@ int main(int argc, const char **argv) {
     else if ((arg == "--src-skip") && ((++i < argc) || usage(-1))) {
       opt::srcskip.insert(argv[i]);
     }
+    else if ((arg == "--include") && ((++i < argc) || usage(-1))) {
+      opt::includes.insert(argv[i]);
+    }
     else if ((arg == "--prefix") && ((++i < argc) || usage(-1))) {
       opt::prefix = argv[i];
     }
     else if ((arg == "--output") && ((++i < argc) || usage(-1))) {
-      opt::output = argv[i];
+      opt::output = std::filesystem::absolute(argv[i]);
     }
     else if (arg == "--verbose") {
       opt::verbose = true;
