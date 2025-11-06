@@ -572,12 +572,12 @@ config_setting(
 # Alias pointing to the selected version of BoringSSL:
 alias(
     name = "boringssl",
-    actual = "@envoy//bssl-compat:ssl"
+    actual = "@bssl-compat//:ssl"
 )
-
+    
 alias(
     name = "boringcrypto",
-    actual = "@envoy//bssl-compat:crypto"
+    actual = "@bssl-compat//:crypto"
 )
 
 config_setting(
