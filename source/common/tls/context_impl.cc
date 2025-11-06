@@ -795,6 +795,7 @@ absl::Status TlsContext::loadPkcs12(const std::string& data, const std::string& 
 
 absl::Status TlsContext::checkPrivateKey(const bssl::UniquePtr<EVP_PKEY>& pkey,
                                          const std::string& key_path, bool fips_mode) {
+#ifndef BSSL_COMPAT // bssl-compat does not provide these FIPS key checks yet
   if (fips_mode) {
     // Verify that private keys are passing FIPS pairwise consistency tests.
     switch (EVP_PKEY_id(pkey.get())) {
@@ -818,6 +819,11 @@ absl::Status TlsContext::checkPrivateKey(const bssl::UniquePtr<EVP_PKEY>& pkey,
     } break;
     }
   }
+#else // Suppress unused variable warnings
+  (void)fips_mode;
+  (void)key_path;
+  (void)pkey;
+#endif // BSSL_COMPAT
   return absl::OkStatus();
 }
 
