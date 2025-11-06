@@ -36,3 +36,15 @@ envoy_dependency_imports()
 load("//bazel:dependency_imports_extra.bzl", "envoy_dependency_imports_extra")
 
 envoy_dependency_imports_extra()
+
+new_local_repository(
+    name = "openssl",
+    path = "/opt/openssl3.0/",
+    build_file = "BUILD.openssl",
+)
+new_local_repository(
+    name = "clang",
+    path = "/opt/llvm/",
+    build_file = "//:BUILD.llvm"
+)
+
