@@ -23,6 +23,7 @@ namespace opt {
   static std::set<std::string>    srcpaths;
   static std::set<std::string>    srcincl;
   static std::set<std::string>    srcskip;
+  static std::set<std::string>    includes;
   static std::filesystem::path    output  = std::filesystem::current_path();
   static std::string              prefix  = "ossl";
   static bool                     verbose = false;
@@ -267,7 +268,11 @@ class MyFrontendAction: public clang::ASTFrontendAction {
         m_identifiers.insert(name);
         if (name == "OPENSSL_VERSION_MAJOR") {
           const auto &token = directive->getMacroInfo()->getReplacementToken(0);
-          m_shlibversion = std::string(token.getLiteralData(), token.getLength());
+          m_version_major = std::string(token.getLiteralData(), token.getLength());
+        }
+        if (name == "OPENSSL_VERSION_MINOR") {
+          const auto &token = directive->getMacroInfo()->getReplacementToken(0);
+          m_version_minor = std::string(token.getLiteralData(), token.getLength());
         }
       }
     }
@@ -325,7 +330,8 @@ class MyFrontendAction: public clang::ASTFrontendAction {
 
     std::set<std::string> m_identifiers; // To be prefixed
     std::vector<Function> m_functions;
-    std::string m_shlibversion; // Parsed from SHLIB_VERSION_NUMBER macro
+    std::string m_version_major; // Parsed from OPENSSL_VERSION_MAJOR macro
+    std::string m_version_minor; // Parsed from OPENSSL_VERSION_MINOR macro
 };
 
 
@@ -400,13 +406,11 @@ class CompilationDatabase : public clang::tooling::CompilationDatabase
       std::vector<std::string> cmdline = {
           "dummy",
           std::string("-I") + opt::incdir().string(),
-          // Some versions of clang ship with the full version string in the include path, others only with the major version number.
-          "-I" LLVM_LIBRARY_DIR "/clang/" LLVM_VERSION_STRING "/include/",
-          "-I" LLVM_LIBRARY_DIR "/clang/" + std::to_string(LLVM_VERSION_MAJOR) + "/include/",
-          // RHEL ships with a different path for the Clang headers
-          "-I/usr/lib/clang/" + std::to_string(LLVM_VERSION_MAJOR) + "/include",
-          file.str()
       };
+      for (const auto &inc : opt::includes) {
+        cmdline.push_back(std::string("-I") + inc);
+      }
+      cmdline.push_back(file.str());
       return { clang::tooling::CompileCommand(".", file, cmdline, "") };
     }
 };
@@ -477,67 +481,21 @@ void MyFrontendAction::EndSourceFileAction() {
          << "#include <dlfcn.h>" << std::endl
          << "#include <errno.h>" << std::endl
          << "#include <assert.h>" << std::endl
-         << "#include \"ossl_dlopen.h\"" << std::endl
+         << "#include \"ossl_dlutil.h\"" << std::endl
          << "#include \"" << opt::prefix << ".h\"" << std::endl
-         << std::endl
-         << "#define LIBCRYPTO_SO \"libcrypto.so" << (m_shlibversion.size() ? "." + m_shlibversion : "") << "\"" << std::endl
-         << "#define LIBSSL_SO \"libssl.so" << (m_shlibversion.size() ? "." + m_shlibversion : "") << "\"" << std::endl
-         << std::endl
-         << "static void *libcrypto;" << std::endl
-         << "static void *libssl;" << std::endl
          << std::endl
          << "struct " << opt::prefix << "_functions " << opt::prefix << ";" << std::endl
          << std::endl
          << "static void " << opt::prefix << "_init(void)  __attribute__ ((constructor));" << std::endl
          << "static void " << opt::prefix << "_fini(void)  __attribute__ ((destructor));" << std::endl
          << std::endl
-         << "static void *lookup(const char *symbol) {" << std::endl
-         << "  void *result;" << std::endl
-         << "  const char *s = symbol + " << opt::prefix.size() + 1 << ";" << std::endl
-         << "  if ((result = dlsym(libcrypto, s)) != NULL) return result;" << std::endl
-         << "  if((result = dlsym(libssl, s)) != NULL) return result;" << std::endl
-         << "  return NULL;" << std::endl
-         << "}" << std::endl
-         << std::endl
          << "static void " << opt::prefix << "_init(void) {" << std::endl
-         << "  // Check if OpenSSL shared libs are already linked in (shouldn't be)" << std::endl
-         << "  if (dlsym(RTLD_DEFAULT, \"OPENSSL_version_major\") != NULL) {" << std::endl
-         << "    fprintf(stderr, \"%s: libcrypto.so is already linked in\\n\", __func__);" << std::endl
-         << "    exit(1);" << std::endl
-         << "  }" << std::endl
-         << "  if((libcrypto = ossl_dlopen(LIBCRYPTO_SO)) == NULL) {" << std::endl
-         << "    fprintf(stderr, \"%s: dlopen(%s) : %s\\n\", __func__, LIBCRYPTO_SO, dlerror());" << std::endl
-         << "    exit(ELIBACC);" << std::endl
-         << "  }" << std::endl
          << std::endl
-         << "  if((libssl = ossl_dlopen(LIBSSL_SO)) == NULL) {" << std::endl
-         << "    fprintf(stderr, \"%s: dlopen(%s) : %s\\n\", __func__, LIBSSL_SO, dlerror());" << std::endl
-         << "    exit(ELIBACC);" << std::endl
-         << "  }" << std::endl
-         << std::endl
-         << "  ossl.ossl_OpenSSL_version_num = (ossl_OpenSSL_version_num_t)lookup(\"ossl_OpenSSL_version_num\");" << std::endl
-         << "  if (ossl.ossl_OpenSSL_version_num == NULL) {" << std::endl
-         << "    fprintf(stderr, \"%s: Failed to load OpenSSL_version_num()\\n\", __func__);" << std::endl
-         << "    exit(ELIBACC);" << std::endl
-         << "  }" << std::endl
-         << std::endl
-         << "  int version = ossl.ossl_OpenSSL_version_num(); // 0xMNN00PP0L" << std::endl
-         << "  int major = (version & 0xF0000000) >> 28;" << std::endl
-         << "  int minor = (version & 0x0FF00000) >> 20;" << std::endl
-         << "  int patch = (version & 0x00000FF0) >> 4;" << std::endl
-         << std::endl
-         << "  if ((major != ossl_OPENSSL_VERSION_MAJOR) || (minor < ossl_OPENSSL_VERSION_MINOR)) {" << std::endl
-         << "    fprintf(stderr, \"%s: Expecting to load OpenSSL version at least %d.%d.x but got %d.%d.%d\\n\", __func__," << std::endl
-         << "                      ossl_OPENSSL_VERSION_MAJOR," << std::endl
-         << "                      ossl_OPENSSL_VERSION_MINOR," << std::endl
-         << "                      major, minor, patch);" << std::endl
-         << "    exit(ELIBACC);" << std::endl
-         << "  }" << std::endl
-         << std::endl;
+         << "  ossl_dlopen(" << m_version_major << ", " << m_version_minor << ");" << std::endl;
 
     for(const auto &function : m_functions) {
       if (!function.hasBody()) {
-        cstr << "  " << opt::prefix << "." << function.getName(true) << " = (" << function.getTypedefName() << ")lookup(\"" << function.getName(false) << "\");" << std::endl;
+        cstr << "  " << opt::prefix << "." << function.getName(true) << " = (" << function.getTypedefName() << ")ossl_dlsym(\"" << function.getName(false) << "\");" << std::endl;
       }
     }
 
@@ -547,8 +505,7 @@ void MyFrontendAction::EndSourceFileAction() {
          << "}" << std::endl
          << std::endl
          << "static void " << opt::prefix << "_fini(void) {" << std::endl
-         << "  dlclose(libcrypto);" << std::endl
-         << "  dlclose(libssl);" << std::endl
+         << "  ossl_dlclose();" << std::endl
          << "}" << std::endl
          << std::endl;
 
@@ -638,6 +595,7 @@ static bool usage(int exitcode) {
             << "  --src-path <path>       Directory containing the openssl headers e.g. /usr/include" << std::endl
             << "  --src-incl <pattern>    Header files to be prefixed e.g. openssl/*.h" << std::endl
             << "  --src-skip <pattern>    Header files to be skipped e.g. openssl/asn1_mac.h" << std::endl
+            << "  --include <path>        Directory to search for #includes" << std::endl
             << "  --prefix <string>       The prefix to be applied to functions, types & macros" << std::endl
             << "  --output <path>         Output directory for generated files" << std::endl
             << "  --verbose               Print more info about what's being done" << std::endl
@@ -681,11 +639,14 @@ int main(int argc, const char **argv) {
     else if ((arg == "--src-skip") && ((++i < argc) || usage(-1))) {
       opt::srcskip.insert(argv[i]);
     }
+    else if ((arg == "--include") && ((++i < argc) || usage(-1))) {
+      opt::includes.insert(argv[i]);
+    }
     else if ((arg == "--prefix") && ((++i < argc) || usage(-1))) {
       opt::prefix = argv[i];
     }
     else if ((arg == "--output") && ((++i < argc) || usage(-1))) {
-      opt::output = argv[i];
+      opt::output = std::filesystem::absolute(argv[i]);
     }
     else if (arg == "--verbose") {
       opt::verbose = true;
