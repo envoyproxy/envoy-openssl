@@ -25,7 +25,8 @@ function error {
     exit 1
 }
 
-INCLUDE_DIR="$TOP_DIR/third_party/boringssl/src/include"
+# Accept third argument for include directory (for Bazel builds)
+INCLUDE_DIR="${3?"INCLUDE_DIR not specified"}"
 [[ -d "$INCLUDE_DIR" ]] || error "INCLUDE_DIR $INCLUDE_DIR does not exist"
 
 ################################################################################

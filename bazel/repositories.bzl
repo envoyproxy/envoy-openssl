@@ -266,7 +266,14 @@ def envoy_dependencies(skip_targets = []):
     )
 
 def _boringssl():
-    external_http_archive(name = "boringssl")
+    external_http_archive(
+        name = "boringssl",
+        patches = [
+            "@envoy//bazel:boringssl-bssl-compat.patch",
+            "@envoy//bazel:boringssl-s390x-ppc64le.patch",
+        ],
+        patch_args = ["-p1"],
+    )
 
 def _boringssl_fips():
     external_http_archive(
