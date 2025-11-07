@@ -3,7 +3,12 @@ date: October 13, 2025
 bug_fixes:
 - area: dependency
   change: |
-    Resolve dependency CVEs:
+    Fixed a connection leak in the TCP proxy when the ``receive_before_connect`` feature is enabled and the
+    downstream connection closes before the upstream connection is established.
+- area: tls
+  change: |
+    Fixed an issue where SANs of type ``OTHERNAME`` in a TLS cert were truncated if there was
+    an embedded null octet, leading to incorrect SAN validation.
 
     - CVE-2025-0725: curl
     - CVE-2024-7246: gRPC
