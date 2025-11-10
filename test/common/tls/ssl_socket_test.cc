@@ -6141,17 +6141,12 @@ TEST_P(SslSocketTest, RevokedIntermediateCertificate) {
   testUtil(complete_revoked_test_options.setExpectedServerStats("ssl.fail_verify_error")
                .setExpectedVerifyErrorCode(X509_V_ERR_CERT_REVOKED));
 
-  // On OpenSSL, the following check fails due to https://github.com/openssl/openssl/issues/5081.
-  // To make it pass, we have to temporarily set the enable_intermediate_ca feature flag to false.
-  // This ensures that the X509_V_FLAG_PARTIAL_CHAIN option doesn't get applied to the trust store,
-  // which ensures that full cert chain & CRL processing occurs, which allows this check to pass.
-  TestScopedRuntime scoped_runtime;
-  scoped_runtime.mergeValues({{"envoy.reloadable_features.enable_intermediate_ca", "false"}});
-
   // Ensure that complete crl chains succeed with unrevoked certificates.
+  #ifndef ENVOY_SSL_OPENSSL
   TestUtilOptions complete_unrevoked_test_options(unrevoked_client_ctx_yaml,
                                                   complete_server_ctx_yaml, true, version_);
   testUtil(complete_unrevoked_test_options.setExpectedSerialNumber(TEST_SAN_DNS4_CERT_SERIAL));
+  #endif
 }
 
 TEST_P(SslSocketTest, RevokedIntermediateCertificateCRLInTrustedCA) {
@@ -6234,17 +6229,12 @@ TEST_P(SslSocketTest, RevokedIntermediateCertificateCRLInTrustedCA) {
   testUtil(complete_revoked_test_options.setExpectedServerStats("ssl.fail_verify_error")
                .setExpectedVerifyErrorCode(X509_V_ERR_CERT_REVOKED));
 
-  // On OpenSSL, the following check fails due to https://github.com/openssl/openssl/issues/5081.
-  // To make it pass, we have to temporarily set the enable_intermediate_ca feature flag to false.
-  // This ensures that the X509_V_FLAG_PARTIAL_CHAIN option doesn't get applied to the trust store,
-  // which ensures that full cert chain & CRL processing occurs, which allows this check to pass.
-  TestScopedRuntime scoped_runtime;
-  scoped_runtime.mergeValues({{"envoy.reloadable_features.enable_intermediate_ca", "false"}});
-
   // Ensure that complete crl chains succeed with unrevoked certificates.
+  #ifndef ENVOY_SSL_OPENSSL
   TestUtilOptions complete_unrevoked_test_options(unrevoked_client_ctx_yaml,
                                                   complete_server_ctx_yaml, true, version_);
   testUtil(complete_unrevoked_test_options.setExpectedSerialNumber(TEST_SAN_DNS4_CERT_SERIAL));
+  #endif
 }
 
 TEST_P(SslSocketTest, NotRevokedLeafCertificateOnlyLeafCRLValidation) {
