@@ -354,7 +354,7 @@ TEST_P(TlsCertificateSelectorFactoryTest, Failed) {
   testUtil(Ssl::SelectionResult::SelectionStatus::Failed);
 }
 
-// RH dcillera: disabled because it selects cert async
+// Disabled because it selects cert async (not yet supported with OpenSSL)
 TEST_P(TlsCertificateSelectorFactoryTest, DISABLED_Pending) {
   testUtil(Ssl::SelectionResult::SelectionStatus::Pending);
 }
