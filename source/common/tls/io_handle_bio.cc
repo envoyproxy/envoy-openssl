@@ -153,7 +153,9 @@ BIO* BIO_new_io_handle(Envoy::Network::IoHandle* io_handle) {
 
   // Initialize the BIO
   BIO_set_data(b, io_handle);
+#ifdef ENVOY_SSL_OPENSSL
   BIO_set_shutdown(b, 0);
+#endif
   BIO_set_init(b, 1);
 
   return b;

@@ -57,6 +57,7 @@
 #include "test/test_common/registry.h"
 #include "test/test_common/test_runtime.h"
 #include "test/test_common/utility.h"
+#include "test/test_common/ssl.h"
 
 #include "absl/strings/str_replace.h"
 #include "absl/types/optional.h"
@@ -354,8 +355,7 @@ TEST_P(TlsCertificateSelectorFactoryTest, Failed) {
   testUtil(Ssl::SelectionResult::SelectionStatus::Failed);
 }
 
-// RH dcillera: disabled because it selects cert async
-TEST_P(TlsCertificateSelectorFactoryTest, DISABLED_Pending) {
+BORINGSSL_TEST_P(TlsCertificateSelectorFactoryTest, Pending) {
   testUtil(Ssl::SelectionResult::SelectionStatus::Pending);
 }
 

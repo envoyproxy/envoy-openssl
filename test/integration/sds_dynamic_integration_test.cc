@@ -37,6 +37,7 @@
 #include "test/test_common/resources.h"
 #include "test/test_common/test_time_system.h"
 #include "test/test_common/utility.h"
+#include "test/test_common/ssl.h"
 
 #include "absl/strings/match.h"
 #include "gmock/gmock.h"
@@ -1481,7 +1482,7 @@ INSTANTIATE_TEST_SUITE_P(IpVersionsClientType, SdsDynamicDownstreamPrivateKeyInt
                          testing::ValuesIn(getSdsTestsParams(true)), sdsTestParamsToString);
 
 // Validate that a basic SDS updates work with a private key provider.
-TEST_P(SdsDynamicDownstreamPrivateKeyIntegrationTest, DISABLED_BasicPrivateKeyProvider) {
+BORINGSSL_TEST_P(SdsDynamicDownstreamPrivateKeyIntegrationTest, BasicPrivateKeyProvider) {
   v3_resource_api_ = true;
 
   TestEnvironment::exec(
@@ -1541,7 +1542,7 @@ INSTANTIATE_TEST_SUITE_P(IpVersionsClientType, SdsCdsPrivateKeyIntegrationTest,
                          testing::ValuesIn(getSdsTestsParams(true)), sdsTestParamsToString);
 
 // Test private key providers in SDS+CDS setup.
-TEST_P(SdsCdsPrivateKeyIntegrationTest, DISABLED_BasicSdsCdsPrivateKeyProvider) {
+BORINGSSL_TEST_P(SdsCdsPrivateKeyIntegrationTest, BasicSdsCdsPrivateKeyProvider) {
   v3_resource_api_ = true;
 
   TestEnvironment::exec(

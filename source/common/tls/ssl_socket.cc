@@ -146,8 +146,8 @@ Network::IoResult SslSocket::doRead(Buffer::Instance& read_buffer) {
             break;
           }
           FALLTHRU;
-        case SSL_ERROR_SSL:
 #ifdef ENVOY_SSL_OPENSSL
+        case SSL_ERROR_SSL:
           // If EAGAIN treat it as if it's SSL_ERROR_WANT_READ
           // OpenSSL may return SSL_ERROR_SSL with errno=EAGAIN in some cases
           if (errno == EAGAIN) {
@@ -155,8 +155,8 @@ Network::IoResult SslSocket::doRead(Buffer::Instance& read_buffer) {
                            Envoy::errorDetails(errno));
             break;
           }
-#endif
           FALLTHRU;
+#endif
         case SSL_ERROR_WANT_WRITE:
           // Renegotiation has started. We don't handle renegotiation so just fall through.
         default:
@@ -306,8 +306,8 @@ Network::IoResult SslSocket::doWrite(Buffer::Instance& write_buffer, bool end_st
       case SSL_ERROR_WANT_WRITE:
         bytes_to_retry_ = bytes_to_write;
         break;
-      case SSL_ERROR_SSL:
 #ifdef ENVOY_SSL_OPENSSL
+      case SSL_ERROR_SSL:
         // If EAGAIN treat it as if it's SSL_ERROR_WANT_WRITE
         // OpenSSL may return SSL_ERROR_SSL with errno=EAGAIN in some cases
         if (errno == EAGAIN) {
@@ -316,8 +316,8 @@ Network::IoResult SslSocket::doWrite(Buffer::Instance& write_buffer, bool end_st
           bytes_to_retry_ = bytes_to_write;
           break;
         }
-#endif
       FALLTHRU;
+#endif
       case SSL_ERROR_WANT_READ:
       // Renegotiation has started. We don't handle renegotiation so just fall through.
       default:

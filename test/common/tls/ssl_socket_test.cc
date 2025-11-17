@@ -58,6 +58,7 @@
 #include "test/test_common/registry.h"
 #include "test/test_common/test_runtime.h"
 #include "test/test_common/utility.h"
+#include "test/test_common/ssl.h"
 
 #include "absl/strings/str_replace.h"
 #include "absl/types/optional.h"
@@ -907,9 +908,11 @@ public:
   TestUtilOptionsV2& setExpectedTransportFailureReasonContains(
       const std::string& expected_transport_failure_reason_contains) {
     expected_transport_failure_reason_contains_ = expected_transport_failure_reason_contains;
+#ifdef ENVOY_SSL_OPENSSL
     if (expected_transport_failure_reason_contains_ == "TLSV1.*_BAD_CERTIFICATE_HASH_VALUE") {
       expected_transport_failure_reason_contains_ = "SSLV3_ALERT_HANDSHAKE_FAILURE";
     }
+#endif
     return *this;
   }
 
@@ -2142,7 +2145,7 @@ TEST_P(SslSocketTest, CertWithNotECCapable) {
   // TODO(luyao): We might need to modify ssl socket to set proper stats for failed handshake
   testUtil(test_options.setExpectedServerStats("")
                .setExpectedSni("server1.example.com")
-               .setExpectedTransportFailureReasonContains("SSLV3_ALERT_HANDSHAKE_FAILURE"));
+               .setExpectedTransportFailureReasonContains(SSL_SELECT("HANDSHAKE_FAILURE_ON_CLIENT_HELLO", "SSLV3_ALERT_HANDSHAKE_FAILURE")));
 }
 
 TEST_P(SslSocketTest, GetUriWithLocalUriSan) {
@@ -2593,7 +2596,7 @@ TEST_P(SslSocketTest, FailedClientAuthCaVerification) {
 
   TestUtilOptions test_options(client_ctx_yaml, server_ctx_yaml, false, version_);
   testUtil(test_options.setExpectedServerStats("ssl.fail_verify_error")
-               .setExpectedVerifyErrorCode(X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT));
+               .setExpectedVerifyErrorCode(SSL_SELECT(X509_V_ERR_UNABLE_TO_GET_ISSUER_CERT_LOCALLY, X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT)));
 }
 
 TEST_P(SslSocketTest, FailedClientAuthSanVerificationNoClientCert) {
@@ -5318,7 +5321,7 @@ TEST_P(SslSocketTest, SslError) {
   EXPECT_EQ(1UL, server_stats_store.counter("ssl.connection_error").value());
 }
 
-TEST_P(SslSocketTest, DISABLED_ProtocolVersions) {
+BORINGSSL_TEST_P(SslSocketTest, ProtocolVersions) {
   envoy::config::listener::v3::Listener listener;
   envoy::config::listener::v3::FilterChain* filter_chain = listener.add_filter_chains();
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext tls_context;
@@ -6865,7 +6868,7 @@ TEST_P(SslReadBufferLimitTest, SmallReadsIntoSameSlice) {
 }
 
 // Test asynchronous signing (ECDHE) using a private key provider.
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncSignSuccess) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignSuccess) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -6899,7 +6902,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncSignSuccess) {
 }
 
 // Test asynchronous decryption (RSA).
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncDecryptSuccess) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncDecryptSuccess) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_params:
@@ -6936,7 +6939,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncDecryptSuccess) {
 }
 
 // Test synchronous signing (ECDHE).
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSyncSignSuccess) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderSyncSignSuccess) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -6970,7 +6973,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSyncSignSuccess) {
 }
 
 // Test synchronous decryption (RSA).
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSyncDecryptSuccess) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderSyncDecryptSuccess) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_params:
@@ -7007,7 +7010,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSyncDecryptSuccess) {
 }
 
 // Test fallback for key provider.
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderFallbackSuccess) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderFallbackSuccess) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_params:
@@ -7048,7 +7051,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderFallbackSuccess) {
 }
 
 // Test asynchronous signing (ECDHE) failure (invalid signature).
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncSignFailure) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -7083,7 +7086,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncSignFailure) {
 }
 
 // Test synchronous signing (ECDHE) failure (invalid signature).
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSyncSignFailure) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderSyncSignFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -7118,7 +7121,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSyncSignFailure) {
 }
 
 // Test the sign operation return with an error.
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSignFailure) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderSignFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -7152,7 +7155,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderSignFailure) {
 }
 
 // Test the decrypt operation return with an error.
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderDecryptFailure) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderDecryptFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_params:
@@ -7189,7 +7192,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderDecryptFailure) {
 }
 
 // Test the sign operation return with an error in complete.
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncSignCompleteFailure) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncSignCompleteFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -7224,7 +7227,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncSignCompleteFailure) {
 }
 
 // Test the decrypt operation return with an error in complete.
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncDecryptCompleteFailure) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderAsyncDecryptCompleteFailure) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_params:
@@ -7265,7 +7268,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderAsyncDecryptCompleteFailure)
 
 // Test having one cert with private key method and another with just
 // private key.
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderMultiCertSuccess) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderMultiCertSuccess) {
   const std::string client_ctx_yaml = absl::StrCat(R"EOF(
     common_tls_context:
       tls_params:
@@ -7305,7 +7308,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderMultiCertSuccess) {
 // Test having two certs with private key methods. This will
 // synchronously fail because the second certificate is a ECDSA one and
 // the RSA method can't handle it.
-TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderMultiCertFail) {
+BORINGSSL_TEST_P(SslSocketTest, RsaPrivateKeyProviderMultiCertFail) {
   const std::string client_ctx_yaml = absl::StrCat(R"EOF(
     common_tls_context:
       tls_params:
@@ -7351,7 +7354,7 @@ TEST_P(SslSocketTest, DISABLED_RsaPrivateKeyProviderMultiCertFail) {
 }
 
 // Test ECDSA private key method provider mode.
-TEST_P(SslSocketTest, DISABLED_EcdsaPrivateKeyProviderSuccess) {
+BORINGSSL_TEST_P(SslSocketTest, EcdsaPrivateKeyProviderSuccess) {
   const std::string client_ctx_yaml = absl::StrCat(R"EOF(
     common_tls_context:
       tls_params:
@@ -7385,7 +7388,7 @@ TEST_P(SslSocketTest, DISABLED_EcdsaPrivateKeyProviderSuccess) {
 // Test having two certs with different private key method modes. It's expected that the ECDSA
 // provider mode is being used. RSA provider mode is set to fail with "async_method_error", but
 // that's not happening.
-TEST_P(SslSocketTest, DISABLED_RsaAndEcdsaPrivateKeyProviderMultiCertSuccess) {
+BORINGSSL_TEST_P(SslSocketTest, RsaAndEcdsaPrivateKeyProviderMultiCertSuccess) {
   const std::string client_ctx_yaml = absl::StrCat(R"EOF(
     common_tls_context:
       tls_params:
@@ -7429,7 +7432,7 @@ TEST_P(SslSocketTest, DISABLED_RsaAndEcdsaPrivateKeyProviderMultiCertSuccess) {
 }
 
 // Test having two certs with different private key method modes. ECDSA provider is set to fail.
-TEST_P(SslSocketTest, DISABLED_RsaAndEcdsaPrivateKeyProviderMultiCertFail) {
+BORINGSSL_TEST_P(SslSocketTest, RsaAndEcdsaPrivateKeyProviderMultiCertFail) {
   const std::string client_ctx_yaml = absl::StrCat(R"EOF(
     common_tls_context:
       tls_params:
@@ -7475,7 +7478,7 @@ TEST_P(SslSocketTest, DISABLED_RsaAndEcdsaPrivateKeyProviderMultiCertFail) {
 }
 
 // Test private key provider and cert validation can work together.
-TEST_P(SslSocketTest, DISABLED_PrivateKeyProviderWithCertValidation) {
+BORINGSSL_TEST_P(SslSocketTest, PrivateKeyProviderWithCertValidation) {
   const std::string client_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -7797,7 +7800,7 @@ TEST_P(SslSocketTest, Sni) {
   testUtil(test_options.setExpectedSni("foo.bar.com"));
 }
 
-TEST_P(SslSocketTest, DISABLED_AsyncCustomCertValidatorSucceeds) {
+BORINGSSL_TEST_P(SslSocketTest, AsyncCustomCertValidatorSucceeds) {
   const std::string client_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -7840,7 +7843,7 @@ TEST_P(SslSocketTest, DISABLED_AsyncCustomCertValidatorSucceeds) {
                .setExpectedSerialNumber(TEST_NO_SAN_CERT_SERIAL));
 }
 
-TEST_P(SslSocketTest, DISABLED_AsyncCustomCertValidatorFails) {
+BORINGSSL_TEST_P(SslSocketTest, AsyncCustomCertValidatorFails) {
   const std::string server_ctx_yaml = R"EOF(
   common_tls_context:
     tls_certificates:
@@ -7878,7 +7881,7 @@ TEST_P(SslSocketTest, DISABLED_AsyncCustomCertValidatorFails) {
                .setExpectedVerifyErrorCode(X509_V_ERR_CERT_REVOKED));
 }
 
-TEST_P(SslSocketTest, DISABLED_RsaKeyUsageVerificationEnforcementOff) {
+BORINGSSL_TEST_P(SslSocketTest, RsaKeyUsageVerificationEnforcementOff) {
   envoy::config::listener::v3::Listener listener;
   envoy::config::listener::v3::FilterChain* filter_chain = listener.add_filter_chains();
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext server_tls_context;
@@ -7908,7 +7911,7 @@ TEST_P(SslSocketTest, DISABLED_RsaKeyUsageVerificationEnforcementOff) {
   testUtilV2(test_options);
 }
 
-TEST_P(SslSocketTest, DISABLED_RsaKeyUsageVerificationEnforcementOn) {
+BORINGSSL_TEST_P(SslSocketTest, RsaKeyUsageVerificationEnforcementOn) {
   envoy::config::listener::v3::Listener listener;
   envoy::config::listener::v3::FilterChain* filter_chain = listener.add_filter_chains();
   envoy::extensions::transport_sockets::tls::v3::DownstreamTlsContext server_tls_context;

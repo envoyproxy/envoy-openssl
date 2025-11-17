@@ -376,3 +376,8 @@ envoy_cc_test_library(
         "//source/common/router:delegating_route_lib",
     ],
 )
+
+envoy_cc_test_library(
+    name = "ssl_lib",
+    hdrs = ["ssl.h"],
+)
