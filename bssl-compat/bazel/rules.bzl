@@ -1,34 +1,25 @@
 """Bazel macros for bssl-compat library."""
 
-def _bssl_header_impl(name, src_file, dst_file):
-    """Generate a genrule for processing one BoringSSL header.
+def _copy_bssl_file_impl(name, src_file, dst_file):
+    """Generate a genrule for copying & patching one BoringSSL file.
 
     Args:
         name: Unique name for this genrule
-        src_file: Source path relative to third_party/boringssl/src/ (e.g., "include/openssl/aes.h")
-        dst_file: Destination path (e.g., "include/openssl/aes.h")
+        src_file: Source path relative to third_party/boringssl/ (e.g., "src/include/openssl/aes.h")
+        dst_file: Destination path (e.g., "boringssl/src/include/openssl/aes.h")
     """
-    # Tools that are always needed
-    tools = [
-        "//tools:uncomment.sh",
-    ]
-
-    # Source file from BoringSSL
-    srcs = ["third_party/boringssl/src/" + src_file]
-
-    # Optional patch script
-    patch_script = "patch/" + dst_file + ".sh"
-
-    # Optional patch file
-    patch_file = "patch/" + dst_file + ".patch"
-
     native.genrule(
         name = name,
-        srcs = srcs + native.glob([patch_script, patch_file]),
+        srcs = [
+            "third_party/boringssl/" + src_file
+        ] + native.glob([
+            "patch/" + dst_file + ".sh",
+            "patch/" + dst_file + ".patch"
+        ]),
         outs = [dst_file],
         cmd = """
             # Set up paths - all paths need to be relative to bssl-compat package
-            SRC_FILE="$(location third_party/boringssl/src/{src_file})"
+            SRC_FILE="$(location third_party/boringssl/{src_file})"
             DST_FILE="$(location {dst_file})"
             # Patch files are in the package, so use relative paths from execroot
             PATCH_SCRIPT="external/bssl-compat/patch/{dst_file}.sh"
@@ -65,55 +56,33 @@ def _bssl_header_impl(name, src_file, dst_file):
             # Copy result to destination
             cp "$$WORKING" "$$DST_FILE"
         """.format(src_file = src_file, dst_file = dst_file),
-        tools = tools,
+        tools = ["//tools:uncomment.sh"],
         visibility = ["//visibility:private"],
     )
 
-def bssl_headers(headers):
-    """Process multiple BoringSSL headers.
+def copy_bssl_files(groupname, destination, files):
+    """Copy BoringSSL files into bssl-compat, applying patches.
 
     Args:
-        headers: List of header paths (e.g., ["include/openssl/aes.h", "include/openssl/bio.h"])
+        groupname: The name of the resulting filegroup,
+                   containing all the copied files
+        destination: The directory to copy the files to
+        files: List of source files relative to third_party/boringssl
+                 (e.g., ["src/crypto/mem.cc", "src/ssl/ssl_x509.cc"])
     """
-    # Generate individual header processing rules
-    header_targets = []
-    for h in headers:
-        # Generate a unique name from the path
-        name = "bssl_header_" + h.replace("/", "_").replace(".", "_")
-        _bssl_header_impl(name, h, h)
-        header_targets.append(":" + name)
-
-    # Create a filegroup containing all processed headers
+    targets = []
+    for file in files:
+        name = groupname + "_" + file.replace("/", "_").replace(".", "_")
+        _copy_bssl_file_impl(
+            name = name,
+            src_file = file,
+            dst_file = destination + "/" + file
+        )
+        targets.append(":" + name)
+    # Create a filegroup containing all copied BoringSSL files
     native.filegroup(
-        name = "bssl_processed_headers",
-        srcs = header_targets,
-        visibility = ["//visibility:public"],
-    )
-
-def bssl_sources(sources):
-    """Process BoringSSL source files.
-
-    Similar to bssl_headers, but for source files (.cc, .c) from BoringSSL
-    that need to be processed with patches.
-
-    Args:
-        sources: List of source paths relative to "source/" directory
-                 (e.g., ["crypto/mem.cc", "ssl/ssl_x509.cc"])
-    """
-    source_targets = []
-    for src in sources:
-        # Generate a unique name from the path
-        name = "bssl_source_" + src.replace("/", "_").replace(".", "_")
-        # src is relative to "source/", so the BoringSSL source is at third_party/boringssl/src/{src}
-        src_file = src  # e.g., "crypto/mem.cc"
-        dst_file = "source/" + src  # e.g., "source/crypto/mem.cc"
-        _bssl_header_impl(name, src_file, dst_file)
-        source_targets.append(":" + name)
-
-    # Create a filegroup containing all processed source files
-    native.filegroup(
-        name = "bssl_processed_sources",
-        srcs = source_targets,
+        name = groupname,
+        srcs = targets,
         visibility = ["//visibility:public"],
     )
 
