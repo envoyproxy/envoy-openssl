@@ -26,6 +26,13 @@ configure_make(
 )
 
 filegroup(
+    name = "include",
+    srcs = [":openssl"],
+    output_group = "include",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "libssl",
     srcs = [":openssl"],
     output_group = "libssl.so.3",

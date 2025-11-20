@@ -136,6 +136,7 @@ def envoy_dependencies(skip_targets = []):
     _foreign_cc_dependencies()
 
     _openssl()
+    _boringssl()
 
     # Binding to an alias pointing to the bssl-compat layer
     native.bind(
@@ -261,7 +262,16 @@ def envoy_dependencies(skip_targets = []):
     )
 
 def _boringssl():
-    external_http_archive(name = "boringssl")
+    external_http_archive(
+        name = "boringssl",
+        patch_cmds = [
+            # Enable bssl-compat to copy out & use parts of the source tree
+            # that don't get exported from the bazel BUILD file by default.
+            """echo 'exports_files(glob(["crypto/**/*"]))' >> BUILD.bazel""",
+            """echo 'exports_files(glob(["ssl/**/*"]))' >> BUILD.bazel""",
+            """echo 'exports_files(glob(["include/**/*"]))' >> BUILD.bazel""",
+        ],
+    )
 
 def _boringssl_fips():
     external_http_archive(

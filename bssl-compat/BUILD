@@ -1,5 +1,5 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("//:bazel/rules.bzl", "copy_bssl_files", "bssl_mappings")
+load("//:bazel/rules.bzl", "patch_bssl_files", "mapping_functions")
 
 licenses(["notice"])  # Apache 2
 
@@ -9,9 +9,9 @@ licenses(["notice"])  # Apache 2
 # - include/ossl.h: Header declaring the ossl struct with function pointers
 # - include/ossl/openssl/*.h: Prefixed OpenSSL headers with ossl_ prefix
 genrule(
-    name = "ossl_generated",
+    name = "prefixed_ossl_source",
     srcs = [
-        "@openssl//:openssl",
+        "@openssl//:include",
         "@llvm//:clang-headers",
     ],
     outs = [
@@ -153,19 +153,9 @@ genrule(
         "include/ossl/openssl/x509v3err.h",
     ],
     cmd = """
-        # The @openssl//:openssl target provides the include
-        # directory for the OpenSSL headers to be prefixed.
-        OPENSSL_INCLUDE_DIR=""
-        for f in $(locations @openssl//:openssl); do
-            if [[ "$$f" == */include ]]; then
-                OPENSSL_INCLUDE_DIR="$$(cd "$$f" && pwd)"
-                break
-            fi
-        done
-
-        # The @llvm//:clang-headers target provides the include
-        #  directory for the Clang compiler headers that are
-        # required to satisfy #includes in the OpenSSL headers.
+        # The @llvm//:clang-headers target provides the include directory for
+        # the Clang compiler headers that are required to satisfy #includes in
+        # the OpenSSL headers (limits.h, stddef.h etc)
         CLANG_INCLUDE_DIR=""
         for f in $(locations @llvm//:clang-headers); do
             if [[ "$$f" == */stddef.h ]]; then
@@ -176,7 +166,7 @@ genrule(
 
         # Run the prefixer with absolute source path and relative output path
         $(location //prefixer:prefixer) \
-            --src-path "$$OPENSSL_INCLUDE_DIR" \
+            --src-path "$(location @openssl//:include)" \
             --src-incl "openssl/*.h" \
             --src-skip "openssl/asn1_mac.h" \
             --src-skip "openssl/opensslconf-*.h" \
@@ -190,131 +180,134 @@ genrule(
     visibility = ["//visibility:private"],
 )
 
-# Create rules for processing all BoringSSL headers.
-# This creates one genrule per header file, which copies that header from
-# BoringSSL, applying any necessary patches. This also creates a filegroup
-# called :bssl_headers which contains all the processed headers.
-copy_bssl_files(
-    groupname = "bssl_headers",
+# Create rules for processing all BoringSSL headers. This creates one genrule
+# per header file, which copies that header from BoringSSL, applying any
+# necessary patches. This also creates a filegroup called :patched_bssl_headers
+# which contains all the resulting copied & patched headers.
+patch_bssl_files(
+    groupname = "patched_bssl_headers",
     destination = "boringssl",
     files = [
-    "src/include/openssl/aead.h",
-    "src/include/openssl/aes.h",
-    "src/include/openssl/arm_arch.h",
-    "src/include/openssl/asm_base.h",
-    "src/include/openssl/asn1.h",
-    "src/include/openssl/asn1_mac.h",
-    "src/include/openssl/asn1t.h",
-    "src/include/openssl/base.h",
-    "src/include/openssl/base64.h",
-    "src/include/openssl/bcm_public.h",
-    "src/include/openssl/bio.h",
-    "src/include/openssl/blake2.h",
-    "src/include/openssl/blowfish.h",
-    "src/include/openssl/bn.h",
-    "src/include/openssl/buf.h",
-    "src/include/openssl/buffer.h",
-    "src/include/openssl/bytestring.h",
-    "src/include/openssl/cast.h",
-    "src/include/openssl/chacha.h",
-    "src/include/openssl/cipher.h",
-    "src/include/openssl/cmac.h",
-    "src/include/openssl/conf.h",
-    "src/include/openssl/cpu.h",
-    "src/include/openssl/crypto.h",
-    "src/include/openssl/curve25519.h",
-    "src/include/openssl/des.h",
-    "src/include/openssl/dh.h",
-    "src/include/openssl/digest.h",
-    "src/include/openssl/dsa.h",
-    "src/include/openssl/dtls1.h",
-    "src/include/openssl/e_os2.h",
-    "src/include/openssl/ec.h",
-    "src/include/openssl/ec_key.h",
-    "src/include/openssl/ecdh.h",
-    "src/include/openssl/ecdsa.h",
-    "src/include/openssl/engine.h",
-    "src/include/openssl/err.h",
-    "src/include/openssl/evp.h",
-    "src/include/openssl/evp_errors.h",
-    "src/include/openssl/ex_data.h",
-    "src/include/openssl/experimental/kyber.h",
-    "src/include/openssl/hkdf.h",
-    "src/include/openssl/hmac.h",
-    "src/include/openssl/hpke.h",
-    "src/include/openssl/hrss.h",
-    "src/include/openssl/is_boringssl.h",
-    "src/include/openssl/kdf.h",
-    "src/include/openssl/lhash.h",
-    "src/include/openssl/md4.h",
-    "src/include/openssl/md5.h",
-    "src/include/openssl/mem.h",
-    "src/include/openssl/mlkem.h",
-    "src/include/openssl/nid.h",
-    "src/include/openssl/obj.h",
-    "src/include/openssl/obj_mac.h",
-    "src/include/openssl/objects.h",
-    "src/include/openssl/opensslconf.h",
-    "src/include/openssl/opensslv.h",
-    "src/include/openssl/ossl_typ.h",
-    "src/include/openssl/pem.h",
-    "src/include/openssl/pkcs12.h",
-    "src/include/openssl/pkcs7.h",
-    "src/include/openssl/pkcs8.h",
-    "src/include/openssl/pki/certificate.h",
-    "src/include/openssl/pki/signature_verify_cache.h",
-    "src/include/openssl/pki/verify.h",
-    "src/include/openssl/pki/verify_error.h",
-    "src/include/openssl/poly1305.h",
-    "src/include/openssl/pool.h",
-    "src/include/openssl/posix_time.h",
-    "src/include/openssl/rand.h",
-    "src/include/openssl/rc4.h",
-    "src/include/openssl/ripemd.h",
-    "src/include/openssl/rsa.h",
-    "src/include/openssl/safestack.h",
-    "src/include/openssl/service_indicator.h",
-    "src/include/openssl/sha.h",
-    "src/include/openssl/siphash.h",
-    "src/include/openssl/slhdsa.h",
-    "src/include/openssl/span.h",
-    "src/include/openssl/srtp.h",
-    "src/include/openssl/ssl.h",
-    "src/include/openssl/ssl3.h",
-    "src/include/openssl/stack.h",
-    "src/include/openssl/target.h",
-    "src/include/openssl/thread.h",
-    "src/include/openssl/tls1.h",
-    "src/include/openssl/trust_token.h",
-    "src/include/openssl/type_check.h",
-    "src/include/openssl/x509.h",
-    "src/include/openssl/x509_vfy.h",
-    "src/include/openssl/x509v3.h",
-    "src/include/openssl/x509v3_errors.h",
-])
+        "include/openssl/aead.h",
+        "include/openssl/aes.h",
+        "include/openssl/asm_base.h",
+        "include/openssl/arm_arch.h",
+        "include/openssl/asn1.h",
+        "include/openssl/asn1_mac.h",
+        "include/openssl/asn1t.h",
+        "include/openssl/base.h",
+        "include/openssl/base64.h",
+        "include/openssl/bcm_public.h",
+        "include/openssl/bio.h",
+        "include/openssl/blake2.h",
+        "include/openssl/blowfish.h",
+        "include/openssl/bn.h",
+        "include/openssl/buf.h",
+        "include/openssl/buffer.h",
+        "include/openssl/bytestring.h",
+        "include/openssl/cast.h",
+        "include/openssl/chacha.h",
+        "include/openssl/cipher.h",
+        "include/openssl/cmac.h",
+        "include/openssl/conf.h",
+        "include/openssl/cpu.h",
+        "include/openssl/crypto.h",
+        "include/openssl/curve25519.h",
+        "include/openssl/des.h",
+        "include/openssl/dh.h",
+        "include/openssl/digest.h",
+        "include/openssl/dsa.h",
+        "include/openssl/dtls1.h",
+        "include/openssl/e_os2.h",
+        "include/openssl/ec.h",
+        "include/openssl/ec_key.h",
+        "include/openssl/ecdh.h",
+        "include/openssl/ecdsa.h",
+        "include/openssl/engine.h",
+        "include/openssl/err.h",
+        "include/openssl/evp.h",
+        "include/openssl/evp_errors.h",
+        "include/openssl/ex_data.h",
+        "include/openssl/experimental/kyber.h",
+        "include/openssl/hkdf.h",
+        "include/openssl/hmac.h",
+        "include/openssl/hpke.h",
+        "include/openssl/hrss.h",
+        "include/openssl/is_boringssl.h",
+        "include/openssl/kdf.h",
+        "include/openssl/lhash.h",
+        "include/openssl/md4.h",
+        "include/openssl/md5.h",
+        "include/openssl/mem.h",
+        "include/openssl/mlkem.h",
+        "include/openssl/nid.h",
+        "include/openssl/obj.h",
+        "include/openssl/obj_mac.h",
+        "include/openssl/objects.h",
+        "include/openssl/opensslconf.h",
+        "include/openssl/opensslv.h",
+        "include/openssl/ossl_typ.h",
+        "include/openssl/pem.h",
+        "include/openssl/pkcs12.h",
+        "include/openssl/pkcs7.h",
+        "include/openssl/pkcs8.h",
+        "include/openssl/pki/certificate.h",
+        "include/openssl/pki/signature_verify_cache.h",
+        "include/openssl/pki/verify.h",
+        "include/openssl/pki/verify_error.h",
+        "include/openssl/poly1305.h",
+        "include/openssl/pool.h",
+        "include/openssl/posix_time.h",
+        "include/openssl/rand.h",
+        "include/openssl/rc4.h",
+        "include/openssl/ripemd.h",
+        "include/openssl/rsa.h",
+        "include/openssl/safestack.h",
+        "include/openssl/service_indicator.h",
+        "include/openssl/sha.h",
+        "include/openssl/siphash.h",
+        "include/openssl/slhdsa.h",
+        "include/openssl/span.h",
+        "include/openssl/srtp.h",
+        "include/openssl/ssl.h",
+        "include/openssl/ssl3.h",
+        "include/openssl/stack.h",
+        "include/openssl/target.h",
+        "include/openssl/thread.h",
+        "include/openssl/tls1.h",
+        "include/openssl/trust_token.h",
+        "include/openssl/type_check.h",
+        "include/openssl/x509.h",
+        "include/openssl/x509_vfy.h",
+        "include/openssl/x509v3.h",
+        "include/openssl/x509v3_errors.h",
+    ]
+)
 
-# Create rules for processing all BoringSSL sources that we need.
-# This creates one genrule per source file, which copies that source from
-# BoringSSL, applying any necessary patches. This also creates a filegroup
-# called :bssl_sources which contains all the processed sources.
-copy_bssl_files(
-    groupname = "bssl_sources",
+# Create rules for processing all BoringSSL sources that we need. This creates
+# one genrule per source file, which copies that source from BoringSSL, applying
+# any necessary patches. This also creates a filegroup called
+# :patched_bssl_sources which contains all the copied & patched sources.
+patch_bssl_files(
+    groupname = "patched_bssl_sources",
     destination = "boringssl",
     files = [
-        "src/crypto/internal.h",
-        "src/crypto/mem.cc",
-        "src/crypto/bytestring/cbs.cc",
-        "src/crypto/bytestring/cbb.cc",
-        "src/ssl/ssl_x509.cc",
+        "crypto/internal.h",
+        "crypto/mem.cc",
+        "crypto/bytestring/cbs.cc",
+        "crypto/bytestring/cbb.cc",
+        "ssl/ssl_x509.cc",
     ],
 )
 
-# List of mapping functions
-# For each listed mapping function, either a hand-written source file exists in
-# source/{function}.c/.cc, or a genrule is created that generates a source file
-# which implements simple direct call forwarding. This also creates a filegroup
-# called :bssl_mapping_sources which contains all the source files.
-bssl_mappings([
+# List of mapping functions. For each listed mapping function, either a
+# handwritten source file exists in source/{function}.c/.cc, or a genrule is
+# created that generates a source file which implements simple direct call
+# forwarding. This also creates a filegroup called :mapping_function_sources
+# which contains all the source files.
+mapping_functions(
+    groupname = "mapping_function_sources",
+    functions = [
     "ASN1_ENUMERATED_to_BN",
     "ASN1_IA5STRING_free",
     "ASN1_IA5STRING_new",
@@ -855,15 +848,11 @@ cc_library(
     name = "bssl-compat",
     linkstatic = True,
     srcs = [
-        # Generated by prefixer
-        ":ossl_generated",
-        # Processed BoringSSL headers
-        ":bssl_headers",
-        # Processed BoringSSL sources
-        ":bssl_sources",
-        # Mapping functions
-        ":bssl_mapping_sources",
-        # Misc sources
+        ":prefixed_ossl_source",
+        ":patched_bssl_headers",
+        ":patched_bssl_sources",
+        ":mapping_function_sources",
+    ] + [
         "include/ext/openssl/ssl.h",
         "source/CRYPTO_BUFFER.h",
         "source/err.cc",
@@ -881,20 +870,13 @@ cc_library(
         "source/SSL_get_curve_name.cc",
         "source/stack.c",
     ],
-    hdrs = [],
     includes = [
         "include",
         "source",
-        "boringssl/src",
-        "boringssl/src/include",
+        "boringssl",
+        "boringssl/include",
     ],
-    copts = [
-        "-Wno-deprecated-declarations",
-        "-Dossl_OPENSSL_SUPPRESS_DEPRECATED",
-    ],
-    linkopts = [
-        "-ldl",
-    ],
+    linkopts = ["-ldl"],
     visibility = ["//visibility:public"],
 
     # Add the OpenSSL shared libraries as a *data* dependency, so they get
@@ -917,34 +899,31 @@ alias(
 )
 
 
-
-
-copy_bssl_files(
-    groupname = "bssl_test_files",
+patch_bssl_files(
+    groupname = "patched_bssl_tests",
     destination = "boringssl",
     files = [
-        "src/crypto/bio/bio_test.cc",
-        "src/crypto/digest/digest_test.cc",
-        "src/crypto/err/err_test.cc",
-        "src/crypto/hmac/hmac_test.cc",
-        "src/crypto/pkcs8/pkcs12_test.cc",
-        "src/crypto/rand/rand_test.cc",
-        "src/crypto/rsa/rsa_test.cc",
-        "src/crypto/stack/stack_test.cc",
-        "src/crypto/test/file_test_gtest.cc",
-        "src/crypto/test/file_test.cc",
-        "src/crypto/test/file_test.h",
-        "src/crypto/test/file_util.cc",
-        "src/crypto/test/file_util.h",
-        "src/crypto/test/test_data.cc",
-        "src/crypto/test/test_data.h",
-        "src/crypto/bcm_support.h",
-        "src/crypto/test/test_util.cc",
-        "src/crypto/test/test_util.h",
-        "src/crypto/x509/x509_test.cc",
-        "src/ssl/ssl_c_test.c",
-        "src/ssl/ssl_test.cc",
-        "crypto_test_data.cc"
+        "crypto/bio/bio_test.cc",
+        "crypto/digest/digest_test.cc",
+        "crypto/err/err_test.cc",
+        "crypto/hmac/hmac_test.cc",
+        "crypto/pkcs8/pkcs12_test.cc",
+        "crypto/rand/rand_test.cc",
+        "crypto/rsa/rsa_test.cc",
+        "crypto/stack/stack_test.cc",
+        "crypto/test/file_test_gtest.cc",
+        "crypto/test/file_test.cc",
+        "crypto/test/file_test.h",
+        "crypto/test/file_util.cc",
+        "crypto/test/file_util.h",
+        "crypto/test/test_data.cc",
+        "crypto/test/test_data.h",
+        "crypto/bcm_support.h",
+        "crypto/test/test_util.cc",
+        "crypto/test/test_util.h",
+        "crypto/x509/x509_test.cc",
+        "ssl/ssl_c_test.c",
+        "ssl/ssl_test.cc",
     ],
 )
 
@@ -975,17 +954,41 @@ cc_test(
         "source/test/test_x509.cc",
         "source/test/test_x509v3.cc",
         # BoringSSL-derived tests
-        ":bssl_test_files",
-        ":bssl_headers"
+        ":patched_bssl_tests",
+        ":patched_bssl_headers"
     ] + glob([
         "source/test/certs/*.h",
     ]),
-    includes = [
-        "include/",
+    data = [
+        "@boringssl//:crypto/x509/test/many_constraints.pem",
+        "@boringssl//:crypto/x509/test/many_names1.pem",
+        "@boringssl//:crypto/x509/test/many_names2.pem",
+        "@boringssl//:crypto/x509/test/many_names3.pem",
+        "@boringssl//:crypto/x509/test/some_names1.pem",
+        "@boringssl//:crypto/x509/test/some_names2.pem",
+        "@boringssl//:crypto/x509/test/some_names3.pem",
+        "@boringssl//:crypto/x509/test/basic_constraints_none.pem",
+        "@boringssl//:crypto/x509/test/basic_constraints_ca.pem",
+        "@boringssl//:crypto/x509/test/basic_constraints_ca_pathlen_0.pem",
+        "@boringssl//:crypto/x509/test/basic_constraints_ca_pathlen_1.pem",
+        "@boringssl//:crypto/x509/test/basic_constraints_ca_pathlen_10.pem",
+        "@boringssl//:crypto/x509/test/basic_constraints_leaf.pem",
+        "@boringssl//:crypto/x509/test/invalid_extension_leaf_basic_constraints.pem",
+        "@boringssl//:crypto/pkcs8/test/openssl.p12",
+        "@boringssl//:crypto/pkcs8/test/nss.p12",
+        "@boringssl//:crypto/pkcs8/test/windows.p12",
+        "@boringssl//:crypto/pkcs8/test/pbes2_sha1.p12",
+        "@boringssl//:crypto/pkcs8/test/pbes2_sha256.p12",
+        "@boringssl//:crypto/pkcs8/test/no_encryption.p12",
+        "@boringssl//:crypto/pkcs8/test/empty_password.p12",
+        "@boringssl//:crypto/pkcs8/test/empty_password_ber.p12",
+        "@boringssl//:crypto/pkcs8/test/empty_password_ber_nested.p12",
+        "@boringssl//:crypto/pkcs8/test/null_password.p12",
+        "@boringssl//:crypto/pkcs8/test/unicode_password.p12",
     ],
-    copts = [
-        "-Wno-deprecated-declarations",
-    ],
+    env = {
+        "BORINGSSL_TEST_DATA_ROOT" : "./external/boringssl"
+    },
     deps = [
         "//:bssl-compat",
         "@com_google_googletest//:gtest",
