@@ -17,7 +17,18 @@ configure_make(
     targets = ["build_sw", "install_sw"],
     args = ["-j"],
     out_lib_dir = "lib",
-    out_shared_libs = ["libssl.so.3", "libcrypto.so.3"],
+    out_shared_libs = [
+        "libssl.so.3",
+        "libcrypto.so.3",
+        "ossl-modules/legacy.so"
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "include",
+    srcs = [":openssl"],
+    output_group = "include",
     visibility = ["//visibility:public"],
 )
 
@@ -36,7 +47,14 @@ filegroup(
 )
 
 filegroup(
+    name = "legacy",
+    srcs = [":openssl"],
+    output_group = "legacy.so",
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
     name = "libs",
-    srcs = [":libssl", ":libcrypto"],
+    srcs = [":libssl", ":libcrypto", ":legacy"],
     visibility = ["//visibility:public"],
 )

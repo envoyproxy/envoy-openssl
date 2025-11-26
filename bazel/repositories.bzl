@@ -136,15 +136,16 @@ def envoy_dependencies(skip_targets = []):
     _foreign_cc_dependencies()
 
     _openssl()
+    _boringssl()
 
     # Binding to an alias pointing to the bssl-compat layer
     native.bind(
         name = "ssl",
-        actual = "@envoy//bssl-compat:ssl",
+        actual = "@bssl-compat//:ssl",
     )
     native.bind(
         name = "crypto",
-        actual = "@envoy//bssl-compat:crypto",
+        actual = "@bssl-compat//:crypto",
     )
 
     # The long repo names (`com_github_fmtlib_fmt` instead of `fmtlib`) are
@@ -261,7 +262,14 @@ def envoy_dependencies(skip_targets = []):
     )
 
 def _boringssl():
-    external_http_archive(name = "boringssl")
+    external_http_archive(
+        name = "boringssl",
+        patches = [
+            "@envoy//bazel:boringssl-bssl-compat.patch",
+            "@envoy//bazel:boringssl-s390x-ppc64le.patch",
+        ],
+        patch_args = ["-p1"],
+    )
 
 def _boringssl_fips():
     external_http_archive(
