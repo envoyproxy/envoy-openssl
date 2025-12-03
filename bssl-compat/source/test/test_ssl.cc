@@ -1463,6 +1463,59 @@ TEST(SSLTest, test_SSL_get_servername_inside_select_certificate_cb) {
 }
 
 
+/**
+ * @brief This test exercises a leak in SSL_get_servername()
+ *
+ * If SSL_get_servername() was invoked multiple times from the same certificate
+ * selection callback, it was leaking the string value that was returned from
+ * the previous invocation(s).
+ *
+ * Note that the string returned by the _last_ SSL_get_servername() invocation,
+ * inside a certificate selection callback, does _not_ leak i.e. if
+ * SSL_get_servername() is only called once during a callback, there is no leak.
+ * It only leaks when SSL_get_servername() is called more than once during the
+ * same callback.
+ */
+TEST(SSLTest, test_SSL_get_servername_leak_inside_select_certificate_cb) {
+  static const char SERVERNAME[] { "www.example.com" };
+
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_server_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_client_method()));
+
+  // Set up a certificate selection callback which calls SSL_get_servername() 5 times.
+  // This will result in 4 leaks if the SSL_get_servername() fix is not in place.
+  SSL_CTX_set_select_certificate_cb(server_ctx.get(), [](const SSL_CLIENT_HELLO *client_hello) -> ssl_select_cert_result_t {
+    SSL_get_servername(client_hello->ssl, TLSEXT_NAMETYPE_host_name);
+    SSL_get_servername(client_hello->ssl, TLSEXT_NAMETYPE_host_name);
+    SSL_get_servername(client_hello->ssl, TLSEXT_NAMETYPE_host_name);
+    SSL_get_servername(client_hello->ssl, TLSEXT_NAMETYPE_host_name);
+    SSL_get_servername(client_hello->ssl, TLSEXT_NAMETYPE_host_name);
+    return ssl_select_cert_success;
+  });
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  // Set up client
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_NONE, nullptr);
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+  ASSERT_TRUE(SSL_set_tlsext_host_name(client_ssl.get(), SERVERNAME));
+  SSL_set_connect_state(client_ssl.get());
+
+  ASSERT_TRUE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+}
+
+
 TEST(SSLTest, test_SSL_get_servername_null_inside_select_certificate_cb) {
   TempFile server_2_key_pem        { server_2_key_pem_str };
   TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
