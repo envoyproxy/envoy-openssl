@@ -118,6 +118,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex 'DEFINE_STACK_OF(GENERAL_SUBTREE)' \
   --uncomment-macro-redef 'EXFLAG_[[:alnum:]_]*' \
   --uncomment-func-decl GENERAL_NAME_set0_value \
+  --uncomment-func-decl GENERAL_NAME_set0_othername \
   --uncomment-func-decl X509_get_extension_flags \
   --uncomment-func-decl X509_get_key_usage \
   --uncomment-func-decl GENERAL_NAME_free \
