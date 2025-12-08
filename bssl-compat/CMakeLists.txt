@@ -315,9 +315,9 @@ target_add_bssl_include(bssl-compat
 target_add_bssl_function(bssl-compat
   ASN1_ENUMERATED_to_BN
   ASN1_IA5STRING_free
+  ASN1_BMPSTRING_new
   ASN1_IA5STRING_new
-  ASN1_IA5STRING_new
-  ASN1_IA5STRING_new
+  ASN1_UNIVERSALSTRING_new
   ASN1_INTEGER_free
   ASN1_INTEGER_new
   ASN1_INTEGER_to_BN
@@ -332,6 +332,8 @@ target_add_bssl_function(bssl-compat
   ASN1_TIME_diff
   ASN1_TIME_new
   ASN1_TIME_set
+  ASN1_TYPE_new
+  ASN1_TYPE_set
   BIO_clear_flags
   BIO_clear_retry_flags
   BIO_clear_flags
@@ -461,6 +463,7 @@ target_add_bssl_function(bssl-compat
   EVP_sha384
   EVP_sha512
   GENERAL_NAME_set0_value
+  GENERAL_NAME_set0_othername
   HMAC
   HMAC_CTX_free
   HMAC_CTX_new
