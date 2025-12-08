@@ -14,7 +14,9 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl ASN1_STRING_data \
   --uncomment-func-decl ASN1_STRING_length \
   --uncomment-func-decl ASN1_STRING_set \
+  --uncomment-func-decl ASN1_BMPSTRING_new \
   --uncomment-func-decl ASN1_IA5STRING_new \
+  --uncomment-func-decl ASN1_UNIVERSALSTRING_new \
   --uncomment-func-decl ASN1_IA5STRING_free \
   --uncomment-func-decl ASN1_INTEGER_new \
   --uncomment-func-decl ASN1_INTEGER_free \
@@ -25,6 +27,8 @@ uncomment.sh "$1" --comment -h \
   --uncomment-func-decl ASN1_TIME_diff \
   --uncomment-func-decl ASN1_TIME_set \
   --uncomment-func-decl ASN1_TIME_adj \
+  --uncomment-func-decl ASN1_TYPE_new \
+  --uncomment-func-decl ASN1_TYPE_set \
   --uncomment-func-decl ASN1_OBJECT_free \
   --uncomment-func-decl ASN1_ENUMERATED_to_BN \
   --uncomment-func-decl i2d_ASN1_OCTET_STRING \
