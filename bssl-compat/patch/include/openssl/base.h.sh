@@ -37,7 +37,9 @@ uncomment.sh "$1" --comment -h \
   --uncomment-typedef-redef ASN1_TIME \
   --uncomment-typedef-redef ASN1_ITEM \
   --uncomment-typedef-redef ASN1_OBJECT \
+  --uncomment-typedef-redef ASN1_BMPSTRING \
   --uncomment-typedef-redef ASN1_IA5STRING \
+  --uncomment-typedef-redef ASN1_UNIVERSALSTRING \
   --uncomment-typedef-redef ASN1_INTEGER \
   --uncomment-typedef-redef ASN1_OCTET_STRING \
   --uncomment-typedef-redef ASN1_STRING \
