@@ -275,6 +275,19 @@ Signed-off-by: Matt Leon <mattleon@google.com>
  src/objects/simd.cc                  | 10 ++++++++++
  3 files changed, 19 insertions(+), 1 deletion(-)
 
+diff --git a/bazel/defs.bzl b/bazel/defs.bzl
+index 39663c97df4..14b90ec6905 100644
+--- a/bazel/defs.bzl
++++ b/bazel/defs.bzl
+@@ -180,7 +180,7 @@ def _default_args():
+                 "Advapi32.lib",
+             ],
+             "@v8//bazel/config:is_macos": ["-pthread"],
+-            "//conditions:default": ["-Wl,--no-as-needed -ldl -latomic -pthread"],
++            "//conditions:default": ["-Wl,--no-as-needed -ldl -pthread"],
+         }) + select({
+             ":should_add_rdynamic": ["-rdynamic"],
+             "//conditions:default": [],
 diff --git a/src/builtins/builtins-typed-array.cc b/src/builtins/builtins-typed-array.cc
 index 918cb873481..bc933e8dc1d 100644
 --- a/src/builtins/builtins-typed-array.cc
