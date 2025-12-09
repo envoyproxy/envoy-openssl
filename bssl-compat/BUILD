@@ -12,7 +12,7 @@ genrule(
     name = "prefixed_ossl_source",
     srcs = [
         "@openssl//:include",
-        "@llvm//:clang-headers",
+        "@llvm_toolchain_llvm//:include",
     ],
     outs = [
         "source/ossl.c",
@@ -157,12 +157,18 @@ genrule(
         # the Clang compiler headers that are required to satisfy #includes in
         # the OpenSSL headers (limits.h, stddef.h etc)
         CLANG_INCLUDE_DIR=""
-        for f in $(locations @llvm//:clang-headers); do
-            if [[ "$$f" == */stddef.h ]]; then
+        # Find the clang builtin include directory (contains stddef.h, stdarg.h, etc.)
+        # We need the path under lib/clang/*/include/, not the libc++ stddef.h
+        for f in $(locations @llvm_toolchain_llvm//:include); do
+            if [[ "$$f" == */clang/*/include/stddef.h ]]; then
                 CLANG_INCLUDE_DIR="$$(cd "$$(dirname "$$f")" && pwd)"
                 break
             fi
         done
+
+        # Set up LD_LIBRARY_PATH for libclang-cpp.so
+        LLVM_LIB_DIR=$$(dirname $(location @llvm_toolchain_llvm//:lib/libclang-cpp.so.18.1))
+        export LD_LIBRARY_PATH="$$LLVM_LIB_DIR$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}"
 
         # Run the prefixer with absolute source path and relative output path
         $(location //prefixer:prefixer) \
@@ -176,6 +182,7 @@ genrule(
     """,
     tools = [
         "//prefixer:prefixer",
+        "@llvm_toolchain_llvm//:lib/libclang-cpp.so.18.1",
     ],
     visibility = ["//visibility:private"],
 )

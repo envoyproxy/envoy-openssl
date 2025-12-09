@@ -5,12 +5,6 @@ local_repository(
     path = "bssl-compat",
 )
 
-new_local_repository(
-    name = "llvm",
-    path = "/opt/llvm",
-    build_file = "//bazel/external:llvm.BUILD",
-)
-
 load("//bazel:api_binding.bzl", "envoy_api_binding")
 
 envoy_api_binding()
