@@ -17,7 +17,9 @@ uncomment.sh "$1" --comment -h \
   --uncomment-struct DeleterImpl \
   --uncomment-class StackIteratorImpl \
   --uncomment-using StackIterator \
-  --uncomment-regex-range 'inline.*' '^}$' \
+  --uncomment-regex-range 'inline std::enable_if_t.*' '}' \
+  --uncomment-regex-range 'inline .*StackIterator.*begin' '}' \
+  --uncomment-regex-range 'inline .*StackIterator.*end' '}' \
   --uncomment-regex '}$' \
   --uncomment-regex 'namespace internal {' \
   --uncomment-regex '}  // namespace internal' \
