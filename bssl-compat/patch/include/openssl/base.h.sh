@@ -99,7 +99,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-macro OPENSSL_PRINTF_FORMAT_FUNC \
   --uncomment-macro BSSL_NAMESPACE_BEGIN \
   --uncomment-macro BSSL_NAMESPACE_END \
-  --uncomment-regex-range 'template\s*<typename\s*T,\s*typename\s*Enable\s*=\s*void>' 'struct\s*DeleterImpl\s*\{\};' \
+  --uncomment-regex-range 'template\s*<typename\s*T,\s*typename\s*Enable\s*=\s*void>' 'struct\s*DeleterImpl\s*{};' \
   --uncomment-struct Deleter \
   --uncomment-regex-range 'template\s*<typename\s*T,\s*typename\s*CleanupRet,\s*void\s*(\*init)(T\s*\*),' '};$' \
   --uncomment-regex 'template\s*<typename' 'using\s*UniquePtr' \

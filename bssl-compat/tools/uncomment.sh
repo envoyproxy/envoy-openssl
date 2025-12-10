@@ -7,21 +7,21 @@ HDR_FILE="${1?"HDR_FILE not specified"}"
 shift
 
 function info {
-  true || cmake -E cmake_echo_color --cyan "$1"
+  true || echo "INFO[$HDR_FILE]: $1"
 }
 
 function warn {
-  false || cmake -E cmake_echo_color --yellow "$1"
+  echo "WARN[$HDR_FILE]: $1"
 }
 
 function error {
-  cmake -E cmake_echo_color --red "ERROR: $1"
+  echo "ERROR[$HDR_FILE]: $1"
   exit 1
 }
 
 cleanup() {
   if [[ $? != 0 ]]; then
-    error "While processing option \"$OPTION\""
+    echo "ERROR[$HDR_FILE]: Error while processing option \"$OPTION\""
   fi
 }
 trap cleanup EXIT
@@ -67,16 +67,16 @@ uncomment_line_range() {
 uncomment_regex_range() {
   [[ $# == 2 ]] || error "uncomment_regex_range(): Two regexes required"
   L1=$(grep -n "^// $1" "$HDR_FILE" | sed -n 1p | cut -d: -f1)
-  L2=$(gawk '(NR == '$L1'),/^\/\/ '$2'/{print NR}' "$HDR_FILE" | tail -1)
-  [ -z "$L1" ] && error "Failed to locate first pattern in -R $1 $2"
-  [ -z "$L2" ] && error "Failed to locate second pattern in -R $1 $2"
+  L2=$(grep -n "^// $2" "$HDR_FILE" | awk -F: '$1 > '$L1' {print $1; exit}')
+  [ -z "$L1" ] && error "Failed to locate first pattern '$1'"
+  [ -z "$L2" ] && error "Failed to locate second pattern '$2'"
   uncomment_line_range $L1 $L2
 }
 
 uncomment_preproc_directive() {
   [[ $# == 1 ]] || error "uncomment_preproc_directive(): One regex required"
   for L1 in $(grep -n "^// #\s*$1" "$HDR_FILE" | cut -d: -f1); do
-    L2=$(gawk '(NR == '$L1'),/[^\\]$/{print NR}' "$HDR_FILE" | tail -1)
+    L2=$(awk '(NR == '$L1'),/[^\\]$/{print NR}' "$HDR_FILE" | tail -1)
     uncomment_line_range $L1 $L2
   done
 }
@@ -89,7 +89,7 @@ comment_line_range() {
 comment_regex_range() {
   [[ $# == 2 ]] || error "comment_regex_range(): Two regexes required"
   L1=$(grep -n "$1" "$HDR_FILE" | sed -n 1p | cut -d: -f1)
-  L2=$(gawk '(NR == '$L1'),/'$2'/{print NR}' "$HDR_FILE" | tail -1)
+  L2=$(awk '(NR == '$L1'),/'$2'/{print NR}' "$HDR_FILE" | tail -1)
   [ -z "$L1" ] && error "comment_regex_range(): Failed to locate first pattern"
   [ -z "$L2" ] && error "comment_regex_range(): Failed to locate second pattern"
   comment_line_range $L1 $L2
@@ -141,15 +141,17 @@ while [ $# -ne 0 ]; do
       if [[ ${#PATTERNS[@]} == 1 ]]; then
         run_sed_expression "s%^// \(${PATTERNS[0]}\)%\1%"
       else
-        AWK=
-        for ((i=0; i < ${#PATTERNS[@]} ; i++)); do
-          AWK="$AWK    /^\/\/ ${PATTERNS[i]}/"
-          [[ $i == 0 ]] && AWK="$AWK {l1=NR}" || AWK="$AWK && NR==(l1+$i) {}"
+        for L1 in $(grep -n "^// ${PATTERNS[0]}" "$HDR_FILE" | cut -d: -f1); do
+          for ((i=1; i < ${#PATTERNS[@]} ; i++)); do
+            L2=$((L1 + i))
+            if grep -n "^// ${PATTERNS[i]}" "$HDR_FILE" | cut -d: -f1 | grep -q "^$L2$"; then
+              if (( i == ${#PATTERNS[@]} - 1 )); then
+                uncomment_line_range $L1 $L2
+                break 2 # exit both loops
+              fi
+            fi
+          done
         done
-        AWK="${AWK::-2} {printf \"%d %d\n\", l1, NR; exit 0}"
-        RANGE=$(gawk "$AWK" "$HDR_FILE")
-        [ -z "$RANGE" ] && error "Failed to locate --uncomment-regex ${PATTERNS[@]}"
-        uncomment_line_range $RANGE
       fi
     ;;
     --uncomment-macro-redef) # -d Redefine macro <X> to be ossl_<x>
@@ -168,7 +170,7 @@ while [ $# -ne 0 ]; do
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
       for L1 in $(grep -n "^// #\s*define\s*$2\>" "$HDR_FILE" | cut -d: -f1); do
-        L2=$(gawk '(NR == '$L1'),/[^\\]$/{print NR}' "$HDR_FILE" | tail -1)
+        L2=$(awk '(NR == '$L1'),/[^\\]$/{print NR}' "$HDR_FILE" | tail -1)
         uncomment_line_range $L1 $L2
       done
       shift
@@ -222,7 +224,7 @@ while [ $# -ne 0 ]; do
       LINE=$(grep -n "^// \s*\<typedef\>.*\<$2\>.*" "$HDR_FILE" | sed -n 1p)
       L1=$(echo "$LINE" | cut -d: -f1) && L2=$L1
       if [[ ! "$LINE" =~ \;$ ]]; then # multi-line
-        L2=$(gawk '(NR == '$L1'),/^\/\/ .*;$/{print NR}' "$HDR_FILE" | tail -1)
+        L2=$(awk '(NR == '$L1'),/^\/\/ .*;$/{print NR}' "$HDR_FILE" | tail -1)
       fi
       uncomment_line_range $L1 $L2
       shift
@@ -233,7 +235,7 @@ while [ $# -ne 0 ]; do
       LINE=$(grep -n "^// [^ !].*\b$2\s*(.*[^;]$" "$HDR_FILE" | sed -n 1p)
       L1=$(echo "$LINE" | cut -d: -f1) && L2=$L1
       if [[ ! "$LINE" =~ }$ ]]; then # multi-line
-        L2=$(gawk '(NR == '$L1'),/^\/\/ }$/{print NR}' "$HDR_FILE" | tail -1)
+        L2=$(awk '(NR == '$L1'),/^\/\/ }$/{print NR}' "$HDR_FILE" | tail -1)
       fi
       uncomment_line_range $L1 $L2
       shift
@@ -244,7 +246,7 @@ while [ $# -ne 0 ]; do
       LINE=$(grep -n "^// static\s*.*\b$2\b\s*(" "$HDR_FILE" | sed -n 1p)
       L1=$(echo "$LINE" | cut -d: -f1) && L2=$L1
       if [[ ! "$LINE" =~ }$ ]]; then # multi-line
-        L2=$(gawk '(NR == '$L1'),/^\/\/ }$/{print NR}' "$HDR_FILE" | tail -1)
+        L2=$(awk '(NR == '$L1'),/^\/\/ }$/{print NR}' "$HDR_FILE" | tail -1)
       fi
       uncomment_line_range $L1 $L2
       shift
@@ -252,7 +254,12 @@ while [ $# -ne 0 ]; do
     --uncomment-using)
       [[ $2 ]] && [[ $2 != -* ]] || error "Insufficient arguments for $1"
       option_end "$2"
-      uncomment_regex_range "using\s*$2\>" ".*;$"
+      LINE=$(grep -n "^// \s*\<using\>.*\<$2\>.*" "$HDR_FILE" | sed -n 1p)
+      L1=$(echo "$LINE" | cut -d: -f1) && L2=$L1
+      if [[ ! "$LINE" =~ \;$ ]]; then # multi-line
+        L2=$(awk '(NR == '$L1'),/^\/\/ .*;$/{print NR}' "$HDR_FILE" | tail -1)
+      fi
+      uncomment_line_range $L1 $L2
       shift
     ;;
     --comment-regex-range) # comment multi-line matching regex
