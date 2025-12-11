@@ -17,5 +17,5 @@ envoy_cc_test_library(
         "//envoy/registry",
         "//source/common/quic:envoy_quic_proof_source_factory_interface",
         "//source/common/quic:envoy_quic_proof_source_lib",
-    ]),
+    ],
 )
