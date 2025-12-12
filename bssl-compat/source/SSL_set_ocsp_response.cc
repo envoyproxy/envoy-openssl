@@ -60,7 +60,12 @@ static int ssl_apply_deferred_ocsp_response_cb(SSL *ssl, void *arg) {
  * ossl_SSL_CTX_set_tlsext_status_cb() later on.
  */
 extern "C" int SSL_set_ocsp_response(SSL *ssl, const uint8_t *response, size_t response_len) {
-  if (void *response_copy {ossl.ossl_OPENSSL_memdup(response, response_len)}) {
+  std::unique_ptr<void, decltype(&OPENSSL_free)> response_copy(
+    ossl.ossl_OPENSSL_memdup(response, response_len), 
+    OPENSSL_free
+  );
+
+  if (response_copy) {
     if (in_select_certificate_cb(ssl)) {
 
       SSL_CTX *ctx {ossl.ossl_SSL_get_SSL_CTX(ssl)};
@@ -89,10 +94,10 @@ extern "C" int SSL_set_ocsp_response(SSL *ssl, const uint8_t *response, size_t r
       }
 
       // Store the OCSP response bytes for the callback to pick up later
-      return ossl.ossl_SSL_set_ex_data(ssl, index(), new OcspResponse(response_copy, response_len));
+      return ossl.ossl_SSL_set_ex_data(ssl, index(), new OcspResponse(response_copy.release(), response_len));
     }
     else {
-      return ossl.ossl_SSL_set_tlsext_status_ocsp_resp(ssl, response_copy, response_len);
+      return ossl.ossl_SSL_set_tlsext_status_ocsp_resp(ssl, response_copy.release(), response_len);
     }
   }
 
