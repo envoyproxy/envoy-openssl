@@ -1671,6 +1671,69 @@ TEST(SSLTest, test_SSL_set_ocsp_response_leak_inside_select_certificate_cb) {
 }
 
 
+#ifdef BSSL_COMPAT
+/**
+ * @brief This test exercises a leak that occurs in SSL_set_ocsp_response() if
+ * it returns early due to an error, when it is called from within a certificate
+ * selection callback.
+ *
+ * Without a fix for the leak, running this test under valgrind or similar
+ * memory checker tool will report the memory leak.
+ *
+ * Note that because this test uses knowledge of the internals of the
+ * SSL_set_ocsp_response() implementation, in bssl-compat, in order to provoke
+ * the leak, it will not work the same on BoringSSL proper.
+ */
+TEST(SSLTest, test_SSL_set_ocsp_response_early_return_leak_inside_select_certificate_cb) {
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  static const uint8_t OCSP_RESPONSE[] { 1, 2, 3, 4, 5 };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_server_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_client_method()));
+
+  // Register a dummy tlsext status callback. This will provoke the
+  // SSL_set_ocsp_response() call, inside the certificate selection callback, to
+  // fail and return early. This in turn will cause the leak to occur if the fix
+  // is not in place.
+  SSL_CTX_set_tlsext_status_cb(server_ctx.get(), [](SSL *ssl, void *arg) -> int {return 0;});
+
+  // Set up server with a select certificate callback that calls
+  // SSL_set_ocsp_response() - which will return early and leak because of the
+  // dummy status callback we installed above.
+  SSL_CTX_set_select_certificate_cb(server_ctx.get(), [](const SSL_CLIENT_HELLO *client_hello) -> ssl_select_cert_result_t {
+    if (SSL_set_ocsp_response(client_hello->ssl, OCSP_RESPONSE, sizeof(OCSP_RESPONSE)) == 1) {
+      return ssl_select_cert_success;
+    }
+    return ssl_select_cert_error;
+  });
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  // Set up client with ocsp stapling enabled
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_NONE, nullptr);
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+  SSL_set_connect_state(client_ssl.get());
+  SSL_enable_ocsp_stapling(client_ssl.get());
+
+  // We expect this to fail because the SSL_set_ocsp_response() call inside the
+  // certificate selection callback above will return early with an error,
+  // causing the certificate selection callback to fail, which in turn will
+  // cause the handshake to fail.
+  ASSERT_FALSE(CompleteHandshakes(client_ssl.get(), server_ssl.get()));
+}
+#endif // BSSL_COMPAT
+
+
 /**
  * Test that setting a TLS alert and returning ssl_verify_invalid, from a
  * callback installed via SSL_CTX_set_custom_verify(), results in a handshake
