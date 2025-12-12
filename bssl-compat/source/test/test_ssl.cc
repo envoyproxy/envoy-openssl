@@ -1672,6 +1672,49 @@ TEST(SSLTest, test_SSL_set_ocsp_response_leak_inside_select_certificate_cb) {
 
 
 /**
+ * @brief This test exercises a leak in SSL_CTX_set_select_certificate_cb() when
+ * the certificate selection callback throws an exception.
+ *
+ * Without a fix for the leak, running this test under valgrind or similar
+ * memory checker tool will report the memory leak.
+ */
+TEST(SSLTest, test_SSL_CTX_set_select_certificate_cb_leak_from_callback_exception) {
+  TempFile server_2_key_pem        { server_2_key_pem_str };
+  TempFile server_2_cert_chain_pem { server_2_cert_chain_pem_str };
+
+  int sockets[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0, sockets));
+  SocketCloser close[] { sockets[0], sockets[1] };
+
+  bssl::UniquePtr<SSL_CTX> server_ctx(SSL_CTX_new(TLS_server_method()));
+  bssl::UniquePtr<SSL_CTX> client_ctx(SSL_CTX_new(TLS_client_method()));
+
+  // Set up server with a select certificate callback that raises an exception
+  SSL_CTX_set_select_certificate_cb(server_ctx.get(), [](const SSL_CLIENT_HELLO *client_hello) -> ssl_select_cert_result_t {
+    throw std::runtime_error("Intentional exception to test for memory leaks");
+  });
+
+  ASSERT_TRUE(SSL_CTX_use_certificate_chain_file(server_ctx.get(), server_2_cert_chain_pem.path()));
+  ASSERT_TRUE(SSL_CTX_use_PrivateKey_file(server_ctx.get(), server_2_key_pem.path(), SSL_FILETYPE_PEM));
+  bssl::UniquePtr<SSL> server_ssl(SSL_new(server_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(server_ssl.get(), sockets[0]));
+  SSL_set_accept_state(server_ssl.get());
+
+  // Set up client
+  SSL_CTX_set_verify(client_ctx.get(), SSL_VERIFY_NONE, nullptr);
+  bssl::UniquePtr<SSL> client_ssl(SSL_new(client_ctx.get()));
+  ASSERT_TRUE(SSL_set_fd(client_ssl.get(), sockets[1]));
+  SSL_set_connect_state(client_ssl.get());
+
+  // Handshake will fail because of the exception in the callback
+  EXPECT_THROW(
+    CompleteHandshakes(client_ssl.get(), server_ssl.get()),
+    std::runtime_error
+  );
+}
+
+
+/**
  * Test that setting a TLS alert and returning ssl_verify_invalid, from a
  * callback installed via SSL_CTX_set_custom_verify(), results in a handshake
  * failure, and that same TLS alert being received by the peer (subject to our
