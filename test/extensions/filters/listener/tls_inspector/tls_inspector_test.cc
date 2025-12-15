@@ -295,8 +295,8 @@ TEST_P(TlsInspectorTest, ClientHelloTooBig) {
   const std::vector<uint64_t> bytes_processed =
       store_.histogramValues("tls_inspector.bytes_processed", false);
   ASSERT_EQ(1, bytes_processed.size());
-  EXPECT_EQ("TLS_error|error:10000092:SSL "
-            "routines:OPENSSL_internal:ENCRYPTED_LENGTH_TOO_LONG:TLS_error_end",
+  EXPECT_EQ(SSL_SELECT("TLS_error|error:10000092:SSL routines:OPENSSL_internal:ENCRYPTED_LENGTH_TOO_LONG:TLS_error_end",
+                       "TLS_error|error:0A0000C6:SSL routines::packet length too long:TLS_error_end"),
             cb_.streamInfo().downstreamTransportFailureReason());
 }
 
@@ -501,7 +501,7 @@ TEST_P(TlsInspectorTest, NotSslCloseConnection) {
   ASSERT_EQ(1, bytes_processed.size());
   EXPECT_EQ(5, bytes_processed[0]);
   EXPECT_EQ(
-      "TLS_error|error:100000f7:SSL routines:OPENSSL_internal:WRONG_VERSION_NUMBER:TLS_error_end",
+      SSL_SELECT("TLS_error|error:100000f7:SSL routines:OPENSSL_internal:WRONG_VERSION_NUMBER:TLS_error_end", "TLS_error|error:0A00010B:SSL routines::wrong version number:TLS_error_end"),
       cb_.streamInfo().downstreamTransportFailureReason());
 }
 

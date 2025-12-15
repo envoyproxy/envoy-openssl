@@ -850,7 +850,7 @@ tcp_logs:
       downstream_local_address:
         socket_address:
           address: {0}
-      downstream_transport_failure_reason: "TLS_error:|268435581:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED:verify cert failed: cert hash and spki:TLS_error_end"
+      downstream_transport_failure_reason: "{3}"
       access_log_type: NotSet
       downstream_direct_remote_address:
         socket_address:
@@ -872,7 +872,9 @@ tcp_logs:
 )EOF",
                                           Network::Test::getLoopbackAddressString(ipVersion()),
                                           SSL_SELECT(49199, 65535),
-                                          peer_certificate_properties)));
+                                          peer_certificate_properties,
+                                          SSL_SELECT("TLS_error:|268435581:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED:verify cert failed: cert hash and spki:TLS_error_end",
+                                                     "TLS_error:|268435581:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED:TLS_error_end"))));
   cleanup();
 }
 
