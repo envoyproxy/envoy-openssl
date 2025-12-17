@@ -22,7 +22,3 @@ common:openssl --//bazel:http3=False
 common:openssl --define=boringssl=fips
 build:openssl --build_tag_filters=-nofips
 test:openssl --test_tag_filters=-nofips
-
-# Arch-specific build flags for OpenSSL builds, triggered with --config=$ARCH in bazel build command
-build:openssl:s390x --//source/extensions/filters/common/lua:luajit2=1 --copt=-DTOOLCHAIN_MISS_ASM_HWCAP_H --host_copt=-DTOOLCHAIN_MISS_ASM_HWCAP_H --action_env=BAZEL_LINKLIBS=-lstdc++
-build:openssl:ppc --//source/extensions/filters/common/lua:luajit2=1 --copt=-DTOOLCHAIN_MISS_ASM_HWCAP_H --host_copt=-DTOOLCHAIN_MISS_ASM_HWCAP_H --action_env=BAZEL_LINKLIBS=-lstdc++
