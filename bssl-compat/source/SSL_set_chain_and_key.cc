@@ -30,18 +30,14 @@ extern "C" int SSL_set_chain_and_key(SSL *ssl, CRYPTO_BUFFER *const *certs, size
     if(i == 0) {
       leaf = std::move(cert);
     }
-    else {
-      if(sk_X509_push(chain.get(), cert.get()) <= 0) {
-        return 0;
-      }
+    else if(sk_X509_push(chain.get(), cert.get()) == i) {
+      cert.release();
     }
-
-    cert.release();
+    else {
+      return 0;
+    }
   }
 
-  if (!ossl.ossl_SSL_use_cert_and_key(ssl, leaf.get(), privkey, reinterpret_cast<ossl_STACK_OF(ossl_X509)*>(chain.get()), 1)) {
-    return 0;
-  }
-
-  return 1;
+  return ossl.ossl_SSL_use_cert_and_key(ssl, leaf.get(), privkey,
+          reinterpret_cast<ossl_STACK_OF(ossl_X509)*>(chain.get()), 1);
 }
