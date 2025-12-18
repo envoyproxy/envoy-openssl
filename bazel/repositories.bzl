@@ -798,7 +798,6 @@ def _proxy_wasm_cpp_host():
         patch_args = ["-p1"],
         patches = [
             "@envoy//bazel:proxy_wasm_cpp_host.patch",
-	     "@envoy//bazel:proxy_wasm_cpp_host-s390x.patch",
         ],
     )
 
@@ -932,7 +931,6 @@ def _foreign_cc_dependencies():
         patch_args = ["-p1"],
         patches = [
            "@envoy//bazel:rules_foreign_cc.patch",
-           "@envoy//bazel:rules_foreign_cc-s390x.patch",
         ],
     )
 
