@@ -263,7 +263,6 @@ def _boringssl():
         name = "boringssl",
         patches = [
             "@envoy//bazel:boringssl-bssl-compat.patch",
-            "@envoy//bazel:boringssl-s390x-ppc64le.patch",
         ],
         patch_args = ["-p1"],
     )
