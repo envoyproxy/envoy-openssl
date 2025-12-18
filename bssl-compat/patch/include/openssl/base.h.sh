@@ -110,5 +110,7 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex-range 'template\s*<typename\s*T,\s*typename\s*Enable\s*=\s*void>' 'struct\s*DeleterImpl\s*\{\};' \
   --uncomment-struct Deleter \
   --uncomment-regex-range 'template\s*<typename\s*T,\s*typename\s*CleanupRet,\s*void\s*(\*init)(T\s*\*),' '};$' \
-  --uncomment-regex 'template\s*<typename' 'using\s*UniquePtr'
+  --uncomment-regex 'template\s*<typename' 'using\s*UniquePtr' \
+  --uncomment-typedef-redef  ASN1_BMPSTRING \
+  --uncomment-typedef-redef  ASN1_UNIVERSALSTRING
 
