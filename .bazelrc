@@ -38,6 +38,8 @@ build --copt=-DABSL_MIN_LOG_LEVEL=4
 build --cxxopt=-std=c++20 --host_cxxopt=-std=c++20
 build --copt=-Wno-deprecated-declarations
 build --define envoy_mobile_listener=enabled
+# Default to BoringSSL. Use --config=openssl to switch to OpenSSL.
+build --define=ssl=boringssl
 build --experimental_repository_downloader_retries=2
 build --experimental_cc_static_library
 build --enable_platform_specific_config

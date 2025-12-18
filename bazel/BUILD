@@ -531,6 +531,7 @@ selects.config_setting_group(
     match_all = [
         ":boringssl_fips",
         ":not_ppc",
+        ":ssl_boringssl",
     ],
 )
 
