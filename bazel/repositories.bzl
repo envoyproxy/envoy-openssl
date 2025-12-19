@@ -197,7 +197,7 @@ def envoy_dependencies(skip_targets = []):
     _simdutf()
     _intel_ittapi()
     _com_github_google_quiche()
-    _com_googlesource_googleurl()
+    _googleurl()
     _io_hyperscan()
     _io_vectorscan()
     _io_opentelemetry_api_cpp()
@@ -793,9 +793,9 @@ def _com_github_google_quiche():
         patch_args = ["-p1"],
     )
 
-def _com_googlesource_googleurl():
+def _googleurl():
     external_http_archive(
-        name = "com_googlesource_googleurl",
+        name = "googleurl",
         patches = ["@envoy//bazel/external:googleurl.patch"],
         patch_args = ["-p1"],
     )
