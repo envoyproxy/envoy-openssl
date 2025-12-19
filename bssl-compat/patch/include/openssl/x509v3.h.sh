@@ -27,4 +27,5 @@ uncomment.sh "$1" --comment -h \
   --uncomment-regex 'BORINGSSL_MAKE_DELETER(NAME_CONSTRAINTS, NAME_CONSTRAINTS_free)' \
   --uncomment-macro-redef 'X509V3_R_[[:alnum:]_]*' \
   --uncomment-macro-redef 'X509V3_ADD_[[:alnum:]_]*' \
+  --uncomment-func-decl GENERAL_NAME_set0_othername \
 
