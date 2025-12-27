@@ -20,9 +20,16 @@ FUNC_NAME="${1?"FUNC_NAME not specified"}"
 CC_FILE="${2?"CC_FILE not specified"}"
 
 
-function error {
-    cmake -E cmake_echo_color --red "$1"
-    exit 1
+function error() {
+  printf '\033[0;31m%s\033[0m\n' "$1" >&2
+  exit 1
+}
+
+function get_header_name() {
+  local hdr_file
+  hdr_file=$(grep -r "OPENSSL_EXPORT.*[^A-Za-z0-9_]$FUNC_NAME[ \t]*(" "$INCLUDE_DIR"/openssl/* | cut -d: -f1 || :)
+  [ -z "$hdr_file" ] && hdr_file=$(grep -rB 1 "$FUNC_NAME" "$INCLUDE_DIR"/openssl/ | grep -A 1 OPENSSL_EXPORT | tail -n 1 | cut -d: -f1)
+  echo "$hdr_file"
 }
 
 INCLUDE_DIR="$TOP_DIR/third_party/boringssl/src/include"
@@ -31,7 +38,7 @@ INCLUDE_DIR="$TOP_DIR/third_party/boringssl/src/include"
 ################################################################################
 # Find out which header file the function is declared in
 ################################################################################
-HDR_FILE=$(grep -r "OPENSSL_EXPORT.*[^A-Za-z0-9_]$FUNC_NAME[ \t]*(" $INCLUDE_DIR/openssl/* | cut -d: -f1)
+HDR_FILE=$(get_header_name)
 if [ ! -f "$HDR_FILE" ]; then
   error "Failed to determine header file for $FUNC_NAME"
 fi
