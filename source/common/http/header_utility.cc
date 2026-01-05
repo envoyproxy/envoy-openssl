@@ -198,6 +198,74 @@ bool HeaderUtility::matchHeaders(const HeaderMap& request_headers, const HeaderD
   return match != header_data.invert_match_;
 }
 
+bool HeaderUtility::HeaderData::matchSingleValue(absl::string_view value) const {
+  bool match;
+  switch (header_match_type_) {
+  case HeaderMatchType::Value:
+    match = value_.empty() || value == value_;
+    break;
+  case HeaderMatchType::Regex:
+    match = regex_->match(value);
+    break;
+  case HeaderMatchType::Range: {
+    int64_t header_int_value = 0;
+    match = absl::SimpleAtoi(value, &header_int_value) &&
+            header_int_value >= range_.start() &&
+            header_int_value < range_.end();
+    break;
+  }
+  case HeaderMatchType::Present:
+    match = present_;
+    break;
+  case HeaderMatchType::Prefix:
+    match = absl::StartsWith(value, value_);
+    break;
+  case HeaderMatchType::Suffix:
+    match = absl::EndsWith(value, value_);
+    break;
+  case HeaderMatchType::Contains:
+    match = absl::StrContains(value, value_);
+    break;
+  case HeaderMatchType::StringMatch:
+    match = string_match_->match(value);
+    break;
+  }
+  return match;
+}
+
+bool HeaderUtility::HeaderData::matchesHeadersIndividually(const HeaderMap& request_headers) const {
+  const auto header_values = request_headers.get(name_);
+
+  if (header_values.empty()) {
+    if (!treat_missing_as_empty_) {
+      // Special handling for Present match type when header is missing
+      if (invert_match_) {
+        return header_match_type_ == HeaderMatchType::Present && present_;
+      } else {
+        return header_match_type_ == HeaderMatchType::Present && !present_;
+      }
+    }
+    // treat_missing_as_empty_ is true, match against empty string
+    return matchSingleValue(EMPTY_STRING) != invert_match_;
+  }
+
+  // Validate each header value individually
+  for (size_t i = 0; i < header_values.size(); ++i) {
+    absl::string_view value = header_values[i]->value().getStringView();
+    bool matches = matchSingleValue(value);
+    if (!invert_match_ && matches) {
+      return true;
+    }
+    if (invert_match_ && matches) {
+      return false;
+    }
+  }
+
+  // For normal match: no value matched, return false
+  // For invert_match: no value matched the pattern, return true
+  return invert_match_;
+}
+
 bool HeaderUtility::headerValueIsValid(const absl::string_view header_value) {
   return http2::adapter::HeaderValidator::IsValidHeaderValue(header_value,
                                                              http2::adapter::ObsTextOption::kAllow);

@@ -757,11 +757,7 @@ TEST_F(FilterManagerTest, IdleTimerResets) {
   filter_1->decoder_callbacks_->encodeTrailers(std::move(basic_resp_trailers));
   filter_manager_->destroyFilters();
 }
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
+
 
 // Verify that decodeData is not called on filters after the stream has been reset.
 TEST_F(FilterManagerTest, DecodeDataNotCalledAfterDownstreamReset) {
@@ -775,11 +771,7 @@ TEST_F(FilterManagerTest, DecodeDataNotCalledAfterDownstreamReset) {
         manager.applyFilterFactoryCb({}, factory);
         return true;
       }));
-<<<<<<< Updated upstream
-  filter_manager_->createDownstreamFilterChain();
-=======
   filter_manager_->createFilterChain();
->>>>>>> Stashed changes
 
   RequestHeaderMapPtr headers{
       new TestRequestHeaderMapImpl{{":authority", "host"}, {":path", "/"}, {":method", "POST"}}};
@@ -813,11 +805,7 @@ TEST_F(FilterManagerTest, DecodeHeadersNotCalledAfterDownstreamReset) {
         manager.applyFilterFactoryCb({}, factory);
         return true;
       }));
-<<<<<<< Updated upstream
-  filter_manager_->createDownstreamFilterChain();
-=======
   filter_manager_->createFilterChain();
->>>>>>> Stashed changes
 
   // Simulate a downstream reset before headers are processed.
   filter_manager_->onDownstreamReset();
@@ -846,11 +834,7 @@ TEST_F(FilterManagerTest, DecodeTrailersNotCalledAfterDownstreamReset) {
         manager.applyFilterFactoryCb({}, factory);
         return true;
       }));
-<<<<<<< Updated upstream
-  filter_manager_->createDownstreamFilterChain();
-=======
   filter_manager_->createFilterChain();
->>>>>>> Stashed changes
 
   RequestHeaderMapPtr headers{
       new TestRequestHeaderMapImpl{{":authority", "host"}, {":path", "/"}, {":method", "POST"}}};
@@ -887,11 +871,7 @@ TEST_F(FilterManagerTest, DecodeMetadataNotCalledAfterDownstreamReset) {
         manager.applyFilterFactoryCb({}, factory);
         return true;
       }));
-<<<<<<< Updated upstream
-  filter_manager_->createDownstreamFilterChain();
-=======
   filter_manager_->createFilterChain();
->>>>>>> Stashed changes
 
   RequestHeaderMapPtr headers{
       new TestRequestHeaderMapImpl{{":authority", "host"}, {":path", "/"}, {":method", "POST"}}};
@@ -925,11 +905,7 @@ TEST_F(FilterManagerTest, AllDecodeOperationsBlockedAfterDownstreamReset) {
         manager.applyFilterFactoryCb({}, factory);
         return true;
       }));
-<<<<<<< Updated upstream
-  filter_manager_->createDownstreamFilterChain();
-=======
   filter_manager_->createFilterChain();
->>>>>>> Stashed changes
 
   RequestHeaderMapPtr headers{
       new TestRequestHeaderMapImpl{{":authority", "host"}, {":path", "/"}, {":method", "POST"}}};
@@ -962,10 +938,7 @@ TEST_F(FilterManagerTest, AllDecodeOperationsBlockedAfterDownstreamReset) {
   filter_manager_->destroyFilters();
 }
 
-<<<<<<< Updated upstream
-=======
->>>>>>> Stashed changes
->>>>>>> Stashed changes
+
 } // namespace
 } // namespace Http
 } // namespace Envoy
