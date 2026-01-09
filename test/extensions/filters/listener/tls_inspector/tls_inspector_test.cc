@@ -464,7 +464,7 @@ TEST_P(TlsInspectorTest, NotSsl) {
   ASSERT_EQ(1, bytes_processed.size());
   EXPECT_EQ(5, bytes_processed[0]);
   EXPECT_EQ(
-      "TLS_error|error:100000f7:SSL routines:OPENSSL_internal:WRONG_VERSION_NUMBER:TLS_error_end",
+      "TLS_error|error:0A00010B:SSL routines::wrong version number:TLS_error_end",
       cb_.streamInfo().downstreamTransportFailureReason());
 }
 
