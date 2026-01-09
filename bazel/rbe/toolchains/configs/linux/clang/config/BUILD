@@ -44,7 +44,6 @@ platform(
         "@bazel_tools//tools/cpp:clang",
     ],
     exec_properties = {
-        "cache-silo-key": CACHE_SILO_KEY,
         "container-image": "docker://gcr.io/envoy-ci/envoy-build@sha256:95d7afdea0f0f8881e88fa5e581db4f50907d0745ac8d90e00357ac1a316abe5",
         "OSFamily": "Linux",
     },
