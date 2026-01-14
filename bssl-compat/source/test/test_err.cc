@@ -2,6 +2,8 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <limits>
+#include <cstring>
+#include <cerrno>
 
 
 TEST(ErrTest, test_ERR_func_error_string) {
@@ -49,4 +51,66 @@ TEST(ErrTest, test_SSL_R_NO_SUITABLE_SIGNATURE_ALGORITHM) {
   EXPECT_STREQ("SSL routines", ERR_lib_error_string(e));
   EXPECT_STREQ("NO_COMMON_SIGNATURE_ALGORITHMS", ERR_reason_error_string(e));
   EXPECT_STREQ("error:100000fd:SSL routines:OPENSSL_internal:NO_COMMON_SIGNATURE_ALGORITHMS", ERR_error_string_n(e, buf, sizeof(buf)));
+}
+
+
+TEST(ErrTest, test_system_error_ECONNRESET) {
+  uint32_t err = 0x80000068;
+
+  EXPECT_EQ(ERR_LIB_SYS, ERR_GET_LIB(err));
+  EXPECT_EQ(104, ERR_GET_REASON(err));
+
+  const char *lib = ERR_lib_error_string(err);
+  ASSERT_NE(nullptr, lib);
+  EXPECT_STREQ("system library", lib);
+
+  const char *reason = ERR_reason_error_string(err);
+  ASSERT_NE(nullptr, reason);
+  EXPECT_STREQ(strerror(104), reason);
+}
+
+
+TEST(ErrTest, test_system_error_EPIPE) {
+  uint32_t err = 0x80000020;
+
+  EXPECT_EQ(ERR_LIB_SYS, ERR_GET_LIB(err));
+  EXPECT_EQ(32, ERR_GET_REASON(err));
+
+  const char *lib = ERR_lib_error_string(err);
+  ASSERT_NE(nullptr, lib);
+  EXPECT_STREQ("system library", lib);
+
+  const char *reason = ERR_reason_error_string(err);
+  ASSERT_NE(nullptr, reason);
+  EXPECT_STREQ(strerror(32), reason);
+}
+
+
+TEST(ErrTest, test_system_error_ETIMEDOUT) {
+  uint32_t err = 0x8000006E;
+
+  EXPECT_EQ(ERR_LIB_SYS, ERR_GET_LIB(err));
+  EXPECT_EQ(110, ERR_GET_REASON(err));
+
+  const char *lib = ERR_lib_error_string(err);
+  ASSERT_NE(nullptr, lib);
+  EXPECT_STREQ("system library", lib);
+
+  const char *reason = ERR_reason_error_string(err);
+  ASSERT_NE(nullptr, reason);
+  EXPECT_STREQ(strerror(110), reason);
+}
+
+
+TEST(ErrTest, test_system_error_invalid_errno) {
+  uint32_t err = 0x80000FFF;
+
+  EXPECT_EQ(ERR_LIB_SYS, ERR_GET_LIB(err));
+
+  const char *lib = ERR_lib_error_string(err);
+  ASSERT_NE(nullptr, lib);
+  EXPECT_STREQ("system library", lib);
+
+  const char *reason = ERR_reason_error_string(err);
+  EXPECT_EQ(nullptr, reason);
 }
