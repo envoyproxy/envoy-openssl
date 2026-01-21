@@ -9,6 +9,13 @@ bug_fixes:
   change: |
     Fixed an issue where SANs of type ``OTHERNAME`` in a TLS cert were truncated if there was
     an embedded null octet, leading to incorrect SAN validation.
+    Fixed OAuth2 refresh requests so host rewriting no longer overrides the original Host value.
+- area: http
+  change: |
+    Fixed an issue where filter chain execution could continue on HTTP streams that had been reset but not yet
+    destroyed. This could cause use-after-free conditions when filter callbacks were invoked on filters that
+    had already received ``onDestroy()``. The fix ensures that ``decodeHeaders()``, ``decodeData()``,
+    ``decodeTrailers()``, and ``decodeMetadata()`` are blocked after a downstream reset.
 
     - CVE-2025-0725: curl
     - CVE-2024-7246: gRPC
