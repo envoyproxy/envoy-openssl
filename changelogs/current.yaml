@@ -20,6 +20,9 @@ bug_fixes:
   change: |
     Fixed an off-by-one write in ``JsonEscaper::escapeString()`` that could corrupt the string null terminator
     when the input string ends with a control character.
+- area: network
+  change: |
+    Fixed a crash in ``Utility::getAddressWithPort`` when called with a scoped IPv6 address (e.g., ``fe80::1%eth0``).
 
     - CVE-2025-0725: curl
     - CVE-2024-7246: gRPC
