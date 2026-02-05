@@ -783,7 +783,8 @@ int main(int argc, const char **argv) {
     }
   }
 
-  clang::tooling::ClangTool tool(CompilationDatabase(), { tmpfile });
+  CompilationDatabase compilationDB;
+  clang::tooling::ClangTool tool(compilationDB, { tmpfile });
   int ret = tool.run(clang::tooling::newFrontendActionFactory<MyFrontendAction>().get());
 
   std::filesystem::remove(tmpfile);
