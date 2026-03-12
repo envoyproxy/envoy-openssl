@@ -86,6 +86,13 @@ public:
     bool matchesHeaders(const HeaderMap& headers) const override {
       return HeaderUtility::matchHeaders(headers, *this);
     };
+
+    // Matches each header value individually.
+    bool matchesHeadersIndividually(const HeaderMap& request_headers) const override;
+
+  private:
+    // Helper method to match a single header value
+    bool matchSingleValue(absl::string_view value) const;
   };
 
   using HeaderDataPtr = std::unique_ptr<HeaderData>;

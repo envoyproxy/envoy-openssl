@@ -140,14 +140,14 @@ private:
 class HeaderMatcher : public Matcher {
 public:
   HeaderMatcher(const envoy::config::route::v3::HeaderMatcher& matcher,
-                Server::Configuration::CommonFactoryContext& context)
-      : header_(matcher, context) {}
+                Server::Configuration::CommonFactoryContext& context);
 
   bool matches(const Network::Connection& connection, const Envoy::Http::RequestHeaderMap& headers,
                const StreamInfo::StreamInfo&) const override;
 
 private:
   const Envoy::Http::HeaderUtility::HeaderData header_;
+  const bool match_headers_individually_;
 };
 
 /**
@@ -248,13 +248,16 @@ private:
 
 class MetadataMatcher : public Matcher {
 public:
-  MetadataMatcher(const Envoy::Matchers::MetadataMatcher& matcher) : matcher_(matcher) {}
+  MetadataMatcher(const Envoy::Matchers::MetadataMatcher& matcher,
+                  const envoy::config::rbac::v3::MetadataSource& metadata_source)
+      : matcher_(matcher), metadata_source_(metadata_source) {}
 
   bool matches(const Network::Connection& connection, const Envoy::Http::RequestHeaderMap& headers,
                const StreamInfo::StreamInfo& info) const override;
 
 private:
   const Envoy::Matchers::MetadataMatcher matcher_;
+  const envoy::config::rbac::v3::MetadataSource metadata_source_;
 };
 
 class FilterStateMatcher : public Matcher {
