@@ -140,6 +140,7 @@ envoy_cc_test(
     shard_count = 4,
     tags = [
         "cpu:3",
+        "no-remote-exec",  # Run locally due to high file descriptor requirements
     ],
     deps = [
         ":http_integration_lib",
@@ -1928,6 +1929,7 @@ envoy_cc_test(
     rbe_pool = "6gig",
     tags = [
         "cpu:3",
+        "no-remote-exec",  # Run locally due to high file descriptor requirements
     ],
     deps = [
         ":integration_lib",

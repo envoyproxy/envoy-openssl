@@ -6,6 +6,13 @@ x-envoy-build-base: &envoy-build-base
   stdin_open: true
   tty: true
   platform: ${ENVOY_DOCKER_PLATFORM:-}
+  ulimits:
+    nofile:
+      soft: 65536
+      hard: 65536
+    nproc:
+      soft: 8192
+      hard: 8192
   environment:
   # Core build environment
   - BUILD_DIR=/build
