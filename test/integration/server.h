@@ -77,15 +77,18 @@ public:
   TestScopeWrapper(Thread::MutexBasicLockable& lock, ScopeSharedPtr wrapped_scope, Store& store)
       : lock_(lock), wrapped_scope_(wrapped_scope), store_(store) {}
 
-  ScopeSharedPtr createScope(const std::string& name) override {
+  ScopeSharedPtr createScope(const std::string& name, bool evictable,
+                             const ScopeStatsLimitSettings& limits) override {
     Thread::LockGuard lock(lock_);
-    return std::make_shared<TestScopeWrapper>(lock_, wrapped_scope_->createScope(name), store_);
+    return std::make_shared<TestScopeWrapper>(
+        lock_, wrapped_scope_->createScope(name, evictable, limits), store_);
   }
 
-  ScopeSharedPtr scopeFromStatName(StatName name) override {
+  ScopeSharedPtr scopeFromStatName(StatName name, bool evictable,
+                                   const ScopeStatsLimitSettings& limits) override {
     Thread::LockGuard lock(lock_);
-    return std::make_shared<TestScopeWrapper>(lock_, wrapped_scope_->scopeFromStatName(name),
-                                              store_);
+    return std::make_shared<TestScopeWrapper>(
+        lock_, wrapped_scope_->scopeFromStatName(name, evictable, limits), store_);
   }
 
   Counter& counterFromStatNameWithTags(const StatName& name,
@@ -196,6 +199,7 @@ public:
   uint32_t use_count() const override { return counter_->use_count(); }
   StatName tagExtractedStatName() const override { return counter_->tagExtractedStatName(); }
   bool used() const override { return counter_->used(); }
+  void markUnused() override { counter_->markUnused(); }
   bool hidden() const override { return counter_->hidden(); }
   SymbolTable& symbolTable() override { return counter_->symbolTable(); }
   const SymbolTable& constSymbolTable() const override { return counter_->constSymbolTable(); }
@@ -365,6 +369,16 @@ public:
   void extractAndAppendTags(absl::string_view, StatNamePool&, StatNameTagVector&) override {};
   const Stats::TagVector& fixedTags() override { CONSTRUCT_ON_FIRST_USE(Stats::TagVector); }
 
+  void evictUnused() override {
+    Thread::LockGuard lock(lock_);
+    eviction_count_++;
+  }
+
+  uint32_t evictionCount() const {
+    Thread::LockGuard lock(lock_);
+    return eviction_count_;
+  }
+
   // Stats::StoreRoot
   void addSink(Sink&) override {}
   void setTagProducer(TagProducerPtr&&) override {}
@@ -381,6 +395,7 @@ private:
   IsolatedStoreImpl store_;
   PostMergeCb merge_cb_;
   ScopeSharedPtr lazy_default_scope_;
+  uint32_t eviction_count_{0};
 };
 
 } // namespace Stats
