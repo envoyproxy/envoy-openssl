@@ -14,6 +14,7 @@
 #include "source/common/common/hash.h"
 #include "source/common/common/utility.h"
 #include "source/common/protobuf/utility.h"
+#include "source/common/runtime/runtime_features.h"
 
 // Do not let nlohmann/json leak outside of this file.
 #include "include/nlohmann/json.hpp"
@@ -178,7 +179,7 @@ private:
  */
 class ObjectHandler : public nlohmann::json_sax<nlohmann::json> {
 public:
-  ObjectHandler() = default;
+  ObjectHandler(uint64_t max_depth) : max_depth_(max_depth) {}
 
   bool start_object(std::size_t) override;
   bool end_object() override;
@@ -264,6 +265,7 @@ private:
 
   std::string error_;
   std::string error_position_;
+  uint64_t max_depth_;
 
   static constexpr absl::string_view ErrorPrefix = "[json.exception.";
 };
@@ -608,6 +610,12 @@ void Field::validateSchema(const std::string&) const {
 }
 
 bool ObjectHandler::start_object(std::size_t) {
+  if (stack_.size() >= max_depth_) {
+    error_ = fmt::format("JSON nesting depth exceeds limit of {}", max_depth_);
+    error_position_ = absl::StrCat("line: ", line_number_);
+    return false;
+  }
+
   FieldSharedPtr object = Field::createObject();
   object->setLineNumberStart(line_number_);
 
@@ -662,6 +670,12 @@ bool ObjectHandler::key(std::string& val) {
 }
 
 bool ObjectHandler::start_array(std::size_t) {
+  if (stack_.size() >= max_depth_) {
+    error_ = fmt::format("JSON nesting depth exceeds limit of {}", max_depth_);
+    error_position_ = absl::StrCat("line: ", line_number_);
+    return false;
+  }
+
   FieldSharedPtr array = Field::createArray();
   array->setLineNumberStart(line_number_);
 
@@ -724,7 +738,11 @@ bool ObjectHandler::handleValueEvent(FieldSharedPtr ptr) {
 } // namespace
 
 absl::StatusOr<ObjectSharedPtr> Factory::loadFromStringNoThrow(const std::string& json) {
-  ObjectHandler handler;
+  uint64_t max_depth =
+      Runtime::runtimeFeatureEnabled("envoy.reloadable_features.limit_json_parser_nesting_depth")
+          ? 1000
+          : 10000;
+  ObjectHandler handler(max_depth);
   auto json_container = JsonContainer(json.c_str(), &handler);
 
   nlohmann::json::sax_parse(json_container, &handler);
