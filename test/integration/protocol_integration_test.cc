@@ -2086,9 +2086,20 @@ TEST_P(DownstreamProtocolIntegrationTest, LargeCookieParsingConcatenated) {
           hcm.mutable_max_request_headers_kb()->set_value(96);
           hcm.mutable_common_http_protocol_options()->mutable_max_headers_count()->set_value(8000);
         });
+  } else if (downstreamProtocol() == Http::CodecType::HTTP2) {
+    // HTTP/2 HPACK crumbles the concatenated cookie into individual cookie headers, each
+    // counted against the header limit (envoy_reloadable_features_http2_include_cookies_in_limits).
+    // Raise the limit to accommodate 7000 crumbled cookies.
+    config_helper_.addConfigModifier(
+        [&](envoy::extensions::filters::network::http_connection_manager::v3::HttpConnectionManager&
+                hcm) -> void {
+          hcm.mutable_common_http_protocol_options()->mutable_max_headers_count()->set_value(8000);
+        });
   }
   if (upstreamProtocol() == Http::CodecType::HTTP3) {
     setMaxRequestHeadersKb(96);
+    setMaxRequestHeadersCount(8000);
+  } else if (upstreamProtocol() == Http::CodecType::HTTP2) {
     setMaxRequestHeadersCount(8000);
   }
   initialize();

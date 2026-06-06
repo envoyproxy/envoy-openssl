@@ -37,6 +37,9 @@ namespace Envoy {
 namespace Http {
 namespace Http2 {
 
+  // for nghttp2 compatibility.
+const int ERR_TEMPORAL_CALLBACK_FAILURE = -521;
+
 // Changes or additions to details should be reflected in
 // docs/root/configuration/http/http_conn_man/response_code_details.rst
 class Http2ResponseCodeDetailValues {
