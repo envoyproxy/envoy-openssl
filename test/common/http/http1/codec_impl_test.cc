@@ -3420,8 +3420,8 @@ TEST_P(Http1ClientConnectionImplTest, LowWatermarkDuringClose) {
 }
 
 TEST_P(Http1ServerConnectionImplTest, LargeTrailersRejected) {
-  // Default limit of 60 KiB
-  std::string long_string = "big: " + std::string(60 * 1024, 'q') + "\r\n\r\n\r\n";
+  // Default limit of 128 KiB
+  std::string long_string = "big: " + std::string(129 * 1024, 'q') + "\r\n\r\n\r\n";
   testTrailersExceedLimit(/*trailer_string*/ long_string,
                           /*error_message*/ "http/1.1 protocol error: trailers size exceeds limit",
                           /*enable_trailers*/ true,
@@ -3430,18 +3430,18 @@ TEST_P(Http1ServerConnectionImplTest, LargeTrailersRejected) {
 
 // Test that long trailer fields are consistently rejected.
 TEST_P(Http1ServerConnectionImplTest, LargeTrailerFieldRejected) {
-  // Construct partial headers with a long field name that exceeds the default limit of 60KiB.
-  std::string long_string = "bigfield" + std::string(60 * 1024, 'q');
+  // Construct partial headers with a long field name that exceeds the default limit of 128KiB.
+  std::string long_string = "bigfield" + std::string(129 * 1024, 'q');
   testTrailersExceedLimit(/*trailer_string*/ long_string,
                           /*error_message*/ "http/1.1 protocol error: trailers size exceeds limit",
                           /*enable_trailers*/ true,
                           /*expect_error*/ true);
 }
 
-// Tests that the default limit for the number of request headers is 100.
+// Tests that the default limit for the number of request headers is 1000.
 TEST_P(Http1ServerConnectionImplTest, ManyTrailersRejected) {
-  // Send a request with 101 headers.
-  testTrailersExceedLimit(/*trailer_string*/ createHeaderOrTrailerFragment(101) + "\r\n\r\n",
+  // Send a request with 1001 headers.
+  testTrailersExceedLimit(/*trailer_string*/ createHeaderOrTrailerFragment(1001) + "\r\n\r\n",
                           /*error_message*/ "http/1.1 protocol error: trailers count exceeds limit",
                           /*enable_trailers*/ true,
                           /*expect_error*/ true);
@@ -3452,7 +3452,7 @@ TEST_P(Http1ServerConnectionImplTest, ManyTrailersRejected) {
 TEST_P(Http1ServerConnectionImplTest, LargeTrailersRejectedIgnored) {
   // Send overly long trailers. http_parser will allow this if trailers are
   // disabled, balsa will not.
-  std::string long_string = "big: " + std::string(60 * 1024, 'q') + "\r\n\r\n\r\n";
+  std::string long_string = "big: " + std::string(129 * 1024, 'q') + "\r\n\r\n\r\n";
   testTrailersExceedLimit(/*trailer_string*/ long_string,
                           /*error_message*/ "http/1.1 protocol error: trailers size exceeds limit",
                           /*enable_trailers*/ false,
@@ -3462,14 +3462,14 @@ TEST_P(Http1ServerConnectionImplTest, LargeTrailersRejectedIgnored) {
 TEST_P(Http1ServerConnectionImplTest, LargeTrailerFieldRejectedIgnored) {
   // Send one overly long trailer. http_parser will allow this if trailers are
   // disabled, balsa will not.
-  std::string long_string = "bigfield" + std::string(60 * 1024, 'q') + ": value\r\n\r\n\r\n";
+  std::string long_string = "bigfield" + std::string(129 * 1024, 'q') + ": value\r\n\r\n\r\n";
   testTrailersExceedLimit(/*trailer_string*/ long_string,
                           /*error_message*/ "http/1.1 protocol error: trailers size exceeds limit",
                           /*enable_trailers*/ false,
                           /* expect_error */ parser_impl_ == Http1ParserImpl::BalsaParser);
 }
 
-// Tests that the default limit for the number of request headers is 100.
+// Tests that trailers are ignored when trailers are disabled.
 TEST_P(Http1ServerConnectionImplTest, ManyTrailersIgnored) {
   // Send a request with 101 headers. Both balsa and http_parser ignore this
   // with trailers disabled.
@@ -3490,8 +3490,8 @@ TEST_P(Http1ServerConnectionImplTest, LargeRequestUrlRejected) {
         return decoder;
       }));
 
-  // Default limit of 60 KiB
-  std::string long_url = "/" + std::string(60 * 1024, 'q');
+  // Default limit of 128 KiB
+  std::string long_url = "/" + std::string(129 * 1024, 'q');
   Buffer::OwnedImpl buffer("GET " + long_url + " HTTP/1.1\r\n");
 
   auto status = codec_->dispatch(buffer);
@@ -3501,8 +3501,8 @@ TEST_P(Http1ServerConnectionImplTest, LargeRequestUrlRejected) {
 }
 
 TEST_P(Http1ServerConnectionImplTest, LargeRequestHeadersRejected) {
-  // Default limit of 60 KiB
-  std::string long_string = "big: " + std::string(60 * 1024, 'q') + "\r\n";
+  // Default limit of 128 KiB
+  std::string long_string = "big: " + std::string(129 * 1024, 'q') + "\r\n";
   testRequestHeadersExceedLimit(long_string, "http/1.1 protocol error: headers size exceeds limit",
                                 "http1.headers_too_large");
 }
@@ -3514,16 +3514,16 @@ TEST_P(Http1ServerConnectionImplTest, LargeRequestHeadersRejectedBeyondMaxConfig
                                 "http1.headers_too_large");
 }
 
-// Tests that the default limit for the number of request headers is 100.
+// Tests that the default limit for the number of request headers is 1000.
 TEST_P(Http1ServerConnectionImplTest, ManyRequestHeadersRejected) {
-  // Send a request with 101 headers.
-  testRequestHeadersExceedLimit(createHeaderOrTrailerFragment(101),
+  // Send a request with 1001 headers.
+  testRequestHeadersExceedLimit(createHeaderOrTrailerFragment(1001),
                                 "http/1.1 protocol error: headers count exceeds limit",
                                 "http1.too_many_headers");
 }
 
 TEST_P(Http1ServerConnectionImplTest, LargeRequestHeadersSplitRejected) {
-  // Default limit of 60 KiB
+  // Default limit of 128 KiB
   initialize();
 
   std::string exception_reason;
@@ -3538,11 +3538,11 @@ TEST_P(Http1ServerConnectionImplTest, LargeRequestHeadersSplitRejected) {
   auto status = codec_->dispatch(buffer);
 
   std::string long_string = std::string(1024, 'q');
-  for (int i = 0; i < 59; i++) {
+  for (int i = 0; i < 127; i++) {
     buffer = Buffer::OwnedImpl(fmt::format("big: {}\r\n", long_string));
     status = codec_->dispatch(buffer);
   }
-  // the 60th 1kb header should induce overflow
+  // the 128th 1kb header should induce overflow
   buffer = Buffer::OwnedImpl(fmt::format("big: {}\r\n", long_string));
   EXPECT_CALL(decoder, sendLocalReply(_, _, _, _, _));
   status = codec_->dispatch(buffer);
@@ -3584,7 +3584,7 @@ TEST_P(Http1ServerConnectionImplTest, LargeRequestHeadersSplitRejectedMaxConfigu
 // Tests that the 101th request header causes overflow with the default max number of request
 // headers.
 TEST_P(Http1ServerConnectionImplTest, ManyRequestHeadersSplitRejected) {
-  // Default limit of 100.
+  // Default limit of 1000.
   initialize();
 
   std::string exception_reason;
@@ -3594,12 +3594,12 @@ TEST_P(Http1ServerConnectionImplTest, ManyRequestHeadersSplitRejected) {
   Buffer::OwnedImpl buffer("GET / HTTP/1.1\r\n");
   auto status = codec_->dispatch(buffer);
 
-  // Dispatch 100 headers.
-  buffer = Buffer::OwnedImpl(createHeaderOrTrailerFragment(100));
+  // Dispatch 1000 headers.
+  buffer = Buffer::OwnedImpl(createHeaderOrTrailerFragment(1000));
   status = codec_->dispatch(buffer);
 
-  // The final 101th header should induce overflow.
-  buffer = Buffer::OwnedImpl("header101:\r\n\r\n");
+  // The final 1001st header should induce overflow.
+  buffer = Buffer::OwnedImpl("header1001:\r\n\r\n");
   EXPECT_CALL(decoder, sendLocalReply(_, _, _, _, _));
   status = codec_->dispatch(buffer);
   EXPECT_TRUE(isCodecProtocolError(status));
@@ -3901,7 +3901,7 @@ TEST_P(Http1ClientConnectionImplTest, LargeHeaderRequestEncode) {
   EXPECT_EQ("GET / HTTP/1.1\r\nhost: host\r\nfoo: " + long_header_value + "\r\n\r\n", output);
 }
 
-// Exception called when the number of response headers exceeds the default value of 100.
+// Exception called when the number of response headers exceeds the default value of 1000.
 TEST_P(Http1ClientConnectionImplTest, ManyResponseHeadersRejected) {
   initialize();
 
@@ -3912,7 +3912,7 @@ TEST_P(Http1ClientConnectionImplTest, ManyResponseHeadersRejected) {
 
   Buffer::OwnedImpl buffer("HTTP/1.1 200 OK\r\nContent-Length: 0\r\n");
   auto status = codec_->dispatch(buffer);
-  buffer = Buffer::OwnedImpl(createHeaderOrTrailerFragment(101) + "\r\n");
+  buffer = Buffer::OwnedImpl(createHeaderOrTrailerFragment(1001) + "\r\n");
 
   status = codec_->dispatch(buffer);
   EXPECT_TRUE(isCodecProtocolError(status));

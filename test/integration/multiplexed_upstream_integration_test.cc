@@ -509,15 +509,15 @@ typed_config:
   EXPECT_EQ(0, downstreamRxResetCounterValue());
 }
 
-// Tests the default limit for the number of response headers is 100. Results in a stream reset if
+// Tests the default limit for the number of response headers is 1000. Results in a stream reset if
 // exceeds.
 TEST_P(MultiplexedUpstreamIntegrationTest, TestManyResponseHeadersRejected) {
-  // Default limit for response headers is 100.
+  // Default limit for response headers is 1000.
   initialize();
   codec_client_ = makeHttpConnection(lookupPort("http"));
 
   Http::TestResponseHeaderMapImpl many_headers(default_response_headers_);
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 1000; i++) {
     many_headers.addCopy(absl::StrCat("many", i), std::string(1, 'a'));
   }
   auto response = codec_client_->makeHeaderOnlyRequest(default_request_headers_);
@@ -557,13 +557,24 @@ TEST_P(MultiplexedUpstreamIntegrationTest, ManyResponseHeadersAccepted) {
   EXPECT_TRUE(response->complete());
 }
 
-// Tests that HTTP/2 response headers over 60 kB are rejected and result in a stream reset.
+// Tests that HTTP/2 response headers over the configured limit are rejected and result in a stream
+// reset. Uses an explicit 60 kB limit rather than the default (128 kB): headers at 129 kB trigger
+// nghttp2's internal HPACK limit (connection-level GOAWAY → 502) rather than Envoy's
+// application-level check (stream-level RST_STREAM → 503).
 TEST_P(MultiplexedUpstreamIntegrationTest, LargeResponseHeadersRejected) {
+  config_helper_.addConfigModifier([](envoy::config::bootstrap::v3::Bootstrap& bootstrap) {
+    ConfigHelper::HttpProtocolOptions protocol_options;
+    protocol_options.mutable_common_http_protocol_options()
+        ->mutable_max_response_headers_kb()
+        ->set_value(60);
+    ConfigHelper::setProtocolOptions(*bootstrap.mutable_static_resources()->mutable_clusters(0),
+                                     protocol_options);
+  });
   initialize();
   codec_client_ = makeHttpConnection(lookupPort("http"));
 
   Http::TestResponseHeaderMapImpl large_headers(default_response_headers_);
-  large_headers.addCopy("large", std::string(60 * 1024, 'a'));
+  large_headers.addCopy("large", std::string(63 * 1024, 'a'));
   auto response = codec_client_->makeHeaderOnlyRequest(default_request_headers_);
   waitForNextUpstreamRequest();
 

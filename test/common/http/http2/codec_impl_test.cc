@@ -1479,7 +1479,7 @@ TEST_P(Http2CodecImplTest, DumpsStreamlessConnectionWithoutAllocatingMemory) {
   EXPECT_THAT(
       ostream.contents(),
       HasSubstr(
-          "max_headers_kb_: 60, max_headers_count_: 100, "
+          "max_headers_kb_: 128, max_headers_count_: 1000, "
           "per_stream_buffer_limit_: 268435456, allow_metadata_: 0, "
           "stream_error_on_invalid_http_messaging_: 0, is_outbound_flood_monitored_control_frame_: "
           "0, dispatching_: 0, raised_goaway_: 0, "
@@ -2829,8 +2829,9 @@ TEST_P(Http2CustomSettingsTest, UserDefinedSettings) {
   }
 }
 
-// Tests request headers whose size is larger than the default limit of 60K.
+// Tests request headers whose size is larger than the configured limit.
 TEST_P(Http2CodecImplTest, LargeRequestHeadersInvokeResetStream) {
+  max_request_headers_kb_ = 60;
   initialize();
 
   TestRequestHeaderMapImpl request_headers;
@@ -2929,13 +2930,13 @@ TEST_P(Http2CodecImplTest, LargeMethodRequestEncode) {
   driveToCompletion();
 }
 
-// Tests stream reset when the number of request headers exceeds the default maximum of 100.
+// Tests stream reset when the number of request headers exceeds the default maximum of 1000.
 TEST_P(Http2CodecImplTest, ManyRequestHeadersInvokeResetStream) {
   initialize();
 
   TestRequestHeaderMapImpl request_headers;
   HttpTestUtility::addDefaultHeaders(request_headers);
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 1000; i++) {
     request_headers.addCopy(std::to_string(i), "");
   }
   EXPECT_CALL(server_stream_callbacks_, onResetStream(_, _));
