@@ -1,5 +1,2 @@
-#pragma once
-
 // NOLINT(namespace-envoy)
-constexpr char TEST_SERVER_ECDSA_CERT_HASH[] = "DD:95:84:89:9D:51:BD:93:EC:EC:B0:AA:B1:DC:8A:3C:5C:"
-                                               "21:8C:D5:2D:F0:49:94:1F:52:60:2D:8B:7F:0E:10";
+constexpr char TEST_SERVER_ECDSA_CERT_HASH[] = "1D:EA:0D:BC:46:F3:15:1A:CD:AB:59:B9:83:3B:DB:09:F7:D8:B9:0B:25:6B:C7:14:14:13:56:80:0B:4B:AF:07";

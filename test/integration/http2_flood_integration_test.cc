@@ -1638,4 +1638,128 @@ TEST_P(Http2FloodMitigationTest, GoAwayAfterRequestReset) {
 }
 #endif
 
+TEST_P(Http2FloodMitigationTest, HeadersContinuationObservesLimit) {
+  useAccessLog("%RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS%");
+  beginSession();
+
+  const uint32_t request_stream_id = Http2Frame::makeClientStreamId(0);
+  auto request = Http2Frame::makeEmptyHeadersFrame(request_stream_id);
+  request.appendStaticHeader(Http2Frame::StaticHeaderIndex::MethodGet);
+  request.appendStaticHeader(Http2Frame::StaticHeaderIndex::SchemeHttps);
+  request.appendStaticHeader(Http2Frame::StaticHeaderIndex::Path);
+  request.appendHeaderWithoutIndexing(Http2Frame::StaticHeaderIndex::Authority, "www.example.com");
+  request.appendHeaderWithoutIndexing(Http2Frame::Header("foo", "bar"));
+  request.adjustPayloadSize();
+  sendFrame(request);
+
+  for (int i = 0; i < 20; i++) {
+    request = Http2Frame::makeEmptyContinuationFrame(request_stream_id);
+    for (int h = 0; h < 50; h++) {
+      request.appendHeaderWithoutIndexing(
+          Http2Frame::Header(absl::StrCat("baz", i, "-", h), "bats"));
+    }
+    request.adjustPayloadSize();
+    sendFrame(request);
+  }
+
+  if (std::get<1>(GetParam()) != Http2Impl::Oghttp2) {
+    // Expect request to be reset due to violation of the default limit of 100 headers.
+    // oghttp2 only acts on header errors at OnHeaderBlockEnd (END_HEADERS), which never
+    // arrives in this test, so it does not send a RST_STREAM here.
+    auto response = readFrame();
+    EXPECT_EQ(Http2Frame::Type::RstStream, response.type());
+  }
+
+  // Continue pumping frames and expect Envoy to close the connection.
+  for (int i = 0; i < 512; i++) {
+    request = Http2Frame::makeEmptyContinuationFrame(request_stream_id);
+    request.appendHeaderWithoutIndexing(Http2Frame::Header(absl::StrCat("baz", i, "-0"), "bats"));
+    request.adjustPayloadSize();
+    sendFrame(request);
+  }
+
+  // TODO: nghttp2 and oghttp2 both drop CONTINUATION frames received after RST_STREAM
+  // rather than treating them as a PROTOCOL_ERROR, so flood protection does not trigger
+  // and waitForDisconnect() would time out. Close the client instead for all adapters.
+  tcp_client_->close();
+  if (std::get<1>(GetParam()) != Http2Impl::Oghttp2) {
+    // For oghttp2, deferred processing means headers are not dispatched before close,
+    // so the stream detail and overflow counter are not recorded.
+    EXPECT_THAT(waitForAccessLog(access_log_name_), HasSubstr("http2.too_many_headers"));
+    EXPECT_EQ(1, test_server_->counter("http2.header_overflow")->value());
+  }
+}
+
+TEST_P(Http2FloodMitigationTest, HpackCookieBomb) {
+  useAccessLog("%RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS%");
+  uint32_t max_headers_kb = 4;
+  config_helper_.addConfigModifier(
+      [&](envoy::extensions::filters::network::http_connection_manager::v3::HttpConnectionManager&
+              hcm) -> void { hcm.mutable_max_request_headers_kb()->set_value(max_headers_kb); });
+  autonomous_upstream_ = true;
+  beginSession();
+
+  // Stream 1: Setup dynamic table with large cookie.
+  const uint32_t request_stream_id = Http2Frame::makeClientStreamId(0);
+  uint8_t setup_flags =
+      orFlags(Http2Frame::HeadersFlags::EndHeaders, Http2Frame::HeadersFlags::EndStream);
+  auto setup_frame = Http2Frame::makeEmptyHeadersFrame(
+      request_stream_id, static_cast<Http2Frame::HeadersFlags>(setup_flags));
+  setup_frame.appendStaticHeader(Http2Frame::StaticHeaderIndex::MethodGet);
+  setup_frame.appendStaticHeader(Http2Frame::StaticHeaderIndex::SchemeHttps);
+  setup_frame.appendHeaderWithoutIndexing(Http2Frame::StaticHeaderIndex::Path, "/content");
+  setup_frame.appendHeaderWithoutIndexing(Http2Frame::StaticHeaderIndex::Authority, "localhost");
+  setup_frame.appendHeaderWithIncrementalIndexing(static_cast<Http2Frame::StaticHeaderIndex>(32),
+                                                  "session=" + std::string(1024, 'X'));
+  setup_frame.adjustPayloadSize();
+  sendFrame(setup_frame);
+
+  Http2Frame setup_frame_response;
+  do {
+    setup_frame_response = readFrame();
+    if (setup_frame_response.streamId() == 0) {
+      // skip SETTINGS frames from the initial setup.
+      continue;
+    }
+    EXPECT_EQ(setup_frame_response.streamId(), request_stream_id);
+  } while (!setup_frame_response.endStream());
+
+  // Stream 3: Bomb stream (references cookie many times).
+  const uint32_t bomb_stream_id = Http2Frame::makeClientStreamId(1);
+  uint8_t bomb_flags =
+      orFlags(Http2Frame::HeadersFlags::EndHeaders, Http2Frame::HeadersFlags::EndStream);
+  auto bomb_frame = Http2Frame::makeEmptyHeadersFrame(
+      bomb_stream_id, static_cast<Http2Frame::HeadersFlags>(bomb_flags));
+  bomb_frame.appendStaticHeader(Http2Frame::StaticHeaderIndex::MethodGet);
+  bomb_frame.appendStaticHeader(Http2Frame::StaticHeaderIndex::SchemeHttps);
+  bomb_frame.appendHeaderWithoutIndexing(Http2Frame::StaticHeaderIndex::Path, "/content");
+  bomb_frame.appendHeaderWithoutIndexing(Http2Frame::StaticHeaderIndex::Authority, "localhost");
+
+  const int num_references = max_headers_kb * 6;
+  for (int i = 0; i < num_references; i++) {
+    bomb_frame.appendIndexedHeader(62);
+  }
+  bomb_frame.adjustPayloadSize();
+  sendFrame(bomb_frame);
+
+  auto bomb_response = readFrame();
+  EXPECT_EQ(bomb_response.streamId(), bomb_stream_id);
+  EXPECT_EQ(bomb_response.type(), Http2Frame::Type::RstStream);
+
+  // Stream 5: Valid request after the bomb stream. Only the bomb stream is
+  // reset but the connection remains open.
+  const uint32_t valid_stream_id = Http2Frame::makeClientStreamId(2);
+  auto valid_frame = Http2Frame::makeRequest(valid_stream_id, "localhost", "/");
+  sendFrame(valid_frame);
+
+  Http2Frame valid_response = readFrame();
+  EXPECT_EQ(valid_response.streamId(), valid_stream_id);
+  EXPECT_EQ(valid_response.type(), Http2Frame::Type::Headers);
+
+  EXPECT_THAT(waitForAccessLog(access_log_name_, 1, true),
+              HasSubstr("http2.header_list_size_too_large"));
+
+  tcp_client_->close();
+}
+
 } // namespace Envoy
