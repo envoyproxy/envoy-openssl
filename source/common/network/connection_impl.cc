@@ -1087,6 +1087,15 @@ ClientConnectionImpl::ClientConnectionImpl(
   }
 }
 
+ClientConnectionImpl::~ClientConnectionImpl() {
+  // Ensure the connection (and its underlying socket) is closed before stream_info_, which is
+  // owned by this class, is destroyed and before the base ConnectionImpl destructor runs its
+  // open-socket assert. Without this, a client connection that is still open at destruction time
+  // (e.g. an in-progress/unreachable scoped IPv6 upstream connect) trips the
+  // "ConnectionImpl destroyed with open socket" assert in ~ConnectionImpl().
+  close(ConnectionCloseType::NoFlush);
+}
+
 void ClientConnectionImpl::connect() {
   ENVOY_CONN_LOG_EVENT(debug, "client_connection", "connecting to {}", *this,
                        socket_->connectionInfoProvider().remoteAddress()->asString());
