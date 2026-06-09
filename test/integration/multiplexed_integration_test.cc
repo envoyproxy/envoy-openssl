@@ -2374,6 +2374,11 @@ TEST_P(Http2FrameIntegrationTest, MaxConcurrentStreamsIsRespected) {
 TEST_P(Http2FrameIntegrationTest, SetDetailsTwice) {
   autonomous_upstream_ = true;
   useAccessLog("%RESPONSE_FLAGS% %RESPONSE_CODE_DETAILS%");
+  config_helper_.addConfigModifier(
+      [&](envoy::extensions::filters::network::http_connection_manager::v3::HttpConnectionManager&
+              hcm) -> void {
+        hcm.mutable_common_http_protocol_options()->mutable_max_headers_count()->set_value(10);
+      });
   beginSession();
 
   // Send two concatenated frames, the first with too many headers, and the second an invalid frame

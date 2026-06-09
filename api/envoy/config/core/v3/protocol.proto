@@ -270,7 +270,7 @@ message HttpProtocolOptions {
 
   // The maximum number of headers (request headers if configured on HttpConnectionManager,
   // response headers when configured on a cluster).
-  // If unconfigured, the default maximum number of headers allowed is 100.
+  // If unconfigured, the default maximum number of headers allowed is 1000.
   // The default value for requests can be overridden by setting runtime key ``envoy.reloadable_features.max_request_headers_count``.
   // The default value for responses can be overridden by setting runtime key ``envoy.reloadable_features.max_response_headers_count``.
   // Downstream requests that exceed this limit will receive a 431 response for HTTP/1.x and cause a stream

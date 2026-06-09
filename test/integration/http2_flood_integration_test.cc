@@ -1584,7 +1584,7 @@ TEST_P(Http2FloodMitigationTest, HeadersContinuationObservesLimit) {
     sendFrame(request);
   }
 
-  // Expect request to be reset due to violation of the default limit of 100 headers
+  // Expect request to be reset due to violation of the default limit of 1000 headers
   auto response = readFrame();
   EXPECT_EQ(Http2Frame::Type::RstStream, response.type());
 

@@ -496,7 +496,7 @@ message HttpConnectionManager {
   config.core.v3.SchemeHeaderTransformation scheme_header_transformation = 48;
 
   // The maximum request headers size for incoming connections.
-  // If unconfigured, the default max request headers allowed is 60 KiB.
+  // If unconfigured, the default max request headers allowed is 128 KiB.
   // The default value can be overridden by setting runtime key ``envoy.reloadable_features.max_request_headers_size_kb``.
   // Requests that exceed this limit will receive a 431 response.
   //

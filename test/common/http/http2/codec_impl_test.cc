@@ -1469,7 +1469,7 @@ TEST_P(Http2CodecImplTest, DumpsStreamlessConnectionWithoutAllocatingMemory) {
   EXPECT_THAT(
       ostream.contents(),
       HasSubstr(
-          "max_headers_kb_: 60, max_headers_count_: 100, "
+          "max_headers_kb_: 128, max_headers_count_: 1000, "
           "per_stream_buffer_limit_: 16777216, allow_metadata_: 0, "
           "stream_error_on_invalid_http_messaging_: 0, is_outbound_flood_monitored_control_frame_: "
           "0, dispatching_: 0, raised_goaway_: 0, "
@@ -2838,7 +2838,9 @@ TEST_P(Http2CodecImplTest, LargeRequestHeadersInvokeResetStream) {
   TestRequestHeaderMapImpl request_headers;
   HttpTestUtility::addDefaultHeaders(request_headers);
   std::string long_string = std::string(63 * 1024, 'q');
-  request_headers.addCopy("big", long_string);
+  request_headers.addCopy("big1", long_string);
+  request_headers.addCopy("big2", long_string);
+  request_headers.addCopy("big3", long_string);
   EXPECT_CALL(server_stream_callbacks_, onResetStream(_, _));
   if (Runtime::runtimeFeatureEnabled("envoy.reloadable_features.http2_propagate_reset_events")) {
     EXPECT_CALL(server_codec_event_callbacks_, onCodecLowLevelReset());
@@ -2941,13 +2943,13 @@ TEST_P(Http2CodecImplTest, LargeMethodRequestEncode) {
   driveToCompletion();
 }
 
-// Tests stream reset when the number of request headers exceeds the default maximum of 100.
+// Tests stream reset when the number of request headers exceeds the default maximum of 1000.
 TEST_P(Http2CodecImplTest, ManyRequestHeadersInvokeResetStream) {
   initialize();
 
   TestRequestHeaderMapImpl request_headers;
   HttpTestUtility::addDefaultHeaders(request_headers);
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 1000; i++) {
     request_headers.addCopy(std::to_string(i), "");
   }
   EXPECT_CALL(server_stream_callbacks_, onResetStream(_, _));
