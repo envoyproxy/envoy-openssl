@@ -275,7 +275,7 @@ Http::ServerConnectionPtr AdminImpl::createCodec(Network::Connection& connection
       ::Envoy::Http2::Utility::initializeAndValidateOptions(
           envoy::config::core::v3::Http2ProtocolOptions()),
       maxRequestHeadersKb(), maxRequestHeadersCount(), headersWithUnderscoresAction(),
-      overload_manager);
+      overload_manager, server_.runtime());
 }
 
 bool AdminImpl::createNetworkFilterChain(Network::Connection& connection,
