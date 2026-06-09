@@ -36,10 +36,10 @@ namespace Http3 {
 struct CodecStats;
 }
 
-// Legacy default value of 60K is safely under both codec default limits.
-static constexpr uint32_t DEFAULT_MAX_REQUEST_HEADERS_KB = 60;
-// Default maximum number of headers.
-static constexpr uint32_t DEFAULT_MAX_HEADERS_COUNT = 100;
+// Safe default value for CVE-2026-47774 mitigation.
+static constexpr uint32_t DEFAULT_MAX_REQUEST_HEADERS_KB = 128;
+// Safe default for CVE-2026-47774 mitigation (cookie header expansion in H/2).
+static constexpr uint32_t DEFAULT_MAX_HEADERS_COUNT = 1000;
 
 const char MaxRequestHeadersCountOverrideKey[] =
     "envoy.reloadable_features.max_request_headers_count";

@@ -5826,7 +5826,7 @@ TEST_F(ClusterInfoImplTest, MaxResponseHeadersDefault) {
 
   auto cluster = makeCluster(yaml);
   EXPECT_FALSE(cluster->info()->maxResponseHeadersKb().has_value());
-  EXPECT_EQ(100, cluster->info()->maxResponseHeadersCount());
+  EXPECT_EQ(1000, cluster->info()->maxResponseHeadersCount());
 }
 
 // Test that the runtime override for the defaults is used when specified.

@@ -803,7 +803,7 @@ TEST_F(HttpConnectionManagerConfigTest, MaxRequestHeadersKbDefault) {
                                      &scoped_routes_config_provider_manager_, tracer_manager_,
                                      filter_config_provider_manager_, creation_status_);
   ASSERT_TRUE(creation_status_.ok());
-  EXPECT_EQ(60, config.maxRequestHeadersKb());
+  EXPECT_EQ(128, config.maxRequestHeadersKb());
 }
 
 TEST_F(HttpConnectionManagerConfigTest, MaxRequestHeadersKbConfigured) {
@@ -858,7 +858,7 @@ TEST_F(HttpConnectionManagerConfigTest, MaxRequestHeadersKbMaxConfiguredViaRunti
   )EOF";
 
   ON_CALL(context_.server_factory_context_.runtime_loader_.snapshot_,
-          getInteger("envoy.reloadable_features.max_request_headers_size_kb", 60))
+          getInteger("envoy.reloadable_features.max_request_headers_size_kb", 128))
       .WillByDefault(Return(9000));
 
   HttpConnectionManagerConfig config(parseHttpConnectionManagerFromYaml(yaml_string), context_,
@@ -994,7 +994,7 @@ TEST_F(HttpConnectionManagerConfigTest, DefaultMaxRequestHeaderCount) {
                                      &scoped_routes_config_provider_manager_, tracer_manager_,
                                      filter_config_provider_manager_, creation_status_);
   ASSERT_TRUE(creation_status_.ok());
-  EXPECT_EQ(100, config.maxRequestHeadersCount());
+  EXPECT_EQ(1000, config.maxRequestHeadersCount());
 }
 
 // Check that max request header count is configured.

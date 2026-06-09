@@ -506,15 +506,15 @@ typed_config:
   EXPECT_EQ(0, downstreamRxResetCounterValue());
 }
 
-// Tests the default limit for the number of response headers is 100. Results in a stream reset if
+// Tests the default limit for the number of response headers is 1000. Results in a stream reset if
 // exceeds.
 TEST_P(MultiplexedUpstreamIntegrationTest, TestManyResponseHeadersRejected) {
-  // Default limit for response headers is 100.
+  // Default limit for response headers is 1000.
   initialize();
   codec_client_ = makeHttpConnection(lookupPort("http"));
 
   Http::TestResponseHeaderMapImpl many_headers(default_response_headers_);
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 1000; i++) {
     many_headers.addCopy(absl::StrCat("many", i), std::string(1, 'a'));
   }
   auto response = codec_client_->makeHeaderOnlyRequest(default_request_headers_);
@@ -554,13 +554,15 @@ TEST_P(MultiplexedUpstreamIntegrationTest, ManyResponseHeadersAccepted) {
   EXPECT_TRUE(response->complete());
 }
 
-// Tests that HTTP/2 response headers over 60 kB are rejected and result in a stream reset.
+// Tests that HTTP/2 response headers over 128 kB are rejected and result in a stream reset.
 TEST_P(MultiplexedUpstreamIntegrationTest, LargeResponseHeadersRejected) {
   initialize();
   codec_client_ = makeHttpConnection(lookupPort("http"));
 
   Http::TestResponseHeaderMapImpl large_headers(default_response_headers_);
-  large_headers.addCopy("large", std::string(60 * 1024, 'a'));
+  large_headers.addCopy("large1", std::string(63 * 1024, 'a'));
+  large_headers.addCopy("large2", std::string(63 * 1024, 'a'));
+  large_headers.addCopy("large3", std::string(63 * 1024, 'a'));
   auto response = codec_client_->makeHeaderOnlyRequest(default_request_headers_);
   waitForNextUpstreamRequest();
 

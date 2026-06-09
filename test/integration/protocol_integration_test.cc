@@ -2623,11 +2623,11 @@ TEST_P(DownstreamProtocolIntegrationTest, ManyRequestHeadersAccepted) {
 }
 
 TEST_P(DownstreamProtocolIntegrationTest, ManyRequestTrailersRejected) {
-  // Default header (and trailer) count limit is 100.
+  // Default header (and trailer) count limit is 1000.
   config_helper_.addConfigModifier(setEnableDownstreamTrailersHttp1());
   config_helper_.addConfigModifier(setEnableUpstreamTrailersHttp1());
   Http::TestRequestTrailerMapImpl request_trailers;
-  for (int i = 0; i < 150; i++) {
+  for (int i = 0; i < 1050; i++) {
     request_trailers.addCopy("trailer", std::string(1, 'a'));
   }
 
