@@ -290,7 +290,7 @@ message HttpConnectionManager {
       [(validate.rules).enum = {defined_only: true}];
 
   // The maximum request headers size for incoming connections.
-  // If unconfigured, the default max request headers allowed is 60 KiB.
+  // If unconfigured, the default max request headers allowed is 128 KiB.
   // Requests that exceed this limit will receive a 431 response.
   google.protobuf.UInt32Value max_request_headers_kb = 29
       [(validate.rules).uint32 = {lte: 8192 gt: 0}];
