@@ -142,6 +142,10 @@ FALSE_RUNTIME_GUARD(envoy_reloadable_features_explicit_internal_address_config);
 // compliance restrictions.
 FALSE_RUNTIME_GUARD(envoy_reloadable_features_google_grpc_disable_tls_13);
 
+// Enable histograms of HTTP/2 header sizes, including cookie size.
+FALSE_RUNTIME_GUARD(envoy_reloadable_features_http2_record_histograms);
+
+
 // Block of non-boolean flags. Use of int flags is deprecated. Do not add more.
 ABSL_FLAG(uint64_t, re2_max_program_size_error_level, 100, ""); // NOLINT
 ABSL_FLAG(uint64_t, re2_max_program_size_warn_level,            // NOLINT
