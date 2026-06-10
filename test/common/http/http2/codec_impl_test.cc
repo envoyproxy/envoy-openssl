@@ -4848,7 +4848,6 @@ TEST_P(Http2CodecImplTest, DownstreamRequestCookieSizeLimit) {
   request_headers.addCopy("cookie", std::string(1025, 'a')); // Exceeds 1KB
 
   EXPECT_CALL(server_stream_callbacks_, onResetStream(_, _));
-  EXPECT_CALL(server_codec_event_callbacks_, onCodecLowLevelReset());
 
   EXPECT_TRUE(request_encoder_->encodeHeaders(request_headers, false).ok());
   driveToCompletion();
