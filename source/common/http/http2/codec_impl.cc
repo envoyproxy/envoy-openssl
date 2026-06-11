@@ -10,6 +10,7 @@
 #include "envoy/http/codes.h"
 #include "envoy/http/header_map.h"
 #include "envoy/network/connection.h"
+#include "envoy/runtime/runtime.h"
 
 #include "source/common/common/assert.h"
 #include "source/common/common/cleanup.h"
@@ -55,6 +56,7 @@ public:
   const absl::string_view too_many_headers = "http2.too_many_headers";
   // The total size of headers exceeded the configured limits
   const absl::string_view header_list_size_too_large = "http2.header_list_size_too_large";
+  const absl::string_view cookies_total_bytes_too_large = "http2.cookies_total_bytes_too_large";
   // Envoy detected an HTTP/2 frame flood from the server.
   const absl::string_view outbound_frame_flood = "http2.outbound_frames_flood";
   // Envoy detected an inbound HTTP/2 frame flood.
@@ -172,7 +174,7 @@ ConnectionImpl::StreamImpl::StreamImpl(ConnectionImpl& parent, uint32_t buffer_l
       pending_send_buffer_high_watermark_called_(false), reset_due_to_messaging_error_(false),
       defer_processing_backedup_streams_(
           Runtime::runtimeFeatureEnabled(Runtime::defer_processing_backedup_streams)),
-      extend_stream_lifetime_flag_(false) {
+      extend_stream_lifetime_flag_(false), histograms_recorded_(false) {
   parent_.stats_.streams_active_.inc();
   if (buffer_limit > 0) {
     setWriteBufferWatermarks(buffer_limit);
@@ -861,12 +863,20 @@ void ConnectionImpl::StreamImpl::setAccount(Buffer::BufferMemoryAccountSharedPtr
 ConnectionImpl::ConnectionImpl(Network::Connection& connection, CodecStats& stats,
                                Random::RandomGenerator& random_generator,
                                const envoy::config::core::v3::Http2ProtocolOptions& http2_options,
-                               const uint32_t max_headers_kb, const uint32_t max_headers_count)
+                               const uint32_t max_headers_kb, const uint32_t max_headers_count,
+                               OptRef<Runtime::Loader> runtime)
     : stats_(stats), connection_(connection), max_headers_kb_(max_headers_kb),
       max_headers_count_(max_headers_count),
       per_stream_buffer_limit_(http2_options.initial_stream_window_size().value()),
       stream_error_on_invalid_http_messaging_(
           http2_options.override_stream_error_on_invalid_http_message().value()),
+      record_http2_histograms_(
+          Runtime::runtimeFeatureEnabled("envoy.reloadable_features.http2_record_histograms")),
+      max_cookie_size_bytes_(
+          runtime.has_value() ? runtime->snapshot().getInteger(
+                                    "envoy.reloadable_features.http2_max_cookies_size_in_kb", 0) *
+                                    1024
+                              : 0),
       protocol_constraints_(stats, http2_options), dispatching_(false), raised_goaway_(false),
       random_(random_generator),
       last_received_data_time_(connection_.dispatcher().timeSource().monotonicTime()) {
@@ -1155,6 +1165,7 @@ Status ConnectionImpl::onFrameReceived(const nghttp2_frame* frame) {
   switch (frame->hd.type) {
   case NGHTTP2_HEADERS: {
     stream->remote_end_stream_ = frame->hd.flags & NGHTTP2_FLAG_END_STREAM;
+    recordHistogramsForStream(*stream);
     if (!stream->cookies_.empty()) {
       HeaderString key(Headers::get().Cookie);
       stream->headers().addViaMove(std::move(key), std::move(stream->cookies_));
@@ -1360,6 +1371,8 @@ Status ConnectionImpl::onStreamClose(StreamImpl* stream, uint32_t error_code) {
   if (stream) {
     const int32_t stream_id = stream->stream_id_;
 
+    recordHistogramsForStream(*stream);
+
     // Consume buffered on stream_close.
     if (stream->stream_manager_.buffered_on_stream_close_) {
       stream->stream_manager_.buffered_on_stream_close_ = false;
@@ -1476,9 +1489,28 @@ int ConnectionImpl::onMetadataFrameComplete(int32_t stream_id, bool end_metadata
   return result ? 0 : NGHTTP2_ERR_CALLBACK_FAILURE;
 }
 
-int ConnectionImpl::saveHeader(const nghttp2_frame* frame, HeaderString&& name,
-                               HeaderString&& value) {
-  StreamImpl* stream = getStreamUnchecked(frame->hd.stream_id);
+// This function can be invoked multiple times for a single stream:
+// - Once in onHeaders() for request/response headers (this is when recording happens).
+// - Again in onHeaders() if there are trailers (ignored, trailers are not recorded).
+// - Once in onStreamClose() as a fallback if headers weren't recorded (e.g. early error),
+//   or as a redundant call for successful streams (ignored).
+// The `histograms_recorded_` guard ensures we only record once (only for headers, not trailers).
+void ConnectionImpl::recordHistogramsForStream(StreamImpl& stream) {
+  if (record_http2_histograms_ && !stream.histograms_recorded_) {
+    uint64_t headers_size = stream.headers().byteSize();
+    uint64_t headers_count = stream.headers().size();
+    uint64_t headers_with_cookies_size = headers_size + stream.cookies_.size();
+    uint64_t headers_with_cookies_count = headers_count + stream.cookie_count_;
+    stats_.header_list_size_.recordValue(headers_with_cookies_size);
+    stats_.cookie_size_.recordValue(stream.cookies_.size());
+    stats_.header_count_.recordValue(headers_with_cookies_count);
+    stats_.cookie_count_.recordValue(stream.cookie_count_);
+    stream.histograms_recorded_ = true;
+  }
+}
+
+int ConnectionImpl::saveHeader(int32_t stream_id, HeaderString&& name, HeaderString&& value) {
+  StreamImpl* stream = getStreamUnchecked(stream_id);
   if (!stream) {
     // We have seen 1 or 2 crashes where we get a headers callback but there is no associated
     // stream data. I honestly am not sure how this can happen. However, from reading the nghttp2
@@ -1500,6 +1532,12 @@ int ConnectionImpl::saveHeader(const nghttp2_frame* frame, HeaderString&& name,
   }
 
   stream->saveHeader(std::move(name), std::move(value));
+  const uint64_t total_cookie_size = stream->cookies_.size();
+  if (max_cookie_size_bytes_ > 0 && total_cookie_size > max_cookie_size_bytes_) {
+    stream->setDetails(Http2ResponseCodeDetails::get().cookies_total_bytes_too_large);
+    stats_.cookies_total_bytes_too_large_.inc();
+    return ERR_TEMPORAL_CALLBACK_FAILURE;
+  }
   uint64_t headers_size = stream->headers().byteSize();
   uint64_t headers_count = stream->headers().size();
 
@@ -2053,7 +2091,7 @@ int ClientConnectionImpl::onHeader(const nghttp2_frame* frame, HeaderString&& na
   ASSERT(frame->hd.type == NGHTTP2_HEADERS);
   ASSERT(frame->headers.cat == NGHTTP2_HCAT_RESPONSE || frame->headers.cat == NGHTTP2_HCAT_HEADERS);
   ASSERT(connection_.state() == Network::Connection::State::Open);
-  return saveHeader(frame, std::move(name), std::move(value));
+  return saveHeader(frame->hd.stream_id, std::move(name), std::move(value));
 }
 
 // TODO(yanavlasov): move to the base class once the runtime flag is removed.
@@ -2093,9 +2131,9 @@ ServerConnectionImpl::ServerConnectionImpl(
     const uint32_t max_request_headers_kb, const uint32_t max_request_headers_count,
     envoy::config::core::v3::HttpProtocolOptions::HeadersWithUnderscoresAction
         headers_with_underscores_action,
-    Server::OverloadManager& overload_manager)
+    Server::OverloadManager& overload_manager, OptRef<Runtime::Loader> runtime)
     : ConnectionImpl(connection, stats, random_generator, http2_options, max_request_headers_kb,
-                     max_request_headers_count),
+                     max_request_headers_count, runtime),
       callbacks_(callbacks), headers_with_underscores_action_(headers_with_underscores_action),
       should_send_go_away_on_dispatch_(overload_manager.getLoadShedPoint(
           "envoy.load_shed_points.http2_server_go_away_on_dispatch")) {
@@ -2168,7 +2206,7 @@ int ServerConnectionImpl::onHeader(const nghttp2_frame* frame, HeaderString&& na
       // Otherwise use host value as :authority
     }
   }
-  return saveHeader(frame, std::move(name), std::move(value));
+  return saveHeader(frame->hd.stream_id, std::move(name), std::move(value));
 }
 
 Status ServerConnectionImpl::trackInboundFrames(int32_t stream_id, size_t length, uint8_t type,
