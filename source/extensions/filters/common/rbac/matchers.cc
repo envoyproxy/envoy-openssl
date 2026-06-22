@@ -3,7 +3,9 @@
 #include "envoy/config/rbac/v3/rbac.pb.h"
 #include "envoy/upstream/upstream.h"
 
+#include "source/common/common/utility.h"
 #include "source/common/config/utility.h"
+#include "source/common/http/path_utility.h"
 #include "source/common/runtime/runtime_features.h"
 #include "source/extensions/filters/common/rbac/matcher_extension.h"
 
@@ -173,6 +175,74 @@ HeaderMatcher::HeaderMatcher(const envoy::config::route::v3::HeaderMatcher& matc
       match_headers_individually_(Runtime::runtimeFeatureEnabled(
           "envoy.reloadable_features.rbac_match_headers_individually")) {}
 
+          // Legacy constructor for backward compatibility.
+IPMatcher::IPMatcher(const envoy::config::core::v3::CidrRange& range, Type type) : type_(type) {
+  // Convert single range to CidrRange with proper error handling.
+  auto cidr_result = Network::Address::CidrRange::create(range);
+  if (!cidr_result.ok()) {
+    ExceptionUtil::throwEnvoyException(
+        fmt::format("Failed to create CIDR range: {}", cidr_result.status().message()));
+  }
+
+  std::vector<Network::Address::CidrRange> ranges;
+  ranges.push_back(std::move(cidr_result.value()));
+
+  // Create LC Trie.
+  trie_ = std::make_unique<Network::LcTrie::LcTrie<bool>>(
+      std::vector<std::pair<bool, std::vector<Network::Address::CidrRange>>>{{true, ranges}});
+}
+
+// static
+absl::StatusOr<std::unique_ptr<IPMatcher>>
+IPMatcher::create(const envoy::config::core::v3::CidrRange& range, Type type) {
+  // Convert single range to CidrRange with proper error handling.
+  auto cidr_result = Network::Address::CidrRange::create(range);
+  if (!cidr_result.ok()) {
+    return absl::InvalidArgumentError(
+        fmt::format("Failed to create CIDR range: {}", cidr_result.status().message()));
+  }
+
+  std::vector<Network::Address::CidrRange> ranges;
+  ranges.push_back(std::move(cidr_result.value()));
+
+  // Create LC Trie directly following the pattern from Unified IP Matcher.
+  // Note: LcTrie constructor may throw EnvoyException on invalid input, but this
+  // should not happen as we've already validated the CIDR range above.
+  auto trie = std::make_unique<Network::LcTrie::LcTrie<bool>>(
+      std::vector<std::pair<bool, std::vector<Network::Address::CidrRange>>>{{true, ranges}});
+
+  return std::unique_ptr<IPMatcher>(new IPMatcher(std::move(trie), type));
+}
+
+// static
+absl::StatusOr<std::unique_ptr<IPMatcher>>
+IPMatcher::create(const Protobuf::RepeatedPtrField<envoy::config::core::v3::CidrRange>& ranges,
+                  Type type) {
+  if (ranges.empty()) {
+    return absl::InvalidArgumentError("Empty IP range list provided");
+  }
+
+  // Convert protobuf ranges to CidrRange vector.
+  std::vector<Network::Address::CidrRange> cidr_ranges;
+  cidr_ranges.reserve(ranges.size());
+  for (const auto& range : ranges) {
+    auto cidr_result = Network::Address::CidrRange::create(range);
+    if (!cidr_result.ok()) {
+      return absl::InvalidArgumentError(
+          fmt::format("Failed to create CIDR range: {}", cidr_result.status().message()));
+    }
+    cidr_ranges.push_back(std::move(cidr_result.value()));
+  }
+
+  // Create LC Trie directly following the pattern from Unified IP Matcher.
+  // Note: LcTrie constructor may throw EnvoyException on invalid input, but this
+  // should not happen as we've already validated the CIDR range above.
+  auto trie = std::make_unique<Network::LcTrie::LcTrie<bool>>(
+      std::vector<std::pair<bool, std::vector<Network::Address::CidrRange>>>{{true, cidr_ranges}});
+
+  return std::unique_ptr<IPMatcher>(new IPMatcher(std::move(trie), type));
+}
+
 bool HeaderMatcher::matches(const Network::Connection&,
                             const Envoy::Http::RequestHeaderMap& headers,
                             const StreamInfo::StreamInfo&) const {
@@ -199,7 +269,15 @@ bool IPMatcher::matches(const Network::Connection& connection, const Envoy::Http
     ip = info.downstreamAddressProvider().remoteAddress();
     break;
   }
-  return range_.isInRange(*ip.get());
+
+  // Return false if IP address is null or not an IP type.
+  if (ip == nullptr || ip->ip() == nullptr) {
+    return false;
+  }
+
+  // Use LcTrie to check if IP matches any configured range.
+  // getData returns a non-empty vector if there's a match.
+  return !trie_->getData(ip).empty();
 }
 
 bool PortMatcher::matches(const Network::Connection&, const Envoy::Http::RequestHeaderMap&,
@@ -295,17 +373,41 @@ bool RequestedServerNameMatcher::matches(const Network::Connection& connection,
 }
 
 bool PathMatcher::matches(const Network::Connection&, const Envoy::Http::RequestHeaderMap& headers,
-                          const StreamInfo::StreamInfo&) const {
+                          const StreamInfo::StreamInfo& info) const {
   if (headers.Path() == nullptr) {
     return false;
   }
-  return path_matcher_.match(headers.getPathValue());
+  std::string path_without_parameters;
+  absl::string_view path = headers.getPathValue();
+  if (Runtime::runtimeFeatureEnabled(
+          "envoy.reloadable_features.rbac_respect_ignore_path_parameters") &&
+      info.route() != nullptr &&
+      info.route()->virtualHost().routeConfig().ignorePathParametersInPathMatching()) {
+    absl::optional<std::string> modified_path = Http::PathUtil::removePathParameters(path);
+    if (modified_path.has_value()) {
+      path_without_parameters = std::move(modified_path).value();
+      path = path_without_parameters;
+    }
+  }
+  return path_matcher_.match(path);
 }
 
 bool UriTemplateMatcher::matches(const Network::Connection&,
                                  const Envoy::Http::RequestHeaderMap& headers,
-                                 const StreamInfo::StreamInfo&) const {
-  return uri_template_matcher_->match(headers.getPathValue());
+                                 const StreamInfo::StreamInfo& info) const {
+  std::string path_without_parameters;
+  absl::string_view path = headers.getPathValue();
+  if (Runtime::runtimeFeatureEnabled(
+          "envoy.reloadable_features.rbac_respect_ignore_path_parameters") &&
+      info.route() != nullptr &&
+      info.route()->virtualHost().routeConfig().ignorePathParametersInPathMatching()) {
+    absl::optional<std::string> modified_path = Http::PathUtil::removePathParameters(path);
+    if (modified_path.has_value()) {
+      path_without_parameters = std::move(modified_path).value();
+      path = path_without_parameters;
+    }
+  }
+  return uri_template_matcher_->match(path);
 }
 
 } // namespace RBAC

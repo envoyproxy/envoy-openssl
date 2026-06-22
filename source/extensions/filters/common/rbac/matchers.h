@@ -13,6 +13,7 @@
 #include "source/common/common/matchers.h"
 #include "source/common/http/header_utility.h"
 #include "source/common/network/cidr_range.h"
+#include "source/common/network/lc_trie.h"
 #include "source/extensions/filters/common/expr/evaluator.h"
 #include "source/extensions/path/match/uri_template/uri_template_match.h"
 
@@ -158,16 +159,27 @@ class IPMatcher : public Matcher {
 public:
   enum Type { ConnectionRemote = 0, DownstreamLocal, DownstreamDirectRemote, DownstreamRemote };
 
-  IPMatcher(const envoy::config::core::v3::CidrRange& range, Type type)
-      : range_(THROW_OR_RETURN_VALUE(Network::Address::CidrRange::create(range),
-                                     Network::Address::CidrRange)),
-        type_(type) {}
+  // Legacy constructor for backward compatibility (used by tests).
+  // Throws EnvoyException on invalid CIDR range.
+  IPMatcher(const envoy::config::core::v3::CidrRange& range, Type type);
+
+  // Single IP range constructor.
+  static absl::StatusOr<std::unique_ptr<IPMatcher>>
+  create(const envoy::config::core::v3::CidrRange& range, Type type);
+
+  // Multiple IP ranges constructor.
+  static absl::StatusOr<std::unique_ptr<IPMatcher>>
+  create(const Protobuf::RepeatedPtrField<envoy::config::core::v3::CidrRange>& ranges, Type type);
 
   bool matches(const Network::Connection& connection, const Envoy::Http::RequestHeaderMap& headers,
                const StreamInfo::StreamInfo& info) const override;
 
 private:
-  const Network::Address::CidrRange range_;
+  // Constructor used by create() methods.
+  IPMatcher(std::unique_ptr<Network::LcTrie::LcTrie<bool>> trie, Type type)
+      : trie_(std::move(trie)), type_(type) {}
+
+  std::unique_ptr<Network::LcTrie::LcTrie<bool>> trie_;
   const Type type_;
 };
 

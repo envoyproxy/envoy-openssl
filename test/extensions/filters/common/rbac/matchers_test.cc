@@ -11,8 +11,11 @@
 #include "source/extensions/filters/common/rbac/matchers.h"
 
 #include "test/mocks/network/mocks.h"
+#include "test/mocks/router/mocks.h"
 #include "test/mocks/server/server_factory_context.h"
 #include "test/mocks/ssl/mocks.h"
+#include "test/test_common/status_utility.h"
+#include "test/test_common/test_runtime.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -1023,6 +1026,426 @@ TEST(PrincipalMatcher, OrIds) {
   addr = Envoy::Network::Utility::parseInternetAddressNoThrow("5.6.7.8", 123, false);
   info.downstream_connection_info_provider_->setDirectRemoteAddressForTest(addr);
   checkMatcher(OrMatcher(principals, factory_context), false, conn, headers, info);
+}
+
+// Tests to cover missing lines in coverage report
+TEST(IPMatcher, PrincipalSourceIpMatching) {
+  // Tests lines 77-79: kSourceIp case in Principal creation
+  NiceMock<Server::Configuration::MockServerFactoryContext> factory_context;
+  envoy::config::rbac::v3::Principal principal;
+  auto* cidr = principal.mutable_source_ip();
+  cidr->set_address_prefix("192.168.1.0");
+  cidr->mutable_prefix_len()->set_value(24);
+
+  auto matcher = Matcher::create(principal, factory_context);
+  ASSERT_NE(matcher, nullptr);
+
+  NiceMock<Envoy::Network::MockConnection> conn;
+  Envoy::Http::TestRequestHeaderMapImpl headers;
+  NiceMock<StreamInfo::MockStreamInfo> info;
+
+  // Set connection remote address that matches the CIDR
+  auto addr = Envoy::Network::Utility::parseInternetAddressNoThrow("192.168.1.100", 123, false);
+  conn.stream_info_.downstream_connection_info_provider_->setRemoteAddress(addr);
+
+  EXPECT_TRUE(matcher->matches(conn, headers, info));
+
+  // Set address that doesn't match
+  addr = Envoy::Network::Utility::parseInternetAddressNoThrow("10.0.0.1", 123, false);
+  conn.stream_info_.downstream_connection_info_provider_->setRemoteAddress(addr);
+
+  EXPECT_FALSE(matcher->matches(conn, headers, info));
+}
+
+TEST(IPMatcher, PrincipalRemoteIpMatching) {
+  // Tests lines 83-85: kRemoteIp case in Principal creation
+  NiceMock<Server::Configuration::MockServerFactoryContext> factory_context;
+  envoy::config::rbac::v3::Principal principal;
+  auto* cidr = principal.mutable_remote_ip();
+  cidr->set_address_prefix("10.0.0.0");
+  cidr->mutable_prefix_len()->set_value(16);
+
+  auto matcher = Matcher::create(principal, factory_context);
+  ASSERT_NE(matcher, nullptr);
+
+  NiceMock<Envoy::Network::MockConnection> conn;
+  Envoy::Http::TestRequestHeaderMapImpl headers;
+  NiceMock<StreamInfo::MockStreamInfo> info;
+
+  // Set downstream remote address that matches the CIDR
+  auto addr = Envoy::Network::Utility::parseInternetAddressNoThrow("10.0.5.100", 456, false);
+  info.downstream_connection_info_provider_->setRemoteAddress(addr);
+
+  EXPECT_TRUE(matcher->matches(conn, headers, info));
+
+  // Set address that doesn't match
+  addr = Envoy::Network::Utility::parseInternetAddressNoThrow("172.16.1.1", 456, false);
+  info.downstream_connection_info_provider_->setRemoteAddress(addr);
+
+  EXPECT_FALSE(matcher->matches(conn, headers, info));
+}
+
+TEST(IPMatcher, CreateWithInvalidCidrRange) {
+  // Tests lines 206-208: Invalid CIDR range error handling in IPMatcher::create
+  Protobuf::RepeatedPtrField<envoy::config::core::v3::CidrRange> ranges;
+
+  // Add valid range first
+  auto* valid_range = ranges.Add();
+  valid_range->set_address_prefix("192.168.1.0");
+  valid_range->mutable_prefix_len()->set_value(24);
+
+  // Add invalid range (invalid IP address)
+  auto* invalid_range = ranges.Add();
+  invalid_range->set_address_prefix("invalid.ip.address");
+  invalid_range->mutable_prefix_len()->set_value(24);
+
+  auto result = IPMatcher::create(ranges, IPMatcher::Type::ConnectionRemote);
+  EXPECT_FALSE(result.ok());
+  EXPECT_THAT(result.status().message(), testing::HasSubstr("Failed to create CIDR range"));
+}
+
+TEST(IPMatcher, CreateWithEmptyRangeList) {
+  // Tests empty range validation
+  Protobuf::RepeatedPtrField<envoy::config::core::v3::CidrRange> empty_ranges;
+
+  auto result = IPMatcher::create(empty_ranges, IPMatcher::Type::ConnectionRemote);
+  EXPECT_FALSE(result.ok());
+  EXPECT_THAT(result.status().message(), testing::HasSubstr("Empty IP range list provided"));
+}
+
+TEST(IPMatcher, MatchesWithNullIpAddress) {
+  // Tests line 227: null IP address check in matches method
+  envoy::config::core::v3::CidrRange range;
+  range.set_address_prefix("192.168.1.0");
+  range.mutable_prefix_len()->set_value(24);
+
+  auto matcher_result = IPMatcher::create(range, IPMatcher::Type::ConnectionRemote);
+  ASSERT_OK(matcher_result);
+  const auto& matcher = *matcher_result.value();
+
+  NiceMock<Envoy::Network::MockConnection> conn;
+  Envoy::Http::TestRequestHeaderMapImpl headers;
+  NiceMock<StreamInfo::MockStreamInfo> info;
+
+  // Set null remote address
+  conn.stream_info_.downstream_connection_info_provider_->setRemoteAddress(nullptr);
+
+  EXPECT_FALSE(matcher.matches(conn, headers, info));
+}
+
+TEST(IPMatcher, MatchesWithConnectionRemoteAddress) {
+  // Tests that IPMatcher correctly extracts and matches connection remote addresses.
+  envoy::config::core::v3::CidrRange range;
+  range.set_address_prefix("192.168.1.0");
+  range.mutable_prefix_len()->set_value(24);
+
+  // Create matcher with a specific type
+  auto matcher_result = IPMatcher::create(range, IPMatcher::Type::ConnectionRemote);
+  ASSERT_OK(matcher_result);
+  const auto& matcher = *matcher_result.value();
+
+  NiceMock<Envoy::Network::MockConnection> conn;
+  Envoy::Http::TestRequestHeaderMapImpl headers;
+  NiceMock<StreamInfo::MockStreamInfo> info;
+
+  // Set all address types to non-null to ensure we test the extraction logic
+  auto addr = Envoy::Network::Utility::parseInternetAddressNoThrow("192.168.1.100", 123, false);
+  conn.stream_info_.downstream_connection_info_provider_->setRemoteAddress(addr);
+  info.downstream_connection_info_provider_->setLocalAddress(addr);
+  info.downstream_connection_info_provider_->setDirectRemoteAddressForTest(addr);
+  info.downstream_connection_info_provider_->setRemoteAddress(addr);
+
+  // This should match and extract the connection remote address correctly
+  EXPECT_TRUE(matcher.matches(conn, headers, info));
+}
+
+TEST(IPMatcher, MultipleRangesCreateSuccess) {
+  // Tests successful creation with multiple ranges
+  Protobuf::RepeatedPtrField<envoy::config::core::v3::CidrRange> ranges;
+
+  // Add multiple valid ranges
+  auto* range1 = ranges.Add();
+  range1->set_address_prefix("192.168.1.0");
+  range1->mutable_prefix_len()->set_value(24);
+
+  auto* range2 = ranges.Add();
+  range2->set_address_prefix("10.0.0.0");
+  range2->mutable_prefix_len()->set_value(16);
+
+  auto* range3 = ranges.Add();
+  range3->set_address_prefix("2001:db8::");
+  range3->mutable_prefix_len()->set_value(32);
+
+  auto result = IPMatcher::create(ranges, IPMatcher::Type::ConnectionRemote);
+  EXPECT_TRUE(result.ok());
+  EXPECT_NE(result.value(), nullptr);
+
+  // Test that the created matcher works
+  NiceMock<Envoy::Network::MockConnection> conn;
+  Envoy::Http::TestRequestHeaderMapImpl headers;
+  NiceMock<StreamInfo::MockStreamInfo> info;
+
+  // Test IPv4 match
+  auto addr = Envoy::Network::Utility::parseInternetAddressNoThrow("192.168.1.100", 123, false);
+  conn.stream_info_.downstream_connection_info_provider_->setRemoteAddress(addr);
+  EXPECT_TRUE(result.value()->matches(conn, headers, info));
+
+  // Test IPv4 no match
+  addr = Envoy::Network::Utility::parseInternetAddressNoThrow("172.16.1.1", 123, false);
+  conn.stream_info_.downstream_connection_info_provider_->setRemoteAddress(addr);
+  EXPECT_FALSE(result.value()->matches(conn, headers, info));
+}
+
+// Tests for kDestinationIp case in Permission matcher creation.
+TEST(Matcher, CreatePermissionDestinationIp) {
+  envoy::config::rbac::v3::Permission permission;
+  auto* cidr = permission.mutable_destination_ip();
+  cidr->set_address_prefix("192.168.1.0");
+  cidr->mutable_prefix_len()->set_value(24);
+
+  NiceMock<ProtobufMessage::MockValidationVisitor> validation_visitor;
+  NiceMock<Server::Configuration::MockServerFactoryContext> context;
+
+  auto matcher = Matcher::create(permission, validation_visitor, context);
+  EXPECT_NE(matcher, nullptr);
+}
+
+// Tests error handling in kDestinationIp case with invalid CIDR.
+TEST(Matcher, CreatePermissionDestinationIpInvalidCidr) {
+  envoy::config::rbac::v3::Permission permission;
+  auto* cidr = permission.mutable_destination_ip();
+  cidr->set_address_prefix("invalid.ip.address");
+  cidr->mutable_prefix_len()->set_value(24);
+
+  NiceMock<ProtobufMessage::MockValidationVisitor> validation_visitor;
+  NiceMock<Server::Configuration::MockServerFactoryContext> context;
+
+  EXPECT_THROW_WITH_REGEX(Matcher::create(permission, validation_visitor, context), EnvoyException,
+                          "Failed to create CIDR range:.*malformed IP address");
+}
+
+// Tests for RULE_NOT_SET case that falls through to PANIC.
+TEST(Matcher, CreatePermissionRuleNotSet) {
+  EXPECT_DEATH(
+      {
+        envoy::config::rbac::v3::Permission permission;
+
+        NiceMock<ProtobufMessage::MockValidationVisitor> validation_visitor;
+        NiceMock<Server::Configuration::MockServerFactoryContext> context;
+
+        Matcher::create(permission, validation_visitor, context);
+      },
+      "panic: corrupted enum");
+}
+
+// Tests for kSourceIp case in Principal matcher creation.
+TEST(Matcher, CreatePrincipalSourceIp) {
+  envoy::config::rbac::v3::Principal principal;
+  auto* cidr = principal.mutable_source_ip();
+  cidr->set_address_prefix("10.0.0.0");
+  cidr->mutable_prefix_len()->set_value(16);
+
+  NiceMock<Server::Configuration::MockServerFactoryContext> context;
+
+  auto matcher = Matcher::create(principal, context);
+  EXPECT_NE(matcher, nullptr);
+}
+
+// Tests error handling in kSourceIp case with invalid CIDR.
+TEST(Matcher, CreatePrincipalSourceIpInvalidCidr) {
+  envoy::config::rbac::v3::Principal principal;
+  auto* cidr = principal.mutable_source_ip();
+  cidr->set_address_prefix("999.999.999.999");
+  cidr->mutable_prefix_len()->set_value(24);
+
+  NiceMock<Server::Configuration::MockServerFactoryContext> context;
+
+  EXPECT_THROW_WITH_REGEX(Matcher::create(principal, context), EnvoyException,
+                          "Failed to create CIDR range:.*malformed IP address");
+}
+
+// Tests for kDirectRemoteIp case in Principal matcher creation.
+TEST(Matcher, CreatePrincipalDirectRemoteIp) {
+  envoy::config::rbac::v3::Principal principal;
+  auto* cidr = principal.mutable_direct_remote_ip();
+  cidr->set_address_prefix("172.16.0.0");
+  cidr->mutable_prefix_len()->set_value(12);
+
+  NiceMock<Server::Configuration::MockServerFactoryContext> context;
+
+  auto matcher = Matcher::create(principal, context);
+  EXPECT_NE(matcher, nullptr);
+}
+
+// Tests error handling in kDirectRemoteIp case with invalid CIDR.
+TEST(Matcher, CreatePrincipalDirectRemoteIpInvalidCidr) {
+  envoy::config::rbac::v3::Principal principal;
+  auto* cidr = principal.mutable_direct_remote_ip();
+  cidr->set_address_prefix(""); // Empty IP address
+  cidr->mutable_prefix_len()->set_value(24);
+
+  NiceMock<Server::Configuration::MockServerFactoryContext> context;
+
+  EXPECT_THROW_WITH_REGEX(Matcher::create(principal, context), EnvoyException,
+                          "Failed to create CIDR range:.*malformed IP address");
+}
+
+// Tests for kRemoteIp case in Principal matcher creation.
+TEST(Matcher, CreatePrincipalRemoteIp) {
+  envoy::config::rbac::v3::Principal principal;
+  auto* cidr = principal.mutable_remote_ip();
+  cidr->set_address_prefix("2001:db8::");
+  cidr->mutable_prefix_len()->set_value(32);
+
+  NiceMock<Server::Configuration::MockServerFactoryContext> context;
+
+  auto matcher = Matcher::create(principal, context);
+  EXPECT_NE(matcher, nullptr);
+}
+
+// Tests error handling in kRemoteIp case with invalid CIDR.
+TEST(Matcher, CreatePrincipalRemoteIpInvalidCidr) {
+  envoy::config::rbac::v3::Principal principal;
+  auto* cidr = principal.mutable_remote_ip();
+  cidr->set_address_prefix("2001:db8::gggg"); // Invalid IPv6
+  cidr->mutable_prefix_len()->set_value(32);
+
+  NiceMock<Server::Configuration::MockServerFactoryContext> context;
+
+  EXPECT_THROW_WITH_REGEX(Matcher::create(principal, context), EnvoyException,
+                          "Failed to create CIDR range:.*malformed IP address");
+}
+
+// Tests for IDENTIFIER_NOT_SET case that falls through to PANIC.
+TEST(Matcher, CreatePrincipalIdentifierNotSet) {
+  EXPECT_DEATH(
+      {
+        envoy::config::rbac::v3::Principal principal;
+
+        NiceMock<Server::Configuration::MockServerFactoryContext> context;
+
+        Matcher::create(principal, context);
+      },
+      "panic: corrupted enum");
+}
+
+TEST(PathMatcher, PathParametersBypass) {
+  NiceMock<Server::Configuration::MockServerFactoryContext> context;
+  Envoy::Http::TestRequestHeaderMapImpl headers;
+  envoy::type::matcher::v3::PathMatcher matcher;
+  matcher.mutable_path()->set_exact("/exact/value");
+
+  // Case 1: ignore_path_parameters_in_path_matching = false (default)
+  // Request path: "/exact;foo=bar/value;ver=1"
+  // It should NOT match because the parameter is not ignored, so "/exact;foo=bar" != "/exact"
+  {
+    NiceMock<StreamInfo::MockStreamInfo> info;
+    auto route = std::make_shared<NiceMock<Router::MockRoute>>();
+    EXPECT_CALL(info, route()).WillRepeatedly(Return(route));
+    NiceMock<Router::MockConfig> route_config;
+    EXPECT_CALL(route->virtual_host_, routeConfig()).WillRepeatedly(ReturnRef(route_config));
+    EXPECT_CALL(route_config, ignorePathParametersInPathMatching()).WillRepeatedly(Return(false));
+
+    headers.setPath("/exact;foo=bar/value;ver=1");
+    checkMatcher(PathMatcher(matcher, context), false, Envoy::Network::MockConnection(), headers,
+                 info);
+  }
+
+  // Case 2: ignore_path_parameters_in_path_matching = true
+  // Request path: "/exact;foo=bar/value;ver=1"
+  // It SHOULD match because the parameter is ignored, so it is sanitized to "/exact"
+  {
+    NiceMock<StreamInfo::MockStreamInfo> info;
+    auto route = std::make_shared<NiceMock<Router::MockRoute>>();
+    EXPECT_CALL(info, route()).WillRepeatedly(Return(route));
+    NiceMock<Router::MockConfig> route_config;
+    EXPECT_CALL(route->virtual_host_, routeConfig()).WillRepeatedly(ReturnRef(route_config));
+    EXPECT_CALL(route_config, ignorePathParametersInPathMatching()).WillRepeatedly(Return(true));
+
+    headers.setPath("/exact;foo=bar/value;ver=1");
+    checkMatcher(PathMatcher(matcher, context), true, Envoy::Network::MockConnection(), headers,
+                 info);
+  }
+
+  // Case 3: ignore_path_parameters_in_path_matching = true, BUT rbac_respect_ignore_path_parameters
+  // is false (disabled) Request path: "/exact;foo=bar" It should NOT match because the runtime flag
+  // is disabled.
+  {
+    TestScopedRuntime scoped_runtime;
+    scoped_runtime.mergeValues(
+        {{"envoy.reloadable_features.rbac_respect_ignore_path_parameters", "false"}});
+
+    NiceMock<StreamInfo::MockStreamInfo> info;
+    auto route = std::make_shared<NiceMock<Router::MockRoute>>();
+    EXPECT_CALL(info, route()).WillRepeatedly(Return(route));
+    NiceMock<Router::MockConfig> route_config;
+    EXPECT_CALL(route->virtual_host_, routeConfig()).WillRepeatedly(ReturnRef(route_config));
+    EXPECT_CALL(route_config, ignorePathParametersInPathMatching()).WillRepeatedly(Return(true));
+
+    headers.setPath("/exact;foo=bar/value;ver=1");
+    checkMatcher(PathMatcher(matcher, context), false, Envoy::Network::MockConnection(), headers,
+                 info);
+  }
+}
+
+TEST(UriTemplateMatcher, PathMatchingWithParameters) {
+  envoy::extensions::path::match::uri_template::v3::UriTemplateMatchConfig
+      uri_template_match_config;
+  uri_template_match_config.set_path_template("/bar/{lang}/target");
+  Router::PathMatcherSharedPtr raw_matcher =
+      std::make_shared<Envoy::Extensions::UriTemplate::Match::UriTemplateMatcher>(
+          uri_template_match_config);
+  UriTemplateMatcher matcher(raw_matcher);
+
+  Envoy::Http::TestRequestHeaderMapImpl headers;
+
+  // Case 1: ignore_path_parameters_in_path_matching = false (default)
+  // Request path: "/bar/lang;ver=1/target;foo=bar"
+  // It should NOT match.
+  {
+    NiceMock<StreamInfo::MockStreamInfo> info;
+    auto route = std::make_shared<NiceMock<Router::MockRoute>>();
+    EXPECT_CALL(info, route()).WillRepeatedly(Return(route));
+    NiceMock<Router::MockConfig> route_config;
+    EXPECT_CALL(route->virtual_host_, routeConfig()).WillRepeatedly(ReturnRef(route_config));
+    EXPECT_CALL(route_config, ignorePathParametersInPathMatching()).WillRepeatedly(Return(false));
+
+    headers.setPath("/bar/lang;ver=1/target;foo=bar");
+    checkMatcher(matcher, false, Envoy::Network::MockConnection(), headers, info);
+  }
+
+  // Case 2: ignore_path_parameters_in_path_matching = true
+  // Request path: "/bar/lang;ver=1/target;foo=bar"
+  // It SHOULD match.
+  {
+    NiceMock<StreamInfo::MockStreamInfo> info;
+    auto route = std::make_shared<NiceMock<Router::MockRoute>>();
+    EXPECT_CALL(info, route()).WillRepeatedly(Return(route));
+    NiceMock<Router::MockConfig> route_config;
+    EXPECT_CALL(route->virtual_host_, routeConfig()).WillRepeatedly(ReturnRef(route_config));
+    EXPECT_CALL(route_config, ignorePathParametersInPathMatching()).WillRepeatedly(Return(true));
+
+    headers.setPath("/bar/lang;ver=1/target;foo=bar");
+    checkMatcher(matcher, true, Envoy::Network::MockConnection(), headers, info);
+  }
+
+  // Case 3: ignore_path_parameters_in_path_matching = true, BUT rbac_respect_ignore_path_parameters
+  // is false (disabled) Request path: "/bar/lang;ver=1/target;foo=bar" It should NOT match.
+  {
+    TestScopedRuntime scoped_runtime;
+    scoped_runtime.mergeValues(
+        {{"envoy.reloadable_features.rbac_respect_ignore_path_parameters", "false"}});
+
+    NiceMock<StreamInfo::MockStreamInfo> info;
+    auto route = std::make_shared<NiceMock<Router::MockRoute>>();
+    EXPECT_CALL(info, route()).WillRepeatedly(Return(route));
+    NiceMock<Router::MockConfig> route_config;
+    EXPECT_CALL(route->virtual_host_, routeConfig()).WillRepeatedly(ReturnRef(route_config));
+    EXPECT_CALL(route_config, ignorePathParametersInPathMatching()).WillRepeatedly(Return(true));
+
+    headers.setPath("/bar/lang;ver=1/target;foo=bar");
+    checkMatcher(matcher, false, Envoy::Network::MockConnection(), headers, info);
+  }
 }
 
 } // namespace
