@@ -55,13 +55,24 @@ RUNTIME_GUARD(envoy_reloadable_features_http3_remove_empty_cookie);
 // Delay deprecation and decommission until UHV is enabled.
 RUNTIME_GUARD(envoy_reloadable_features_http_reject_path_with_fragment);
 RUNTIME_GUARD(envoy_reloadable_features_jwt_fetcher_use_scheme_from_uri);
+RUNTIME_GUARD(envoy_reloadable_features_limit_json_parser_nesting_depth);
 RUNTIME_GUARD(envoy_reloadable_features_no_extension_lookup_by_name);
 RUNTIME_GUARD(envoy_reloadable_features_oauth2_cleanup_cookies);
 RUNTIME_GUARD(envoy_reloadable_features_oauth2_encrypt_tokens);
+// OAuth2 filter cookie decryption: when true (the default), decrypt() accepts legacy CBC
+// ciphertexts via the legacy AES-256-CBC fallback. When false, only "gcm."-prefixed ciphertexts
+// decrypt; legacy CBC cookies are rejected and the affected users are redirected to the OAuth
+// server to re-authenticate. The default is true so that GCM-emitting instances can still read
+// CBC cookies issued by older instances during a rolling upgrade. While true, the CBC decrypt
+// path is reachable and partially reopens CVE-2026-47775; operators should flip this flag to
+// false once their cookie TTL has elapsed and no legacy cookies remain in circulation.
+// TODO: flip the default to false and remove the flag once the migration window has elapsed.
+RUNTIME_GUARD(envoy_reloadable_features_oauth2_legacy_cbc_decrypt_compat);
 RUNTIME_GUARD(envoy_reloadable_features_odcds_over_ads_fix);
 RUNTIME_GUARD(envoy_reloadable_features_original_dst_rely_on_idle_timeout);
 RUNTIME_GUARD(envoy_reloadable_features_original_src_fix_port_exhaustion);
 RUNTIME_GUARD(envoy_reloadable_features_prefix_map_matcher_resume_after_subtree_miss);
+RUNTIME_GUARD(envoy_reloadable_features_proxy_protocol_remove_too_long_tlvs);
 RUNTIME_GUARD(envoy_reloadable_features_quic_defer_logging_to_ack_listener);
 RUNTIME_GUARD(envoy_reloadable_features_quic_fix_defer_logging_miss_for_half_closed_stream);
 // Ignore the automated "remove this flag" issue: we should keep this for 1 year. Confirm with
@@ -70,6 +81,7 @@ RUNTIME_GUARD(envoy_reloadable_features_quic_send_server_preferred_address_to_al
 RUNTIME_GUARD(envoy_reloadable_features_quic_signal_headers_only_to_http1_backend);
 RUNTIME_GUARD(envoy_reloadable_features_quic_upstream_reads_fixed_number_packets);
 RUNTIME_GUARD(envoy_reloadable_features_quic_upstream_socket_use_address_cache_for_read);
+RUNTIME_GUARD(envoy_reloadable_features_quic_validate_headers_only_content_length);
 RUNTIME_GUARD(envoy_reloadable_features_rbac_match_headers_individually);
 RUNTIME_GUARD(envoy_reloadable_features_reject_empty_trusted_ca_file);
 RUNTIME_GUARD(envoy_reloadable_features_report_load_with_rq_issued);
@@ -104,6 +116,13 @@ RUNTIME_GUARD(envoy_reloadable_features_enable_intermediate_ca);
 FALSE_RUNTIME_GUARD(envoy_reloadable_features_test_feature_false);
 // TODO(adisuissa) reset to true to enable unified mux by default
 FALSE_RUNTIME_GUARD(envoy_reloadable_features_unified_mux);
+// OAuth2 filter cookie encryption: when true, encrypt() emits AES-256-GCM ciphertexts with a
+// "gcm." marker; when false (the default), it emits the legacy AES-256-CBC format with no
+// marker. The default is false so that newly upgraded instances stay wire-compatible with
+// older instances during a rolling upgrade. Operators must flip this flag to true (cluster-wide,
+// after the rollout is complete) to be protected against CVE-2026-47775.
+// TODO: flip the default to true and remove the flag once the migration window has elapsed.
+FALSE_RUNTIME_GUARD(envoy_reloadable_features_oauth2_use_gcm_encryption);
 // Used to track if runtime is initialized.
 FALSE_RUNTIME_GUARD(envoy_reloadable_features_runtime_initialized);
 // TODO(alyssawilk, renjietang) figure out what to do with this for optimal defaults
