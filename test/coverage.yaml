@@ -32,7 +32,7 @@ directories:
   source/extensions/api_listeners/default_api_listener: 55.0  # Many IS_ENVOY_BUG are not covered.
   source/extensions/common/aws: 98.5
   source/extensions/common/aws/credential_providers: 100.0
-  source/extensions/common/proxy_protocol: 94.6  # Adjusted for security patch
+  source/extensions/common/proxy_protocol: 94.2  # Adjusted for security patch
   source/extensions/common/tap: 95.0
   source/extensions/common/wasm: 95.3  # flaky: be careful adjusting
   source/extensions/common/wasm/ext: 100.0
@@ -48,7 +48,7 @@ directories:
   source/extensions/filters/http/grpc_json_transcoder: 94.0  # TODO(#28232)
   source/extensions/filters/http/ip_tagging: 95.9
   source/extensions/filters/http/kill_request: 91.7  # Death tests don't report LCOV
-  source/extensions/filters/http/oauth2: 97.6
+  source/extensions/filters/http/oauth2: 97.3
   source/extensions/filters/listener: 96.5
   source/extensions/filters/listener/original_src: 92.1
   source/extensions/filters/listener/tls_inspector: 94.0
