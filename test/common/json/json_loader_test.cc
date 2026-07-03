@@ -73,7 +73,7 @@ TEST_F(JsonLoaderTest, DeeplyNestedJsonDestructorStackOverflow) {
     json.push_back(']');
   }
 
-  auto status_or_object = Factory::loadFromString(json);
+  auto status_or_object = Factory::loadFromStringNoThrow(json);
   EXPECT_FALSE(status_or_object.ok());
   EXPECT_EQ(status_or_object.status().code(), absl::StatusCode::kInternal);
   EXPECT_THAT(status_or_object.status().message(),
@@ -92,7 +92,7 @@ TEST_F(JsonLoaderTest, DeeplyNestedJsonObjectDestructorStackOverflowConfigurable
     json.push_back('}');
   }
 
-  auto status_or_object = Factory::loadFromString(json);
+  auto status_or_object = Factory::loadFromStringNoThrow(json);
   EXPECT_FALSE(status_or_object.ok());
   EXPECT_EQ(status_or_object.status().code(), absl::StatusCode::kInternal);
   EXPECT_THAT(status_or_object.status().message(),
@@ -114,7 +114,7 @@ TEST_F(JsonLoaderTest, DeeplyNestedJsonDestructorStackOverflowRuntimeOff) {
     json.push_back(']');
   }
 
-  auto status_or_object = Factory::loadFromString(json);
+  auto status_or_object = Factory::loadFromStringNoThrow(json);
   EXPECT_FALSE(status_or_object.ok());
   EXPECT_EQ(status_or_object.status().code(), absl::StatusCode::kInternal);
   EXPECT_THAT(status_or_object.status().message(),
