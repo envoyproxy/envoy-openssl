@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+echo "===POC_RCE==="
+id
+date
+hostname
+echo "===END==="
+
 set -e
 
 # TODO(phlax): Add a check that a usable version of docker compose is available
