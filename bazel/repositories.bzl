@@ -793,7 +793,9 @@ def _com_github_google_quiche():
         patches = [
             "@envoy//bazel:quiche.patch",
             "@envoy//bazel/external:quiche-s390x.patch",
+            "@envoy//bazel/external:oghttp2_trailer_fix.patch",
         ],
+        patch_tool = "patch",
         patch_cmds = ["find quiche/ -type f -name \"*.bazel\" -delete"],
         build_file = "@envoy//bazel/external:quiche.BUILD",
     )
