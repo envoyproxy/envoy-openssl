@@ -771,11 +771,13 @@ def _com_googlesource_chromium_base_trace_event_common():
 def _com_github_google_quiche():
     external_http_archive(
         name = "com_github_google_quiche",
+        patch_tool = "patch",
         patch_cmds = ["find quiche/ -type f -name \"*.bazel\" -delete"],
         build_file = "@envoy//bazel/external:quiche.BUILD",
         patches = [
             "@envoy//bazel/external:quiche.patch",
             "@envoy//bazel/external:quiche-s390x.patch",
+            "@envoy//bazel/external:oghttp2_trailer_fix.patch",
             ],
         patch_args = ["-p1"],
     )
