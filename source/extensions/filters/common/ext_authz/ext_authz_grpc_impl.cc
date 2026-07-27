@@ -140,8 +140,9 @@ void GrpcClientImpl::onSuccess(std::unique_ptr<envoy::service::auth::v3::CheckRe
     authz_response->dynamic_metadata = response->dynamic_metadata();
   }
 
-  callbacks_->onComplete(std::move(authz_response));
+  RequestCallbacks* callbacks = callbacks_;
   callbacks_ = nullptr;
+  callbacks->onComplete(std::move(authz_response));
 }
 
 void GrpcClientImpl::onFailure(Grpc::Status::GrpcStatus status, const std::string&,
@@ -153,8 +154,9 @@ void GrpcClientImpl::onFailure(Grpc::Status::GrpcStatus status, const std::strin
   response.status = CheckStatus::Error;
   response.status_code = Http::Code::Forbidden;
   response.grpc_status = status;
-  callbacks_->onComplete(std::make_unique<Response>(response));
+  RequestCallbacks* callbacks = callbacks_;
   callbacks_ = nullptr;
+  callbacks->onComplete(std::make_unique<Response>(response));
 }
 
 } // namespace ExtAuthz
