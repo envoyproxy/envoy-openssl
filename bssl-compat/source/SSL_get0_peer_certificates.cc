@@ -4,8 +4,7 @@
 
 
 const STACK_OF(CRYPTO_BUFFER) *SSL_get0_peer_certificates(const SSL *ssl) {
-  X509 *x509Temp = SSL_get_peer_certificate(ssl);
-  if(x509Temp == NULL)
+  if(ossl.ossl_SSL_get0_peer_certificate(ssl) == NULL)
     return NULL;
   else {
     // Dummy buffer just to return a non null value
