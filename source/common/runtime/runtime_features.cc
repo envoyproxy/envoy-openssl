@@ -58,6 +58,7 @@ RUNTIME_GUARD(envoy_reloadable_features_http2_use_oghttp2);
 RUNTIME_GUARD(envoy_reloadable_features_http3_happy_eyeballs);
 RUNTIME_GUARD(envoy_reloadable_features_http3_remove_empty_cookie);
 RUNTIME_GUARD(envoy_reloadable_features_http3_remove_empty_trailers);
+RUNTIME_GUARD(envoy_reloadable_features_http_pause_generic_upgrade_request_body);
 // Delay deprecation and decommission until UHV is enabled.
 RUNTIME_GUARD(envoy_reloadable_features_http_reject_path_with_fragment);
 RUNTIME_GUARD(envoy_reloadable_features_jwt_authn_remove_jwt_from_query_params);
