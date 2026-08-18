@@ -491,6 +491,24 @@ void MyFrontendAction::EndSourceFileAction() {
          << "static void " << opt::prefix << "_init(void)  __attribute__ ((constructor));" << std::endl
          << "static void " << opt::prefix << "_fini(void)  __attribute__ ((destructor));" << std::endl
          << std::endl
+         << "static void *ossl_malloc(size_t num, const char *file, int line) {" << std::endl
+         << "  (void)file;" << std::endl
+         << "  (void)line;" << std::endl
+         << "  return malloc(num);" << std::endl
+         << "}" << std::endl
+         << std::endl
+         << "static void *ossl_realloc(void *addr, size_t num, const char *file, int line) {" << std::endl
+         << "  (void)file;" << std::endl
+         << "  (void)line;" << std::endl
+         << "  return realloc(addr, num);" << std::endl
+         << "}" << std::endl
+         << std::endl
+         << "static void ossl_free(void *addr, const char *file, int line) {" << std::endl
+         << "  (void)file;" << std::endl
+         << "  (void)line;" << std::endl
+         << "  free(addr);" << std::endl
+         << "}" << std::endl
+         << std::endl
          << "static void *lookup(const char *symbol) {" << std::endl
          << "  void *result;" << std::endl
          << "  const char *s = symbol + " << opt::prefix.size() + 1 << ";" << std::endl
@@ -510,11 +528,6 @@ void MyFrontendAction::EndSourceFileAction() {
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
          << std::endl
-         << "  if((libssl = ossl_dlopen(LIBSSL_SO)) == NULL) {" << std::endl
-         << "    fprintf(stderr, \"%s: dlopen(%s) : %s\\n\", __func__, LIBSSL_SO, dlerror());" << std::endl
-         << "    exit(ELIBACC);" << std::endl
-         << "  }" << std::endl
-         << std::endl
          << "  ossl.ossl_OpenSSL_version_num = (ossl_OpenSSL_version_num_t)lookup(\"ossl_OpenSSL_version_num\");" << std::endl
          << "  if (ossl.ossl_OpenSSL_version_num == NULL) {" << std::endl
          << "    fprintf(stderr, \"%s: Failed to load OpenSSL_version_num()\\n\", __func__);" << std::endl
@@ -531,6 +544,27 @@ void MyFrontendAction::EndSourceFileAction() {
          << "                      ossl_OPENSSL_VERSION_MAJOR," << std::endl
          << "                      ossl_OPENSSL_VERSION_MINOR," << std::endl
          << "                      major, minor, patch);" << std::endl
+         << "    exit(ELIBACC);" << std::endl
+         << "  }" << std::endl
+         << std::endl
+         << "  typedef int (*CRYPTO_set_mem_functions_fn)(" << std::endl
+         << "      void *(*malloc_fn)(size_t, const char *, int)," << std::endl
+         << "      void *(*realloc_fn)(void *, size_t, const char *, int)," << std::endl
+         << "      void (*free_fn)(void *, const char *, int));" << std::endl
+         << std::endl
+         << "  CRYPTO_set_mem_functions_fn set_mem_fn = lookup(\"CRYPTO_set_mem_functions\");" << std::endl
+         << "  if (set_mem_fn == NULL) {" << std::endl
+         << "    fprintf(stderr, \"%s: dlsym(libcrypto, \\\"CRYPTO_set_mem_functions\\\") : %s\\n\", __func__, dlerror());" << std::endl
+         << "    exit(ELIBACC);" << std::endl
+         << "  }" << std::endl
+         << std::endl
+         << "  if (!set_mem_fn(ossl_malloc, ossl_realloc, ossl_free)) {" << std::endl
+         << "    fprintf(stderr, \"%s: CRYPTO_set_mem_functions() failed\\n\", __func__);" << std::endl
+         << "   exit(ELIBACC);" << std::endl
+         << " }" << std::endl
+         << std::endl
+         << "  if((libssl = ossl_dlopen(LIBSSL_SO)) == NULL) {" << std::endl
+         << "    fprintf(stderr, \"%s: dlopen(%s) : %s\\n\", __func__, LIBSSL_SO, dlerror());" << std::endl
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
          << std::endl;
