@@ -1,7 +1,7 @@
 aio.api.bazel>=0.1.1
 aio.api.github>=0.3.1
 aio.core>=0.11.1
-aiohttp>=3.13.3
+aiohttp>=3.14.3
 aioquic>=0.9.21
 clang-format==18.1.8
 clang-tidy==18.1.8
