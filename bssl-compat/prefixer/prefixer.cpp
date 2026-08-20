@@ -558,10 +558,7 @@ void MyFrontendAction::EndSourceFileAction() {
          << "    exit(ELIBACC);" << std::endl
          << "  }" << std::endl
          << std::endl
-         << "  if (!set_mem_fn(ossl_malloc, ossl_realloc, ossl_free)) {" << std::endl
-         << "    fprintf(stderr, \"%s: CRYPTO_set_mem_functions() failed\\n\", __func__);" << std::endl
-         << "   exit(ELIBACC);" << std::endl
-         << " }" << std::endl
+         << "  set_mem_fn(ossl_malloc, ossl_realloc, ossl_free);" << std::endl
          << std::endl
          << "  if((libssl = ossl_dlopen(LIBSSL_SO)) == NULL) {" << std::endl
          << "    fprintf(stderr, \"%s: dlopen(%s) : %s\\n\", __func__, LIBSSL_SO, dlerror());" << std::endl
