@@ -15,6 +15,7 @@
 
 #include "test/common/tls/cert_validator/test_common.h"
 #include "test/common/tls/ssl_test_utility.h"
+#include "test/common/tls/test_data/intermediate_ca_cert_info.h"
 #include "test/mocks/server/server_factory_context.h"
 #include "test/test_common/environment.h"
 #include "test/test_common/simulated_time_system.h"
@@ -685,9 +686,12 @@ typed_config:
         filename: "{{ test_rundir }}/test/common/tls/test_data/intermediate_ca_cert.pem"
   )EOF"),
              time_system);
-  EXPECT_EQ(20686, validator().daysUntilFirstCertExpires().value());
+  auto expiry_time =
+      TestUtility::parseTime(TEST_INTERMEDIATE_CA_CERT_NOT_AFTER, "%b %d %H:%M:%S %Y GMT");
+  int64_t expected_days = absl::ToInt64Hours(expiry_time - absl::UnixEpoch()) / 24;
+  EXPECT_EQ(expected_days, validator().daysUntilFirstCertExpires().value());
   time_system.setSystemTime(std::chrono::milliseconds(864000000));
-  EXPECT_EQ(20676, validator().daysUntilFirstCertExpires().value());
+  EXPECT_EQ(expected_days - 10, validator().daysUntilFirstCertExpires().value());
 }
 
 TEST_F(TestSPIFFEValidator, TestDaysUntilFirstCertExpiresExpired) {
