@@ -263,14 +263,19 @@ TEST_P(WebsocketIntegrationTest, EarlyData) {
   response_ = std::move(encoder_decoder.second);
   codec_client_->sendData(*request_encoder_, early_data_req_str, false);
 
-  // Wait for both the upgrade, and the early data.
+  // Wait for the upgrade headers upstream.
   ASSERT_TRUE(fake_upstreams_[0]->waitForHttpConnection(*dispatcher_, fake_upstream_connection_));
   ASSERT_TRUE(fake_upstream_connection_->waitForNewStream(*dispatcher_, upstream_request_));
   ASSERT_TRUE(upstream_request_->waitForHeadersComplete());
+
+  // Accept websocket upgrade request. With check_switch_protocol_websocket_handshake disabled,
+  // the websocket falls through to the generic upgrade pause path. The 101 response triggers
+  // the unpause and releases the early data.
+  upstream_request_->encodeHeaders(upgradeResponseHeaders(), false);
+
+  // Early data arrives upstream after the 101 unpause.
   ASSERT_TRUE(upstream_request_->waitForData(*dispatcher_, "hello"));
 
-  // Accept websocket upgrade request
-  upstream_request_->encodeHeaders(upgradeResponseHeaders(), false);
   // Reply also with early data
   upstream_request_->encodeData(early_data_resp_str, false);
   // upstream disconnect
