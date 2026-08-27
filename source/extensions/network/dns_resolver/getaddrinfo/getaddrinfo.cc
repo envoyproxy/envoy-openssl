@@ -47,8 +47,11 @@ ActiveDnsQuery* GetAddrInfoDnsResolver::resolve(const std::string& dns_name,
       pending_queries_.push_back({std::move(new_query), absl::nullopt});
     }
     active_query = pending_queries_.back().pending_query_.get();
+    // Record the initial trace while still holding the lock. Otherwise the resolver thread may
+    // pop the query and start recording its own traces (Starting, Retrying, ...) before this
+    // NotStarted trace is added, producing out-of-order traces.
+    active_query->addTrace(static_cast<uint8_t>(GetAddrInfoTrace::NotStarted));
   }
-  active_query->addTrace(static_cast<uint8_t>(GetAddrInfoTrace::NotStarted));
   return active_query;
 }
 
