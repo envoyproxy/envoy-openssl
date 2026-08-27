@@ -707,7 +707,7 @@ TEST_P(ProxyFilterIntegrationTest, ParallelRequestsWithFakeResolver) {
 // a null address. Make sure this mode fails gracefully.
 TEST_P(ProxyFilterIntegrationTest, RequestWithUnknownDomainCares) {
   requestWithUnknownDomainTest("", "doesnotexist.example.com",
-                               "cares_norecords:Domain_name_not_found");
+                               "cares_norecords:");
 }
 
 // TODO(yanavlasov) Enable per #26642
@@ -740,7 +740,7 @@ TEST_P(ProxyFilterIntegrationTest, RequestWithUnknownDomainGetAddrInfoResolver) 
       name: envoy.network.dns_resolver.getaddrinfo
       typed_config:
         "@type": type.googleapis.com/envoy.extensions.network.dns_resolver.getaddrinfo.v3.GetAddrInfoDnsResolverConfig)EOF",
-                               "doesnotexist.example.com", "Name_or_service_not_known");
+                               "doesnotexist.example.com", "dns_resolution_failure");
 }
 
 TEST_P(ProxyFilterIntegrationTest, RequestWithUnknownDomainAndNoCaching) {
