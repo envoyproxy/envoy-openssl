@@ -38,6 +38,7 @@ envoy_extension_cc_test_library(
         ],
     }),
     extension_names = ["envoy.filters.http.ext_proc"],
+    rbe_pool = "linux_x64_small",
     tags = ["skip_on_windows"],
     deps = [
         ":mock_server_lib",
@@ -68,6 +69,7 @@ envoy_extension_cc_test_library(
         "//test/mocks/stats:stats_mocks",
         "//test/mocks/stream_info:stream_info_mocks",
         "//test/test_common:simulated_time_system_lib",
+        "//test/test_common:test_runtime_lib",
         "//test/test_common:utility_lib",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:optional",
@@ -439,6 +441,7 @@ envoy_extension_cc_test(
         "//source/extensions/retry/host/previous_hosts:config",
         "//test/common/http:common_lib",
         "//test/integration:http_integration_lib",
+        "//test/integration/filters:add_data_and_continue_filter_lib",
         "//test/integration/filters:common_lib",
         "//test/integration/filters:stream_info_to_headers_filter_lib",
         "//test/proto:helloworld_proto_cc_proto",
