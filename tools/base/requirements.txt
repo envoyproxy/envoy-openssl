@@ -1210,9 +1210,9 @@ pygments==2.18.0 \
     #   envoy-docs-sphinx-runner
     #   sphinx
     #   sphinx-tabs
-pyjwt[crypto]==2.9.0 \
-    --hash=sha256:3b02fb0f44517787776cf48f2ae25d8e14f300e6d7545a4315cee571a415e850 \
-    --hash=sha256:7e1e5b56cc735432a7369cbfa0efe50fa113ebecdc04ae6922deba8b84582d0c
+pyjwt[crypto]==2.15.0 \
+    --hash=sha256:7a3742debf6b879e912dbb9819ceec1594be812452b78c5f2e2dfc56564954f8 \
+    --hash=sha256:b11c5f9791d7bf51c2b39a81ed669f6b2dbbd669df2942f6c60167e9e3d1abe4
     # via
     #   gidgethub
     #   pygithub
