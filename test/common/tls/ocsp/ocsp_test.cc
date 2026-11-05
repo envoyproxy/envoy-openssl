@@ -55,6 +55,9 @@ protected:
 };
 
 TEST_F(OcspFullResponseParsingTest, GoodCertTest) {
+  // Pin time within the OCSP response validity window (2024-10-22 to 2026-10-22).
+  auto within_validity = TestUtility::parseTime("2025 06 01", "%Y %m %d");
+  time_system_.setSystemTime(absl::ToChronoTime(within_validity));
   setup("good_ocsp_resp.der");
   expectSuccessful();
   expectCertificateMatches("good_cert.pem");
