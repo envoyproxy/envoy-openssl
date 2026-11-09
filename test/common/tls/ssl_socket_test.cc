@@ -399,8 +399,12 @@ Network::ListenerPtr createListener(Network::SocketSharedPtr&& socket,
       listener_config.maxConnectionsToAcceptPerSocketEvent(), overload_state);
 }
 
-void testUtil(const TestUtilOptions& options) {
+void testUtil(const TestUtilOptions& options,
+              absl::optional<SystemTime> system_time = absl::nullopt) {
   Event::SimulatedTimeSystem time_system;
+  if (system_time.has_value()) {
+    time_system.setSystemTime(system_time.value());
+  }
 
   Stats::TestUtil::TestStore server_stats_store;
   Api::ApiPtr server_api = Api::createApiForTest(server_stats_store, time_system);
@@ -7290,7 +7294,9 @@ TEST_P(SslSocketTest, TestStaplesOcspResponseSuccess) {
 
   testUtil(test_options.enableOcspStapling()
                .setExpectedOcspResponse(expected_response)
-               .setExpectedServerStats("ssl.ocsp_staple_responses"));
+               .setExpectedServerStats("ssl.ocsp_staple_responses"),
+           // Keep the good OCSP response valid (2024-10-22 to 2026-10-22).
+           absl::ToChronoTime(TestUtility::parseTime("2025 06 01", "%Y %m %d")));
 }
 
 TEST_P(SslSocketTest, TestNoOcspStapleWhenNotEnabledOnClient) {
@@ -7486,7 +7492,9 @@ TEST_P(SslSocketTest, TestFilterMultipleCertsFilterByOcspPolicyFallbackOnFirst) 
   TestUtilOptions test_options(client_ctx_yaml, server_ctx_yaml, true, version_);
   testUtil(test_options.enableOcspStapling()
                .setExpectedServerStats("ssl.ocsp_staple_responses")
-               .setExpectedOcspResponse(expected_response));
+               .setExpectedOcspResponse(expected_response),
+           // Keep the good response valid while the ECDSA response remains expired.
+           absl::ToChronoTime(TestUtility::parseTime("2025 06 01", "%Y %m %d")));
 }
 
 TEST_P(SslSocketTest, TestConnectionFailsOnMultipleCertificatesNonePassOcspPolicy) {
